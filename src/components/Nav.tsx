@@ -1,21 +1,31 @@
+import { useRecoilState } from 'recoil'
+import { userState } from '@/atoms/userAtom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
-import { Link, useLocation } from 'react-router-dom'
 import NavLink from './NavLink'
+import httpClient from '@/lib/httpClient'
 
 const Nav = () => {
-  const currentUser = {
-    isAuthenticated: true,
-    roles: ['user', 'operator', 'admin'],
-    username: 'filip',
-  }
+  const [currentUser, setCurrentUser] = useRecoilState(userState)
 
   const { pathname } = useLocation()
+  const navigation = useNavigate()
 
   const links = [
     { title: 'Scheduler', url: '/scheduler/queue/list', icon: 'fa-tasks' },
     { title: 'Storage', url: '/storage/host/list', icon: 'fa-database' },
     { title: 'Visuals', url: '/visuals', icon: 'fa-image' },
   ]
+
+  const logoutHandler = async () => {
+    try {
+      await httpClient.get(import.meta.env.VITE_SERVER_URL + '/auth/logout')
+
+      setCurrentUser({ id: 0, username: '', email: '', roles: [], isAuthenticated: false })
+
+      navigation('/')
+    } catch (err) {}
+  }
 
   return (
     <nav className="navbar navbar-expand-md navbar-dark bg-dark fixed-top py-0">
@@ -139,10 +149,12 @@ const Nav = () => {
                 >
                   Toggle DT toolboxes (<span id="menu_dt_toolboxes_visible_value"></span>)
                 </a>
-                <Link className="dropdown-item" to="/auth/profile">
-                  Profile
-                </Link>
-                <a className="dropdown-item" href="/logout">
+                {currentUser.roles.includes('user') && (
+                  <Link className="dropdown-item" to="/auth/profile">
+                    Profile
+                  </Link>
+                )}
+                <a className="dropdown-item" href="#" onClick={logoutHandler}>
                   Logout
                 </a>
               </div>

@@ -42,7 +42,7 @@ const DataTable = ({ id, ...props }: Config) => {
         deleteBtns?.forEach((btn) => {
           btn.addEventListener('click', (e) => {
             const url = (e!.target as HTMLElement)!.closest('a')!.getAttribute('data-url')
-            axios.post('http://localhost:18000' + url)
+            axios.post(import.meta.env.VITE_SERVER_URL + url)
 
             dt.draw()
           })

@@ -148,9 +148,11 @@ const ServiceListPage = () => {
         columns={columns}
         ajax={{
           url:
-            'http://localhost:18000/storage/service/list.json' +
+            import.meta.env.VITE_SERVER_URL +
+            '/storage/service/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
+          xhrFields: { withCredentials: true },
         }}
         select={
           JSON.parse(sessionStorage.getItem('dt_toolboxes_visible'))

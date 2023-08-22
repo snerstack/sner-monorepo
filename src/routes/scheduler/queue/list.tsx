@@ -68,7 +68,11 @@ const QueueListPage = () => {
 
       <DataTable
         columns={columns}
-        ajax={{ url: 'http://localhost:18000/scheduler/queue/list.json', type: 'POST' }}
+        ajax={{
+          url: import.meta.env.VITE_SERVER_URL + '/scheduler/queue/list.json',
+          type: 'POST',
+          xhrFields: { withCredentials: true },
+        }}
         drawCallback={(settings) => {}}
       />
     </div>

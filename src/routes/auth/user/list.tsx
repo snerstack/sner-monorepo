@@ -45,7 +45,11 @@ const UserListPage = () => {
       <DataTable
         // drawCallback={(settings) => {}}
         columns={columns}
-        ajax={{ url: 'http://localhost:18000/auth/user/list.json', type: 'POST' }}
+        ajax={{
+          url: import.meta.env.VITE_SERVER_URL + '/auth/user/list.json',
+          type: 'POST',
+          xhrFields: { withCredentials: true },
+        }}
       />
     </div>
   )

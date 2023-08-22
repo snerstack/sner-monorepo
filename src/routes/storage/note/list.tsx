@@ -177,9 +177,11 @@ const NoteListPage = () => {
         columns={columns}
         ajax={{
           url:
-            'http://localhost:18000/storage/note/list.json' +
+            import.meta.env.VITE_SERVER_URL +
+            '/storage/note/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
+          xhrFields: { withCredentials: true },
         }}
         select={
           JSON.parse(sessionStorage.getItem('dt_toolboxes_visible'))

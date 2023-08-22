@@ -88,6 +88,8 @@ const HostListPage = () => {
     document
       .querySelector('.abutton_delete_multiid')
       ?.addEventListener('click', () => deleteRow(dt, '/storage/host/delete_multiid'))
+    // $('#host_list_table_toolbar .abutton_freetag_set_multiid').on('click', {'dt': dt_host_list_table, 'route_name': 'storage.host_tag_multiid_route', 'action': 'set'}, Sner.storage.action_freetag_multiid);
+    //   $('#host_list_table_toolbar .abutton_freetag_unset_multiid').on('click', {'dt': dt_host_list_table, 'route_name': 'storage.host_tag_multiid_route', 'action': 'unset'}, Sner.storage.action_freetag_multiid);
   }, [])
 
   return (
@@ -163,9 +165,11 @@ const HostListPage = () => {
         columns={columns}
         ajax={{
           url:
-            'http://localhost:18000/storage/host/list.json' +
+            import.meta.env.VITE_SERVER_URL +
+            '/storage/host/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
+          xhrFields: { withCredentials: true },
         }}
         select={
           JSON.parse(sessionStorage.getItem('dt_toolboxes_visible'))

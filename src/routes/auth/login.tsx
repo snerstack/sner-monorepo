@@ -1,25 +1,32 @@
+import { useState } from 'react'
+import { useRecoilState } from 'recoil'
+import { userState } from '@/atoms/userAtom'
+import httpClient from '@/lib/httpClient'
 import PasswordField from '@/components/Fields/PasswordField'
 import SubmitField from '@/components/Fields/SubmitField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
-import httpClient, { getCSRFToken } from '@/lib/httpClient'
+import { useNavigate } from 'react-router-dom'
 
 const LoginPage = () => {
+  const [_, setUser] = useRecoilState(userState)
   const [username, setUsername] = useState<string>('')
   const [password, setPassword] = useState<string>('')
 
-  const loginHandler = async () => {
-    console.log(username, password)
+  const navigation = useNavigate()
 
+  const loginHandler = async () => {
     const formData = new FormData()
-    formData.append('csrf_token', await getCSRFToken())
     formData.append('username', username)
     formData.append('password', password)
 
-    const resp = await httpClient.post('http://localhost:18000/auth/login', formData)
+    try {
+      const resp = await httpClient.post(import.meta.env.VITE_SERVER_URL + '/auth/login', formData)
 
-    console.log(resp.data)
+      setUser({ ...resp.data, isAuthenticated: true })
+
+      navigation('/')
+    } catch (err) {}
   }
 
   return (

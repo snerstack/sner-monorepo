@@ -64,7 +64,11 @@ const ProfilePage = () => {
                 </a>
               </div>
               <DataTable
-                ajax={{ url: 'http://localhost:18000/auth/profile/webauthn/list.json', type: 'POST' }}
+                ajax={{
+                  url: import.meta.env.VITE_SERVER_URL + 'auth/profile/webauthn/list.json',
+                  type: 'POST',
+                  xhrFields: { withCredentials: true },
+                }}
                 columns={columns}
                 ordering={false}
                 paging={false}

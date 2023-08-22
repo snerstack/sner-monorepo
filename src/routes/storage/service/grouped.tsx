@@ -59,9 +59,11 @@ const ServiceGroupedPage = () => {
         columns={columns}
         ajax={{
           url:
-            'http://localhost:18000/storage/service/grouped.json' +
+            import.meta.env.VITE_SERVER_URL +
+            '/storage/service/grouped.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
+          xhrFields: { withCredentials: true },
         }}
         order={[1, 'desc']}
       />

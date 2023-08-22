@@ -23,6 +23,7 @@
     "recoil": "^0.7.7"
   },
   "devDependencies": {
+    "@niku/vite-env-caster": "^1.0.0",
     "@types/node": "^20.5.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",

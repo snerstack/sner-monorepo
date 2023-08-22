@@ -7,9 +7,12 @@ import './dt-b4.css'
 import './dt-select-b4.css'
 import './fontawesome/css/all.min.css'
 import App from './App.tsx'
+import { RecoilRoot } from 'recoil'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <RecoilRoot>
+      <App />
+    </RecoilRoot>
   </React.StrictMode>,
 )

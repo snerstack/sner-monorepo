@@ -183,9 +183,11 @@ const VulnListPage = () => {
         columns={columns}
         ajax={{
           url:
-            'http://localhost:18000/storage/vuln/list.json' +
+            import.meta.env.VITE_SERVER_URL +
+            '/storage/vuln/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
+          xhrFields: { withCredentials: true },
         }}
         order={[1, 'asc']}
         select={

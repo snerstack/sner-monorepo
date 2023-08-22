@@ -59,7 +59,11 @@ const JobListPage = () => {
       </div>
       <DataTable
         columns={columns}
-        ajax={{ url: 'http://localhost:18000/scheduler/job/list.json', type: 'POST' }}
+        ajax={{
+          url: import.meta.env.VITE_SERVER_URL + '/scheduler/job/list.json',
+          type: 'POST',
+          xhrFields: { withCredentials: true },
+        }}
         drawCallback={(settings) => {}}
       />
     </div>
