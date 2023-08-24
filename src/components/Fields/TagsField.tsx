@@ -1,6 +1,7 @@
+import { capitalize } from '@/utils'
 import clsx from 'clsx'
+import { Dispatch, Fragment, SetStateAction } from 'react'
 import { TagsInput } from 'react-tag-input-component'
-import { Fragment, Dispatch, SetStateAction } from 'react'
 
 const TagsField = ({
   name = '',
@@ -45,7 +46,7 @@ const TagsField = ({
                     }
                   }}
                 >
-                  {tag}
+                  {capitalize(tag)}
                 </a>{' '}
               </Fragment>
             ))}

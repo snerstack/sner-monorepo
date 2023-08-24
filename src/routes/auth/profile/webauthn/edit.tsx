@@ -1,7 +1,8 @@
+import { useState } from 'react'
+
 import SubmitField from '@/components/Fields/SubmitField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
 
 const WebAuthnEditPage = () => {
   const [name, setName] = useState<string>('')

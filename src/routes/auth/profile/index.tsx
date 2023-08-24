@@ -1,10 +1,13 @@
+import env from 'app-env'
+import { renderToString } from 'react-dom/server'
+
+import { Column, ColumnButtons } from '@/lib/DataTables'
+
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
 import EditButton from '@/components/Buttons/EditButton'
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
-import { Column, ColumnButtons } from '@/lib/DataTables'
-import { renderToString } from 'react-dom/server'
 
 const ProfilePage = () => {
   const columns = [
@@ -65,7 +68,7 @@ const ProfilePage = () => {
               </div>
               <DataTable
                 ajax={{
-                  url: import.meta.env.VITE_SERVER_URL + 'auth/profile/webauthn/list.json',
+                  url: env.VITE_SERVER_URL + 'auth/profile/webauthn/list.json',
                   type: 'POST',
                   xhrFields: { withCredentials: true },
                 }}

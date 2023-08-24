@@ -5,5 +5,9 @@
   "singleQuote": true,
   "printWidth": 120,
   "bracketSpacing": true,
-  "endOfLine": "lf"
+  "endOfLine": "lf",
+  "plugins": ["@trivago/prettier-plugin-sort-imports"],
+  "importOrder": ["<THIRD_PARTY_MODULES>", "atoms/", "lib/", "utils/", "components/", "^../(.*)$"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
 }

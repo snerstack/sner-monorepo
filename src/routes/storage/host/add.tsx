@@ -1,9 +1,16 @@
+import { unique } from '@/utils'
+import env from 'app-env'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+
+import httpClient from '@/lib/httpClient'
+
 import SubmitField from '@/components/Fields/SubmitField'
 import TagsField from '@/components/Fields/TagsField'
 import TextAreaField from '@/components/Fields/TextAreaField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
 
 const HostAddPage = () => {
   const [address, setAddress] = useState<string>('')
@@ -12,7 +19,24 @@ const HostAddPage = () => {
   const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState<string>('')
 
-  const addHostHandler = () => {}
+  const navigation = useNavigate()
+
+  const addHostHandler = async () => {
+    const formData = new FormData()
+    formData.append('address', address)
+    formData.append('hostname', hostname)
+    formData.append('os', os)
+    formData.append('tags', tags.join('\n'))
+    formData.append('comment', comment)
+
+    try {
+      await httpClient.post(env.VITE_SERVER_URL + `/storage/host/add`, formData)
+
+      navigation(-1)
+    } catch (err) {
+      toast.error('Error while adding a host.')
+    }
+  }
   return (
     <div>
       <Heading headings={['Hosts', 'Add']} />
@@ -39,7 +63,7 @@ const HostAddPage = () => {
           name="tags"
           label="Tags"
           placeholder="Tags"
-          defaultTags={['Falsepositive', 'Info', 'Report', 'Report:data', 'Reviewed', 'Sslhell', 'Todo']}
+          defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
           horizontal={true}
           _state={tags}
           _setState={setTags}

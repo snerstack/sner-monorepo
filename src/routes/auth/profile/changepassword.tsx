@@ -1,7 +1,8 @@
+import { useState } from 'react'
+
 import PasswordField from '@/components/Fields/PasswordField'
 import SubmitField from '@/components/Fields/SubmitField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
 
 const ChangePasswordPage = () => {
   const [currentPassword, setCurrentPassword] = useState<string>('')

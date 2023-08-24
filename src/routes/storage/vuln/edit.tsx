@@ -1,3 +1,11 @@
+import { unique } from '@/utils'
+import env from 'app-env'
+import { useState } from 'react'
+import { useLoaderData, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+
+import httpClient from '@/lib/httpClient'
+
 import NumberField from '@/components/Fields/NumberField'
 import RadioField from '@/components/Fields/RadioField'
 import SubmitField from '@/components/Fields/SubmitField'
@@ -5,29 +13,49 @@ import TagsField from '@/components/Fields/TagsField'
 import TextAreaField from '@/components/Fields/TextAreaField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
 
 const VulnEditPage = () => {
-  const [address, setAddress] = useState<string>('')
-  const [hostname, setHostname] = useState<string>('')
-  const [port, setPort] = useState<number>(null)
-  const [proto, setProto] = useState<string>('')
-  const [hostId, setHostId] = useState<number | null>(null)
-  const [serviceId, setServiceId] = useState<number | null>(null)
-  const [viaTarget, setViaTarget] = useState<string>('')
-  const [name, setName] = useState<string>('')
-  const [xtype, setXtype] = useState<string>('')
+  const vuln = useLoaderData() as Vuln
+
+  const [hostId, setHostId] = useState<number>(vuln.host_id)
+  const [serviceId, setServiceId] = useState<number>(vuln.service_id || 0)
+  const [viaTarget, setViaTarget] = useState<string>(vuln.via_target || '')
+  const [name, setName] = useState<string>(vuln.name)
+  const [xtype, setXtype] = useState<string>(vuln.xtype || '')
   const [severity, setSeverity] = useState<{ options: string[]; selected: string }>({
     options: ['unknown', 'info', 'low', 'medium', 'high', 'critical'],
-    selected: 'info',
+    selected: vuln.severity,
   })
-  const [descr, setDescr] = useState<string>('')
-  const [data, setData] = useState<string>('')
-  const [refs, setRefs] = useState<string>('')
-  const [tags, setTags] = useState<string[]>([])
-  const [comment, setComment] = useState<string>('')
+  const [descr, setDescr] = useState<string>(vuln.descr || '')
+  const [data, setData] = useState<string>(vuln.data || '')
+  const [refs, setRefs] = useState<string>(vuln.refs.join('\n') || '')
+  const [tags, setTags] = useState<string[]>(vuln.tags)
+  const [comment, setComment] = useState<string>(vuln.comment || '')
 
-  const editVulnHandler = () => {}
+  const navigation = useNavigate()
+
+  const editVulnHandler = async () => {
+    const formData = new FormData()
+    formData.append('host_id', hostId.toString())
+    formData.append('service_id', serviceId === 0 ? '' : serviceId.toString())
+    formData.append('via_target', viaTarget)
+    formData.append('name', name)
+    formData.append('xtype', xtype)
+    formData.append('severity', severity.selected)
+    formData.append('descr', descr)
+    formData.append('data', data)
+    formData.append('refs', refs)
+    formData.append('tags', tags.join('\n'))
+    formData.append('comment', comment)
+
+    try {
+      await httpClient.post(env.VITE_SERVER_URL + `/storage/vuln/edit/${vuln.id}`, formData)
+
+      navigation(-1)
+    } catch (err) {
+      toast.error('Error while editing a vuln.')
+    }
+  }
   return (
     <div>
       <Heading headings={['Vulns', 'Edit']} />
@@ -40,7 +68,8 @@ const VulnEditPage = () => {
           </label>
           <div className="col-sm-10">
             <div className="form-control-plaintext">
-              {address} ({hostname}) {port && port + '/' + proto}
+              {vuln.address} {vuln.hostname && `(${vuln.hostname})`}{' '}
+              {vuln.service_port > 0 && `${vuln.service_port}/${vuln.service_proto}`}
             </div>
           </div>
         </div>
@@ -127,7 +156,7 @@ const VulnEditPage = () => {
           name="tags"
           label="Tags"
           placeholder="Tags"
-          defaultTags={['Falsepositive', 'Info', 'Report', 'Report:data', 'Reviewed', 'Sslhell', 'Todo']}
+          defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
           horizontal={true}
           _state={tags}
           _setState={setTags}

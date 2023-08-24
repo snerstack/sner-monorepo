@@ -1,3 +1,12 @@
+import { escapeHtml } from '@/utils'
+import env from 'app-env'
+import { renderToString } from 'react-dom/server'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useSessionStorage } from 'react-use'
+
+import { Column, ColumnButtons, ColumnSelect } from '@/lib/DataTables'
+import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
+
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
 import DropdownButton from '@/components/Buttons/DropdownButton'
@@ -8,17 +17,13 @@ import ViewButton from '@/components/Buttons/ViewButton'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import { Column, ColumnButtons, ColumnSelect } from '@/lib/DataTables'
-import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
-import { escapeHtml } from '@/utils'
-import { renderToString } from 'react-dom/server'
-import { Link, useSearchParams } from 'react-router-dom'
 
 const NoteListPage = () => {
   const [searchParams] = useSearchParams()
+  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
 
   const columns = [
-    ColumnSelect({ visible: JSON.parse(sessionStorage.getItem('dt_toolboxes_visible')) }),
+    ColumnSelect({ visible: toolboxesVisible }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
@@ -132,7 +137,7 @@ const NoteListPage = () => {
             <a className="btn btn-outline-secondary abutton_freetag_set_multiid" href="#">
               <i className="fas fa-tag"></i>
             </a>
-            {['reviewed', 'todo'].map((tag) => (
+            {env.VITE_NOTE_TAGS.map((tag) => (
               <TagButton tag={tag} key={tag} />
             ))}
           </div>{' '}
@@ -177,17 +182,13 @@ const NoteListPage = () => {
         columns={columns}
         ajax={{
           url:
-            import.meta.env.VITE_SERVER_URL +
+            env.VITE_SERVER_URL +
             '/storage/note/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
         }}
-        select={
-          JSON.parse(sessionStorage.getItem('dt_toolboxes_visible'))
-            ? { style: 'multi', selector: 'td:first-child' }
-            : false
-        }
+        select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
       />
     </div>
   )

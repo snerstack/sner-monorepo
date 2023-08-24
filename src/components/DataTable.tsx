@@ -1,10 +1,18 @@
 import DataTables, { Config } from 'datatables.net-bs4'
 import 'datatables.net-select-bs4'
 import { useEffect, useRef } from 'react'
-import axios from 'axios'
 import { useSearchParams } from 'react-router-dom'
 
-const DataTable = ({ id, ...props }: Config) => {
+interface TableConfig extends Omit<Config, 'ajax'> {
+  id: string
+  ajax: {
+    url: string
+    type: string
+    xhrFields: { withCredentials: boolean }
+  }
+}
+
+const DataTable = ({ id, ...props }: TableConfig) => {
   const tableRef = useRef<HTMLTableElement>(null)
   const [searchParams] = useSearchParams()
 
@@ -36,18 +44,6 @@ const DataTable = ({ id, ...props }: Config) => {
     const dt = new DataTables(tableRef.current!, {
       ...DEFAULT_CONFIG,
       ...props,
-      drawCallback: () => {
-        const deleteBtns = tableRef.current?.querySelectorAll('td a.abutton_submit_dataurl_delete')
-
-        deleteBtns?.forEach((btn) => {
-          btn.addEventListener('click', (e) => {
-            const url = (e!.target as HTMLElement)!.closest('a')!.getAttribute('data-url')
-            axios.post(import.meta.env.VITE_SERVER_URL + url)
-
-            dt.draw()
-          })
-        })
-      },
     })
 
     return () => {

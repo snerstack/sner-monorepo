@@ -1,3 +1,15 @@
+import env from 'app-env'
+import clsx from 'clsx'
+import { renderToString } from 'react-dom/server'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useSessionStorage } from 'react-use'
+import { useRecoilState } from 'recoil'
+
+import { modalState } from '@/atoms/modalAtom'
+
+import { Column, ColumnButtons, ColumnSelect, getTableApi } from '@/lib/DataTables'
+import { deleteRow, getColorForTag, tagAction } from '@/lib/sner/storage'
+
 import Button from '@/components/Buttons/Button'
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
@@ -8,17 +20,15 @@ import TagsDropdownButton from '@/components/Buttons/TagsDropdownButton'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import { Column, ColumnButtons, ColumnSelect, getTableApi } from '@/lib/DataTables'
-import { deleteRow, getColorForTag, tagAction } from '@/lib/sner/storage'
-import { renderToString } from 'react-dom/server'
-import { Link, useSearchParams } from 'react-router-dom'
-import { useEffect } from 'react'
+import Modal from '@/components/Modal'
 
 const HostListPage = () => {
   const [searchParams] = useSearchParams()
+  const [_, setShow] = useRecoilState(modalState)
+  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
 
   const columns = [
-    ColumnSelect({ visible: JSON.parse(sessionStorage.getItem('dt_toolboxes_visible')) }),
+    ColumnSelect({ visible: toolboxesVisible }),
     Column('id', { visible: false }),
     Column('address', {
       render: (data, type, row, meta) => {
@@ -72,25 +82,29 @@ const HostListPage = () => {
     }),
   ]
 
-  useEffect(() => {
-    const dt = getTableApi('host_list_table')
+  const dt = getTableApi('host_list_table')
 
-    document.querySelector('.abutton_selectall')?.addEventListener('click', () => dt.rows({ page: 'current' }).select())
-    document
-      .querySelector('.abutton_selectnone')
-      ?.addEventListener('click', () => dt.rows({ page: 'current' }).deselect())
-    document
-      .querySelectorAll('.abutton_tag_multiid')
-      .forEach((tag) => tag.addEventListener('click', () => tagAction(dt, tag, '/storage/host/tag_multiid', 'set')))
-    document
-      .querySelectorAll('.abutton_untag_multiid')
-      .forEach((tag) => tag.addEventListener('click', () => tagAction(dt, tag, '/storage/host/tag_multiid', 'unset')))
-    document
-      .querySelector('.abutton_delete_multiid')
-      ?.addEventListener('click', () => deleteRow(dt, '/storage/host/delete_multiid'))
-    // $('#host_list_table_toolbar .abutton_freetag_set_multiid').on('click', {'dt': dt_host_list_table, 'route_name': 'storage.host_tag_multiid_route', 'action': 'set'}, Sner.storage.action_freetag_multiid);
-    //   $('#host_list_table_toolbar .abutton_freetag_unset_multiid').on('click', {'dt': dt_host_list_table, 'route_name': 'storage.host_tag_multiid_route', 'action': 'unset'}, Sner.storage.action_freetag_multiid);
-  }, [])
+  document.querySelector('.abutton_selectall')?.addEventListener('click', () => dt.rows({ page: 'current' }).select())
+  document
+    .querySelector('.abutton_selectnone')
+    ?.addEventListener('click', () => dt.rows({ page: 'current' }).deselect())
+  document
+    .querySelectorAll('.abutton_tag_multiid')
+    .forEach((tag) => tag.addEventListener('click', () => tagAction(dt, tag, '/storage/host/tag_multiid', 'set')))
+  document
+    .querySelectorAll('.abutton_untag_multiid')
+    .forEach((tag) => tag.addEventListener('click', () => tagAction(dt, tag, '/storage/host/tag_multiid', 'unset')))
+  document
+    .querySelector('.abutton_delete_multiid')
+    ?.addEventListener('click', () => deleteRow(dt, '/storage/host/delete_multiid'))
+  // $('#host_list_table_toolbar .abutton_freetag_set_multiid').on('click', {'dt': dt_host_list_table, 'route_name': 'storage.host_tag_multiid_route', 'action': 'set'}, Sner.storage.action_freetag_multiid);
+  //   $('#host_list_table_toolbar .abutton_freetag_unset_multiid').on('click', {'dt': dt_host_list_table, 'route_name': 'storage.host_tag_multiid_route', 'action': 'unset'}, Sner.storage.action_freetag_multiid);
+
+  document.querySelectorAll('td.abutton_annotate_dt').forEach((element) => {
+    element.addEventListener('click', (e) => {
+      setShow(true)
+    })
+  })
 
   return (
     <div>
@@ -106,7 +120,7 @@ const HostListPage = () => {
       </Heading>
 
       <div id="host_list_table_toolbar" className="dt_toolbar">
-        <div id="host_list_table_toolbox" className="dt_toolbar_toolbox">
+        <div id="host_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}>
           <div className="btn-group">
             <a className="btn btn-outline-secondary disabled">
               <i className="fas fa-check-square"></i>
@@ -122,7 +136,7 @@ const HostListPage = () => {
             <a className="btn btn-outline-secondary abutton_freetag_set_multiid" href="#">
               <i className="fas fa-tag"></i>
             </a>
-            {['reviewed', 'todo'].map((tag) => (
+            {env.VITE_HOST_TAGS.map((tag) => (
               <TagButton tag={tag} key={tag} />
             ))}
           </div>{' '}
@@ -139,7 +153,7 @@ const HostListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton tags={['reviewed', 'todo']} />
+              <TagsDropdownButton tags={env.VITE_HOST_TAGS} />
             </div>
             <a className="btn btn-outline-secondary abutton_delete_multiid" href="#">
               <i className="fas fa-trash text-danger"></i>
@@ -165,19 +179,17 @@ const HostListPage = () => {
         columns={columns}
         ajax={{
           url:
-            import.meta.env.VITE_SERVER_URL +
+            env.VITE_SERVER_URL +
             '/storage/host/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
         }}
-        select={
-          JSON.parse(sessionStorage.getItem('dt_toolboxes_visible'))
-            ? { style: 'multi', selector: 'td:first-child' }
-            : false
-        }
-        //drawCallback={(settings) => {}}
+        select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
       />
+      <Modal title="Annotate">
+        <></>
+      </Modal>
     </div>
   )
 }

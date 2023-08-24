@@ -1,3 +1,11 @@
+import { unique } from '@/utils'
+import env from 'app-env'
+import { useEffect, useState } from 'react'
+import { useLoaderData, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+
+import httpClient from '@/lib/httpClient'
+
 import NumberField from '@/components/Fields/NumberField'
 import RadioField from '@/components/Fields/RadioField'
 import SubmitField from '@/components/Fields/SubmitField'
@@ -5,21 +13,22 @@ import TagsField from '@/components/Fields/TagsField'
 import TextAreaField from '@/components/Fields/TextAreaField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
 
-const VulnAddPage = () => {
+const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
+  const loaderData = useLoaderData() as Host & Service
+
   const [address, setAddress] = useState<string>('')
   const [hostname, setHostname] = useState<string>('')
-  const [port, setPort] = useState<number | null>(null)
+  const [hostId, setHostId] = useState<number>(0)
+  const [port, setPort] = useState<number>(0)
   const [proto, setProto] = useState<string>('')
-  const [hostId, setHostId] = useState<number | null>(null)
-  const [serviceId, setServiceId] = useState<number | null>(null)
+  const [serviceId, setServiceId] = useState<number>(0)
   const [viaTarget, setViaTarget] = useState<string>('')
   const [name, setName] = useState<string>('')
   const [xtype, setXtype] = useState<string>('')
   const [severity, setSeverity] = useState<{ options: string[]; selected: string }>({
     options: ['unknown', 'info', 'low', 'medium', 'high', 'critical'],
-    selected: 'info',
+    selected: '',
   })
   const [descr, setDescr] = useState<string>('')
   const [data, setData] = useState<string>('')
@@ -27,7 +36,49 @@ const VulnAddPage = () => {
   const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState<string>('')
 
-  const addVulnHandler = () => {}
+  useEffect(() => {
+    if (type === 'host') {
+      setAddress(loaderData.address)
+      setHostname(loaderData.hostname || '')
+      setHostId(loaderData.id)
+    } else {
+      setAddress(loaderData.address)
+      setHostname(loaderData.hostname || '')
+      setHostId(loaderData.host_id)
+      setPort(loaderData.port || 0)
+      setProto(loaderData.proto || '')
+      setServiceId(loaderData.id)
+    }
+  }, [])
+
+  const navigation = useNavigate()
+
+  const addVulnHandler = async () => {
+    const formData = new FormData()
+    formData.append('host_id', hostId.toString())
+    formData.append('service_id', serviceId === 0 ? '' : serviceId.toString())
+    formData.append('via_target', viaTarget)
+    formData.append('name', name)
+    formData.append('xtype', xtype)
+    formData.append('severity', severity.selected)
+    formData.append('descr', descr)
+    formData.append('data', data)
+    formData.append('refs', refs)
+    formData.append('tags', tags.join('\n'))
+    formData.append('comment', comment)
+
+    try {
+      if (type === 'host') {
+        await httpClient.post(env.VITE_SERVER_URL + `/storage/vuln/add/host/${hostId}`, formData)
+      } else {
+        await httpClient.post(env.VITE_SERVER_URL + `/storage/vuln/add/service/${serviceId}`, formData)
+      }
+
+      navigation(-1)
+    } catch (err) {
+      toast.error('Error while adding a vuln.')
+    }
+  }
   return (
     <div>
       <Heading headings={['Vulns', 'Add']} />
@@ -40,7 +91,7 @@ const VulnAddPage = () => {
           </label>
           <div className="col-sm-10">
             <div className="form-control-plaintext">
-              {address} ({hostname}) {port && port + '/' + proto}
+              {address} {hostname && `(${hostname})`} {port && `${port}/${proto}`}
             </div>
           </div>
         </div>
@@ -127,7 +178,7 @@ const VulnAddPage = () => {
           name="tags"
           label="Tags"
           placeholder="Tags"
-          defaultTags={['Falsepositive', 'Info', 'Report', 'Report:data', 'Reviewed', 'Sslhell', 'Todo']}
+          defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
           horizontal={true}
           _state={tags}
           _setState={setTags}

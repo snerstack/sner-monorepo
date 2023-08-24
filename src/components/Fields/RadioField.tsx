@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Fragment, Dispatch, SetStateAction } from 'react'
+import { Dispatch, Fragment, SetStateAction } from 'react'
 
 const RadioField = ({
   name = '',
@@ -37,7 +37,7 @@ const RadioField = ({
                 value={option}
                 id={`${name}-${index}`}
                 checked={option === _state.selected}
-                onChange={(e) => _setState({ ..._state, selected: option })}
+                onChange={() => _setState({ ..._state, selected: option })}
               />
               <label htmlFor={`${name}-${index}`} className="form-check-label">
                 {option}

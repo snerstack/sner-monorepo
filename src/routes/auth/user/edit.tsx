@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import BooleanField from '@/components/Fields/BooleanField'
 import MultiCheckboxField from '@/components/Fields/MultiCheckboxField'
 import PasswordField from '@/components/Fields/PasswordField'
@@ -5,7 +7,6 @@ import SubmitField from '@/components/Fields/SubmitField'
 import TextAreaField from '@/components/Fields/TextAreaField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
 
 const UserEditPage = () => {
   const [username, setUsername] = useState<string>('')

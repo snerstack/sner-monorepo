@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Fragment, Dispatch, SetStateAction } from 'react'
+import { Dispatch, Fragment, SetStateAction } from 'react'
 
 const NumberField = ({
   name = '',
@@ -21,8 +21,8 @@ const NumberField = ({
   errors?: string[]
   required?: boolean
   horizontal?: boolean
-  _state: number | null
-  _setState: Dispatch<SetStateAction<number | null>>
+  _state: number
+  _setState: Dispatch<SetStateAction<number>>
 }) => {
   const HorizontalParent = horizontal ? 'div' : Fragment
   return (
@@ -33,20 +33,12 @@ const NumberField = ({
       <HorizontalParent className={clsx(horizontal && 'col-sm-10')}>
         <input
           className={clsx('form-control', errors.length > 0 && 'is-invalid')}
-          type="tel" // instead of type number, because https://github.com/facebook/react/issues/16554
+          type="number"
           placeholder={placeholder}
           name={name}
           required={required}
-          value={_state ?? ''}
-          onChange={(e) => {
-            const value = e.target.value
-
-            if (!Number.isNaN(parseFloat(value))) {
-              _setState(parseFloat(e.target.value))
-            } else if (e.target.value === '') {
-              _setState(null)
-            }
-          }}
+          value={_state}
+          onChange={(e) => _setState(e.target.valueAsNumber)}
           min={minValue}
         />
         {description && (

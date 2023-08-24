@@ -1,3 +1,11 @@
+import env from 'app-env'
+import { renderToString } from 'react-dom/server'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useSessionStorage } from 'react-use'
+
+import { Column, ColumnButtons, ColumnSelect } from '@/lib/DataTables'
+import { getColorForTag } from '@/lib/sner/storage'
+
 import Button from '@/components/Buttons/Button'
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
@@ -8,16 +16,13 @@ import TagsDropdownButton from '@/components/Buttons/TagsDropdownButton'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import { Column, ColumnButtons, ColumnSelect } from '@/lib/DataTables'
-import { getColorForTag } from '@/lib/sner/storage'
-import { renderToString } from 'react-dom/server'
-import { Link, useSearchParams } from 'react-router-dom'
 
 const ServiceListPage = () => {
   const [searchParams] = useSearchParams()
+  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
 
   const columns = [
-    ColumnSelect({ visible: JSON.parse(sessionStorage.getItem('dt_toolboxes_visible')) }),
+    ColumnSelect({ visible: toolboxesVisible }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
@@ -120,7 +125,7 @@ const ServiceListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton tags={['reviewed', 'todo']} />
+              <TagsDropdownButton tags={env.VITE_SERVICE_TAGS} />
             </div>
             <a className="btn btn-outline-secondary abutton_delete_multiid" href="#">
               <i className="fas fa-trash text-danger"></i>
@@ -148,17 +153,13 @@ const ServiceListPage = () => {
         columns={columns}
         ajax={{
           url:
-            import.meta.env.VITE_SERVER_URL +
+            env.VITE_SERVER_URL +
             '/storage/service/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
         }}
-        select={
-          JSON.parse(sessionStorage.getItem('dt_toolboxes_visible'))
-            ? { style: 'multi', selector: 'td:first-child' }
-            : false
-        }
+        select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
       />
     </div>
   )

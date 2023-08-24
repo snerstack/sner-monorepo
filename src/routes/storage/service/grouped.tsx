@@ -1,10 +1,13 @@
+import env from 'app-env'
+import clsx from 'clsx'
+import { useSearchParams } from 'react-router-dom'
+
+import { Column } from '@/lib/DataTables'
+import { getServiceFilterInfo } from '@/lib/sner/storage'
+
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import { Column } from '@/lib/DataTables'
-import { getServiceFilterInfo } from '@/lib/sner/storage'
-import clsx from 'clsx'
-import { useSearchParams } from 'react-router-dom'
 
 const ServiceGroupedPage = () => {
   const [searchParams] = useSearchParams()
@@ -59,7 +62,7 @@ const ServiceGroupedPage = () => {
         columns={columns}
         ajax={{
           url:
-            import.meta.env.VITE_SERVER_URL +
+            env.VITE_SERVER_URL +
             '/storage/service/grouped.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',

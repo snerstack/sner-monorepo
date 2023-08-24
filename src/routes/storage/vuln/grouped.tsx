@@ -1,9 +1,12 @@
+import env from 'app-env'
+import { useSearchParams } from 'react-router-dom'
+
+import { Column } from '@/lib/DataTables'
+import { getColorForSeverity, getColorForTag, getVulnFilterName } from '@/lib/sner/storage'
+
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import { Column } from '@/lib/DataTables'
-import { getColorForSeverity, getColorForTag, getVulnFilterName } from '@/lib/sner/storage'
-import { useSearchParams } from 'react-router-dom'
 
 const VulnGroupedPage = () => {
   const [searchParams] = useSearchParams()
@@ -72,7 +75,7 @@ const VulnGroupedPage = () => {
         columns={columns}
         ajax={{
           url:
-            import.meta.env.VITE_SERVER_URL +
+            env.VITE_SERVER_URL +
             '/storage/vuln/grouped.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',

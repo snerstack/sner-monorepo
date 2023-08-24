@@ -1,12 +1,16 @@
+import env from 'app-env'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
+
 import { userState } from '@/atoms/userAtom'
+
 import httpClient from '@/lib/httpClient'
+
 import PasswordField from '@/components/Fields/PasswordField'
 import SubmitField from '@/components/Fields/SubmitField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
-import { useNavigate } from 'react-router-dom'
 
 const LoginPage = () => {
   const [_, setUser] = useRecoilState(userState)
@@ -21,7 +25,7 @@ const LoginPage = () => {
     formData.append('password', password)
 
     try {
-      const resp = await httpClient.post(import.meta.env.VITE_SERVER_URL + '/auth/login', formData)
+      const resp = await httpClient.post(env.VITE_SERVER_URL + '/auth/login', formData)
 
       setUser({ ...resp.data, isAuthenticated: true })
 

@@ -1,8 +1,11 @@
-import { useRecoilState } from 'recoil'
-import { userState } from '@/atoms/userAtom'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import clsx from 'clsx'
 import NavLink from './NavLink'
+import env from 'app-env'
+import clsx from 'clsx'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
+
+import { userState } from '@/atoms/userAtom'
+
 import httpClient from '@/lib/httpClient'
 
 const Nav = () => {
@@ -19,7 +22,7 @@ const Nav = () => {
 
   const logoutHandler = async () => {
     try {
-      await httpClient.get(import.meta.env.VITE_SERVER_URL + '/auth/logout')
+      await httpClient.get(env.VITE_SERVER_URL + '/auth/logout')
 
       setCurrentUser({ id: 0, username: '', email: '', roles: [], isAuthenticated: false })
 
@@ -147,7 +150,7 @@ const Nav = () => {
                     location.reload()
                   }}
                 >
-                  Toggle DT toolboxes (<span id="menu_dt_toolboxes_visible_value"></span>)
+                  Toggle DT toolboxes ({sessionStorage.getItem('dt_toolboxes_visible') ?? 'false'})
                 </a>
                 {currentUser.roles.includes('user') && (
                   <Link className="dropdown-item" to="/auth/profile">

@@ -1,7 +1,8 @@
+import { useState } from 'react'
+
 import SubmitField from '@/components/Fields/SubmitField'
 import TextAreaField from '@/components/Fields/TextAreaField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
 
 const QueueEnqueuePage = () => {
   const [targets, setTargets] = useState<string>('')

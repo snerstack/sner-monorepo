@@ -1,11 +1,14 @@
+import env from 'app-env'
+import { renderToString } from 'react-dom/server'
+
+import { Column, ColumnButtons } from '@/lib/DataTables'
+
 import Button from '@/components/Buttons/Button'
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
 import EditButton from '@/components/Buttons/EditButton'
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
-import { Column, ColumnButtons } from '@/lib/DataTables'
-import { renderToString } from 'react-dom/server'
 
 const QueueListPage = () => {
   const columns = [
@@ -69,7 +72,7 @@ const QueueListPage = () => {
       <DataTable
         columns={columns}
         ajax={{
-          url: import.meta.env.VITE_SERVER_URL + '/scheduler/queue/list.json',
+          url: env.VITE_SERVER_URL + '/scheduler/queue/list.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
         }}

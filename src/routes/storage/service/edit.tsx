@@ -1,24 +1,52 @@
+import { unique } from '@/utils'
+import env from 'app-env'
+import { useState } from 'react'
+import { useLoaderData, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+
+import httpClient from '@/lib/httpClient'
+
 import NumberField from '@/components/Fields/NumberField'
 import SubmitField from '@/components/Fields/SubmitField'
 import TagsField from '@/components/Fields/TagsField'
 import TextAreaField from '@/components/Fields/TextAreaField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
 
 const ServiceEditPage = () => {
-  const [address, setAddress] = useState<string>('')
-  const [hostname, setHostname] = useState<string>('')
-  const [hostId, setHostId] = useState<number | null>(null)
-  const [proto, setProto] = useState<string>('')
-  const [port, setPort] = useState<number | null>(null)
-  const [state, setState] = useState<string>('')
-  const [name, setName] = useState<string>('')
-  const [info, setInfo] = useState<string>('')
-  const [tags, setTags] = useState<string[]>([])
-  const [comment, setComment] = useState<string>('')
+  const service = useLoaderData() as Service
 
-  const editServiceHandler = () => {}
+  const [hostId, setHostId] = useState<number>(service.host_id)
+  const [proto, setProto] = useState<string>(service.proto || '')
+  const [port, setPort] = useState<number>(service.port)
+  const [state, setState] = useState<string>(service.state || '')
+  const [name, setName] = useState<string>(service.name || '')
+  const [info, setInfo] = useState<string>(service.info || '')
+  const [tags, setTags] = useState<string[]>(service.tags)
+  const [comment, setComment] = useState<string>(service.comment || '')
+
+  const navigation = useNavigate()
+
+  const editServiceHandler = async () => {
+    const formData = new FormData()
+    formData.append('host_id', hostId.toString())
+    formData.append('proto', proto)
+    formData.append('port', port.toString())
+    formData.append('state', state)
+    formData.append('name', name)
+    formData.append('info', info)
+    formData.append('tags', tags.join('\n'))
+    formData.append('comment', comment)
+
+    try {
+      await httpClient.post(env.VITE_SERVER_URL + `/storage/service/edit/${service.id}`, formData)
+
+      navigation(-1)
+    } catch (err) {
+      toast.error('Error while editing a service.')
+    }
+  }
+
   return (
     <div>
       <Heading headings={['Services', 'Edit']} />
@@ -31,7 +59,7 @@ const ServiceEditPage = () => {
           </label>
           <div className="col-sm-10">
             <div className="form-control-plaintext">
-              {address} ({hostname})
+              {service.address} {service.hostname && `(${service.hostname})`}
             </div>
           </div>
         </div>
@@ -78,7 +106,7 @@ const ServiceEditPage = () => {
           name="tags"
           label="Tags"
           placeholder="Tags"
-          defaultTags={['Falsepositive', 'Info', 'Report', 'Report:data', 'Reviewed', 'Sslhell', 'Todo']}
+          defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
           horizontal={true}
           _state={tags}
           _setState={setTags}

@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Fragment, Dispatch, SetStateAction } from 'react'
+import { Dispatch, Fragment, SetStateAction } from 'react'
 
 const BooleanField = ({
   name = '',

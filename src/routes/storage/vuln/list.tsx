@@ -1,3 +1,18 @@
+import { escapeHtml } from '@/utils'
+import env from 'app-env'
+import { renderToString } from 'react-dom/server'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useSessionStorage } from 'react-use'
+
+import { Column, ColumnButtons, ColumnSelect } from '@/lib/DataTables'
+import {
+  getColorForSeverity,
+  getColorForTag,
+  getLinksForService,
+  getTextForRef,
+  getUrlForRef,
+} from '@/lib/sner/storage'
+
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
 import DropdownButton from '@/components/Buttons/DropdownButton'
@@ -8,16 +23,13 @@ import TagsDropdownButton from '@/components/Buttons/TagsDropdownButton'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import { Column, ColumnButtons, ColumnSelect } from '@/lib/DataTables'
-import { getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
-import { renderToString } from 'react-dom/server'
-import { Link, useSearchParams } from 'react-router-dom'
 
 const VulnListPage = () => {
   const [searchParams] = useSearchParams()
+  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
 
   const columns = [
-    ColumnSelect({ visible: JSON.parse(sessionStorage.getItem('dt_toolboxes_visible')) }),
+    ColumnSelect({ visible: toolboxesVisible }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
@@ -28,7 +40,30 @@ const VulnListPage = () => {
     Column('host_hostname'),
     Column('service_proto', { visible: false }),
     Column('service_port', { visible: false }),
-    Column('service'),
+    Column('service', {
+      className: 'service_endpoint_dropdown',
+      render: (data, type, row, meta) => {
+        if (!row['service']) return ''
+
+        const { host_address, host_hostname, service_proto, service_port } = row
+
+        let linkElements = ''
+
+        for (const link of getLinksForService(host_address, host_hostname, service_proto, service_port)) {
+          linkElements += `<span class="dropdown-item"><i class="far fa-clipboard" title="Copy to clipboard"></i> <a rel="noreferrer" href=${escapeHtml(
+            link,
+          )}>${escapeHtml(link)}</a></span>`
+        }
+
+        return `<div class="dropdown d-flex">
+            <a class="flex-fill" data-toggle="dropdown">${row['service']}</a>
+            <div class="dropdown-menu">
+            <h6 class="dropdown-header">Service endpoint URIs</h6>
+            ${linkElements}
+            </div>
+        </div>`
+      },
+    }),
     Column('via_target', { visible: JSON.parse(sessionStorage.getItem('dt_viatarget_column_visible')) }),
     Column('name', {
       render: (data, type, row, meta) => {
@@ -130,7 +165,7 @@ const VulnListPage = () => {
             <a className="btn btn-outline-secondary abutton_freetag_set_multiid" href="#">
               <i className="fas fa-tag"></i>
             </a>
-            {['info', 'report', 'report:data', 'todo', 'falsepositive'].map((tag) => (
+            {env.VITE_VULN_TAGS.map((tag) => (
               <TagButton tag={tag} key={tag} />
             ))}
           </div>{' '}
@@ -183,18 +218,14 @@ const VulnListPage = () => {
         columns={columns}
         ajax={{
           url:
-            import.meta.env.VITE_SERVER_URL +
+            env.VITE_SERVER_URL +
             '/storage/vuln/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
         }}
         order={[1, 'asc']}
-        select={
-          JSON.parse(sessionStorage.getItem('dt_toolboxes_visible'))
-            ? { style: 'multi', selector: 'td:first-child' }
-            : false
-        }
+        select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
       />
     </div>
   )

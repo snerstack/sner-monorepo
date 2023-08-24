@@ -1,16 +1,17 @@
+import { useState } from 'react'
+
 import BooleanField from '@/components/Fields/BooleanField'
 import NumberField from '@/components/Fields/NumberField'
 import SubmitField from '@/components/Fields/SubmitField'
 import TextAreaField from '@/components/Fields/TextAreaField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
-import { useState } from 'react'
 
 const QueueEditPage = () => {
   const [name, setName] = useState<string>('')
   const [config, setConfig] = useState<string>('')
-  const [groupSize, setGroupSize] = useState<number | null>(1)
-  const [priority, setPriority] = useState<number | null>(null)
+  const [groupSize, setGroupSize] = useState<number>(1)
+  const [priority, setPriority] = useState<number>(0)
   const [active, setActive] = useState<boolean>(false)
   const [requirements, setRequirements] = useState<string>('')
 
