@@ -1,3 +1,10 @@
+import env from 'app-env'
+import { Api } from 'datatables.net-bs4'
+import { toast } from 'react-toastify'
+
+import { getTableApi } from '../DataTables'
+import httpClient from '../httpClient'
+
 export const getColorForSeverity = (severity: string): string => {
   switch (severity) {
     case 'critical':
@@ -77,7 +84,7 @@ export const getLinksForService = (
   hostAddress: string,
   hostHostname: string | null,
   serviceProto: string | null,
-  servicePort: string | null,
+  servicePort: string | number | null,
 ): string[] => {
   const urls = []
 
@@ -117,8 +124,8 @@ export const getVulnFilterName = (name: string): string => {
   return 'Vuln.name==' + encodeRFC3986URIComponent(JSON.stringify(name))
 }
 
-export const selectIdsFormData = (dt) => {
-  const data = {}
+export const getSelectedIdsFormData = (dt: Api<string>): { [key: string]: number } => {
+  const data: { [key: string]: number } = {}
   let i = 0
   dt.rows({ selected: true })
     .data()
@@ -126,32 +133,60 @@ export const selectIdsFormData = (dt) => {
       data['ids-' + i] = item['id']
       i++
     })
+
   return data
 }
 
-export const tagAction = (dt, tag: Element, url: string, action: string) => {
-  const data = selectIdsFormData(dt)
-  if (!data) {
-    //toastr.warning('No items selected');
+export const tagAction = ({
+  tableId,
+  tag,
+  url,
+  action,
+}: {
+  tableId: string
+  tag: string
+  url: string
+  action: string
+}) => {
+  const ids = getSelectedIdsFormData(getTableApi(tableId))
+
+  if (!Object.values(ids).length) {
+    toast.warn('No items selected')
     return
   }
 
-  data['tag'] = tag.getAttribute('data-tag')
-  data['action'] = action
+  const formData = new FormData()
 
-  console.log(data)
+  formData.append('tag', tag)
+  formData.append('action', action)
+
+  for (const key in ids) {
+    formData.append(key, ids[key].toString())
+  }
+
+  httpClient.post(env.VITE_SERVER_URL + url, formData).catch(() => toast.error('Error while adding a tag'))
 }
 
-export const deleteRow = (dt, url: string) => {
-  if (!confirm('Really delete?')) {
+export const deleteRow = (tableId: string, url: string) => {
+  if (!confirm('Really delete?')) return
+
+  const api = getTableApi(tableId)
+
+  const ids = getSelectedIdsFormData(api)
+
+  if (!Object.values(ids).length) {
+    toast.warn('No items selected')
     return
   }
 
-  const data = selectIdsFormData(dt)
-  if (!data) {
-    //toastr.warning('No items selected');
-    return
+  const formData = new FormData()
+
+  for (const key in ids) {
+    formData.append(key, ids[key].toString())
   }
 
-  console.log(data)
+  httpClient
+    .post(env.VITE_SERVER_URL + url, formData)
+    .then(() => api.draw())
+    .catch(() => toast.error('Error while deleting a row'))
 }

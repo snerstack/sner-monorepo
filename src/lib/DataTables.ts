@@ -1,9 +1,17 @@
 import DataTable from 'datatables.net-bs4'
+import { ReactElement } from 'react'
+import { createRoot } from 'react-dom/client'
 
 export const getTableApi = (id: string) => {
   const table = DataTable.tables().filter((dt) => dt.id === id)[0]
 
   return new DataTable.Api(table)
+}
+
+export const renderElements = (parent: HTMLElement, elements: ReactElement | ReactElement[]) => {
+  const root = createRoot(parent!)
+
+  root.render(elements)
 }
 
 export const Column = (name: string, extra?: any) => {
@@ -12,6 +20,7 @@ export const Column = (name: string, extra?: any) => {
     title: name,
     name: name,
     render: DataTable.render.text(),
+    defaultContent: '',
     ...extra,
   }
 }

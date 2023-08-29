@@ -1,4 +1,6 @@
 import HostViewPage from './routes/storage/host/view'
+import NoteViewPage from './routes/storage/note/view'
+import VulnViewPage from './routes/storage/vuln/view'
 import BaseLayout from '@/layouts/BaseLayout'
 import NotAuthorizedPage from '@/routes/403'
 import NotFoundPage from '@/routes/404'
@@ -174,6 +176,11 @@ export default function App() {
                 element={<VulnEditPage />}
                 loader={async ({ params: { id } }) => requestDataHandler(`/storage/vuln/view/${id}.json`)}
               />
+              <Route
+                path="view/:id"
+                element={<VulnViewPage />}
+                loader={async ({ params: { id } }) => requestDataHandler(`/storage/vuln/view/${id}.json`)}
+              />
               <Route path="grouped" element={<VulnGroupedPage />} />
             </Route>
             <Route path="note">
@@ -193,6 +200,11 @@ export default function App() {
               <Route
                 path="edit/:id"
                 element={<NoteEditPage />}
+                loader={async ({ params: { id } }) => requestDataHandler(`/storage/note/view/${id}.json`)}
+              />
+              <Route
+                path="view/:id"
+                element={<NoteViewPage />}
                 loader={async ({ params: { id } }) => requestDataHandler(`/storage/note/view/${id}.json`)}
               />
             </Route>

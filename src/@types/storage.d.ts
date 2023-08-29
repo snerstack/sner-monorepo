@@ -35,6 +35,10 @@ interface Vuln {
   service_id: number
   service_proto: string
   service_port: number
+  created: string
+  modified: string
+  rescan_time: string
+  import_time: string
   via_target: string
   name: string
   xtype: string
@@ -55,8 +59,26 @@ interface Note {
   service_proto: string
   service_port: number
   via_target: string
+  created: string
+  modified: string
+  import_time: string
   xtype: string
   data: string
   tags: string[]
   comment: string
+}
+
+interface Annotate {
+  show: boolean
+  tags: string[]
+  comment: string
+  tableId: string
+  url: string
+}
+
+interface MultipleTag {
+  show: boolean
+  action: 'set' | 'unset'
+  tableId: string
+  url: string
 }

@@ -1,7 +1,7 @@
 import env from 'app-env'
-import { renderToString } from 'react-dom/server'
+import { Link, useNavigate } from 'react-router-dom'
 
-import { Column, ColumnButtons } from '@/lib/DataTables'
+import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
@@ -10,19 +10,20 @@ import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
 
 const ProfilePage = () => {
+  const navigate = useNavigate()
+
   const columns = [
     Column('id', { visible: false }),
     Column('name'),
     Column('registered'),
     ColumnButtons({
-      render: (data, type, row, meta) =>
-        renderToString(
-          ButtonGroup({
-            children: [
-              EditButton({ url: `auth/profile/webauthn/edit/${row['id']}` }),
-              DeleteButton({ url: `auth/profile/webauthn/delete/${row['id']}` }),
-            ],
-          }),
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <ButtonGroup>
+            <EditButton url={`auth/profile/webauthn/edit/${row['id']}`} navigate={navigate} />
+            <DeleteButton url={`auth/profile/webauthn/delete/${row['id']}`} />
+          </ButtonGroup>,
         ),
     }),
   ]
@@ -36,9 +37,9 @@ const ProfilePage = () => {
             <th>username</th>
             <td>
               user.username{' '}
-              <a className="btn btn-outline-secondary" href="/auth/profile/changepassword">
+              <Link className="btn btn-outline-secondary" to="/auth/profile/changepassword">
                 Change password
-              </a>
+              </Link>
             </td>
           </tr>
 
@@ -67,6 +68,7 @@ const ProfilePage = () => {
                 </a>
               </div>
               <DataTable
+                id="profile_webauthn_table"
                 ajax={{
                   url: env.VITE_SERVER_URL + 'auth/profile/webauthn/list.json',
                   type: 'POST',

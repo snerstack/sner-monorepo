@@ -1,7 +1,7 @@
 import env from 'app-env'
-import { renderToString } from 'react-dom/server'
+import { useNavigate } from 'react-router-dom'
 
-import { Column, ColumnButtons } from '@/lib/DataTables'
+import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
@@ -10,27 +10,37 @@ import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
 
 const UserListPage = () => {
+  const navigate = useNavigate()
+
   const columns = [
     Column('id'),
     Column('username'),
     Column('email'),
     Column('apikey', {
-      render: (data, type, row, meta) =>
-        `${row['apikey']} <a class="btn btn-outline-secondary btn-sm abutton_userapikey" data-url="/auth/user/apikey/${
-          row['id']
-        }/${row['apikey'] ? 'revoke' : 'generate'}">${row['apikey'] ? 'revoke' : 'generate'}</a>`,
+      reatedCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <>
+            {row['apikey']}{' '}
+            <a
+              className="btn btn-outline-secondary btn-sm abutton_userapikey"
+              data-url={`/auth/user/apikey/${row['id']}/${row['apikey'] ? 'revoke' : 'generate'}`}
+            >
+              {row['apikey'] ? 'revoke' : 'generate'}
+            </a>
+          </>,
+        ),
     }),
     Column('roles'),
     Column('active'),
     ColumnButtons({
-      render: (data, type, row, meta) =>
-        renderToString(
-          ButtonGroup({
-            children: [
-              EditButton({ url: `/auth/user/edit/${row['id']}` }),
-              DeleteButton({ url: `/auth/user/delete/${row['id']}` }),
-            ],
-          }),
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <ButtonGroup>
+            <EditButton url={`/auth/user/edit/${row['id']}`} navigate={navigate} />
+            <DeleteButton url={`/auth/user/delete/${row['id']}`} />
+          </ButtonGroup>,
         ),
     }),
   ]
@@ -46,7 +56,7 @@ const UserListPage = () => {
       </Heading>
 
       <DataTable
-        // drawCallback={(settings) => {}}
+        id="user_list_table"
         columns={columns}
         ajax={{
           url: env.VITE_SERVER_URL + '/auth/user/list.json',

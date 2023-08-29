@@ -1,7 +1,9 @@
 import env from 'app-env'
-import { useSearchParams } from 'react-router-dom'
+import clsx from 'clsx'
+import { Fragment } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { Column } from '@/lib/DataTables'
+import { Column, renderElements } from '@/lib/DataTables'
 import { getColorForSeverity, getColorForTag, getVulnFilterName } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
@@ -10,24 +12,43 @@ import Heading from '@/components/Heading'
 
 const VulnGroupedPage = () => {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   const columns = [
     Column('name', {
-      render: (data, type, row, meta) =>
-        `<a href="/storage/vuln/list?filter=${getVulnFilterName(row['name'])}">${row['name']}</a>`,
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <a
+            href={`/storage/vuln/list?filter=${getVulnFilterName(row['name'])}`}
+            onClick={(e) => {
+              e.preventDefault()
+              navigate(`/storage/vuln/list?filter=${getVulnFilterName(row['name'])}`)
+            }}
+          >
+            {row['name']}
+          </a>,
+        ),
     }),
     Column('severity', {
-      render: (data, type, row, meta) => {
-        return `<span class="badge ${getColorForSeverity(row['severity'])}">${row['severity']}</span> `
-      },
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <span className={clsx('badge', getColorForSeverity(row['severity']))}>{row['severity']}</span>,
+        ),
     }),
     Column('tags', {
-      render: (data, type, row, meta) => {
-        let tags = ''
-        row['tags'].forEach((tag) => (tags += `<span class="badge ${getColorForTag(tag)} tag-badge">${tag}</span> `))
-
-        return tags
-      },
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <>
+            {row['tags'].map((tag: string) => (
+              <Fragment key={tag}>
+                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+              </Fragment>
+            ))}
+          </>,
+        ),
     }),
     Column('cnt_vulns'),
   ]
@@ -81,7 +102,6 @@ const VulnGroupedPage = () => {
           type: 'POST',
           xhrFields: { withCredentials: true },
         }}
-        order={[1, 'desc']}
       />
     </div>
   )

@@ -1,8 +1,8 @@
 import env from 'app-env'
 import clsx from 'clsx'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
-import { Column } from '@/lib/DataTables'
+import { Column, renderElements } from '@/lib/DataTables'
 import { getServiceFilterInfo } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
@@ -11,15 +11,30 @@ import Heading from '@/components/Heading'
 
 const ServiceGroupedPage = () => {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   const columns = [
     Column('info', {
-      render: (data, type, row, meta) => {
-        return `
-				<a href="/storage/service/list?filter=${getServiceFilterInfo(row['info'])}">
-				${row['info'] ? row['info'] : `<em>null</em> <i class="fas fa-exclamation-circle text-warning"></i>`}
-				</a>`
-      },
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <a
+            href={`/storage/service/list?filter=${getServiceFilterInfo(row['info'])}`}
+            onClick={(e) => {
+              e.preventDefault()
+              navigate(`/storage/service/list?filter=${getServiceFilterInfo(row['info'])}`)
+            }}
+          >
+            {row['info'] ? (
+              row['info']
+            ) : (
+              <>
+                <em>null</em>
+                <i className="fas fa-exclamation-circle text-warning"></i>
+              </>
+            )}
+          </a>,
+        ),
     }),
     Column('cnt_services'),
   ]
@@ -39,20 +54,20 @@ const ServiceGroupedPage = () => {
           <div className="btn-group">
             <a className="btn btn-outline-secondary disabled">crop at:</a>
             {['1', '2', '3', '4', '5'].map((crop) => (
-              <a
+              <Link
                 className={clsx('btn btn-outline-secondary', searchParams.get('crop') === crop && 'active')}
-                href={`/storage/service/grouped?crop=${crop}`}
+                to={`/storage/service/grouped?crop=${crop}`}
                 key={crop}
               >
                 {crop}
-              </a>
+              </Link>
             ))}
-            <a
+            <Link
               className={clsx('btn btn-outline-secondary', !searchParams.get('crop') && 'active')}
-              href="/storage/service/grouped"
+              to="/storage/service/grouped"
             >
               no crop
-            </a>
+            </Link>
           </div>
         </div>
         <FilterForm url="/storage/service/grouped" />

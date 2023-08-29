@@ -1,14 +1,11 @@
 import env from 'app-env'
 import clsx from 'clsx'
-import { renderToString } from 'react-dom/server'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Fragment, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useSessionStorage } from 'react-use'
-import { useRecoilState } from 'recoil'
 
-import { modalState } from '@/atoms/modalAtom'
-
-import { Column, ColumnButtons, ColumnSelect, getTableApi } from '@/lib/DataTables'
-import { deleteRow, getColorForTag, tagAction } from '@/lib/sner/storage'
+import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
+import { deleteRow, getColorForTag } from '@/lib/sner/storage'
 
 import Button from '@/components/Buttons/Button'
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
@@ -20,20 +17,44 @@ import TagsDropdownButton from '@/components/Buttons/TagsDropdownButton'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import Modal from '@/components/Modal'
+import AnnotateModal from '@/components/Modals/AnnotateModal'
+import MultipleTagModal from '@/components/Modals/MultipleTagModal'
 
 const HostListPage = () => {
   const [searchParams] = useSearchParams()
-  const [_, setShow] = useRecoilState(modalState)
   const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
+  const navigate = useNavigate()
+  const [annotate, setAnnotate] = useState<Annotate>({
+    show: false,
+    tags: [],
+    comment: '',
+    tableId: '',
+    url: '',
+  })
+  const [multipleTag, setMultipleTag] = useState<MultipleTag>({
+    show: false,
+    action: 'set',
+    tableId: '',
+    url: '',
+  })
 
   const columns = [
     ColumnSelect({ visible: toolboxesVisible }),
     Column('id', { visible: false }),
     Column('address', {
-      render: (data, type, row, meta) => {
-        return `<a href="/storage/host/view/${row['id']}">${row['address']}</a>`
-      },
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <a
+            href={`/storage/host/view/${row['id']}`}
+            onClick={(e) => {
+              e.preventDefault()
+              navigate(`/storage/host/view/${row['id']}`)
+            }}
+          >
+            {data}
+          </a>,
+        ),
     }),
     Column('hostname'),
     Column('os'),
@@ -41,70 +62,81 @@ const HostListPage = () => {
     Column('cnt_v'),
     Column('cnt_n'),
     Column('tags', {
-      render: (data, type, row, meta) => {
-        let tags = ''
-        row['tags'].forEach((tag) => (tags += `<span class="badge ${getColorForTag(tag)} tag-badge">${tag}</span> `))
-
-        return tags
-      },
+      className: 'abutton_annotate_dt',
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <div
+            onDoubleClick={() =>
+              setAnnotate({
+                show: true,
+                tags: data,
+                comment: row['comment'],
+                tableId: 'host_list_table',
+                url: `/storage/host/annotate/${row['id']}`,
+              })
+            }
+          >
+            {row['tags'].map((tag: string) => (
+              <Fragment key={tag}>
+                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+              </Fragment>
+            ))}
+          </div>,
+        ),
     }),
-    Column('comment', { className: 'abutton_annotate_dt forcewrap', title: 'cmnt' }),
+    Column('comment', {
+      className: 'abutton_annotate_dt forcewrap',
+      title: 'cmnt',
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <div
+            onDoubleClick={() =>
+              setAnnotate({
+                show: true,
+                tags: row['tags'],
+                comment: row['comment'],
+                tableId: 'host_list_table',
+                url: `/storage/host/annotate/${row['id']}`,
+              })
+            }
+          >
+            {row['comment']}
+          </div>,
+        ),
+    }),
     ColumnButtons({
-      render: (data, type, row, meta) =>
-        renderToString(
-          ButtonGroup({
-            children: [
-              DropdownButton({
-                title: 'More data',
-                options: [
-                  {
-                    name: 'created',
-                    data: row['created'],
-                  },
-                  {
-                    name: 'modified',
-                    data: row['modified'],
-                  },
-                  {
-                    name: 'rescan_time',
-                    data: row['rescan_time'],
-                  },
-                ],
-              }),
-              Button({ name: '+S', title: 'Add service', url: `/storage/service/add/${row['id']}` }),
-              Button({ name: '+V', title: 'Add vuln', url: `/storage/vuln/add/host/${row['id']}` }),
-              Button({ name: '+N', title: 'Add note', url: `/storage/note/add/host/${row['id']}` }),
-              EditButton({ url: `/storage/host/edit/${row['id']}` }),
-              DeleteButton({ url: `/storage/host/delete/${row['id']}` }),
-            ],
-          }),
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <ButtonGroup>
+            <DropdownButton
+              title="More data"
+              options={[
+                {
+                  name: 'created',
+                  data: row['created'],
+                },
+                {
+                  name: 'modified',
+                  data: row['modified'],
+                },
+                {
+                  name: 'rescan_time',
+                  data: row['rescan_time'],
+                },
+              ]}
+            />
+            <Button name="+S" title="Add service" url={`/storage/service/add/${row['id']}`} navigate={navigate} />
+            <Button name="+V" title="Add vuln" url={`/storage/vuln/add/host/${row['id']}`} navigate={navigate} />
+            <Button name="+N" title="Add note" url={`/storage/note/add/host/${row['id']}`} navigate={navigate} />
+            <EditButton url={`/storage/host/edit/${row['id']}`} navigate={navigate} />
+            <DeleteButton url={`/storage/host/delete/${row['id']}`} />
+          </ButtonGroup>,
         ),
     }),
   ]
-
-  const dt = getTableApi('host_list_table')
-
-  document.querySelector('.abutton_selectall')?.addEventListener('click', () => dt.rows({ page: 'current' }).select())
-  document
-    .querySelector('.abutton_selectnone')
-    ?.addEventListener('click', () => dt.rows({ page: 'current' }).deselect())
-  document
-    .querySelectorAll('.abutton_tag_multiid')
-    .forEach((tag) => tag.addEventListener('click', () => tagAction(dt, tag, '/storage/host/tag_multiid', 'set')))
-  document
-    .querySelectorAll('.abutton_untag_multiid')
-    .forEach((tag) => tag.addEventListener('click', () => tagAction(dt, tag, '/storage/host/tag_multiid', 'unset')))
-  document
-    .querySelector('.abutton_delete_multiid')
-    ?.addEventListener('click', () => deleteRow(dt, '/storage/host/delete_multiid'))
-  // $('#host_list_table_toolbar .abutton_freetag_set_multiid').on('click', {'dt': dt_host_list_table, 'route_name': 'storage.host_tag_multiid_route', 'action': 'set'}, Sner.storage.action_freetag_multiid);
-  //   $('#host_list_table_toolbar .abutton_freetag_unset_multiid').on('click', {'dt': dt_host_list_table, 'route_name': 'storage.host_tag_multiid_route', 'action': 'unset'}, Sner.storage.action_freetag_multiid);
-
-  document.querySelectorAll('td.abutton_annotate_dt').forEach((element) => {
-    element.addEventListener('click', (e) => {
-      setShow(true)
-    })
-  })
 
   return (
     <div>
@@ -122,26 +154,73 @@ const HostListPage = () => {
       <div id="host_list_table_toolbar" className="dt_toolbar">
         <div id="host_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}>
           <div className="btn-group">
-            <a className="btn btn-outline-secondary disabled">
+            <a
+              className="btn btn-outline-secondary disabled"
+              onClick={() =>
+                setMultipleTag({
+                  show: true,
+                  action: 'set',
+                  tableId: 'host_list_table',
+                  url: '/storage/host/tag_multiid',
+                })
+              }
+            >
               <i className="fas fa-check-square"></i>
             </a>
-            <a className="btn btn-outline-secondary abutton_selectall" href="#" title="select all">
+            <a
+              className="btn btn-outline-secondary"
+              href="#"
+              title="select all"
+              onClick={() => {
+                const dt = getTableApi('host_list_table')
+                dt.rows({ page: 'current' }).select()
+              }}
+            >
               All
             </a>
-            <a className="btn btn-outline-secondary abutton_selectnone" href="#" title="unselect all">
+            <a
+              className="btn btn-outline-secondary abutton_selectnone"
+              href="#"
+              title="unselect all"
+              onClick={() => {
+                const dt = getTableApi('host_list_table')
+                dt.rows({ page: 'current' }).deselect()
+              }}
+            >
               None
             </a>
           </div>{' '}
           <div className="btn-group">
-            <a className="btn btn-outline-secondary abutton_freetag_set_multiid" href="#">
+            <a
+              className="btn btn-outline-secondary"
+              href="#"
+              onClick={() =>
+                setMultipleTag({
+                  show: true,
+                  action: 'set',
+                  tableId: 'host_list_table',
+                  url: '/storage/host/tag_multiid',
+                })
+              }
+            >
               <i className="fas fa-tag"></i>
             </a>
             {env.VITE_HOST_TAGS.map((tag) => (
-              <TagButton tag={tag} key={tag} />
+              <TagButton tag={tag} key={tag} url="/storage/host/tag_multiid" tableId="host_list_table" />
             ))}
           </div>{' '}
           <div className="btn-group">
-            <a className="btn btn-outline-secondary abutton_freetag_unset_multiid text-secondary">
+            <a
+              className="btn btn-outline-secondary text-secondary"
+              onClick={() =>
+                setMultipleTag({
+                  show: true,
+                  action: 'unset',
+                  tableId: 'host_list_table',
+                  url: '/storage/host/tag_multiid',
+                })
+              }
+            >
               <i className="fas fa-eraser"></i>
             </a>
             <div className="btn-group">
@@ -153,9 +232,13 @@ const HostListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton tags={env.VITE_HOST_TAGS} />
+              <TagsDropdownButton tags={env.VITE_HOST_TAGS} url="/storage/host/tag_multiid" tableId="host_list_table" />
             </div>
-            <a className="btn btn-outline-secondary abutton_delete_multiid" href="#">
+            <a
+              className="btn btn-outline-secondary"
+              href="#"
+              onClick={() => deleteRow('host_list_table', '/storage/host/delete_multiid')}
+            >
               <i className="fas fa-trash text-danger"></i>
             </a>
           </div>{' '}
@@ -187,9 +270,9 @@ const HostListPage = () => {
         }}
         select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
       />
-      <Modal title="Annotate">
-        <></>
-      </Modal>
+
+      <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
+      <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
     </div>
   )
 }

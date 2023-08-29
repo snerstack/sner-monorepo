@@ -1,11 +1,12 @@
 import { escapeHtml } from '@/utils'
 import env from 'app-env'
-import { renderToString } from 'react-dom/server'
-import { Link, useSearchParams } from 'react-router-dom'
+import clsx from 'clsx'
+import { Fragment, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useSessionStorage } from 'react-use'
 
-import { Column, ColumnButtons, ColumnSelect } from '@/lib/DataTables'
-import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
+import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
+import { deleteRow, getColorForTag, getLinksForService } from '@/lib/sner/storage'
 
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
@@ -17,48 +18,79 @@ import ViewButton from '@/components/Buttons/ViewButton'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
+import AnnotateModal from '@/components/Modals/AnnotateModal'
+import MultipleTagModal from '@/components/Modals/MultipleTagModal'
 
 const NoteListPage = () => {
   const [searchParams] = useSearchParams()
   const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
+  const [viaTargetVisible] = useSessionStorage('dt_viatarget_column_visible')
+  const navigate = useNavigate()
+  const [annotate, setAnnotate] = useState<Annotate>({
+    show: false,
+    tags: [],
+    comment: '',
+    tableId: '',
+    url: '',
+  })
+  const [multipleTag, setMultipleTag] = useState<MultipleTag>({
+    show: false,
+    action: 'set',
+    tableId: '',
+    url: '',
+  })
 
   const columns = [
     ColumnSelect({ visible: toolboxesVisible }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
-      render: (data, type, row, meta) => {
-        return `<a href="/storage/host/view/${row['id']}">${row['host_address']}</a>`
-      },
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <a
+            href={`/storage/host/view/${row['host_id']}`}
+            onClick={(e) => {
+              e.preventDefault()
+              navigate(`/storage/host/view/${row['host_id']}`)
+            }}
+          >
+            {row['host_address']}
+          </a>,
+        ),
     }),
     Column('host_hostname'),
     Column('service_proto', { visible: false }),
     Column('service_port', { visible: false }),
     Column('service', {
       className: 'service_endpoint_dropdown',
-      render: (data, type, row, meta) => {
-        if (!row['service']) return ''
-
-        const { host_address, host_hostname, service_proto, service_port } = row
-
-        let linkElements = ''
-
-        for (const link of getLinksForService(host_address, host_hostname, service_proto, service_port)) {
-          linkElements += `<span class="dropdown-item"><i class="far fa-clipboard" title="Copy to clipboard"></i> <a rel="noreferrer" href=${escapeHtml(
-            link,
-          )}>${escapeHtml(link)}</a></span>`
-        }
-
-        return `<div class="dropdown d-flex">
-            <a class="flex-fill" data-toggle="dropdown">${row['service']}</a>
-            <div class="dropdown-menu">
-            <h6 class="dropdown-header">Service endpoint URIs</h6>
-            ${linkElements}
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <div className="dropdown d-flex">
+            <a className="flex-fill" data-toggle="dropdown">
+              {row['service']}
+            </a>
+            <div className="dropdown-menu">
+              <h6 className="dropdown-header">Service endpoint URIs</h6>
+              {getLinksForService(
+                row['host_address'],
+                row['host_hostname'],
+                row['service_proto'],
+                row['service_port'],
+              ).map((link) => (
+                <span className="dropdown-item">
+                  <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
+                  <a rel="noreferrer" href={escapeHtml(link)}>
+                    {escapeHtml(link)}
+                  </a>
+                </span>
+              ))}
             </div>
-        </div>`
-      },
+          </div>,
+        ),
     }),
-    Column('via_target', { visible: JSON.parse(sessionStorage.getItem('dt_viatarget_column_visible')) }),
+    Column('via_target', { visible: viaTargetVisible }),
     Column('xtype'),
     Column('data', {
       className: 'forcewrap',
@@ -72,41 +104,75 @@ const NoteListPage = () => {
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      render: (data, type, row, meta) => {
-        let tags = ''
-        row['tags'].forEach((tag) => (tags += `<span class="badge ${getColorForTag(tag)} tag-badge">${tag}</span> `))
-
-        return tags
-      },
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <div
+            onDoubleClick={() =>
+              setAnnotate({
+                show: true,
+                tags: data,
+                comment: row['comment'],
+                tableId: 'note_list_table',
+                url: `/storage/note/annotate/${row['id']}`,
+              })
+            }
+          >
+            {row['tags'].map((tag: string) => (
+              <Fragment key={tag}>
+                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+              </Fragment>
+            ))}
+          </div>,
+        ),
     }),
-    Column('comment', { className: 'abutton_annotate_dt forcewrap', title: 'cmnt' }),
+    Column('comment', {
+      className: 'abutton_annotate_dt forcewrap',
+      title: 'cmnt',
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <div
+            onDoubleClick={() =>
+              setAnnotate({
+                show: true,
+                tags: row['tags'],
+                comment: row['comment'],
+                tableId: 'note_list_table',
+                url: `/storage/note/annotate/${row['id']}`,
+              })
+            }
+          >
+            {row['comment']}
+          </div>,
+        ),
+    }),
     ColumnButtons({
-      render: (data, type, row, meta) =>
-        renderToString(
-          ButtonGroup({
-            children: [
-              DropdownButton({
-                title: 'More data',
-                options: [
-                  {
-                    name: 'created',
-                    data: row['created'],
-                  },
-                  {
-                    name: 'modified',
-                    data: row['modified'],
-                  },
-                  {
-                    name: 'import_time',
-                    data: row['import_time'],
-                  },
-                ],
-              }),
-              ViewButton({ url: `/storage/note/view/${row['id']}` }),
-              EditButton({ url: `/storage/note/edit/${row['id']}` }),
-              DeleteButton({ url: `/storage/note/delete/${row['id']}` }),
-            ],
-          }),
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <ButtonGroup>
+            <DropdownButton
+              title="More data"
+              options={[
+                {
+                  name: 'created',
+                  data: row['created'],
+                },
+                {
+                  name: 'modified',
+                  data: row['modified'],
+                },
+                {
+                  name: 'import_time',
+                  data: row['import_time'],
+                },
+              ]}
+            />
+            <ViewButton url={`/storage/note/view/${row['id']}`} navigate={navigate} />
+            <EditButton url={`/storage/note/edit/${row['id']}`} navigate={navigate} />
+            <DeleteButton url={`/storage/note/delete/${row['id']}`} />
+          </ButtonGroup>,
         ),
     }),
   ]
@@ -121,7 +187,7 @@ const NoteListPage = () => {
       </Heading>
 
       <div id="note_list_table_toolbar" className="dt_toolbar">
-        <div id="note_list_table_toolbox" className="dt_toolbar_toolbox">
+        <div id="note_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}>
           <div className="btn-group">
             <a className="btn btn-outline-secondary disabled">
               <i className="fas fa-check-square"></i>
@@ -134,15 +200,37 @@ const NoteListPage = () => {
             </a>
           </div>{' '}
           <div className="btn-group">
-            <a className="btn btn-outline-secondary abutton_freetag_set_multiid" href="#">
+            <a
+              className="btn btn-outline-secondary abutton_freetag_set_multiid"
+              href="#"
+              onClick={() =>
+                setMultipleTag({
+                  show: true,
+                  action: 'set',
+                  tableId: 'note_list_table',
+                  url: '/storage/note/tag_multiid',
+                })
+              }
+            >
               <i className="fas fa-tag"></i>
             </a>
             {env.VITE_NOTE_TAGS.map((tag) => (
-              <TagButton tag={tag} key={tag} />
+              <TagButton tag={tag} key={tag} url="/storage/note/tag_multiid" tableId="note_list_table" />
             ))}
           </div>{' '}
           <div className="btn-group">
-            <a className="btn btn-outline-secondary abutton_freetag_unset_multiid" href="#">
+            <a
+              className="btn btn-outline-secondary abutton_freetag_unset_multiid"
+              href="#"
+              onClick={() =>
+                setMultipleTag({
+                  show: true,
+                  action: 'unset',
+                  tableId: 'note_list_table',
+                  url: '/storage/note/tag_multiid',
+                })
+              }
+            >
               <i className="fas fa-eraser"></i>
             </a>
             <div className="btn-group">
@@ -154,9 +242,13 @@ const NoteListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton tags={['reviewed', 'todo']} />
+              <TagsDropdownButton tags={env.VITE_NOTE_TAGS} url="/storage/note/tag_multiid" tableId="note_list_table" />
             </div>
-            <a className="btn btn-outline-secondary abutton_delete_multiid" href="#">
+            <a
+              className="btn btn-outline-secondary"
+              href="#"
+              onClick={() => deleteRow('note_list_table', '/storage/note/delete_multiid')}
+            >
               <i className="fas fa-trash text-danger"></i>
             </a>
           </div>{' '}
@@ -179,6 +271,7 @@ const NoteListPage = () => {
       </div>
 
       <DataTable
+        id="note_list_table"
         columns={columns}
         ajax={{
           url:
@@ -190,6 +283,9 @@ const NoteListPage = () => {
         }}
         select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
       />
+
+      <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
+      <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
     </div>
   )
 }

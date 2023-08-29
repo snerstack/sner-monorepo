@@ -1,6 +1,16 @@
-const ViewButton = ({ url }: { url: string }) => {
+import { NavigateFunction } from 'react-router-dom'
+
+const ViewButton = ({ url, navigate }: { url: string; navigate: NavigateFunction }) => {
   return (
-    <a className="btn btn-outline-secondary" href={url} title="View">
+    <a
+      className="btn btn-outline-secondary"
+      href={url}
+      onClick={(e) => {
+        e.preventDefault()
+        navigate(url)
+      }}
+      title="View"
+    >
       <i className="fas fa-eye"></i>
     </a>
   )

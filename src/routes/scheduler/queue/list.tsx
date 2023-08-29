@@ -1,7 +1,8 @@
 import env from 'app-env'
-import { renderToString } from 'react-dom/server'
+import { useNavigate } from 'react-router-dom'
 
-import { Column, ColumnButtons } from '@/lib/DataTables'
+import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
+import httpClient from '@/lib/httpClient'
 
 import Button from '@/components/Buttons/Button'
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
@@ -11,13 +12,19 @@ import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
 
 const QueueListPage = () => {
+  const navigate = useNavigate()
+
   const columns = [
     Column('id'),
     Column('name'),
     Column('config', {
-      render: (data, type, row, meta) => {
-        return `<pre><code>${data}</code></pre>`
-      },
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <pre>
+            <code>{data}</code>
+          </pre>,
+        ),
     }),
     Column('group_size'),
     Column('priority'),
@@ -26,36 +33,50 @@ const QueueListPage = () => {
     Column('nr_targets'),
     Column('nr_jobs'),
     ColumnButtons({
-      render: (data, type, row, meta) => {
-        const queue_btns = renderToString(
-          ButtonGroup({
-            children: [
-              Button({ name: 'Enqueue', title: 'Put targets to queue', url: `/scheduler/queue/enqueue/${row['id']}` }),
-              Button({
-                name: 'Flush',
-                title: 'Flush all targets from queue',
-                url: `/scheduler/queue/flush/${row['id']}`,
-              }),
-              Button({
-                name: 'Prune',
-                title: 'Delete all jobs associated with queue',
-                url: `/scheduler/queue/prune/${row['id']}`,
-              }),
-            ],
-          }),
-        )
-
-        const edit_btns = renderToString(
-          ButtonGroup({
-            children: [
-              EditButton({ url: `/scheduler/queue/edit/${row['id']}` }),
-              DeleteButton({ url: `/scheduler/queue/delete/${row['id']}` }),
-            ],
-          }),
-        )
-
-        return queue_btns + ' ' + edit_btns
-      },
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <>
+            <ButtonGroup>
+              <Button
+                name="Enqueue"
+                title="Put targets to queue"
+                url={`/scheduler/queue/enqueue/${row['id']}`}
+                navigate={navigate}
+              />
+              <a
+                className="btn btn-outline-secondary"
+                title="Flush all targets from queue"
+                href={`/scheduler/queue/flush/${row['id']}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  httpClient
+                    .post(env.VITE_SERVER_URL + `/scheduler/queue/flush/${row['id']}`)
+                    .then(() => window.location.reload())
+                }}
+              >
+                Flush
+              </a>
+              <a
+                className="btn btn-outline-secondary"
+                title="Delete all jobs associated with queue"
+                href={`/scheduler/queue/prune/${row['id']}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  httpClient
+                    .post(env.VITE_SERVER_URL + `/scheduler/queue/prune/${row['id']}`)
+                    .then(() => window.location.reload())
+                }}
+              >
+                Prune
+              </a>
+            </ButtonGroup>{' '}
+            <ButtonGroup>
+              <EditButton url={`/scheduler/queue/edit/${row['id']}`} navigate={navigate} />
+              <DeleteButton url={`/scheduler/queue/delete/${row['id']}`} />
+            </ButtonGroup>
+          </>,
+        ),
     }),
   ]
 
@@ -70,13 +91,13 @@ const QueueListPage = () => {
       </Heading>
 
       <DataTable
+        id="queue_list_table"
         columns={columns}
         ajax={{
           url: env.VITE_SERVER_URL + '/scheduler/queue/list.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
         }}
-        drawCallback={(settings) => {}}
       />
     </div>
   )

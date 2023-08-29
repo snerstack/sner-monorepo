@@ -3,13 +3,8 @@ import 'datatables.net-select-bs4'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-interface TableConfig extends Omit<Config, 'ajax'> {
+interface TableConfig extends Config {
   id: string
-  ajax: {
-    url: string
-    type: string
-    xhrFields: { withCredentials: boolean }
-  }
 }
 
 const DataTable = ({ id, ...props }: TableConfig) => {
@@ -27,6 +22,21 @@ const DataTable = ({ id, ...props }: TableConfig) => {
     stateSave: true,
     columnDefs: [{ targets: 'no-sort', orderable: false }],
     order: [0, 'asc'],
+    preDrawCallback: function (settings) {
+      const api = new DataTables.Api(settings)
+      const paginationElements = document.querySelectorAll<HTMLElement>(`#${id}_wrapper .dataTables_paginate`)
+
+      if (paginationElements.length === 0) return // in case pagination is already disabled
+
+      paginationElements.forEach((element) => {
+        if (api.page.info().pages > 1) {
+          element.style.display = 'block'
+        } else {
+          element.style.display = 'none'
+        }
+      })
+    },
+
     stateSaveCallback: function (settings: any, data) {
       sessionStorage.setItem(
         'DataTables_' + settings.sInstance + '_' + window.location.pathname + '_' + window.location.search,
@@ -35,7 +45,8 @@ const DataTable = ({ id, ...props }: TableConfig) => {
     },
     stateLoadCallback: function (settings: any) {
       return JSON.parse(
-        sessionStorage.getItem('DataTables_' + settings.sInstance + '_' + location.pathname + '_' + location.search),
+        sessionStorage.getItem('DataTables_' + settings.sInstance + '_' + location.pathname + '_' + location.search) ??
+          '{}',
       )
     },
   }

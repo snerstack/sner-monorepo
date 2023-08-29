@@ -1,15 +1,18 @@
 import env from 'app-env'
-import { renderToString } from 'react-dom/server'
+import { Link, useNavigate } from 'react-router-dom'
 
-import { Column, ColumnButtons } from '@/lib/DataTables'
+import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 
 import Button from '@/components/Buttons/Button'
 import ButtonGroup from '@/components/Buttons/ButtonGroup'
 import DeleteButton from '@/components/Buttons/DeleteButton'
 import DataTable from '@/components/DataTable'
+import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 
 const JobListPage = () => {
+  const navigate = useNavigate()
+
   const columns = [
     Column('id'),
     Column('queue_name'),
@@ -27,19 +30,19 @@ const JobListPage = () => {
     Column('time_end'),
     Column('time_taken'),
     ColumnButtons({
-      render: (data, type, row, meta) =>
-        renderToString(
-          ButtonGroup({
-            children: [
-              Button({ name: 'Repeat', title: 'Repeat job', url: `/scheduler/job/repeat/${row['id']}` }),
-              Button({
-                name: 'Reconcile',
-                title: 'Forcefail job and reclaim heatmap count',
-                url: `/scheduler/job/reconcile/${row['id']}`,
-              }),
-              DeleteButton({ url: `/scheduler/job/delete/${row['id']}` }),
-            ],
-          }),
+      createdCell: (cell, data, row) =>
+        renderElements(
+          cell,
+          <ButtonGroup>
+            <Button name="Repeat" title="Repeat job" url={`/scheduler/job/repeat/${row['id']}`} navigate={navigate} />
+            <Button
+              name="Reconcile"
+              title="Forcefail job and reclaim heatmap count"
+              url={`/scheduler/job/reconcile/${row['id']}`}
+              navigate={navigate}
+            />
+            <DeleteButton url={`/scheduler/job/reconcile/${row['id']}`} />
+          </ButtonGroup>,
         ),
     }),
   ]
@@ -53,21 +56,21 @@ const JobListPage = () => {
             <a className="btn btn-outline-secondary disabled">
               <i className="fas fa-filter"></i>
             </a>
-            <a className="btn btn-outline-secondary" href='/scheduler/job/list?filter=Job.retval+is_null+""'>
+            <Link className="btn btn-outline-secondary" to='/scheduler/job/list?filter=Job.retval+is_null+""'>
               Running
-            </a>
+            </Link>
           </div>
         </div>
-        {/* {{ cm.filter_form() }} */}
+        <FilterForm url="/scheduler/job/list" />
       </div>
       <DataTable
+        id="job_list_table"
         columns={columns}
         ajax={{
           url: env.VITE_SERVER_URL + '/scheduler/job/list.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
         }}
-        drawCallback={(settings) => {}}
       />
     </div>
   )
