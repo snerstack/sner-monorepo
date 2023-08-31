@@ -1,0 +1,11 @@
+svg {
+  border: 1px solid lightgrey;
+}
+.links {
+  stroke: lightgray;
+  stroke-opacity: 0.6;
+  stroke-width: 1px;
+}
+.text {
+  font-size: small;
+}

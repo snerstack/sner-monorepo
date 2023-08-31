@@ -11,7 +11,7 @@ const TagsField = ({
   description = '',
   errors = [],
   required = false,
-  horizontal = false,
+  horizontal = true,
   _state,
   _setState,
 }: {

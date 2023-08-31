@@ -25,7 +25,7 @@ const ServiceEditPage = () => {
   const [tags, setTags] = useState<string[]>(service.tags)
   const [comment, setComment] = useState<string>(service.comment || '')
 
-  const navigation = useNavigate()
+  const navigate = useNavigate()
 
   const editServiceHandler = async () => {
     const formData = new FormData()
@@ -41,7 +41,7 @@ const ServiceEditPage = () => {
     try {
       await httpClient.post(env.VITE_SERVER_URL + `/storage/service/edit/${service.id}`, formData)
 
-      navigation(-1)
+      navigate(-1)
     } catch (err) {
       toast.error('Error while editing a service.')
     }
@@ -69,45 +69,20 @@ const ServiceEditPage = () => {
             label="Host ID"
             placeholder="Host ID"
             required={true}
-            horizontal={true}
             _state={hostId}
             _setState={setHostId}
           />
         </div>
-        <TextField
-          name="proto"
-          label="Proto"
-          placeholder="Proto"
-          required={true}
-          horizontal={true}
-          _state={proto}
-          _setState={setProto}
-        />
-        <NumberField
-          name="port"
-          label="Port"
-          placeholder="Port"
-          required={true}
-          horizontal={true}
-          _state={port}
-          _setState={setPort}
-        />
-        <TextField
-          name="state"
-          label="State"
-          placeholder="State"
-          horizontal={true}
-          _state={state}
-          _setState={setState}
-        />
-        <TextField name="name" label="Name" placeholder="Name" horizontal={true} _state={name} _setState={setName} />
-        <TextField name="info" label="Info" placeholder="Info" horizontal={true} _state={info} _setState={setInfo} />
+        <TextField name="proto" label="Proto" placeholder="Proto" required={true} _state={proto} _setState={setProto} />
+        <NumberField name="port" label="Port" placeholder="Port" required={true} _state={port} _setState={setPort} />
+        <TextField name="state" label="State" placeholder="State" _state={state} _setState={setState} />
+        <TextField name="name" label="Name" placeholder="Name" _state={name} _setState={setName} />
+        <TextField name="info" label="Info" placeholder="Info" _state={info} _setState={setInfo} />
         <TagsField
           name="tags"
           label="Tags"
           placeholder="Tags"
           defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
-          horizontal={true}
           _state={tags}
           _setState={setTags}
         />
@@ -116,11 +91,10 @@ const ServiceEditPage = () => {
           label="Comment"
           placeholder="Comment"
           rows={2}
-          horizontal={true}
           _state={comment}
           _setState={setComment}
         />
-        <SubmitField name="Edit" horizontal={true} handler={editServiceHandler} />
+        <SubmitField name="Edit" handler={editServiceHandler} />
       </form>
     </div>
   )

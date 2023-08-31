@@ -7,7 +7,7 @@ const MultiCheckboxField = ({
   description = '',
   errors = [],
   required = false,
-  horizontal = false,
+  horizontal = true,
   _state,
   _setState,
 }: {
@@ -36,7 +36,7 @@ const MultiCheckboxField = ({
       <HorizontalParent className={clsx(horizontal && 'col-sm-10')}>
         <ul className="multiple_checkbox_field">
           {_state.map((option, index) => (
-            <li>
+            <li key={index}>
               <input
                 type="checkbox"
                 name={option.name}

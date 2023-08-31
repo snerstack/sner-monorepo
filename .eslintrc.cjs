@@ -14,4 +14,12 @@ module.exports = {
   rules: {
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
   },
+  parserOptions: {
+    project: ['./tsconfig.json'],
+  },
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
 }

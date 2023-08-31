@@ -4,7 +4,7 @@ import { Fragment } from 'react'
 const SubmitField = ({
   name = '',
   errors = [],
-  horizontal = false,
+  horizontal = true,
   handler,
 }: {
   name: string

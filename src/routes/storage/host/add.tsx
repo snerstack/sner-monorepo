@@ -19,7 +19,7 @@ const HostAddPage = () => {
   const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState<string>('')
 
-  const navigation = useNavigate()
+  const navigate = useNavigate()
 
   const addHostHandler = async () => {
     const formData = new FormData()
@@ -32,7 +32,7 @@ const HostAddPage = () => {
     try {
       await httpClient.post(env.VITE_SERVER_URL + `/storage/host/add`, formData)
 
-      navigation(-1)
+      navigate(-1)
     } catch (err) {
       toast.error('Error while adding a host.')
     }
@@ -46,25 +46,16 @@ const HostAddPage = () => {
           label="Address"
           placeholder="Address"
           required={true}
-          horizontal={true}
           _state={address}
           _setState={setAddress}
         />
-        <TextField
-          name="hostname"
-          label="Hostname"
-          placeholder="Hostname"
-          horizontal={true}
-          _state={hostname}
-          _setState={setHostname}
-        />
-        <TextField name="os" label="Os" placeholder="Os" horizontal={true} _state={os} _setState={setOs} />
+        <TextField name="hostname" label="Hostname" placeholder="Hostname" _state={hostname} _setState={setHostname} />
+        <TextField name="os" label="Os" placeholder="Os" _state={os} _setState={setOs} />
         <TagsField
           name="tags"
           label="Tags"
           placeholder="Tags"
           defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
-          horizontal={true}
           _state={tags}
           _setState={setTags}
         />
@@ -73,11 +64,10 @@ const HostAddPage = () => {
           label="Comment"
           placeholder="Comment"
           rows={2}
-          horizontal={true}
           _state={comment}
           _setState={setComment}
         />
-        <SubmitField name="Add" horizontal={true} handler={addHostHandler} />
+        <SubmitField name="Add" handler={addHostHandler} />
       </form>
     </div>
   )

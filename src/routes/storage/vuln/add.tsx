@@ -49,9 +49,10 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
       setProto(loaderData.proto || '')
       setServiceId(loaderData.id)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const navigation = useNavigate()
+  const navigate = useNavigate()
 
   const addVulnHandler = async () => {
     const formData = new FormData()
@@ -74,7 +75,7 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
         await httpClient.post(env.VITE_SERVER_URL + `/storage/vuln/add/service/${serviceId}`, formData)
       }
 
-      navigation(-1)
+      navigate(-1)
     } catch (err) {
       toast.error('Error while adding a vuln.')
     }
@@ -101,7 +102,6 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
             label="Host ID"
             placeholder="Host ID"
             required={true}
-            horizontal={true}
             _state={hostId}
             _setState={setHostId}
           />
@@ -109,7 +109,6 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
             name="service_id"
             label="Service ID"
             placeholder="Service ID"
-            horizontal={true}
             _state={serviceId}
             _setState={setServiceId}
           />
@@ -117,69 +116,21 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
             name="via_target"
             label="Via target"
             placeholder="Via target"
-            horizontal={true}
             _state={viaTarget}
             _setState={setViaTarget}
           />
         </div>
-        <TextField
-          name="name"
-          label="Name"
-          placeholder="Name"
-          required={true}
-          horizontal={true}
-          _state={name}
-          _setState={setName}
-        />
-        <TextField
-          name="xtype"
-          label="xType"
-          placeholder="xType"
-          horizontal={true}
-          _state={xtype}
-          _setState={setXtype}
-        />
-        <RadioField
-          name="severity"
-          label="Severity"
-          required={true}
-          horizontal={true}
-          _state={severity}
-          _setState={setSeverity}
-        />
-        <TextAreaField
-          name="descr"
-          label="Descr"
-          placeholder="Descr"
-          rows={15}
-          horizontal={true}
-          _state={descr}
-          _setState={setDescr}
-        />
-        <TextAreaField
-          name="data"
-          label="Data"
-          placeholder="Data"
-          rows={10}
-          horizontal={true}
-          _state={data}
-          _setState={setData}
-        />
-        <TextAreaField
-          name="refs"
-          label="Refs"
-          placeholder="Refs"
-          rows={3}
-          horizontal={true}
-          _state={refs}
-          _setState={setRefs}
-        />
+        <TextField name="name" label="Name" placeholder="Name" required={true} _state={name} _setState={setName} />
+        <TextField name="xtype" label="xType" placeholder="xType" _state={xtype} _setState={setXtype} />
+        <RadioField name="severity" label="Severity" required={true} _state={severity} _setState={setSeverity} />
+        <TextAreaField name="descr" label="Descr" placeholder="Descr" rows={15} _state={descr} _setState={setDescr} />
+        <TextAreaField name="data" label="Data" placeholder="Data" rows={10} _state={data} _setState={setData} />
+        <TextAreaField name="refs" label="Refs" placeholder="Refs" rows={3} _state={refs} _setState={setRefs} />
         <TagsField
           name="tags"
           label="Tags"
           placeholder="Tags"
           defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
-          horizontal={true}
           _state={tags}
           _setState={setTags}
         />
@@ -188,11 +139,10 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
           label="Comment"
           placeholder="Comment"
           rows={2}
-          horizontal={true}
           _state={comment}
           _setState={setComment}
         />
-        <SubmitField name="Add" horizontal={true} handler={addVulnHandler} />
+        <SubmitField name="Add" handler={addVulnHandler} />
       </form>
     </div>
   )

@@ -14,8 +14,8 @@ const WebAuthnEditPage = () => {
       <Heading headings={['User profile', 'Edit WebAuthn credential']} />
 
       <form id="webauthn_edit_form" method="post">
-        <TextField name="name" label="Name" placeholder="Name" horizontal={true} _state={name} _setState={setName} />
-        <SubmitField name="Edit" horizontal={true} handler={editHandler} />
+        <TextField name="name" label="Name" placeholder="Name" _state={name} _setState={setName} />
+        <SubmitField name="Edit" handler={editHandler} />
       </form>
     </div>
   )

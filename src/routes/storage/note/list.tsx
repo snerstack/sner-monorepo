@@ -79,7 +79,7 @@ const NoteListPage = () => {
                 row['service_proto'],
                 row['service_port'],
               ).map((link) => (
-                <span className="dropdown-item">
+                <span className="dropdown-item" key={link}>
                   <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
                   <a rel="noreferrer" href={escapeHtml(link)}>
                     {escapeHtml(link)}

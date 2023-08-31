@@ -1,6 +1,7 @@
 import env from 'app-env'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
@@ -17,7 +18,7 @@ const LoginPage = () => {
   const [username, setUsername] = useState<string>('')
   const [password, setPassword] = useState<string>('')
 
-  const navigation = useNavigate()
+  const navigate = useNavigate()
 
   const loginHandler = async () => {
     const formData = new FormData()
@@ -25,12 +26,14 @@ const LoginPage = () => {
     formData.append('password', password)
 
     try {
-      const resp = await httpClient.post(env.VITE_SERVER_URL + '/auth/login', formData)
+      const resp = await httpClient.post<User>(env.VITE_SERVER_URL + '/auth/login', formData)
 
       setUser({ ...resp.data, isAuthenticated: true })
 
-      navigation('/')
-    } catch (err) {}
+      navigate('/')
+    } catch (err) {
+      toast.warn('Wrong credentials.')
+    }
   }
 
   return (
@@ -43,7 +46,6 @@ const LoginPage = () => {
           name="username"
           label="Username"
           placeholder="Username"
-          horizontal={true}
           required={true}
           _state={username}
           _setState={setUsername}
@@ -52,12 +54,11 @@ const LoginPage = () => {
           name="password"
           label="Password"
           placeholder="Password"
-          horizontal={true}
           required={true}
           _state={password}
           _setState={setPassword}
         />
-        <SubmitField name="Login" horizontal={true} handler={loginHandler} />
+        <SubmitField name="Login" handler={loginHandler} />
         {/* {oauth_enabled && ( */}
         {false && (
           <div className="form-group row">

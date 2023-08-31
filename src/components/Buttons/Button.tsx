@@ -4,6 +4,7 @@ const Button = ({
   name,
   title,
   url,
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   navigate = useNavigate(),
 }: {
   name: string

@@ -9,7 +9,7 @@ const TextAreaField = ({
   description = '',
   errors = [],
   required = false,
-  horizontal = false,
+  horizontal = true,
   _state,
   _setState,
 }: {

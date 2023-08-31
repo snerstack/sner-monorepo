@@ -2,6 +2,7 @@ import NavLink from './NavLink'
 import env from 'app-env'
 import clsx from 'clsx'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useSessionStorage } from 'react-use'
 import { useRecoilState } from 'recoil'
 
@@ -15,7 +16,7 @@ const Nav = () => {
   const [viaTargetVisible, setViaTargetVisible] = useSessionStorage('dt_viatarget_column_visible')
 
   const { pathname } = useLocation()
-  const navigation = useNavigate()
+  const navigate = useNavigate()
 
   const links = [
     { title: 'Scheduler', url: '/scheduler/queue/list', icon: 'fa-tasks' },
@@ -29,8 +30,10 @@ const Nav = () => {
 
       setCurrentUser({ id: 0, username: '', email: '', roles: [], isAuthenticated: false })
 
-      navigation('/')
-    } catch (err) {}
+      navigate('/')
+    } catch (err) {
+      toast.error('Error while logging out.')
+    }
   }
 
   return (
@@ -89,7 +92,7 @@ const Nav = () => {
                   <NavLink title="Internals" url="/visuals/internals" />
                   <NavLink title="DNS Tree" url="/visuals/dnstree?crop=1" />
                   <NavLink title="Portmap" url="/visuals/portmap" />
-                  <NavLink title="Port infos" url="/portinfos?crop=3&limit=50" />
+                  <NavLink title="Port infos" url="/visuals/portinfos?crop=3&limit=50" />
                 </>
               )}
             </>

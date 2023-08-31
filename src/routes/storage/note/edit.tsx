@@ -24,7 +24,7 @@ const NoteEditPage = () => {
   const [tags, setTags] = useState<string[]>(note.tags)
   const [comment, setComment] = useState<string>(note.comment)
 
-  const navigation = useNavigate()
+  const navigate = useNavigate()
 
   const editNoteHandler = async () => {
     const formData = new FormData()
@@ -39,7 +39,7 @@ const NoteEditPage = () => {
     try {
       await httpClient.post(env.VITE_SERVER_URL + `/storage/note/edit/${note.id}`, formData)
 
-      navigation(-1)
+      navigate(-1)
     } catch (err) {
       toast.error('Error while editing a note.')
     }
@@ -68,7 +68,6 @@ const NoteEditPage = () => {
             label="Host ID"
             placeholder="Host ID"
             required={true}
-            horizontal={true}
             _state={hostId}
             _setState={setHostId}
           />
@@ -76,7 +75,6 @@ const NoteEditPage = () => {
             name="service_id"
             label="Service ID"
             placeholder="Service ID"
-            horizontal={true}
             _state={serviceId}
             _setState={setServiceId}
           />
@@ -84,34 +82,17 @@ const NoteEditPage = () => {
             name="via_target"
             label="Via target"
             placeholder="Via target"
-            horizontal={true}
             _state={viaTarget}
             _setState={setViaTarget}
           />
         </div>
-        <TextField
-          name="xtype"
-          label="xType"
-          placeholder="xType"
-          horizontal={true}
-          _state={xtype}
-          _setState={setXtype}
-        />
-        <TextAreaField
-          name="data"
-          label="Data"
-          placeholder="Data"
-          rows={10}
-          horizontal={true}
-          _state={data}
-          _setState={setData}
-        />
+        <TextField name="xtype" label="xType" placeholder="xType" _state={xtype} _setState={setXtype} />
+        <TextAreaField name="data" label="Data" placeholder="Data" rows={10} _state={data} _setState={setData} />
         <TagsField
           name="tags"
           label="Tags"
           placeholder="Tags"
           defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
-          horizontal={true}
           _state={tags}
           _setState={setTags}
         />
@@ -120,11 +101,10 @@ const NoteEditPage = () => {
           label="Comment"
           placeholder="Comment"
           rows={2}
-          horizontal={true}
           _state={comment}
           _setState={setComment}
         />
-        <SubmitField name="Edit" horizontal={true} handler={editNoteHandler} />
+        <SubmitField name="Edit" handler={editNoteHandler} />
       </form>
     </div>
   )

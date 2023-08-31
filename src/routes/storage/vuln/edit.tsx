@@ -32,7 +32,7 @@ const VulnEditPage = () => {
   const [tags, setTags] = useState<string[]>(vuln.tags)
   const [comment, setComment] = useState<string>(vuln.comment || '')
 
-  const navigation = useNavigate()
+  const navigate = useNavigate()
 
   const editVulnHandler = async () => {
     const formData = new FormData()
@@ -51,7 +51,7 @@ const VulnEditPage = () => {
     try {
       await httpClient.post(env.VITE_SERVER_URL + `/storage/vuln/edit/${vuln.id}`, formData)
 
-      navigation(-1)
+      navigate(-1)
     } catch (err) {
       toast.error('Error while editing a vuln.')
     }
@@ -59,7 +59,7 @@ const VulnEditPage = () => {
   return (
     <div>
       <Heading headings={['Vulns', 'Edit']} />
-      <form id="service_form" method="post">
+      <form id="vuln_form" method="post">
         <div className="form-group row">
           <label className="col-sm-2 col-form-label">
             <a data-toggle="collapse" href="#refs_collapse">
@@ -79,7 +79,6 @@ const VulnEditPage = () => {
             label="Host ID"
             placeholder="Host ID"
             required={true}
-            horizontal={true}
             _state={hostId}
             _setState={setHostId}
           />
@@ -87,7 +86,6 @@ const VulnEditPage = () => {
             name="service_id"
             label="Service ID"
             placeholder="Service ID"
-            horizontal={true}
             _state={serviceId}
             _setState={setServiceId}
           />
@@ -95,69 +93,21 @@ const VulnEditPage = () => {
             name="via_target"
             label="Via target"
             placeholder="Via target"
-            horizontal={true}
             _state={viaTarget}
             _setState={setViaTarget}
           />
         </div>
-        <TextField
-          name="name"
-          label="Name"
-          placeholder="Name"
-          required={true}
-          horizontal={true}
-          _state={name}
-          _setState={setName}
-        />
-        <TextField
-          name="xtype"
-          label="xType"
-          placeholder="xType"
-          horizontal={true}
-          _state={xtype}
-          _setState={setXtype}
-        />
-        <RadioField
-          name="severity"
-          label="Severity"
-          required={true}
-          horizontal={true}
-          _state={severity}
-          _setState={setSeverity}
-        />
-        <TextAreaField
-          name="descr"
-          label="Descr"
-          placeholder="Descr"
-          rows={15}
-          horizontal={true}
-          _state={descr}
-          _setState={setDescr}
-        />
-        <TextAreaField
-          name="data"
-          label="Data"
-          placeholder="Data"
-          rows={10}
-          horizontal={true}
-          _state={data}
-          _setState={setData}
-        />
-        <TextAreaField
-          name="refs"
-          label="Refs"
-          placeholder="Refs"
-          rows={3}
-          horizontal={true}
-          _state={refs}
-          _setState={setRefs}
-        />
+        <TextField name="name" label="Name" placeholder="Name" required={true} _state={name} _setState={setName} />
+        <TextField name="xtype" label="xType" placeholder="xType" _state={xtype} _setState={setXtype} />
+        <RadioField name="severity" label="Severity" required={true} _state={severity} _setState={setSeverity} />
+        <TextAreaField name="descr" label="Descr" placeholder="Descr" rows={15} _state={descr} _setState={setDescr} />
+        <TextAreaField name="data" label="Data" placeholder="Data" rows={10} _state={data} _setState={setData} />
+        <TextAreaField name="refs" label="Refs" placeholder="Refs" rows={3} _state={refs} _setState={setRefs} />
         <TagsField
           name="tags"
           label="Tags"
           placeholder="Tags"
           defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
-          horizontal={true}
           _state={tags}
           _setState={setTags}
         />
@@ -166,11 +116,10 @@ const VulnEditPage = () => {
           label="Comment"
           placeholder="Comment"
           rows={2}
-          horizontal={true}
           _state={comment}
           _setState={setComment}
         />
-        <SubmitField name="Edit" horizontal={true} handler={editVulnHandler} />
+        <SubmitField name="Edit" handler={editVulnHandler} />
       </form>
     </div>
   )

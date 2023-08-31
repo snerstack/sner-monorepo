@@ -41,9 +41,10 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
       setProto(loaderData.proto || '')
       setServiceId(loaderData.id)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const navigation = useNavigate()
+  const navigate = useNavigate()
 
   const addNoteHandler = async () => {
     const formData = new FormData()
@@ -62,7 +63,7 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
         await httpClient.post(env.VITE_SERVER_URL + `/storage/note/add/service/${serviceId}`, formData)
       }
 
-      navigation(-1)
+      navigate(-1)
     } catch (err) {
       toast.error('Error while adding a note.')
     }
@@ -90,7 +91,6 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
             label="Host ID"
             placeholder="Host ID"
             required={true}
-            horizontal={true}
             _state={hostId}
             _setState={setHostId}
           />
@@ -98,7 +98,6 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
             name="service_id"
             label="Service ID"
             placeholder="Service ID"
-            horizontal={true}
             _state={serviceId}
             _setState={setServiceId}
           />
@@ -106,34 +105,17 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
             name="via_target"
             label="Via target"
             placeholder="Via target"
-            horizontal={true}
             _state={viaTarget}
             _setState={setViaTarget}
           />
         </div>
-        <TextField
-          name="xtype"
-          label="xType"
-          placeholder="xType"
-          horizontal={true}
-          _state={xtype}
-          _setState={setXtype}
-        />
-        <TextAreaField
-          name="data"
-          label="Data"
-          placeholder="Data"
-          rows={10}
-          horizontal={true}
-          _state={data}
-          _setState={setData}
-        />
+        <TextField name="xtype" label="xType" placeholder="xType" _state={xtype} _setState={setXtype} />
+        <TextAreaField name="data" label="Data" placeholder="Data" rows={10} _state={data} _setState={setData} />
         <TagsField
           name="tags"
           label="Tags"
           placeholder="Tags"
           defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
-          horizontal={true}
           _state={tags}
           _setState={setTags}
         />
@@ -142,11 +124,10 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
           label="Comment"
           placeholder="Comment"
           rows={2}
-          horizontal={true}
           _state={comment}
           _setState={setComment}
         />
-        <SubmitField name="Add" horizontal={true} handler={addNoteHandler} />
+        <SubmitField name="Add" handler={addNoteHandler} />
       </form>
     </div>
   )

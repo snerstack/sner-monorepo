@@ -50,18 +50,16 @@ const AnnotateModal = ({
           _state={tags.length === 0 ? annotate.tags : tags}
           _setState={setTags}
           defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
-          horizontal={true}
         />{' '}
         <TextAreaField
           name="comment"
           label="Comment"
           placeholder="Comment"
           rows={2}
-          horizontal={true}
           _state={comment === '' ? annotate.comment : comment}
           _setState={setComment}
         />
-        <SubmitField name="Save" horizontal={true} handler={annotateHandler} />
+        <SubmitField name="Save" handler={annotateHandler} />
       </ModalBody>
     </Modal>
   )

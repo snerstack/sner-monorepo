@@ -1,6 +1,11 @@
 import HostViewPage from './routes/storage/host/view'
 import NoteViewPage from './routes/storage/note/view'
+import VulnMulticopyPage from './routes/storage/vuln/multicopy'
 import VulnViewPage from './routes/storage/vuln/view'
+import DnsTreePage from './routes/visuals/dnstree'
+import InternalsPage from './routes/visuals/internals'
+import PortinfosPage from './routes/visuals/portinfos'
+import PortmapPage from './routes/visuals/portmap'
 import BaseLayout from '@/layouts/BaseLayout'
 import NotAuthorizedPage from '@/routes/403'
 import NotFoundPage from '@/routes/404'
@@ -40,6 +45,7 @@ import VisualsPage from '@/routes/visuals'
 import env from 'app-env'
 import { useEffect, useState } from 'react'
 import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements, redirect } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
@@ -50,24 +56,29 @@ export default function App() {
   const [user, setUser] = useRecoilState(userState)
   const [isChecking, setIsChecking] = useState<boolean>(true)
 
-  const authHandler = async () => {
-    try {
-      const user = await httpClient.get(env.VITE_SERVER_URL + '/auth/user/@me')
-
-      setUser({ ...user.data, isAuthenticated: true })
-    } catch (err) {}
-
-    setIsChecking(false)
+  const authHandler = () => {
+    httpClient
+      .get<User>(env.VITE_SERVER_URL + '/auth/user/@me')
+      .then((resp) => {
+        setUser({ ...resp.data, isAuthenticated: true })
+        setIsChecking(false)
+      })
+      .catch(() => {
+        toast.warn('Not logged in')
+        setIsChecking(false)
+      })
   }
 
   useEffect(() => {
     authHandler()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const requestDataHandler = async (url: string) => {
     try {
       const resp = await httpClient.get(env.VITE_SERVER_URL + url)
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return resp.data
     } catch {
       return redirect('/404')
@@ -177,6 +188,11 @@ export default function App() {
                 loader={async ({ params: { id } }) => requestDataHandler(`/storage/vuln/view/${id}.json`)}
               />
               <Route
+                path="multicopy/:id"
+                element={<VulnMulticopyPage />}
+                loader={async ({ params: { id } }) => requestDataHandler(`/storage/vuln/view/${id}.json`)}
+              />
+              <Route
                 path="view/:id"
                 element={<VulnViewPage />}
                 loader={async ({ params: { id } }) => requestDataHandler(`/storage/vuln/view/${id}.json`)}
@@ -213,6 +229,14 @@ export default function App() {
 
         <Route path="visuals">
           <Route index element={<VisualsPage />} />
+          <Route path="internals" element={<InternalsPage />} />
+          <Route path="dnstree" element={<DnsTreePage />} />
+          <Route
+            path="portmap"
+            element={<PortmapPage />}
+            loader={async () => requestDataHandler(`/visuals/portmap.json`)}
+          />
+          <Route path="portinfos" element={<PortinfosPage />} />
         </Route>
 
         <Route path="forbidden" element={<NotAuthorizedPage />} />

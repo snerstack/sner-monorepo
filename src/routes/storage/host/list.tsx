@@ -142,9 +142,9 @@ const HostListPage = () => {
     <div>
       <Heading headings={['Hosts']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-primary" href="/storage/host/add">
+          <Link className="btn btn-outline-primary" to="/storage/host/add">
             Add
-          </a>{' '}
+          </Link>{' '}
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">
             <i className="fas fa-filter"></i>
           </a>

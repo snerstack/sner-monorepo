@@ -61,7 +61,7 @@ const NoteViewPage = () => {
                   <h6 className="dropdown-header">Service endpoint URIs</h6>
                   {getLinksForService(note.address, note.hostname, note.service_proto, note.service_port).map(
                     (link) => (
-                      <span className="dropdown-item">
+                      <span className="dropdown-item" key={link}>
                         <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
                         <a rel="noreferrer" href={escapeHtml(link)}>
                           {escapeHtml(link)}
@@ -119,7 +119,7 @@ const NoteViewPage = () => {
               </tr>
               {Object.keys(JSON.parse(note.data)['findings']).map((section) =>
                 JSON.parse(note.data)['findings'][section].map((item) => (
-                  <tr>
+                  <tr key={item.id}>
                     <td>{section}</td>
                     <td>{item.severity}</td>
                     <td>{item.id}</td>

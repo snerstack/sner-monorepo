@@ -20,7 +20,7 @@ const HostEditPage = () => {
   const [tags, setTags] = useState<string[]>(host.tags)
   const [comment, setComment] = useState<string>(host.comment || '')
 
-  const navigation = useNavigate()
+  const navigate = useNavigate()
 
   const editHostHandler = async () => {
     const formData = new FormData()
@@ -33,7 +33,7 @@ const HostEditPage = () => {
     try {
       await httpClient.post(env.VITE_SERVER_URL + `/storage/host/edit/${host.id}`, formData)
 
-      navigation(-1)
+      navigate(-1)
     } catch (err) {
       toast.error('Error while editing a host.')
     }
@@ -47,25 +47,16 @@ const HostEditPage = () => {
           label="Address"
           placeholder="Address"
           required={true}
-          horizontal={true}
           _state={address}
           _setState={setAddress}
         />
-        <TextField
-          name="hostname"
-          label="Hostname"
-          placeholder="Hostname"
-          horizontal={true}
-          _state={hostname}
-          _setState={setHostname}
-        />
-        <TextField name="os" label="Os" placeholder="Os" horizontal={true} _state={os} _setState={setOs} />
+        <TextField name="hostname" label="Hostname" placeholder="Hostname" _state={hostname} _setState={setHostname} />
+        <TextField name="os" label="Os" placeholder="Os" _state={os} _setState={setOs} />
         <TagsField
           name="tags"
           label="Tags"
           placeholder="Tags"
           defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
-          horizontal={true}
           _state={tags}
           _setState={setTags}
         />
@@ -74,11 +65,10 @@ const HostEditPage = () => {
           label="Comment"
           placeholder="Comment"
           rows={2}
-          horizontal={true}
           _state={comment}
           _setState={setComment}
         />
-        <SubmitField name="Edit" horizontal={true} handler={editHostHandler} />
+        <SubmitField name="Edit" handler={editHostHandler} />
       </form>
     </div>
   )

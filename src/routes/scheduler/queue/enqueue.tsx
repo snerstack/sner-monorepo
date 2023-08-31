@@ -34,12 +34,11 @@ const QueueEnqueuePage = () => {
           placeholder="Targets"
           rows={10}
           required={true}
-          horizontal={true}
           _state={targets}
           _setState={setTargets}
         />
 
-        <SubmitField name="Enqueue" horizontal={true} handler={enqueueHandler} />
+        <SubmitField name="Enqueue" handler={enqueueHandler} />
       </form>
     </div>
   )

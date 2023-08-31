@@ -33,26 +33,17 @@ const UserAddPage = () => {
           name="username"
           label="Username"
           placeholder="Username"
-          horizontal={true}
           required={true}
           _state={username}
           _setState={setUsername}
         />
-        <TextField
-          name="email"
-          label="Email"
-          placeholder="Email"
-          horizontal={true}
-          _state={email}
-          _setState={setEmail}
-        />
-        <MultiCheckboxField name="roles" label="Roles" horizontal={true} _state={options} _setState={setOptions} />
-        <BooleanField name="active" label="Active" horizontal={true} _state={active} _setState={setActive} />
+        <TextField name="email" label="Email" placeholder="Email" _state={email} _setState={setEmail} />
+        <MultiCheckboxField name="roles" label="Roles" _state={options} _setState={setOptions} />
+        <BooleanField name="active" label="Active" _state={active} _setState={setActive} />
         <PasswordField
           name="password"
           label="Password"
           placeholder="Password"
-          horizontal={true}
           _state={password}
           _setState={setPassword}
         />
@@ -61,11 +52,10 @@ const UserAddPage = () => {
           label="API Networks"
           placeholder="API Networks"
           rows={5}
-          horizontal={true}
           _state={apiNetworks}
           _setState={setApiNetworks}
         />
-        <SubmitField name="Add" horizontal={true} handler={addUserHandler} />
+        <SubmitField name="Add" handler={addUserHandler} />
       </form>
     </div>
   )

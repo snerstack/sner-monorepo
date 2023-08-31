@@ -23,21 +23,12 @@ const QueueEditPage = () => {
       <form id="queue_form" method="post">
         {/* {{ form.csrf_token }}*/}
         {/* <input id="csrf_token" name="csrf_token" type="hidden" value="random-csrf-value-4654654" /> */}
-        <TextField
-          name="name"
-          label="Name"
-          placeholder="Name"
-          horizontal={true}
-          required={true}
-          _state={name}
-          _setState={setName}
-        />
+        <TextField name="name" label="Name" placeholder="Name" required={true} _state={name} _setState={setName} />
         <TextAreaField
           name="config"
           label="Config"
           placeholder="Config"
           rows={10}
-          horizontal={true}
           _state={config}
           _setState={setConfig}
         />
@@ -46,7 +37,6 @@ const QueueEditPage = () => {
           label="Group size"
           placeholder="Group size"
           minValue={1}
-          horizontal={true}
           required={true}
           _state={groupSize}
           _setState={setGroupSize}
@@ -56,21 +46,19 @@ const QueueEditPage = () => {
           label="Priority"
           placeholder="Priority"
           minValue={1}
-          horizontal={true}
           required={true}
           _state={priority}
           _setState={setPriority}
         />
-        <BooleanField name="active" label="Active" horizontal={true} _state={active} _setState={setActive} />
+        <BooleanField name="active" label="Active" _state={active} _setState={setActive} />
         <TextField
           name="requirements"
           label="Requirements"
           placeholder="Requirements"
-          horizontal={true}
           _state={requirements}
           _setState={setRequirements}
         />
-        <SubmitField name="Edit" horizontal={true} handler={editQueueHandler} />
+        <SubmitField name="Edit" handler={editQueueHandler} />
       </form>
     </div>
   )

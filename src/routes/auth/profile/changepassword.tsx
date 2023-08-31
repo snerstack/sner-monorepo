@@ -20,7 +20,6 @@ const ChangePasswordPage = () => {
           label="Current password"
           placeholder="Current password"
           required={true}
-          horizontal={true}
           _state={currentPassword}
           _setState={setCurrentPassword}
         />
@@ -29,7 +28,6 @@ const ChangePasswordPage = () => {
           label="New password"
           placeholder="New password"
           required={true}
-          horizontal={true}
           _state={newPassword}
           _setState={setNewPassword}
         />
@@ -38,11 +36,10 @@ const ChangePasswordPage = () => {
           label="Repeat new password"
           placeholder="Repeat new password"
           required={true}
-          horizontal={true}
           _state={newPasswordAgain}
           _setState={setNewPasswordAgain}
         />
-        <SubmitField name="Change password" horizontal={true} handler={newPasswordHandler} />
+        <SubmitField name="Change password" handler={newPasswordHandler} />
       </form>
     </div>
   )

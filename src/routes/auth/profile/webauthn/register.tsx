@@ -32,8 +32,8 @@ const WebAuthnRegisterPage = () => {
         </div>
         {/* {{ bwtf.bootstrap_field(form.attestation, horizontal=True) }} */}
 
-        <TextField name="name" label="Name" placeholder="Name" horizontal={true} _state={name} _setState={setName} />
-        <SubmitField name="Register" horizontal={true} handler={registerHandler} />
+        <TextField name="name" label="Name" placeholder="Name" _state={name} _setState={setName} />
+        <SubmitField name="Register" handler={registerHandler} />
       </form>
     </div>
   )

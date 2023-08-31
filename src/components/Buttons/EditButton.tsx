@@ -1,6 +1,13 @@
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 
-const EditButton = ({ url, navigate = useNavigate() }: { url: string; navigate?: NavigateFunction }) => {
+const EditButton = ({
+  url,
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  navigate = useNavigate(),
+}: {
+  url: string
+  navigate?: NavigateFunction
+}) => {
   return (
     <a
       className="btn btn-outline-secondary"

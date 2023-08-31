@@ -19,11 +19,10 @@ const TOTPLoginPage = () => {
           label="TOTP Code"
           placeholder="TOTP Code"
           required={true}
-          horizontal={true}
           _state={code}
           _setState={setCode}
         />
-        <SubmitField name="Submit" horizontal={true} handler={totpHandler} />
+        <SubmitField name="Submit" handler={totpHandler} />
       </form>
     </div>
   )
