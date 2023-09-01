@@ -1,5 +1,6 @@
 import env from 'app-env'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
@@ -18,7 +19,7 @@ const QueueListPage = () => {
     Column('id'),
     Column('name'),
     Column('config', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, data: string) =>
         renderElements(
           cell,
           <pre>
@@ -33,7 +34,7 @@ const QueueListPage = () => {
     Column('nr_targets'),
     Column('nr_jobs'),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: QueryRow) =>
         renderElements(
           cell,
           <>
@@ -53,6 +54,7 @@ const QueueListPage = () => {
                   httpClient
                     .post(env.VITE_SERVER_URL + `/scheduler/queue/flush/${row['id']}`)
                     .then(() => window.location.reload())
+                    .catch(() => toast.error('Error while flusing the queue.'))
                 }}
               >
                 Flush
@@ -66,6 +68,7 @@ const QueueListPage = () => {
                   httpClient
                     .post(env.VITE_SERVER_URL + `/scheduler/queue/prune/${row['id']}`)
                     .then(() => window.location.reload())
+                    .catch(() => toast.error('Error while pruning the queue.'))
                 }}
               >
                 Prune

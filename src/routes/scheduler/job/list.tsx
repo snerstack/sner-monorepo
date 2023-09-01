@@ -17,7 +17,9 @@ const JobListPage = () => {
     Column('id'),
     Column('queue_name'),
     Column('assignment', {
-      render: (data, type, row, meta) => {
+      render: (data: string) => {
+        if (!data) return
+
         if (data.length >= 100) {
           return data.substring(0, 99) + '...'
         }
@@ -30,7 +32,7 @@ const JobListPage = () => {
     Column('time_end'),
     Column('time_taken'),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: JobRow) =>
         renderElements(
           cell,
           <ButtonGroup>

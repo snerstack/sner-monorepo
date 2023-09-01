@@ -45,7 +45,7 @@ const NoteListPage = () => {
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: NoteRow) =>
         renderElements(
           cell,
           <a
@@ -64,7 +64,7 @@ const NoteListPage = () => {
     Column('service_port', { visible: false }),
     Column('service', {
       className: 'service_endpoint_dropdown',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: NoteRow) =>
         renderElements(
           cell,
           <div className="dropdown d-flex">
@@ -94,7 +94,9 @@ const NoteListPage = () => {
     Column('xtype'),
     Column('data', {
       className: 'forcewrap',
-      render: (data, type, row, meta) => {
+      render: (data: string) => {
+        if (!data) return ''
+
         if (data.length >= 4096) {
           return data.substring(0, 4095) + '...'
         }
@@ -104,15 +106,15 @@ const NoteListPage = () => {
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string[], row: NoteRow) =>
         renderElements(
           cell,
           <div
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
-                tags: data,
-                comment: row['comment'],
+                tags: row['tags'],
+                comment: row['comment'] || '',
                 tableId: 'note_list_table',
                 url: `/storage/note/annotate/${row['id']}`,
               })
@@ -129,7 +131,7 @@ const NoteListPage = () => {
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: NoteRow) =>
         renderElements(
           cell,
           <div
@@ -137,7 +139,7 @@ const NoteListPage = () => {
               setAnnotate({
                 show: true,
                 tags: row['tags'],
-                comment: row['comment'],
+                comment: row['comment'] || '',
                 tableId: 'note_list_table',
                 url: `/storage/note/annotate/${row['id']}`,
               })
@@ -148,7 +150,7 @@ const NoteListPage = () => {
         ),
     }),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: NoteRow) =>
         renderElements(
           cell,
           <ButtonGroup>
@@ -165,7 +167,7 @@ const NoteListPage = () => {
                 },
                 {
                   name: 'import_time',
-                  data: row['import_time'],
+                  data: row['import_time'] || '',
                 },
               ]}
             />

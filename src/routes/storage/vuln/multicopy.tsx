@@ -86,11 +86,11 @@ const VulnMulticopyPage = () => {
             checkbox.addEventListener('click', () => {
               setTimeout(() => {
                 const dt = getTableApi('vuln_multicopy_endpoints_table')
-                const endpoints = dt
+                const endpoints = dt!
                   .rows({ selected: true })
                   .data()
                   .toArray()
-                  .map((row) => row['endpoint_id'])
+                  .map((row: VulnMulticopyRow) => row['endpoint_id'])
 
                 setEndpoints(endpoints.length === 0 ? '' : JSON.stringify(endpoints))
               }, 25)

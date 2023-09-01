@@ -7,6 +7,25 @@ import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
 import DeleteButton from '@/components/Buttons/DeleteButton'
 import Heading from '@/components/Heading'
 
+type ScreenshotWeb = {
+  url: string
+  img: string
+}
+
+type TestSsl = {
+  findings: {
+    [key: string]: {
+      severity: string
+      id: string
+      finding: string
+      cve: string
+      data: string
+    }[]
+  }
+  cert_txt: string
+  output: string
+}
+
 const NoteViewPage = () => {
   const note = useLoaderData() as Note
 
@@ -100,14 +119,17 @@ const NoteViewPage = () => {
         <pre>{note.data}</pre>
       ) : note.xtype === 'screenshot_web' ? (
         <>
-          <h2>URL</h2> {JSON.parse(note.data)['url']}
+          <h2>URL</h2> {(JSON.parse(note.data) as ScreenshotWeb)['url']}
           <h2>Screenshot</h2>
-          <img src={`data:image/png;base64,${JSON.parse(note.data)['img']}`} className="border border-dark" />
+          <img
+            src={`data:image/png;base64,${(JSON.parse(note.data) as ScreenshotWeb)['img']}`}
+            className="border border-dark"
+          />
         </>
       ) : note.xtype === 'testssl' ? (
         <>
           <h2>Findings</h2>
-          {JSON.parse(note.data).hasOwnProperty('findings') && (
+          {Object.prototype.hasOwnProperty.call(JSON.parse(note.data), 'findings') && (
             <table className="table table-sm table-hover">
               <tr>
                 <th>section</th>
@@ -117,8 +139,8 @@ const NoteViewPage = () => {
                 <th>cve</th>
                 <th>data</th>
               </tr>
-              {Object.keys(JSON.parse(note.data)['findings']).map((section) =>
-                JSON.parse(note.data)['findings'][section].map((item) => (
+              {Object.keys((JSON.parse(note.data) as TestSsl)['findings']).map((section) =>
+                (JSON.parse(note.data) as TestSsl)['findings'][section].map((item) => (
                   <tr key={item.id}>
                     <td>{section}</td>
                     <td>{item.severity}</td>
@@ -133,13 +155,13 @@ const NoteViewPage = () => {
           )}
 
           <h2>Certificate information</h2>
-          <pre>{JSON.parse(note.data)['cert_txt']}</pre>
+          <pre>{(JSON.parse(note.data) as TestSsl)['cert_txt']}</pre>
 
           <h2>Data</h2>
           <pre>{note.data}</pre>
 
           <h2>Full output</h2>
-          <pre>{JSON.parse(note.data)['output']}</pre>
+          <pre>{(JSON.parse(note.data) as TestSsl)['output']}</pre>
         </>
       ) : (
         <>{note.data}</>

@@ -1,20 +1,22 @@
-import DataTable from 'datatables.net-bs4'
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import DataTable, { ConfigColumns } from 'datatables.net-bs4'
 import { ReactElement } from 'react'
 import { createRoot } from 'react-dom/client'
 
 export const getTableApi = (id: string) => {
-  const table = DataTable.tables().filter((dt) => dt.id === id)[0]
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const filteredTables = DataTable.tables().filter((dt) => dt.id === id)
 
-  return new DataTable.Api(table)
+  return new DataTable.Api(filteredTables[0] as Node)
 }
 
-export const renderElements = (parent: HTMLElement, elements: ReactElement | ReactElement[]) => {
-  const root = createRoot(parent!)
+export const renderElements = (parent: Node | Element, elements: ReactElement | ReactElement[]) => {
+  const root = createRoot(parent as Element)
 
   root.render(elements)
 }
 
-export const Column = (name: string, extra?: any) => {
+export const Column = (name: string, extra?: ConfigColumns) => {
   return {
     data: name,
     title: name,
@@ -25,7 +27,7 @@ export const Column = (name: string, extra?: any) => {
   }
 }
 
-export const ColumnButtons = (extra?: any) => {
+export const ColumnButtons = (extra?: ConfigColumns) => {
   return {
     data: '_buttons',
     title: '_buttons',
@@ -36,7 +38,7 @@ export const ColumnButtons = (extra?: any) => {
   }
 }
 
-export const ColumnSelect = (extra?: any) => {
+export const ColumnSelect = (extra?: ConfigColumns) => {
   return {
     name: '_select',
     title: '',

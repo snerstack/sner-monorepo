@@ -17,14 +17,15 @@ const ProfilePage = () => {
     Column('name'),
     Column('registered'),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: { id: number }) => {
         renderElements(
           cell,
           <ButtonGroup>
             <EditButton url={`auth/profile/webauthn/edit/${row['id']}`} navigate={navigate} />
             <DeleteButton url={`auth/profile/webauthn/delete/${row['id']}`} />
           </ButtonGroup>,
-        ),
+        )
+      },
     }),
   ]
 

@@ -42,7 +42,7 @@ const HostListPage = () => {
     ColumnSelect({ visible: toolboxesVisible }),
     Column('id', { visible: false }),
     Column('address', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, data: string, row: HostRow) =>
         renderElements(
           cell,
           <a
@@ -63,7 +63,7 @@ const HostListPage = () => {
     Column('cnt_n'),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, data: string[], row: HostRow) =>
         renderElements(
           cell,
           <div
@@ -71,7 +71,7 @@ const HostListPage = () => {
               setAnnotate({
                 show: true,
                 tags: data,
-                comment: row['comment'],
+                comment: row['comment'] || '',
                 tableId: 'host_list_table',
                 url: `/storage/host/annotate/${row['id']}`,
               })
@@ -88,7 +88,7 @@ const HostListPage = () => {
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: HostRow) =>
         renderElements(
           cell,
           <div
@@ -96,7 +96,7 @@ const HostListPage = () => {
               setAnnotate({
                 show: true,
                 tags: row['tags'],
-                comment: row['comment'],
+                comment: row['comment'] || '',
                 tableId: 'host_list_table',
                 url: `/storage/host/annotate/${row['id']}`,
               })
@@ -107,7 +107,7 @@ const HostListPage = () => {
         ),
     }),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: HostRow) =>
         renderElements(
           cell,
           <ButtonGroup>

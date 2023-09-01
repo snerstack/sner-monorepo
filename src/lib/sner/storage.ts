@@ -112,7 +112,7 @@ export const encodeRFC3986URIComponent = (str: string): string => {
   return encodeURIComponent(str).replace(reservedChars, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
 }
 
-export const getServiceFilterInfo = (info: string): string => {
+export const getServiceFilterInfo = (info: string | null): string => {
   if (info == null) {
     return 'Service.info is_null ""'
   } else {
@@ -129,7 +129,7 @@ export const getSelectedIdsFormData = (dt: Api<string>): { [key: string]: number
   let i = 0
   dt.rows({ selected: true })
     .data()
-    .each(function (item) {
+    .each((item: { id: number }) => {
       data['ids-' + i] = item['id']
       i++
     })

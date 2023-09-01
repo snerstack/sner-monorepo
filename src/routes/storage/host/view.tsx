@@ -64,7 +64,7 @@ const HostViewPage = () => {
     Column('info'),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: ServiceRow) =>
         renderElements(
           cell,
           <div
@@ -72,7 +72,7 @@ const HostViewPage = () => {
               setAnnotateService({
                 show: true,
                 tags: row['tags'],
-                comment: row['comment'],
+                comment: row['comment'] || '',
                 tableId: 'host_view_service_table',
                 url: `/storage/service/annotate/${row['id']}`,
               })
@@ -89,7 +89,7 @@ const HostViewPage = () => {
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: ServiceRow) =>
         renderElements(
           cell,
           <div
@@ -97,7 +97,7 @@ const HostViewPage = () => {
               setAnnotateService({
                 show: true,
                 tags: row['tags'],
-                comment: row['comment'],
+                comment: row['comment'] || '',
                 tableId: 'host_view_service_table',
                 url: `/storage/service/annotate/${row['id']}`,
               })
@@ -108,7 +108,7 @@ const HostViewPage = () => {
         ),
     }),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: ServiceRow) =>
         renderElements(
           cell,
           <ButtonGroup>
@@ -129,7 +129,7 @@ const HostViewPage = () => {
                 },
                 {
                   name: 'import_time',
-                  data: row['import_time'],
+                  data: row['import_time'] || '',
                 },
               ]}
             />
@@ -167,7 +167,7 @@ const HostViewPage = () => {
     Column('service_port', { visible: false }),
     Column('service', {
       className: 'service_endpoint_dropdown',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <div className="dropdown d-flex">
@@ -195,7 +195,7 @@ const HostViewPage = () => {
     }),
     Column('via_target', { visible: viaTargetVisible }),
     Column('name', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <a
@@ -211,7 +211,7 @@ const HostViewPage = () => {
     }),
     Column('xtype', { visible: false }),
     Column('severity', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <>
@@ -220,7 +220,7 @@ const HostViewPage = () => {
         ),
     }),
     Column('refs', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string[], row: VulnRow) =>
         renderElements(
           cell,
           <>
@@ -236,15 +236,15 @@ const HostViewPage = () => {
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string[], row: VulnRow) =>
         renderElements(
           cell,
           <div
             onDoubleClick={() =>
               setAnnotateVuln({
                 show: true,
-                tags: data,
-                comment: row['comment'],
+                tags: row['tags'],
+                comment: row['comment'] || '',
                 tableId: 'host_view_vuln_table',
                 url: `/storage/vuln/annotate/${row['id']}`,
               })
@@ -261,7 +261,7 @@ const HostViewPage = () => {
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <div
@@ -269,7 +269,7 @@ const HostViewPage = () => {
               setAnnotateVuln({
                 show: true,
                 tags: row['tags'],
-                comment: row['comment'],
+                comment: row['comment'] || '',
                 tableId: 'host_view_vuln_table',
                 url: `/storage/vuln/annotate/${row['id']}`,
               })
@@ -280,7 +280,7 @@ const HostViewPage = () => {
         ),
     }),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <ButtonGroup>
@@ -301,7 +301,7 @@ const HostViewPage = () => {
                 },
                 {
                   name: 'import_time',
-                  data: row['import_time'],
+                  data: row['import_time'] || '',
                 },
               ]}
             />
@@ -338,7 +338,7 @@ const HostViewPage = () => {
     Column('service_port', { visible: false }),
     Column('service', {
       className: 'service_endpoint_dropdown',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: NoteRow) =>
         renderElements(
           cell,
           <div className="dropdown d-flex">
@@ -368,7 +368,9 @@ const HostViewPage = () => {
     Column('xtype', { visible: false }),
     Column('data', {
       className: 'forcewrap',
-      render: (data, type, row, meta) => {
+      render: (data: string) => {
+        if (!data) return
+
         if (data.length >= 4096) {
           return data.substring(0, 4095) + '...'
         }
@@ -378,15 +380,15 @@ const HostViewPage = () => {
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string[], row: NoteRow) =>
         renderElements(
           cell,
           <div
             onDoubleClick={() =>
               setAnnotateNote({
                 show: true,
-                tags: data,
-                comment: row['comment'],
+                tags: row['tags'],
+                comment: row['comment'] || '',
                 tableId: 'host_view_note_table',
                 url: `/storage/note/annotate/${row['id']}`,
               })
@@ -403,7 +405,7 @@ const HostViewPage = () => {
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: NoteRow) =>
         renderElements(
           cell,
           <div
@@ -411,7 +413,7 @@ const HostViewPage = () => {
               setAnnotateNote({
                 show: true,
                 tags: row['tags'],
-                comment: row['comment'],
+                comment: row['comment'] || '',
                 tableId: 'host_view_note_table',
                 url: `/storage/note/annotate/${row['id']}`,
               })
@@ -422,7 +424,7 @@ const HostViewPage = () => {
         ),
     }),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: NoteRow) =>
         renderElements(
           cell,
           <ButtonGroup>
@@ -439,7 +441,7 @@ const HostViewPage = () => {
                 },
                 {
                   name: 'import_time',
-                  data: row['import_time'],
+                  data: row['import_time'] || '',
                 },
               ]}
             />

@@ -45,7 +45,6 @@ import VisualsPage from '@/routes/visuals'
 import env from 'app-env'
 import { useEffect, useState } from 'react'
 import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements, redirect } from 'react-router-dom'
-import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
@@ -64,7 +63,6 @@ export default function App() {
         setIsChecking(false)
       })
       .catch(() => {
-        toast.warn('Not logged in')
         setIsChecking(false)
       })
   }

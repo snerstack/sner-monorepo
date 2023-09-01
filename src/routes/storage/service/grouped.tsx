@@ -15,7 +15,7 @@ const ServiceGroupedPage = () => {
 
   const columns = [
     Column('info', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: ServiceRow) =>
         renderElements(
           cell,
           <a

@@ -16,7 +16,7 @@ const VulnGroupedPage = () => {
 
   const columns = [
     Column('name', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <a
@@ -31,14 +31,14 @@ const VulnGroupedPage = () => {
         ),
     }),
     Column('severity', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <span className={clsx('badge', getColorForSeverity(row['severity']))}>{row['severity']}</span>,
         ),
     }),
     Column('tags', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <>

@@ -10,7 +10,7 @@ const SubmitField = ({
   name: string
   errors?: string[]
   horizontal?: boolean
-  handler: () => void
+  handler: () => void | Promise<void>
 }) => {
   const HorizontalParent = horizontal ? 'div' : Fragment
   return (
@@ -23,7 +23,7 @@ const SubmitField = ({
           value={name}
           onClick={(e) => {
             e.preventDefault()
-            handler()
+            void handler()
           }}
         />
         {errors && (

@@ -82,3 +82,83 @@ interface MultipleTag {
   tableId: string
   url: string
 }
+
+interface HostRow {
+  id: number
+  address: string
+  hostname: string | null
+  os: string | null
+  cnt_s: number
+  cnt_v: number
+  cnt_n: number
+  tags: string[]
+  comment: string | null
+  created: string
+  modified: string
+  rescan_time: string
+}
+
+interface ServiceRow {
+  id: number
+  host_id: number
+  host_address: string
+  host_hostname: string
+  proto: string
+  port: number
+  name: string | null
+  info: string | null
+  tags: string[]
+  comment: string | null
+  created: string
+  modified: string
+  rescan_time: string
+  import_time: string | null
+}
+
+interface VulnRow {
+  id: number
+  host_id: number
+  host_address: string
+  host_hostname: string
+  service: string
+  service_port: number | null
+  service_proto: string | null
+  via_target: string | null
+  name: string
+  xtype: string | null
+  severity: string
+  refs: string[]
+  tags: string[]
+  comment: string | null
+  created: string
+  modified: string
+  rescan_time: string
+  import_time: string | null
+}
+
+interface VulnMulticopyRow {
+  endpoint_id: { host_id: number; service_id?: number }
+  host_address: string
+  host_hostname: string
+  servuce_info: string | null
+  servuce_proto: string | null
+  servuce_port: number | null
+}
+
+interface NoteRow {
+  id: number
+  host_id: number
+  host_address: string
+  host_hostname: string
+  service: string
+  service_port: number | null
+  service_proto: string | null
+  via_target: string | null
+  xtype: string | null
+  data: string | null
+  tags: string[]
+  comment: string | null
+  created: string
+  modified: string
+  import_time: string | null
+}

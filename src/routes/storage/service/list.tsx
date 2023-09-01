@@ -43,7 +43,7 @@ const ServiceListPage = () => {
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, data: string, row: ServiceRow) =>
         renderElements(
           cell,
           <a
@@ -65,15 +65,15 @@ const ServiceListPage = () => {
     Column('info'),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string[], row: ServiceRow) =>
         renderElements(
           cell,
           <div
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
-                tags: data,
-                comment: row['comment'],
+                tags: row['tags'],
+                comment: row['comment'] || '',
                 tableId: 'service_list_table',
                 url: `/storage/service/annotate/${row['id']}`,
               })
@@ -90,7 +90,7 @@ const ServiceListPage = () => {
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: ServiceRow) =>
         renderElements(
           cell,
           <div
@@ -98,7 +98,7 @@ const ServiceListPage = () => {
               setAnnotate({
                 show: true,
                 tags: row['tags'],
-                comment: row['comment'],
+                comment: row['comment'] || '',
                 tableId: 'service_list_table',
                 url: `/storage/service/annotate/${row['id']}`,
               })
@@ -109,7 +109,7 @@ const ServiceListPage = () => {
         ),
     }),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: ServiceRow) =>
         renderElements(
           cell,
           <ButtonGroup>
@@ -130,7 +130,7 @@ const ServiceListPage = () => {
                 },
                 {
                   name: 'import_time',
-                  data: row['import_time'],
+                  data: row['import_time'] || '',
                 },
               ]}
             />

@@ -14,7 +14,7 @@ import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
 
 const LoginPage = () => {
-  const [_, setUser] = useRecoilState(userState)
+  const [, setUser] = useRecoilState(userState)
   const [username, setUsername] = useState<string>('')
   const [password, setPassword] = useState<string>('')
 
@@ -32,7 +32,7 @@ const LoginPage = () => {
 
       navigate('/')
     } catch (err) {
-      toast.warn('Wrong credentials.')
+      toast.warn('Invalid credentials.')
     }
   }
 

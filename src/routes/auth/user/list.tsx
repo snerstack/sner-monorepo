@@ -17,7 +17,8 @@ const UserListPage = () => {
     Column('username'),
     Column('email'),
     Column('apikey', {
-      reatedCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: UserListRow) => {
+        console.log(row)
         renderElements(
           cell,
           <>
@@ -29,12 +30,13 @@ const UserListPage = () => {
               {row['apikey'] ? 'revoke' : 'generate'}
             </a>
           </>,
-        ),
+        )
+      },
     }),
     Column('roles'),
     Column('active'),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: UserListRow) =>
         renderElements(
           cell,
           <ButtonGroup>

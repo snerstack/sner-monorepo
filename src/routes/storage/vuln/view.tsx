@@ -34,7 +34,7 @@ const VulnViewPage = () => {
               <i className="fas fa-tag text-primary"></i>
             </a>
             {env.VITE_VULN_TAGS.map((tag) => (
-              <TagButton tag={tag} />
+              <TagButton tag={tag} key={tag} />
             ))}
           </div>{' '}
           <div className="btn-group">
@@ -91,7 +91,7 @@ const VulnViewPage = () => {
                   <h6 className="dropdown-header">Service endpoint URIs</h6>
                   {getLinksForService(vuln.address, vuln.hostname, vuln.service_proto, vuln.service_port).map(
                     (link) => (
-                      <span className="dropdown-item">
+                      <span className="dropdown-item" key={link}>
                         <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
                         <a rel="noreferrer" href={escapeHtml(link)}>
                           {escapeHtml(link)}
@@ -149,8 +149,8 @@ const VulnViewPage = () => {
           <>
             {vuln.xtype && vuln.xtype.startsWith('nessus.') ? (
               <>
-                {vuln.descr.split('\n').map((line) => (
-                  <p>{line}</p>
+                {vuln.descr.split('\n').map((line, index) => (
+                  <p key={index}>{line}</p>
                 ))}
               </>
             ) : (

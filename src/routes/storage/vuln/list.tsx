@@ -52,7 +52,7 @@ const VulnListPage = () => {
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <a
@@ -71,7 +71,7 @@ const VulnListPage = () => {
     Column('service_port', { visible: false }),
     Column('service', {
       className: 'service_endpoint_dropdown',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <div className="dropdown d-flex">
@@ -101,7 +101,7 @@ const VulnListPage = () => {
       visible: viaTargetVisible,
     }),
     Column('name', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <a
@@ -117,14 +117,14 @@ const VulnListPage = () => {
     }),
     Column('xtype', { visible: false }),
     Column('severity', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <span className={clsx('badge', getColorForSeverity(row['severity']))}>{row['severity']}</span>,
         ),
     }),
     Column('refs', {
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <>
@@ -140,15 +140,15 @@ const VulnListPage = () => {
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string[], row: VulnRow) =>
         renderElements(
           cell,
           <div
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
-                tags: data,
-                comment: row['comment'],
+                tags: row['tags'],
+                comment: row['comment'] || '',
                 tableId: 'vuln_list_table',
                 url: `/storage/vuln/annotate/${row['id']}`,
               })
@@ -165,7 +165,7 @@ const VulnListPage = () => {
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <div
@@ -173,7 +173,7 @@ const VulnListPage = () => {
               setAnnotate({
                 show: true,
                 tags: row['tags'],
-                comment: row['comment'],
+                comment: row['comment'] || '',
                 tableId: 'vuln_list_table',
                 url: `/storage/vuln/annotate/${row['id']}`,
               })
@@ -184,7 +184,7 @@ const VulnListPage = () => {
         ),
     }),
     ColumnButtons({
-      createdCell: (cell, data, row) =>
+      createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <ButtonGroup>
@@ -205,7 +205,7 @@ const VulnListPage = () => {
                 },
                 {
                   name: 'import_time',
-                  data: row['import_time'],
+                  data: row['import_time'] || '',
                 },
               ]}
             />
