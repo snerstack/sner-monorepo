@@ -32,8 +32,8 @@ import MultipleTagModal from '@/components/Modals/MultipleTagModal'
 const HostViewPage = () => {
   const host = useLoaderData() as Host
   const [activeTab, setActiveTab] = useLocalStorage('host_view_tabs_active')
-  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
-  const [viaTargetVisible] = useSessionStorage('dt_viatarget_column_visible')
+  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
+  const [viaTargetVisible] = useSessionStorage('dt_viatarget_column_visible', false)
   const navigate = useNavigate()
 
   const [annotateService, setAnnotateService] = useState<Annotate>({
@@ -495,7 +495,7 @@ const HostViewPage = () => {
             </a>
             <>
               {env.VITE_HOST_TAGS.map((tag) => (
-                <TagButton tag={tag} key={tag} />
+                <TagButton tag={tag} key={tag} url="/storage/host/tag_multiid" id={host.id} />
               ))}
             </>
           </div>{' '}

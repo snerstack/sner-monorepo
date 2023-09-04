@@ -1,6 +1,7 @@
 import { capitalize } from '@/utils'
 
-import { tagAction } from '@/lib/sner/storage'
+import { getTableApi } from '@/lib/DataTables'
+import { getSelectedIdsFormData, tagAction } from '@/lib/sner/storage'
 
 const TagsDropdownButton = ({ tags, url, tableId }: { tags: string[]; url: string; tableId: string }) => {
   return (
@@ -13,7 +14,9 @@ const TagsDropdownButton = ({ tags, url, tableId }: { tags: string[]; url: strin
           key={tag}
           onClick={(e) => {
             e.preventDefault()
-            tagAction({ tableId, tag, url, action: 'unset' })
+            const ids = getSelectedIdsFormData(getTableApi(tableId))
+
+            tagAction({ ids, tag, url, action: 'unset' })
           }}
         >
           {capitalize(tag)}

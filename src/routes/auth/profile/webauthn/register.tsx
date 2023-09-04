@@ -25,7 +25,7 @@ const WebAuthnRegisterPage = () => {
         <div className="form-group">
           <label className="col-sm-2 col-form-label">Registration data</label>
           <div className="col-sm-10">
-            <div className="form-control-plaintext" name="attestation_data_status">
+            <div className="form-control-plaintext">
               <span className="text-warning">To be prepared</span>
             </div>
           </div>

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import DataTable, { ConfigColumns } from 'datatables.net-bs4'
 import { ReactElement } from 'react'
 import { createRoot } from 'react-dom/client'

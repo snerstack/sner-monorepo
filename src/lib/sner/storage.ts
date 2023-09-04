@@ -124,7 +124,7 @@ export const getVulnFilterName = (name: string): string => {
   return 'Vuln.name==' + encodeRFC3986URIComponent(JSON.stringify(name))
 }
 
-export const getSelectedIdsFormData = (dt: Api<string>): { [key: string]: number } => {
+export const getSelectedIdsFormData = (dt: Api<unknown>): { [key: string]: number } => {
   const data: { [key: string]: number } = {}
   let i = 0
   dt.rows({ selected: true })
@@ -138,18 +138,16 @@ export const getSelectedIdsFormData = (dt: Api<string>): { [key: string]: number
 }
 
 export const tagAction = ({
-  tableId,
+  ids,
   tag,
   url,
   action,
 }: {
-  tableId: string
+  ids: { [key: string]: number }
   tag: string
   url: string
   action: string
 }) => {
-  const ids = getSelectedIdsFormData(getTableApi(tableId))
-
   if (!Object.values(ids).length) {
     toast.warn('No items selected')
     return

@@ -12,8 +12,8 @@ import httpClient from '@/lib/httpClient'
 
 const Nav = () => {
   const [currentUser, setCurrentUser] = useRecoilState(userState)
-  const [toolboxesVisible, setToolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
-  const [viaTargetVisible, setViaTargetVisible] = useSessionStorage('dt_viatarget_column_visible')
+  const [toolboxesVisible, setToolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
+  const [viaTargetVisible, setViaTargetVisible] = useSessionStorage('dt_viatarget_column_visible', false)
 
   const { pathname } = useLocation()
   const navigate = useNavigate()
@@ -164,7 +164,14 @@ const Nav = () => {
                     Profile
                   </Link>
                 )}
-                <a className="dropdown-item" href="#" onClick={logoutHandler}>
+                <a
+                  className="dropdown-item"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    void logoutHandler()
+                  }}
+                >
                   Logout
                 </a>
               </div>

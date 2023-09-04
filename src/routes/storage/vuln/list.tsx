@@ -30,8 +30,8 @@ import MultipleTagModal from '@/components/Modals/MultipleTagModal'
 
 const VulnListPage = () => {
   const [searchParams] = useSearchParams()
-  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
-  const [viaTargetVisible] = useSessionStorage('dt_viatarget_column_visible')
+  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
+  const [viaTargetVisible] = useSessionStorage('dt_viatarget_column_visible', false)
   const navigate = useNavigate()
   const [annotate, setAnnotate] = useState<Annotate>({
     show: false,

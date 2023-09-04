@@ -34,7 +34,7 @@ const VulnViewPage = () => {
               <i className="fas fa-tag text-primary"></i>
             </a>
             {env.VITE_VULN_TAGS.map((tag) => (
-              <TagButton tag={tag} key={tag} />
+              <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" id={vuln.id} />
             ))}
           </div>{' '}
           <div className="btn-group">

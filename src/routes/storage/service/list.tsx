@@ -22,7 +22,7 @@ import MultipleTagModal from '@/components/Modals/MultipleTagModal'
 
 const ServiceListPage = () => {
   const [searchParams] = useSearchParams()
-  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible')
+  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
   const navigate = useNavigate()
   const [annotate, setAnnotate] = useState<Annotate>({
     show: false,

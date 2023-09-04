@@ -1,8 +1,9 @@
 import { capitalize } from '@/utils'
 
-import { tagAction } from '@/lib/sner/storage'
+import { getTableApi } from '@/lib/DataTables'
+import { getSelectedIdsFormData, tagAction } from '@/lib/sner/storage'
 
-const TagButton = ({ tag, url, tableId }: { tag: string; url: string; tableId: string }) => {
+const TagButton = ({ tag, url, tableId, id }: { tag: string; url: string; tableId?: string; id?: number }) => {
   return (
     <a
       className="btn btn-outline-secondary abutton_tag_multiid"
@@ -10,7 +11,15 @@ const TagButton = ({ tag, url, tableId }: { tag: string; url: string; tableId: s
       title={`add tag ${tag}`}
       onClick={(e) => {
         e.preventDefault()
-        tagAction({ tableId, tag, url, action: 'set' })
+        if (id) {
+          tagAction({ ids: { 'ids-0': id }, tag, url, action: 'set' })
+        }
+
+        if (tableId) {
+          const ids = getSelectedIdsFormData(getTableApi(tableId))
+
+          tagAction({ ids, tag, url, action: 'set' })
+        }
       }}
     >
       {capitalize(tag)}

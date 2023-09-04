@@ -5,6 +5,11 @@ import { useSearchParams } from 'react-router-dom'
 
 interface TableConfig extends Config {
   id: string
+  ajax: Config['ajax'] & {
+    url: string
+    type: string
+    xhrFields: { withCredentials: boolean }
+  }
 }
 
 const DataTable = ({ id, ...props }: TableConfig) => {
@@ -37,16 +42,28 @@ const DataTable = ({ id, ...props }: TableConfig) => {
       })
     },
 
-    stateSaveCallback: function (settings: any, data) {
+    stateSaveCallback: function (settings, data) {
       sessionStorage.setItem(
-        'DataTables_' + settings.sInstance + '_' + window.location.pathname + '_' + window.location.search,
+        'DataTables_' +
+          (settings as { sInstance: string }).sInstance +
+          '_' +
+          window.location.pathname +
+          '_' +
+          window.location.search,
         JSON.stringify(data),
       )
     },
-    stateLoadCallback: function (settings: any) {
+    stateLoadCallback: function (settings) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return JSON.parse(
-        sessionStorage.getItem('DataTables_' + settings.sInstance + '_' + location.pathname + '_' + location.search) ??
-          '{}',
+        sessionStorage.getItem(
+          'DataTables_' +
+            (settings as { sInstance: string }).sInstance +
+            '_' +
+            location.pathname +
+            '_' +
+            location.search,
+        ) ?? '{}',
       )
     },
   }

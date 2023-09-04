@@ -74,6 +74,7 @@ const ServiceGroupedPage = () => {
       </div>
 
       <DataTable
+        id="service_grouped_table"
         columns={columns}
         ajax={{
           url:

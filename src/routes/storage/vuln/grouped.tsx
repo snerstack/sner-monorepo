@@ -93,6 +93,7 @@ const VulnGroupedPage = () => {
       <FilterForm url="/storage/vuln/grouped" />
 
       <DataTable
+        id="vuln_grouped_table"
         columns={columns}
         ajax={{
           url:

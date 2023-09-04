@@ -6,7 +6,7 @@ export const capitalizeArr = (strArr: string[]): string[] => {
   return strArr.map((str) => capitalize(str))
 }
 
-export const unique = (arr: any[]): any[] => {
+export const unique = (arr: string[]): string[] => {
   return [...new Set(arr)]
 }
 
