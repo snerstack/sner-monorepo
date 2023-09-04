@@ -303,6 +303,12 @@ def vuln_multicopy_json_route(vuln_id):
             "new_vulns": json.dumps([vuln_id] + [x.id for x in new_vulns])
         })
 
+    return jsonify({
+        "error": {
+            "code": HTTPStatus.BAD_REQUEST,
+        }
+    }), HTTPStatus.BAD_REQUEST
+
 
 @blueprint.route('/vuln/multicopy_endpoints.json', methods=['GET', 'POST'])
 @session_required('operator')

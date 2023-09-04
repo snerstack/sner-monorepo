@@ -58,6 +58,8 @@ def login_route():
             "message": "Invalid credentials."
         }}), HTTPStatus.UNAUTHORIZED
 
+    return render_template('auth/login.html', form=form, oauth_enabled=bool(current_app.config['OIDC_NAME']))
+
 
 @blueprint.route('/logout')
 def logout_route():
