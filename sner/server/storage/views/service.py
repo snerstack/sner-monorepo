@@ -68,6 +68,33 @@ def service_list_json_route():
     services = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(services, cls=SnerJSONEncoder), mimetype='application/json')
 
+@blueprint.route('/service/view/<service_id>.json')
+@session_required('operator')
+def service_view_json_route(service_id):
+    """view service"""
+
+    service = Service.query.get(service_id)
+
+    if service is None:
+        return jsonify({"error": {
+            "code": 404,
+            "message": "Service not found."
+        }}), HTTPStatus.NOT_FOUND
+
+    return jsonify({
+        "id": service.id,
+        "host_id": service.host.id,
+        "address": service.host.address,
+        "hostname": service.host.hostname,
+        "proto": service.proto,
+        "port": service.port,
+        "state": service.state,
+        "name": service.name,
+        "info": service.info,
+        "tags": service.tags,
+        "comment": service.comment,
+    })
+
 
 @blueprint.route('/service/add/<host_id>', methods=['GET', 'POST'])
 @session_required('operator')

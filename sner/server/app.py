@@ -13,6 +13,7 @@ import flask.cli
 from flask import Flask, has_request_context, render_template, request
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf
+from flask_cors import CORS
 from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -188,6 +189,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app.config.update(DEFAULT_CONFIG)  # default config
     app.config.update(config_from_yaml(config_file))  # service configuration
     app.config.update(config_from_yaml(os.environ.get(config_env)))  # wsgi/container config
+    app.config["WTF_CSRF_ENABLED"] = False # csrf temporary disabled due to frontend development
 
     if app.config["DEBUG"]:
         logging.getLogger('sner.server').setLevel(logging.DEBUG)
@@ -195,6 +197,8 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     if app.config['XFLASK_PROXYFIX']:
         app.wsgi_app = ProxyFix(app.wsgi_app)
     app.session_interface = FilesystemSessionInterface(os.path.join(app.config['SNER_VAR'], 'sessions'), app.config['SNER_SESSION_IDLETIME'])
+
+    CORS(app, supports_credentials=True)
 
     db.init_app(app)
     jsglue.init_app(app)

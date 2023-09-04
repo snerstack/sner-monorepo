@@ -127,6 +127,34 @@ def host_view_route(host_id):
     host = Host.query.get(host_id)
     return render_template('storage/host/view.html', host=host, button_form=ButtonForm())
 
+@blueprint.route('/host/view/<host_id>.json')
+@session_required('operator')
+def host_view_json_route(host_id):
+    """view host"""
+
+    host = Host.query.get(host_id)
+
+    if host is None:
+        return jsonify({"error": {
+            "code": 404,
+            "message": "Host not found."
+        }}), HTTPStatus.NOT_FOUND
+    
+    return jsonify({
+        "id": host.id,
+        "address": host.address,
+        "hostname": host.hostname,
+        "created": host.created,
+        "modified": host.modified,
+        "rescan_time": host.rescan_time,
+        "os": host.os,
+        "tags": host.tags,
+        "comment": host.comment,
+        "servicesCount": len(host.services),
+        "vulnsCount": len(host.vulns),
+        "notesCount": len(host.notes)
+    })
+
 
 @blueprint.route('/host/delete_multiid', methods=['POST'])
 @session_required('operator')

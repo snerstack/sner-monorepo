@@ -60,6 +60,37 @@ def note_list_json_route():
     notes = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(notes, cls=SnerJSONEncoder), mimetype='application/json')
 
+@blueprint.route('/note/view/<note_id>.json')
+@session_required('operator')
+def note_view_json_route(note_id):
+    """view service"""
+
+    note = Note.query.get(note_id)
+
+    if note is None:
+        return jsonify({"error": {
+            "code": 404,
+            "message": "Note not found."
+        }}), HTTPStatus.NOT_FOUND
+
+    return jsonify({
+        "id": note.id,
+        "host_id": note.host.id,
+        "address": note.host.address,
+        "hostname": note.host.hostname,
+        "service_id": getattr(note.service, 'id', None),
+        "service_port": getattr(note.service, 'port', None),
+        "service_proto": getattr(note.service, 'proto', None),
+        "via_target": note.via_target,
+        "created": note.created,
+        "modified": note.modified,
+        "import_time": note.import_time,
+        "xtype": note.xtype,
+        "data": note.data,
+        "tags": note.tags,
+        "comment": note.comment,
+    })
+
 
 @blueprint.route('/note/add/<model_name>/<model_id>', methods=['GET', 'POST'])
 @session_required('operator')

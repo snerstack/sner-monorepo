@@ -9,7 +9,7 @@ from http import HTTPStatus
 from authlib.common.errors import AuthlibBaseError
 from fido2 import cbor
 from fido2.webauthn import AuthenticatorData, CollectedClientData
-from flask import current_app, flash, redirect, request, render_template, Response, session, url_for
+from flask import current_app, flash, redirect, request, render_template, Response, session, url_for, jsonify, after_this_request
 from flask_login import login_user, logout_user
 from requests.exceptions import HTTPError
 from sqlalchemy import func
@@ -28,6 +28,7 @@ def login_route():
     """login route"""
 
     form = LoginForm()
+
     if form.validate_on_submit():
         user = User.query.filter(User.active, User.username == form.username.data).one_or_none()
         if user:
@@ -40,15 +41,22 @@ def login_route():
                     regenerate_session()
                     login_user(user)
                     current_app.logger.info('auth.login password')
-                    return redirect_after_login()
-            else:
+
+                    return jsonify({
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "roles": user.roles
+                    })
+            else: 
                 if user.webauthn_credentials:
                     session['webauthn_login_user_id'] = user.id
                     return redirect(url_for('auth.login_webauthn_route', **request.args))
 
-        flash('Invalid credentials.', 'error')
-
-    return render_template('auth/login.html', form=form, oauth_enabled=bool(current_app.config['OIDC_NAME']))
+        return jsonify({"error": {
+            "code": 401,
+            "message": "Invalid credentials."
+        }}), HTTPStatus.UNAUTHORIZED
 
 
 @blueprint.route('/logout')
@@ -58,7 +66,8 @@ def logout_route():
     current_app.logger.info('auth.logout')
     logout_user()
     session.clear()
-    return redirect(url_for('index_route'))
+    
+    return jsonify({"message": "Successfully logged out."})
 
 
 @blueprint.route('/login_totp', methods=['GET', 'POST'])

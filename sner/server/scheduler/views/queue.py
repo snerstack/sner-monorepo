@@ -98,8 +98,7 @@ def queue_enqueue_route(queue_id):
 
     if form.validate_on_submit():
         QueueManager.enqueue(Queue.query.get(queue_id), form.data['targets'])
-        return redirect(url_for('scheduler.queue_list_route'))
-
+        return jsonify({"message": "success"})
     return render_template('scheduler/queue/enqueue.html', form=form)
 
 

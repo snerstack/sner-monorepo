@@ -71,6 +71,42 @@ def vuln_list_json_route():
     vulns = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype='application/json')
 
+@blueprint.route('/vuln/view/<vuln_id>.json')
+@session_required('operator')
+def vuln_view_json_route(vuln_id):
+    """view service"""
+
+    vuln = Vuln.query.get(vuln_id)
+
+    if vuln is None:
+        return jsonify({"error": {
+            "code": 404,
+            "message": "Vuln not found."
+        }}), HTTPStatus.NOT_FOUND
+
+    return jsonify({
+        "id": vuln.id,
+        "host_id": vuln.host.id,
+        "address": vuln.host.address,
+        "hostname": vuln.host.hostname,
+        "service_id": getattr(vuln.service, 'id', None),
+        "service_port": getattr(vuln.service, 'port', None),
+        "service_proto": getattr(vuln.service, 'proto', None),
+        "created": vuln.created,
+        "modified": vuln.modified,
+        "rescan_time": vuln.rescan_time,
+        "import_time": vuln.import_time,
+        "via_target": vuln.via_target,
+        "name": vuln.name,
+        "xtype": vuln.xtype,
+        "severity": vuln.severity.value,
+        "descr": vuln.descr,
+        "data": vuln.data,
+        "refs": vuln.refs,
+        "tags": vuln.tags,
+        "comment": vuln.comment,
+    })
+
 
 @blueprint.route('/vuln/add/<model_name>/<model_id>', methods=['GET', 'POST'])
 @session_required('operator')
@@ -242,6 +278,28 @@ def vuln_multicopy_route(vuln_id):
         return redirect(url_for('storage.vuln_list_route', filter=filter_string))
 
     return render_template('storage/vuln/multicopy.html', form=form)
+
+@blueprint.route('/vuln/multicopy/<int:vuln_id>.json', methods=['POST'])
+@session_required('operator')
+def vuln_multicopy_json_route(vuln_id):
+    """copu vuln"""
+
+    vuln = Vuln.query.get(vuln_id)
+    form = VulnMulticopyForm(obj=vuln)
+
+    if form.validate_on_submit():
+        new_vulns = []
+        for endpoint in form.endpoints.data:
+            vuln = Vuln()
+            form.populate_obj(vuln)
+            vuln.update(endpoint)
+            db.session.add(vuln)
+            new_vulns.append(vuln)
+        db.session.commit()
+
+        return jsonify({
+            "new_vulns": json.dumps([vuln_id] + [x.id for x in new_vulns])
+        })
 
 
 @blueprint.route('/vuln/multicopy_endpoints.json', methods=['GET', 'POST'])
