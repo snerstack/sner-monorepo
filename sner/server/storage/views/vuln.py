@@ -71,6 +71,7 @@ def vuln_list_json_route():
     vulns = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype='application/json')
 
+
 @blueprint.route('/vuln/view/<vuln_id>.json')
 @session_required('operator')
 def vuln_view_json_route(vuln_id):
@@ -278,6 +279,7 @@ def vuln_multicopy_route(vuln_id):
         return redirect(url_for('storage.vuln_list_route', filter=filter_string))
 
     return render_template('storage/vuln/multicopy.html', form=form)
+
 
 @blueprint.route('/vuln/multicopy/<int:vuln_id>.json', methods=['POST'])
 @session_required('operator')

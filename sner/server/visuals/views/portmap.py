@@ -48,6 +48,7 @@ def portmap_route():
 
     return render_template('visuals/portmap.html', portmap=portmap, portstates=portstates)
 
+
 @blueprint.route('/portmap.json')
 @session_required('operator')
 def portmap_json_route():
@@ -118,6 +119,7 @@ def portmap_portstat_route(port):
         comments=comments.all()
     )
 
+
 @blueprint.route('/portmap_portstat/<port>.json')
 @session_required('operator')
 def portmap_portstat_json_route(port):
@@ -155,6 +157,11 @@ def portmap_portstat_json_route(port):
         "portname": portname,
         "stats": [{"proto": proto, "count": count} for proto, count in stats.all()],
         "infos": [{"info": info, "count": count} for info, count in infos.all()],
-        "hosts": [{"host_address": host_address, "host_hostname": host_hostname, "host_id": host_id} for host_address, host_hostname, host_id in hosts.all()],
+        "hosts": [{
+            "host_address": host_address,
+            "host_hostname": host_hostname,
+            "host_id": host_id
+            }
+            for host_address, host_hostname, host_id in hosts.all()],
         "comments": [{"comment": comment[0]} for comment in comments.all()]
     })

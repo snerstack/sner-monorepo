@@ -60,6 +60,7 @@ def note_list_json_route():
     notes = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(notes, cls=SnerJSONEncoder), mimetype='application/json')
 
+
 @blueprint.route('/note/view/<note_id>.json')
 @session_required('operator')
 def note_view_json_route(note_id):

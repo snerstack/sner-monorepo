@@ -9,7 +9,7 @@ from http import HTTPStatus
 from authlib.common.errors import AuthlibBaseError
 from fido2 import cbor
 from fido2.webauthn import AuthenticatorData, CollectedClientData
-from flask import current_app, flash, redirect, request, render_template, Response, session, url_for, jsonify, after_this_request
+from flask import current_app, flash, redirect, request, render_template, Response, session, url_for, jsonify
 from flask_login import login_user, logout_user
 from requests.exceptions import HTTPError
 from sqlalchemy import func
@@ -48,7 +48,7 @@ def login_route():
                         "email": user.email,
                         "roles": user.roles
                     })
-            else: 
+            else:
                 if user.webauthn_credentials:
                     session['webauthn_login_user_id'] = user.id
                     return redirect(url_for('auth.login_webauthn_route', **request.args))
@@ -66,7 +66,7 @@ def logout_route():
     current_app.logger.info('auth.logout')
     logout_user()
     session.clear()
-    
+
     return jsonify({"message": "Successfully logged out."})
 
 

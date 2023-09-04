@@ -68,6 +68,7 @@ def service_list_json_route():
     services = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(services, cls=SnerJSONEncoder), mimetype='application/json')
 
+
 @blueprint.route('/service/view/<service_id>.json')
 @session_required('operator')
 def service_view_json_route(service_id):

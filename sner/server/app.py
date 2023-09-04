@@ -189,7 +189,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app.config.update(DEFAULT_CONFIG)  # default config
     app.config.update(config_from_yaml(config_file))  # service configuration
     app.config.update(config_from_yaml(os.environ.get(config_env)))  # wsgi/container config
-    app.config["WTF_CSRF_ENABLED"] = False # csrf temporary disabled due to frontend development
+    app.config["WTF_CSRF_ENABLED"] = False  # csrf temporary disabled due to frontend development
 
     if app.config["DEBUG"]:
         logging.getLogger('sner.server').setLevel(logging.DEBUG)

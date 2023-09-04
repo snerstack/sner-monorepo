@@ -19,24 +19,24 @@ from sner.server.forms import ButtonForm
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 from sner.server.utils import filter_query
 
+
 @blueprint.route('/user/@me')
 def user_me_route():
     """get current user"""
 
     if current_user.is_authenticated:
         return jsonify({
-        "id": current_user.id,
-        "username": current_user.username,
-        "email": current_user.email,
-        "roles": current_user.roles
-    })
+            "id": current_user.id,
+            "username": current_user.username,
+            "email": current_user.email,
+            "roles": current_user.roles
+            })
 
     return jsonify({"error": {
         "code": 401,
         "message": "Not authenticated."
     }}), HTTPStatus.UNAUTHORIZED
 
-    
 
 @blueprint.route('/user/list')
 @session_required('admin')

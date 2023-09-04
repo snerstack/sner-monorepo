@@ -127,6 +127,7 @@ def host_view_route(host_id):
     host = Host.query.get(host_id)
     return render_template('storage/host/view.html', host=host, button_form=ButtonForm())
 
+
 @blueprint.route('/host/view/<host_id>.json')
 @session_required('operator')
 def host_view_json_route(host_id):
@@ -139,7 +140,7 @@ def host_view_json_route(host_id):
             "code": 404,
             "message": "Host not found."
         }}), HTTPStatus.NOT_FOUND
-    
+
     return jsonify({
         "id": host.id,
         "address": host.address,
