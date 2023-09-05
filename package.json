@@ -31,6 +31,7 @@
   "devDependencies": {
     "@niku/vite-env-caster": "^1.0.0",
     "@trivago/prettier-plugin-sort-imports": "^4.2.0",
+    "@types/d3-cloud": "^1.2.5",
     "@types/node": "^20.5.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",

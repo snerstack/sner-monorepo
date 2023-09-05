@@ -227,14 +227,29 @@ export default function App() {
 
         <Route path="visuals">
           <Route index element={<VisualsPage />} />
-          <Route path="internals" element={<InternalsPage />} />
-          <Route path="dnstree" element={<DnsTreePage />} />
+
           <Route
-            path="portmap"
-            element={<PortmapPage />}
-            loader={async () => requestDataHandler(`/visuals/portmap.json`)}
-          />
-          <Route path="portinfos" element={<PortinfosPage />} />
+            element={<ProtectedRoute authenticated={user.isAuthenticated} authorized={user.roles.includes('admin')} />}
+          >
+            <Route
+              path="internals"
+              element={<InternalsPage />}
+              loader={async () => requestDataHandler(`/visuals/internals.json`)}
+            />
+          </Route>
+          <Route
+            element={
+              <ProtectedRoute authenticated={user.isAuthenticated} authorized={user.roles.includes('operator')} />
+            }
+          >
+            <Route path="dnstree" element={<DnsTreePage />} />
+            <Route
+              path="portmap"
+              element={<PortmapPage />}
+              loader={async () => requestDataHandler(`/visuals/portmap.json`)}
+            />
+            <Route path="portinfos" element={<PortinfosPage />} />
+          </Route>
         </Route>
 
         <Route path="forbidden" element={<NotAuthorizedPage />} />

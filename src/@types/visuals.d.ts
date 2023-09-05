@@ -6,3 +6,8 @@ interface PortDetails {
   hosts: { host_address: string; host_hostname: string; host_id: number }[]
   comments: { comment: string }[]
 }
+
+interface Internals {
+  exclusions: string
+  planner: string
+}

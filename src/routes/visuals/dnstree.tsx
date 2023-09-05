@@ -1,3 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import env from 'app-env'
 import clsx from 'clsx'
 import * as d3 from 'd3'
@@ -9,6 +16,23 @@ import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 
 import '../../styles/dnstree.css'
+
+type D3Node = {
+  id: number
+  index: number
+  name: string
+  size: number
+  vx: number
+  vy: number
+  x: number
+  y: number
+}
+
+type D3Link = {
+  source: Node
+  target: Node
+  index: number
+}
 
 const DnsTreePage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -29,7 +53,7 @@ const DnsTreePage = () => {
       })
     }
 
-    const colors = d3.scaleOrdinal().range(['red', 'green', 'blue', '#6b486b', '#a05d56', '#d0743c', '#ff8c00'])
+    const colors = d3.scaleOrdinal(d3.schemeCategory10)
     const radius = 5
 
     const width = containerRef.current!.clientWidth
@@ -37,15 +61,13 @@ const DnsTreePage = () => {
 
     const svg = d3.select('svg').attr('width', width).attr('height', height)
 
-    var linkElements
-    var nodeElements
-    var textElements
+    let linkElements: d3.Selection<SVGLineElement, D3Link, SVGGElement, unknown>
+    let nodeElements: d3.Selection<SVGCircleElement, D3Node, SVGGElement, unknown> & string
+    let textElements: d3.Selection<SVGTextElement, D3Node, SVGGElement, unknown>
 
-    var linkForce = d3
+    const linkForce = d3
       .forceLink()
-      .id(function (link) {
-        return link.id
-      })
+      .id((link) => link.id)
       .distance(parseInt(searchParams.get('distance')!))
       .strength(1)
 
@@ -57,16 +79,16 @@ const DnsTreePage = () => {
 
     const dragDrop = d3
       .drag()
-      .on('start', function (node) {
+      .on('start', (node) => {
         node.fx = node.x
         node.fy = node.y
       })
-      .on('drag', function (node) {
+      .on('drag', (node) => {
         simulation.alphaTarget(0.7).restart()
         node.fx = d3.event.x
         node.fy = d3.event.y
       })
-      .on('end', function (node) {
+      .on('end', (node) => {
         if (!d3.event.active) {
           simulation.alphaTarget(0)
         }
@@ -80,12 +102,16 @@ const DnsTreePage = () => {
       { credentials: 'include' },
     )
       .then((data) => {
-        const { nodes, links } = data
+        const { nodes, links } = data as {
+          nodes: D3Node[]
+          links: D3Link[]
+        }
+
         update(nodes, links)
       })
       .catch(() => toast.error('Error while fetching node and link data'))
 
-    function update(nodes, links) {
+    function update(nodes: D3Node[], links: D3Link[]) {
       linkElements = svg
         .append('g')
         .attr('class', 'links')
@@ -103,10 +129,10 @@ const DnsTreePage = () => {
         .enter()
         .append('circle')
         .attr('class', 'node')
-        .attr('r', function (d, i) {
-          return d.hasOwnProperty('size') ? d.size : 5
+        .attr('r', (d) => {
+          return Object.prototype.hasOwnProperty.call(d, 'size') ? d.size : 5
         })
-        .style('fill', function (d, i) {
+        .style('fill', (_d, i) => {
           return colors(i)
         })
         .call(dragDrop)
@@ -134,32 +160,32 @@ const DnsTreePage = () => {
 
     function ticked() {
       nodeElements
-        .attr('cx', function (d) {
+        .attr('cx', (d) => {
           return (d.x = Math.max(radius, Math.min(width - radius, d.x)))
         })
-        .attr('cy', function (d) {
+        .attr('cy', (d) => {
           return (d.y = Math.max(radius, Math.min(height - radius, d.y)))
         })
 
       textElements
-        .attr('x', function (d) {
+        .attr('x', (d) => {
           return d.x
         })
-        .attr('y', function (d) {
+        .attr('y', (d) => {
           return d.y
         })
 
       linkElements
-        .attr('x1', function (d) {
+        .attr('x1', (d) => {
           return d.source.x
         })
-        .attr('y1', function (d) {
+        .attr('y1', (d) => {
           return d.source.y
         })
-        .attr('x2', function (d) {
+        .attr('x2', (d) => {
           return d.target.x
         })
-        .attr('y2', function (d) {
+        .attr('y2', (d) => {
           return d.target.y
         })
     }
