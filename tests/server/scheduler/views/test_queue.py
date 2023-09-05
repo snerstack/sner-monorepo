@@ -105,7 +105,7 @@ def test_queue_enqueue_route(cl_operator, queue, target_factory):
     form = cl_operator.get(url_for('scheduler.queue_enqueue_route', queue_id=queue.id)).forms['queue_enqueue_form']
     form['targets'] = f'{atarget.target}\n \n '
     response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    assert response.status_code == HTTPStatus.OK
 
     tqueue = Queue.query.get(queue.id)
     assert len(tqueue.targets) == 1

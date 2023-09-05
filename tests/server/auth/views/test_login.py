@@ -27,27 +27,24 @@ def test_session_login(client, user_factory):
     form = client.get(url_for('auth.login_route')).forms['login_form']
     form['username'] = user.username
     form['password'] = 'invalid'
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//script[contains(text(), "toastr[\'error\'](\'Invalid credentials.\');")]')
+    response = form.submit(expect_errors=True)
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json["error"]["message"] == "Invalid credentials."
 
     form = client.get(url_for('auth.login_route')).forms['login_form']
     form['username'] = user.username
     form['password'] = password
     response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
-
-    response = client.get(url_for('index_route'))
-    assert response.lxml.xpath('//a[text()="Logout"]')
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_session_logout(cl_user):
     """test logout"""
 
     response = cl_user.get(url_for('auth.logout_route'))
-    assert response.status_code == HTTPStatus.FOUND
-    response = response.follow()
-    assert response.lxml.xpath('//a[text()="Login"]')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json["message"] == "Successfully logged out."
 
 
 def test_session_unauthorized(client, user_factory):
@@ -64,8 +61,7 @@ def test_session_unauthorized(client, user_factory):
     form['username'] = user.username
     form['password'] = password
     response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
-    assert url_for('auth.profile_route') in response.headers['Location']
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_session_forbidden(cl_user):
@@ -133,10 +129,7 @@ def test_login_webauthn(client, webauthn_credential_factory):
     form['assertion'] = b64encode(cbor.encode(assertion_data))
     response = form.submit()
     # and back to standard test codeflow
-    assert response.status_code == HTTPStatus.FOUND
-
-    response = client.get(url_for('index_route'))
-    assert response.lxml.xpath('//a[text()="Logout"]')
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_profile_webauthn_pkcro_route_invalid_request(client):
