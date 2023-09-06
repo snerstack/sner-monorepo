@@ -1,17 +1,52 @@
-import { useState } from 'react'
+import env from 'app-env'
+import axios from 'axios'
+import QRCode from 'qrcode'
+import { useEffect, useState } from 'react'
+import { useLoaderData, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+
+import httpClient from '@/lib/httpClient'
 
 import SubmitField from '@/components/Fields/SubmitField'
 import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
 
 const TOTPPage = () => {
-  const [code, setCode] = useState<string>('')
+  const { provisioning_url, secret } = useLoaderData() as { provisioning_url: string; secret: string }
+  const navigate = useNavigate()
 
-  const totpHandler = () => {}
+  const [code, setCode] = useState<string>('')
+  const [qrCode, setQrcode] = useState<string>('')
+
+  useEffect(() => {
+    if (provisioning_url) {
+      QRCode.toDataURL(provisioning_url)
+        .then((data: string) => setQrcode(data))
+        .catch((err) => console.log(err))
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const totpHandler = async () => {
+    const formData = new FormData()
+    formData.append('code', code)
+
+    try {
+      const resp = await httpClient.post<{ message: string }>(env.VITE_SERVER_URL + '/auth/profile/totp', formData)
+
+      toast.success(resp.data.message)
+      navigate('/auth/profile')
+    } catch (err) {
+      if (axios.isAxiosError<{ error: { message: string; code: number } }>(err)) {
+        toast.error(err.response?.data.error.message)
+      }
+    }
+  }
 
   return (
     <div>
-      <Heading headings={['User profile', '2-factor authentication setup (enable)']} />
+      <Heading headings={['User profile', secret ? '2-factor authentication setup (enable)' : 'Disable']} />
       <div>
         To enable two-factor authentication::
         <ol>
@@ -20,21 +55,18 @@ const TOTPPage = () => {
         </ol>
       </div>
       <form id="totp_code_form" method="post">
-        {/* {secret && ( */}
-        {true && (
+        {secret && (
           <>
             <div className="form-group row">
               <label className="col-sm-2 col-form-label">Secret</label>
               <div className="col-sm-10">
-                <div className="form-control-plaintext">.secret</div>
+                <div className="form-control-plaintext">{secret}</div>
               </div>
             </div>
             <div className="form-group row">
               <label className="col-sm-2 col-form-label">Secret QR code</label>
               <div className="col-sm-10">
-                <div className="form-control-plaintext">
-                  {/* <img id="2faqrcode" /><script>$('#2faqrcode').attr('src', new QRious({value: 'provisioning_url|safe', size: 200}).toDataURL());</script> */}
-                </div>
+                <div className="form-control-plaintext">{qrCode && <img src={qrCode} />}</div>
               </div>
             </div>
           </>

@@ -98,9 +98,9 @@ export default function App() {
             element={<ProtectedRoute authenticated={user.isAuthenticated} authorized={user.roles.includes('user')} />}
           >
             <Route path="profile">
-              <Route index element={<ProfilePage />} />
+              <Route index element={<ProfilePage />} loader={async () => requestDataHandler(`/auth/profile.json`)} />
               <Route path="changepassword" element={<ChangePasswordPage />} />
-              <Route path="totp" element={<TOTPPage />} />
+              <Route path="totp" element={<TOTPPage />} loader={async () => requestDataHandler(`/auth/profile/totp`)} />
               <Route path="webauthn">
                 <Route path="register" element={<WebAuthnRegisterPage />} />
                 <Route path="edit" element={<WebAuthnEditPage />} />

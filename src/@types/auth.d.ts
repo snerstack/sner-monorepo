@@ -6,3 +6,12 @@ interface UserListRow {
   roles: string[]
   username: string
 }
+
+interface Profile {
+  api_networks: string[]
+  has_apikey: boolean
+  email: string
+  username: string
+  has_totp: boolean
+  webauthn_credentials: string[]
+}

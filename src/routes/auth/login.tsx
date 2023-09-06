@@ -26,7 +26,15 @@ const LoginPage = () => {
     formData.append('password', password)
 
     try {
-      const resp = await httpClient.post<User>(env.VITE_SERVER_URL + '/auth/login', formData)
+      const resp = await httpClient.post<User | { totp_login_required: boolean }>(
+        env.VITE_SERVER_URL + '/auth/login',
+        formData,
+      )
+
+      if ('totp_login_required' in resp.data) {
+        navigate('/auth/login_totp')
+        return
+      }
 
       setUser({ ...resp.data, isAuthenticated: true })
 
