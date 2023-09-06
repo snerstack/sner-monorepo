@@ -71,18 +71,16 @@ def test_profile_changepassword_route(cl_user):
 def test_profile_totp_route_enable(cl_user):
     """user profile enable totp"""
 
-    form = cl_user.get(url_for('auth.profile_totp_route')).forms['totp_code_form']
-    form['code'] = 'invalid'
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//div[@class="invalid-feedback" and text()="Invalid code (enable)"]')
+    form_data = [('code', 'invalid')]
+    response = cl_user.post(url_for('auth.profile_totp_route'), params=form_data, expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json["error"]["message"] == "Invalid code."
 
     response = cl_user.get(url_for('auth.profile_totp_route'))
-    secret = cl_user.app.session_interface.open_session(cl_user.app, response.request)['totp_new_secret']
-    form = response.forms['totp_code_form']
-    form['code'] = TOTPImpl(secret).current_code()
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    secret = response.json["secret"]
+    form_data = [('code', TOTPImpl(secret).current_code())]
+    response = cl_user.post(url_for('auth.profile_totp_route'), params=form_data)
+    assert response.status_code == HTTPStatus.OK
     user = User.query.filter(User.username == 'pytest_user').one()
     assert user.totp
 
@@ -95,16 +93,14 @@ def test_profile_totp_route_disable(cl_user):
     user.totp = tmp_secret
     db.session.commit()
 
-    form = cl_user.get(url_for('auth.profile_totp_route')).forms['totp_code_form']
-    form['code'] = 'invalid'
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//div[@class="invalid-feedback" and text()="Invalid code (disable)"]')
+    form_data = [('code', 'invalid')]
+    response = cl_user.post(url_for('auth.profile_totp_route'), params=form_data, expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json["error"]["message"] == "Invalid code."
 
-    form = cl_user.get(url_for('auth.profile_totp_route')).forms['totp_code_form']
-    form['code'] = TOTPImpl(tmp_secret).current_code()
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    form_data = [('code', TOTPImpl(tmp_secret).current_code())]
+    response = cl_user.post(url_for('auth.profile_totp_route'), params=form_data)
+    assert response.status_code == HTTPStatus.OK
     user = User.query.filter(User.username == 'pytest_user').one()
     assert not user.totp
 
@@ -193,10 +189,10 @@ def test_profile_apikey_route(cl_user):
 
     form = cl_user.get(url_for('auth.profile_apikey_route', action='generate')).form
     response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    assert response.status_code == HTTPStatus.OK
     assert user.apikey
 
     form = cl_user.get(url_for('auth.profile_apikey_route', action='revoke')).form
     response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    assert response.status_code == HTTPStatus.OK
     assert not user.apikey

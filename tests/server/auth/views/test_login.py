@@ -86,21 +86,17 @@ def test_login_totp(client, user_factory):
     form['username'] = user.username
     form['password'] = password
     response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
-
-    form = response.follow().forms['totp_code_form']
-    form['code'] = 'invalid'
-    response = form.submit()
     assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//div[@class="invalid-feedback" and text()="Invalid code"]')
 
-    form = response.forms['totp_code_form']
+    form = client.get(url_for('auth.login_totp_route')).forms['totp_code_form']
+    form['code'] = 'invalid'
+    response = form.submit(expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json["error"]["message"] == "Invalid code."
+
     form['code'] = TOTPImpl(secret).current_code()
     response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
-
-    response = client.get(url_for('index_route'))
-    assert response.lxml.xpath('//a[text()="Logout"]')
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_login_webauthn(client, webauthn_credential_factory):

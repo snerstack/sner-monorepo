@@ -36,7 +36,7 @@ def login_route():
                 if PWS.compare(PWS.hash(form.password.data, PWS.get_salt(user.password)), user.password):
                     if user.totp:
                         session['totp_login_user_id'] = user.id
-                        return redirect(url_for('auth.login_totp_route', **request.args))
+                        return jsonify({"totp_login_required": True})
 
                     regenerate_session()
                     login_user(user)
@@ -86,9 +86,17 @@ def login_totp_route():
             regenerate_session()
             login_user(user)
             current_app.logger.info('auth.login totp')
-            return redirect_after_login()
+            return jsonify({
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "roles": user.roles
+            })
 
-        form.code.errors.append('Invalid code')
+        return jsonify({"error": {
+            "code": 400,
+            "message": "Invalid code."
+        }}), HTTPStatus.BAD_REQUEST
 
     return render_template('auth/login_totp.html', form=form)
 

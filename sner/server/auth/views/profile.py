@@ -13,7 +13,7 @@ from socket import getfqdn
 from datatables import ColumnDT, DataTables
 from fido2 import cbor
 from fido2.webauthn import AttestationObject, CollectedClientData
-from flask import current_app, flash, redirect, render_template, request, Response, session, url_for
+from flask import current_app, flash, redirect, render_template, request, Response, session, url_for, jsonify
 from flask_login import current_user
 from sqlalchemy import literal_column
 
@@ -45,6 +45,21 @@ def profile_route():
     )
 
 
+@blueprint.route('/profile.json')
+@session_required('user')
+def profile_json_route():
+    """general user profile route"""
+
+    return jsonify({
+        "username": current_user.username,
+        "email": current_user.email,
+        "api_networks": current_user.api_networks,
+        "has_apikey": current_user.apikey is not None,
+        "has_totp": current_user.totp is not None,
+        "webauthn_credentials": current_user.webauthn_credentials
+        })
+
+
 @blueprint.route('/profile/changepassword', methods=['GET', 'POST'])
 @session_required('user')
 def profile_changepassword_route():
@@ -73,6 +88,7 @@ def profile_totp_route():
 
     user = User.query.get(current_user.id)
     form = TotpCodeForm()
+
     if form.validate_on_submit():
         if not user.totp:
             # enable totp
@@ -81,18 +97,23 @@ def profile_totp_route():
                 db.session.commit()
                 session.pop('totp_new_secret', None)
                 current_app.logger.info('auth.profile totp enabled')
-                return redirect(url_for('auth.profile_route'))
-            form.code.errors.append('Invalid code (enable)')
+                return jsonify({"message": "TOTP successfully enabled."})
+            return jsonify({"error": {
+                "code": 400,
+                "message": "Invalid code."
+            }}), HTTPStatus.BAD_REQUEST
 
-        else:
-            # disable totp
-            if TOTPImpl(user.totp).verify_code(form.code.data):
-                user.totp = None
-                db.session.commit()
-                session.pop('totp_new_secret', None)
-                current_app.logger.info('auth.profile totp disabled')
-                return redirect(url_for('auth.profile_route'))
-            form.code.errors.append('Invalid code (disable)')
+        # disable totp
+        if TOTPImpl(user.totp).verify_code(form.code.data):
+            user.totp = None
+            db.session.commit()
+            session.pop('totp_new_secret', None)
+            current_app.logger.info('auth.profile totp disabled')
+            return jsonify({"message": "TOTP successfully disabled."})
+        return jsonify({"error": {
+            "code": 400,
+            "message": "Invalid code."
+        }}), HTTPStatus.BAD_REQUEST
 
     provisioning_url = None
     if not user.totp:
@@ -101,8 +122,9 @@ def profile_totp_route():
         provisioning_url = TOTPImpl(session.get('totp_new_secret')).get_provisioning_uri(
             user.username, current_app.config['SERVER_NAME'] or getfqdn()
         )
+        return jsonify({"provisioning_url": provisioning_url, "secret": session['totp_new_secret']})
 
-    return render_template('auth/profile/totp.html', form=form, secret=session.get('totp_new_secret'), provisioning_url=provisioning_url)
+    return jsonify({"provisioning_url": "", "secret": ""})
 
 
 # webauthn.guide
@@ -238,14 +260,10 @@ def profile_apikey_route(action):
     form = ButtonForm()
     if form.validate_on_submit():
         if action == 'generate':
-            session['new_apikey'] = UserManager.apikey_generate(current_user)
-            current_app.logger.info('auth.profile apikey generate')
-            return redirect(url_for('auth.profile_route'))
+            return jsonify({"apikey": UserManager.apikey_generate(current_user)})
 
         if action == 'revoke':
-            session.pop('new_apikey', None)
             UserManager.apikey_revoke(current_user)
-            current_app.logger.info('auth.profile apikey revoke')
-            return redirect(url_for('auth.profile_route'))
+            return jsonify({"message": "Apikey successfully revoked."})
 
     return render_template('button-generic.html', form=form)
