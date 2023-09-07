@@ -1,4 +1,5 @@
 import NavLink from './NavLink'
+import QuickJump from './QuickJump'
 import env from 'app-env'
 import clsx from 'clsx'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -99,17 +100,7 @@ const Nav = () => {
           )}
         </ul>
 
-        {currentUser.isAuthenticated && currentUser.roles.includes('operator') && (
-          <form id="storage_quickjump_form" className="form-inline" style={{ display: 'inline' }} method="post">
-            <input
-              className="form-control form-control-sm"
-              type="text"
-              name="quickjump"
-              placeholder="Quick jump"
-              title="Quick jump with address, hostname or port"
-            />
-          </form>
-        )}
+        {currentUser.isAuthenticated && currentUser.roles.includes('operator') && <QuickJump />}
         <ul className="navbar-nav">
           {!currentUser.isAuthenticated ? (
             <li className="nav-item">
