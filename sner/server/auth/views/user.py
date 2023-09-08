@@ -68,6 +68,23 @@ def user_list_json_route():
     return jsonify(users)
 
 
+@blueprint.route('/user/<user_id>.json', methods=['GET', 'POST'])
+@session_required('admin')
+def user_json_route(user_id):
+    """get user"""
+
+    user = User.query.get(user_id)
+
+    return jsonify({
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "roles": user.roles,
+        "api_networks": user.api_networks,
+        "active": user.active
+        })
+
+
 @blueprint.route('/user/add', methods=['GET', 'POST'])
 @session_required('admin')
 def user_add_route():
@@ -82,12 +99,12 @@ def user_add_route():
             user.password = PWS.hash(form.new_password.data)
         db.session.add(user)
         db.session.commit()
-        return redirect(url_for('auth.user_list_route'))
+        return jsonify({"message": "Successfully added a new user."})
 
     return render_template('auth/user/addedit.html', form=form)
 
 
-@blueprint.route('/auth/edit/<user_id>', methods=['GET', 'POST'])
+@blueprint.route('/user/edit/<user_id>', methods=['GET', 'POST'])
 @session_required('admin')
 def user_edit_route(user_id):
     """edit task"""
@@ -100,7 +117,7 @@ def user_edit_route(user_id):
         if form.new_password.data:
             user.password = PWS.hash(form.new_password.data)
         db.session.commit()
-        return redirect(url_for('auth.user_list_route'))
+        return jsonify({"message": "Successfully edited a user."})
 
     return render_template('auth/user/addedit.html', form=form)
 

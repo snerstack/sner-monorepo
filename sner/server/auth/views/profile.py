@@ -70,15 +70,18 @@ def profile_changepassword_route():
         user = User.query.filter(User.id == current_user.id).one()
 
         if not PWS.compare(PWS.hash(form.current_password.data, PWS.get_salt(user.password)), user.password):
-            flash('Invalid current password.', 'error')
-        else:
-            user.password = PWS.hash(form.password1.data)
-            db.session.commit()
-            flash('Password changed.', 'info')
-            current_app.logger.info('auth.profile password changed')
-            return redirect(url_for('auth.profile_route'))
+            return jsonify({"error": {"code": HTTPStatus.BAD_REQUEST, "message": "Invalid current password."}}), HTTPStatus.BAD_REQUEST
 
-    return render_template('auth/profile/changepassword.html', form=form)
+        user.password = PWS.hash(form.password1.data)
+        db.session.commit()
+        current_app.logger.info('auth.profile password changed')
+        return jsonify({"message": "Password successfully changed."})
+
+    return jsonify({"error": {
+        "code": HTTPStatus.BAD_REQUEST,
+        "errors": form.errors
+    }}), HTTPStatus.BAD_REQUEST
+    # return render_template('auth/profile/changepassword.html', form=form)
 
 
 @blueprint.route('/profile/totp', methods=['GET', 'POST'])

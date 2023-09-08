@@ -52,7 +52,7 @@ def test_user_add_route(cl_admin, user_factory):
     form['active'] = auser.active
     form['new_password'] = password
     response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    assert response.status_code == HTTPStatus.OK
 
     tuser = User.query.filter(User.username == auser.username).one()
     assert tuser.username == auser.username
@@ -72,7 +72,7 @@ def test_user_edit_route(cl_admin, user):
     form['roles'] = []
     form['api_networks'] = '127.0.0.0/23\n192.0.2.0/24\n2001:db8::/48'
     response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    assert response.status_code == HTTPStatus.OK
 
     tuser = User.query.filter(User.username == form['username'].value).one()
     assert tuser.username == form['username'].value
