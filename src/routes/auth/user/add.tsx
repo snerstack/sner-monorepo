@@ -1,4 +1,9 @@
+import env from 'app-env'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+
+import httpClient from '@/lib/httpClient'
 
 import BooleanField from '@/components/Fields/BooleanField'
 import MultiCheckboxField from '@/components/Fields/MultiCheckboxField'
@@ -9,9 +14,11 @@ import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
 
 const UserAddPage = () => {
+  const navigate = useNavigate()
+
   const [username, setUsername] = useState<string>('')
   const [email, setEmail] = useState<string>('')
-  const [options, setOptions] = useState<{ name: string; checked: boolean }[]>([
+  const [roles, setRoles] = useState<{ name: string; checked: boolean }[]>([
     { name: 'admin', checked: false },
     { name: 'agent', checked: false },
     { name: 'operator', checked: false },
@@ -21,7 +28,29 @@ const UserAddPage = () => {
   const [password, setPassword] = useState<string>('')
   const [apiNetworks, setApiNetworks] = useState<string>('')
 
-  const addUserHandler = () => {}
+  const addUserHandler = async () => {
+    if (username === '') return
+
+    const formData = new FormData()
+    formData.append('username', username)
+    formData.append('email', email)
+    formData.append('new_password', password)
+    roles.forEach((role) => {
+      if (role.checked) {
+        formData.append('roles', role.name)
+      }
+    })
+    formData.append('api_networks', apiNetworks)
+
+    try {
+      const resp = await httpClient.post<{ message: string }>(env.VITE_SERVER_URL + '/auth/user/add', formData)
+
+      toast.success(resp.data.message)
+      navigate('/auth/user/list')
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   return (
     <div>
@@ -38,7 +67,7 @@ const UserAddPage = () => {
           _setState={setUsername}
         />
         <TextField name="email" label="Email" placeholder="Email" _state={email} _setState={setEmail} />
-        <MultiCheckboxField name="roles" label="Roles" _state={options} _setState={setOptions} />
+        <MultiCheckboxField name="roles" label="Roles" _state={roles} _setState={setRoles} />
         <BooleanField name="active" label="Active" _state={active} _setState={setActive} />
         <PasswordField
           name="password"

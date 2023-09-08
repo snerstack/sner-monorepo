@@ -32,6 +32,7 @@ const BooleanField = ({
             required={required}
             checked={_state}
             onChange={(e) => _setState(e.target.checked)}
+            id={name}
           />
           <label className="form-check-label" htmlFor={name}>
             {label}

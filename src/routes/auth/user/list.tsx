@@ -1,5 +1,5 @@
 import env from 'app-env'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 
@@ -22,7 +22,7 @@ const UserListPage = () => {
         renderElements(
           cell,
           <>
-            {row['apikey']}{' '}
+            {row['apikey'] ? 'true' : 'false'}{' '}
             <a
               className="btn btn-outline-secondary btn-sm abutton_userapikey"
               data-url={`/auth/user/apikey/${row['id']}/${row['apikey'] ? 'revoke' : 'generate'}`}
@@ -51,9 +51,9 @@ const UserListPage = () => {
     <div>
       <Heading headings={['Users']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-primary" href="/auth/user/add">
+          <Link className="btn btn-outline-primary" to="/auth/user/add">
             Add
-          </a>
+          </Link>
         </div>
       </Heading>
 

@@ -43,6 +43,7 @@ const MultiCheckboxField = ({
                 required={required}
                 checked={option.checked}
                 onChange={(e) => handleCheckboxChange(index, e.target.checked)}
+                id={option.name}
               />{' '}
               <label htmlFor={option.name}>{option.name}</label>
             </li>

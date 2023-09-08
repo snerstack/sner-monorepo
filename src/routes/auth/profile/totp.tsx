@@ -1,5 +1,5 @@
 import env from 'app-env'
-import axios from 'axios'
+import { isAxiosError } from 'axios'
 import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
 import { useLoaderData, useNavigate } from 'react-router-dom'
@@ -38,7 +38,7 @@ const TOTPPage = () => {
       toast.success(resp.data.message)
       navigate('/auth/profile')
     } catch (err) {
-      if (axios.isAxiosError<{ error: { message: string; code: number } }>(err)) {
+      if (isAxiosError<{ error: { message: string; code: number } }>(err)) {
         toast.error(err.response?.data.error.message)
       }
     }

@@ -7,6 +7,15 @@ interface UserListRow {
   username: string
 }
 
+interface UserEdit {
+  id: number
+  active: boolean
+  api_networks: string[]
+  email: string | null
+  roles: string[]
+  username: string
+}
+
 interface Profile {
   api_networks: string[]
   has_apikey: boolean

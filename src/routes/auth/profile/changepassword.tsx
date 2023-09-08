@@ -1,15 +1,59 @@
+import env from 'app-env'
+import { isAxiosError } from 'axios'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+
+import httpClient from '@/lib/httpClient'
 
 import PasswordField from '@/components/Fields/PasswordField'
 import SubmitField from '@/components/Fields/SubmitField'
 import Heading from '@/components/Heading'
 
 const ChangePasswordPage = () => {
+  const navigate = useNavigate()
+
   const [currentPassword, setCurrentPassword] = useState<string>('')
   const [newPassword, setNewPassword] = useState<string>('')
   const [newPasswordAgain, setNewPasswordAgain] = useState<string>('')
 
-  const newPasswordHandler = () => {}
+  const [currentPasswordErrors, setCurrentPasswordErrors] = useState<string[]>([])
+  const [newPasswordErrors, setNewPasswordErrors] = useState<string[]>([])
+
+  const newPasswordHandler = async () => {
+    setCurrentPasswordErrors([])
+    setNewPasswordErrors([])
+
+    const formData = new FormData()
+    formData.append('current_password', currentPassword)
+    formData.append('password1', newPassword)
+    formData.append('password2', newPasswordAgain)
+
+    try {
+      const resp = await httpClient.post<{ message: string }>(
+        env.VITE_SERVER_URL + '/auth/profile/changepassword',
+        formData,
+      )
+
+      toast.success(resp.data.message)
+      navigate('/auth/profile')
+    } catch (err) {
+      if (
+        isAxiosError<{
+          error: { code: number; message?: string; errors?: { current_password?: string[]; password1?: string[] } }
+        }>(err)
+      ) {
+        const message = err.response?.data.error.message
+
+        if (message) return toast.error(message)
+
+        const errors = err.response?.data.error.errors
+
+        setCurrentPasswordErrors(errors?.current_password ?? [])
+        setNewPasswordErrors(errors?.password1 ?? [])
+      }
+    }
+  }
 
   return (
     <div>
@@ -22,6 +66,7 @@ const ChangePasswordPage = () => {
           required={true}
           _state={currentPassword}
           _setState={setCurrentPassword}
+          errors={currentPasswordErrors}
         />
         <PasswordField
           name="new_password"
@@ -30,6 +75,7 @@ const ChangePasswordPage = () => {
           required={true}
           _state={newPassword}
           _setState={setNewPassword}
+          errors={newPasswordErrors}
         />
         <PasswordField
           name="new_password_again"

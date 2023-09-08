@@ -1,4 +1,9 @@
+import env from 'app-env'
 import { useState } from 'react'
+import { useLoaderData, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+
+import httpClient from '@/lib/httpClient'
 
 import BooleanField from '@/components/Fields/BooleanField'
 import MultiCheckboxField from '@/components/Fields/MultiCheckboxField'
@@ -9,19 +14,47 @@ import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
 
 const UserEditPage = () => {
-  const [username, setUsername] = useState<string>('')
-  const [email, setEmail] = useState<string>('')
-  const [options, setOptions] = useState<{ name: string; checked: boolean }[]>([
-    { name: 'admin', checked: false },
-    { name: 'agent', checked: false },
-    { name: 'operator', checked: false },
-    { name: 'user', checked: false },
-  ])
-  const [active, setActive] = useState<boolean>(false)
-  const [password, setPassword] = useState<string>('')
-  const [apiNetworks, setApiNetworks] = useState<string>('')
+  const user = useLoaderData() as UserEdit
+  const navigate = useNavigate()
 
-  const editUserHandler = () => {}
+  const [username, setUsername] = useState<string>(user.username)
+  const [email, setEmail] = useState<string>(user.email || '')
+  const [roles, setRoles] = useState<{ name: string; checked: boolean }[]>([
+    { name: 'admin', checked: user.roles.includes('admin') },
+    { name: 'agent', checked: user.roles.includes('agent') },
+    { name: 'operator', checked: user.roles.includes('operator') },
+    { name: 'user', checked: user.roles.includes('user') },
+  ])
+  const [active, setActive] = useState<boolean>(user.active)
+  const [password, setPassword] = useState<string>('')
+  const [apiNetworks, setApiNetworks] = useState<string>(user.api_networks.join('\n'))
+
+  const editUserHandler = async () => {
+    if (username === '') return
+
+    const formData = new FormData()
+    formData.append('username', username)
+    formData.append('email', email)
+    formData.append('new_password', password)
+    roles.forEach((role) => {
+      if (role.checked) {
+        formData.append('roles', role.name)
+      }
+    })
+    formData.append('api_networks', apiNetworks)
+
+    try {
+      const resp = await httpClient.post<{ message: string }>(
+        env.VITE_SERVER_URL + `/auth/user/edit/${user.id}`,
+        formData,
+      )
+
+      toast.success(resp.data.message)
+      navigate('/auth/user/list')
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   return (
     <div>
@@ -38,7 +71,7 @@ const UserEditPage = () => {
           _setState={setUsername}
         />
         <TextField name="email" label="Email" placeholder="Email" _state={email} _setState={setEmail} />
-        <MultiCheckboxField name="roles" label="Roles" _state={options} _setState={setOptions} />
+        <MultiCheckboxField name="roles" label="Roles" _state={roles} _setState={setRoles} />
         <BooleanField name="active" label="Active" _state={active} _setState={setActive} />
         <PasswordField
           name="password"

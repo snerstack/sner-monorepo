@@ -113,7 +113,11 @@ export default function App() {
             <Route path="user">
               <Route path="list" element={<UserListPage />} />
               <Route path="add" element={<UserAddPage />} />
-              <Route path="edit/:id" element={<UserEditPage />} />
+              <Route
+                path="edit/:id"
+                element={<UserEditPage />}
+                loader={async ({ params: { id } }) => requestDataHandler(`/auth/user/${id}.json`)}
+              />
             </Route>
           </Route>
         </Route>
