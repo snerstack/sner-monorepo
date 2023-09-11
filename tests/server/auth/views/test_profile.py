@@ -34,36 +34,24 @@ def test_profile_changepassword_route(cl_user):
     user.password = PWS.hash(cur_password)
     db.session.commit()
 
-    form = cl_user.get(url_for('auth.profile_changepassword_route')).forms['user_change_password_form']
-    form['current_password'] = cur_password
-    form['password1'] = 'AlongPassword1'
-    form['password2'] = 'AlongPassword2'
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//div[@class="invalid-feedback" and text()="Passwords does not match."]')
+    form_data = [('current_password', cur_password), ('password1', 'AlongPassword1'), ('password2', 'AlongPassword2')]
+    response = cl_user.post(url_for('auth.profile_changepassword_route'), params=form_data, expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Passwords does not match." in response.json["error"]["errors"]["password1"]
 
-    form = cl_user.get(url_for('auth.profile_changepassword_route')).forms['user_change_password_form']
-    form['current_password'] = cur_password
-    form['password1'] = 'weak'
-    form['password2'] = 'weak'
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//div[@class="invalid-feedback" and contains(text(), "Password too short.")]')
+    form_data = [('current_password', cur_password), ('password1', 'weak'), ('password2', 'weak')]
+    response = cl_user.post(url_for('auth.profile_changepassword_route'), params=form_data, expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Password too short. At least 10 characters required." in response.json["error"]["errors"]["password1"]
 
-    form = cl_user.get(url_for('auth.profile_changepassword_route')).forms['user_change_password_form']
-    form['current_password'] = '1'
-    form['password1'] = new_password
-    form['password2'] = new_password
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//script[contains(text(), "toastr[\'error\'](\'Invalid current password.\');")]')
+    form_data = [('current_password', '1'), ('password1', new_password), ('password2', new_password)]
+    response = cl_user.post(url_for('auth.profile_changepassword_route'), params=form_data, expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json["error"]["message"] == 'Invalid current password.'
 
-    form = cl_user.get(url_for('auth.profile_changepassword_route')).forms['user_change_password_form']
-    form['current_password'] = cur_password
-    form['password1'] = new_password
-    form['password2'] = new_password
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    form_data = [('current_password', cur_password), ('password1', new_password), ('password2', new_password)]
+    response = cl_user.post(url_for('auth.profile_changepassword_route'), params=form_data)
+    assert response.status_code == HTTPStatus.OK
     user = User.query.filter(User.username == 'pytest_user').one()
     assert PWS.compare(PWS.hash(new_password, PWS.get_salt(user.password)), user.password)
 

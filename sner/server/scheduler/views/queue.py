@@ -56,6 +56,24 @@ def queue_list_json_route():
     return jsonify(queues)
 
 
+@blueprint.route('/queue/<queue_id>.json')
+@session_required('operator')
+def queue_json_route(queue_id):
+    """get queue"""
+
+    queue = Queue.query.get(queue_id)
+
+    return jsonify({
+        "id": queue.id,
+        "name": queue.name,
+        "config": queue.config,
+        "priority": queue.priority,
+        "group_size": queue.group_size,
+        "active": queue.active,
+        "reqs": queue.reqs
+        })
+
+
 @blueprint.route('/queue/add', methods=['GET', 'POST'])
 @session_required('operator')
 def queue_add_route():
@@ -68,9 +86,12 @@ def queue_add_route():
         form.populate_obj(queue)
         db.session.add(queue)
         db.session.commit()
-        return redirect(url_for('scheduler.queue_list_route'))
+        return jsonify({"message": "Queue has been successfully added."})
 
-    return render_template('scheduler/queue/addedit.html', form=form)
+    return jsonify({"error": {
+        "code": HTTPStatus.BAD_REQUEST,
+        "errors": form.errors
+    }}), HTTPStatus.BAD_REQUEST
 
 
 @blueprint.route('/queue/edit/<queue_id>', methods=['GET', 'POST'])
@@ -84,9 +105,12 @@ def queue_edit_route(queue_id):
     if form.validate_on_submit():
         form.populate_obj(queue)
         db.session.commit()
-        return redirect(url_for('scheduler.queue_list_route'))
+        return jsonify({"message": "Queue has been successfully edited."})
 
-    return render_template('scheduler/queue/addedit.html', form=form)
+    return jsonify({"error": {
+        "code": HTTPStatus.BAD_REQUEST,
+        "errors": form.errors
+    }}), HTTPStatus.BAD_REQUEST
 
 
 @blueprint.route('/queue/enqueue/<queue_id>', methods=['GET', 'POST'])

@@ -81,7 +81,6 @@ def profile_changepassword_route():
         "code": HTTPStatus.BAD_REQUEST,
         "errors": form.errors
     }}), HTTPStatus.BAD_REQUEST
-    # return render_template('auth/profile/changepassword.html', form=form)
 
 
 @blueprint.route('/profile/totp', methods=['GET', 'POST'])
