@@ -1,5 +1,5 @@
 import env from 'app-env'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
@@ -87,9 +87,9 @@ const QueueListPage = () => {
     <div>
       <Heading headings={['Queues']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-primary" href="/scheduler/queue/add">
+          <Link className="btn btn-outline-primary" to="/scheduler/queue/add">
             Add
-          </a>
+          </Link>
         </div>
       </Heading>
 

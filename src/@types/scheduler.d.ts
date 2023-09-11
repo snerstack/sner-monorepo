@@ -1,3 +1,13 @@
+interface Queue {
+  id: number
+  name: string
+  config: string
+  priority: number
+  group_size: number
+  active: boolean
+  reqs: string[]
+}
+
 interface QueryRow {
   id: number
   name: string

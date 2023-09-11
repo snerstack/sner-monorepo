@@ -129,7 +129,11 @@ export default function App() {
             <Route path="queue">
               <Route path="list" element={<QueueListPage />} />
               <Route path="add" element={<QueueAddPage />} />
-              <Route path="edit/:id" element={<QueueEditPage />} />
+              <Route
+                path="edit/:id"
+                element={<QueueEditPage />}
+                loader={async ({ params: { id } }) => requestDataHandler(`/scheduler/queue/${id}.json`)}
+              />
               <Route path="enqueue/:id" element={<QueueEnqueuePage />} />
             </Route>
             <Route path="job">
