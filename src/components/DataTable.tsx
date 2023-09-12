@@ -9,6 +9,7 @@ interface TableConfig extends Config {
     url: string
     type: string
     xhrFields: { withCredentials: boolean }
+    beforeSend: (req: XMLHttpRequest) => void
   }
 }
 

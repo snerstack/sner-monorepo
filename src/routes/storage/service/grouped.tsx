@@ -1,6 +1,7 @@
 import env from 'app-env'
 import clsx from 'clsx'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useCookie } from 'react-use'
 
 import { Column, renderElements } from '@/lib/DataTables'
 import { getServiceFilterInfo } from '@/lib/sner/storage'
@@ -12,6 +13,7 @@ import Heading from '@/components/Heading'
 const ServiceGroupedPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const columns = [
     Column('info', {
@@ -83,6 +85,7 @@ const ServiceGroupedPage = () => {
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
+          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
         order={[1, 'desc']}
       />

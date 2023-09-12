@@ -12,7 +12,10 @@ import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
 
 const TOTPPage = () => {
-  const { provisioning_url, secret } = useLoaderData() as { provisioning_url: string; secret: string }
+  const { provisioning_url, secret } = useLoaderData() as {
+    provisioning_url: string
+    secret: string
+  }
   const navigate = useNavigate()
 
   const [code, setCode] = useState<string>('')

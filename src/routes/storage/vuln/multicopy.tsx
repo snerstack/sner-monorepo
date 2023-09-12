@@ -3,6 +3,7 @@ import env from 'app-env'
 import { useState } from 'react'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { useCookie } from 'react-use'
 
 import { Column, ColumnSelect, getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
@@ -18,6 +19,7 @@ import Heading from '@/components/Heading'
 const VulnMulticopyPage = () => {
   const vuln = useLoaderData() as Vuln
   const navigate = useNavigate()
+  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const [endpoints, setEndpoints] = useState<string>('')
   const [name, setName] = useState<string>(vuln.name)
@@ -77,6 +79,7 @@ const VulnMulticopyPage = () => {
           url: env.VITE_SERVER_URL + '/storage/vuln/multicopy_endpoints.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
+          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
         select={{ style: 'multi', selector: 'tr' }}
         lengthMenu={[10, 50, 100, 200]}

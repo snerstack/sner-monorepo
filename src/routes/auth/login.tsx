@@ -14,11 +14,11 @@ import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
 
 const LoginPage = () => {
+  const navigate = useNavigate()
   const [, setUser] = useRecoilState(userState)
+
   const [username, setUsername] = useState<string>('')
   const [password, setPassword] = useState<string>('')
-
-  const navigate = useNavigate()
 
   const loginHandler = async () => {
     const formData = new FormData()
@@ -48,8 +48,6 @@ const LoginPage = () => {
     <div>
       <Heading headings={['Login']} />
       <form id="login_form" method="post">
-        {/* {{ form.csrf_token }}*/}
-        {/* <input id="csrf_token" name="csrf_token" type="hidden" value=""" /> */}
         <TextField
           name="username"
           label="Username"

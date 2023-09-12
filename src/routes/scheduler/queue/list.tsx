@@ -1,6 +1,7 @@
 import env from 'app-env'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
@@ -14,6 +15,7 @@ import Heading from '@/components/Heading'
 
 const QueueListPage = () => {
   const navigate = useNavigate()
+  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const columns = [
     Column('id'),
@@ -100,6 +102,7 @@ const QueueListPage = () => {
           url: env.VITE_SERVER_URL + '/scheduler/queue/list.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
+          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
       />
     </div>

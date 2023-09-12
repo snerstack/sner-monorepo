@@ -2,7 +2,7 @@ import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useSessionStorage } from 'react-use'
+import { useCookie, useSessionStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
 import { deleteRow, getColorForTag } from '@/lib/sner/storage'
@@ -24,6 +24,7 @@ const ServiceListPage = () => {
   const [searchParams] = useSearchParams()
   const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
   const navigate = useNavigate()
+  const [csrfToken] = useCookie('XSRF-TOKEN')
   const [annotate, setAnnotate] = useState<Annotate>({
     show: false,
     tags: [],
@@ -251,6 +252,7 @@ const ServiceListPage = () => {
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
+          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
         select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
       />

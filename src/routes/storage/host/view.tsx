@@ -3,7 +3,7 @@ import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { useLoaderData, useNavigate } from 'react-router-dom'
-import { useLocalStorage, useSessionStorage } from 'react-use'
+import { useCookie, useLocalStorage, useSessionStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
 import {
@@ -35,6 +35,7 @@ const HostViewPage = () => {
   const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
   const [viaTargetVisible] = useSessionStorage('dt_viatarget_column_visible', false)
   const navigate = useNavigate()
+  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const [annotateService, setAnnotateService] = useState<Annotate>({
     show: false,
@@ -662,6 +663,7 @@ const HostViewPage = () => {
                 url: env.VITE_SERVER_URL + `/storage/service/list.json?filter=Host.id=="${host.id}"`,
                 type: 'POST',
                 xhrFields: { withCredentials: true },
+                beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
               order={[5, 'asc']}
               select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
@@ -754,6 +756,7 @@ const HostViewPage = () => {
                 url: env.VITE_SERVER_URL + `/storage/vuln/list.json?filter=Host.id=="${host.id}"`,
                 type: 'POST',
                 xhrFields: { withCredentials: true },
+                beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
               order={[1, 'asc']}
               select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
@@ -848,6 +851,7 @@ const HostViewPage = () => {
                 url: env.VITE_SERVER_URL + `/storage/note/list.json?filter=Host.id=="${host.id}"`,
                 type: 'POST',
                 xhrFields: { withCredentials: true },
+                beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
               order={[1, 'asc']}
               select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}

@@ -1,5 +1,6 @@
 import env from 'app-env'
 import { Link, useNavigate } from 'react-router-dom'
+import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 
@@ -12,6 +13,7 @@ import Heading from '@/components/Heading'
 
 const JobListPage = () => {
   const navigate = useNavigate()
+  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const columns = [
     Column('id'),
@@ -72,6 +74,7 @@ const JobListPage = () => {
           url: env.VITE_SERVER_URL + '/scheduler/job/list.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
+          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
       />
     </div>

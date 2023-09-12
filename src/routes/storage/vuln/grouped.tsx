@@ -2,6 +2,7 @@ import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useCookie } from 'react-use'
 
 import { Column, renderElements } from '@/lib/DataTables'
 import { getColorForSeverity, getColorForTag, getVulnFilterName } from '@/lib/sner/storage'
@@ -13,6 +14,7 @@ import Heading from '@/components/Heading'
 const VulnGroupedPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const columns = [
     Column('name', {
@@ -102,6 +104,7 @@ const VulnGroupedPage = () => {
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
+          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
       />
     </div>
