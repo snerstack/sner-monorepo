@@ -26,13 +26,18 @@ const LoginPage = () => {
     formData.append('password', password)
 
     try {
-      const resp = await httpClient.post<User | { totp_login_required: boolean }>(
+      const resp = await httpClient.post<User | { totp_login_required: boolean } | { webauthn_login: boolean }>(
         env.VITE_SERVER_URL + '/auth/login',
         formData,
       )
 
       if ('totp_login_required' in resp.data) {
         navigate('/auth/login_totp')
+        return
+      }
+
+      if ('webauthn_login' in resp.data) {
+        navigate('/auth/login_webauthn')
         return
       }
 

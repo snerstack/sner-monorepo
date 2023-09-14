@@ -103,7 +103,11 @@ export default function App() {
               <Route path="totp" element={<TOTPPage />} loader={async () => requestDataHandler(`/auth/profile/totp`)} />
               <Route path="webauthn">
                 <Route path="register" element={<WebAuthnRegisterPage />} />
-                <Route path="edit" element={<WebAuthnEditPage />} />
+                <Route
+                  path="edit/:id"
+                  element={<WebAuthnEditPage />}
+                  loader={async ({ params: { id } }) => requestDataHandler(`/auth/profile/webauthn/${id}.json`)}
+                />
               </Route>
             </Route>
           </Route>

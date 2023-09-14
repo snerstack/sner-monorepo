@@ -1,5 +1,5 @@
 import env from 'app-env'
-import axios from 'axios'
+import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -29,7 +29,7 @@ const TOTPLoginPage = () => {
 
       navigate('/')
     } catch (err) {
-      if (axios.isAxiosError<{ error: { message: string; code: number } }>(err)) {
+      if (isAxiosError<{ error: { message: string; code: number } }>(err)) {
         toast.error(err.response?.data.error.message)
       }
     }

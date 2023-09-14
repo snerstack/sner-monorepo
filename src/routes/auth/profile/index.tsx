@@ -2,6 +2,7 @@ import env from 'app-env'
 import { useState } from 'react'
 import { Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
@@ -15,6 +16,7 @@ import Heading from '@/components/Heading'
 const ProfilePage = () => {
   const profile = useLoaderData() as Profile
   const navigate = useNavigate()
+  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const [newApikey, setNewApikey] = useState<string>('')
   const [hasApikey, setHasApikey] = useState<boolean>(profile.has_apikey)
@@ -28,8 +30,8 @@ const ProfilePage = () => {
         renderElements(
           cell,
           <ButtonGroup>
-            <EditButton url={`auth/profile/webauthn/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`auth/profile/webauthn/delete/${row['id']}`} />
+            <EditButton url={`/auth/profile/webauthn/edit/${row['id']}`} navigate={navigate} />
+            <DeleteButton url={`/auth/profile/webauthn/delete/${row['id']}`} />
           </ButtonGroup>,
         )
       },
@@ -59,7 +61,6 @@ const ProfilePage = () => {
           <tr>
             <th>2fa authentication</th>
             <td>
-              {/* tfa_state = ['disabled', 'Enable'] or tfa_state = ['enabled', 'Disable'] */}
               {profile.has_totp ? 'Enabled' : 'Disabled'}{' '}
               <Link className="btn btn-outline-secondary" to="/auth/profile/totp">
                 {profile.has_totp ? 'Disable' : 'Enable'}
@@ -71,16 +72,17 @@ const ProfilePage = () => {
             <th>webauthn credentials</th>
             <td>
               <div id="profile_webauthn_table_toolbar" className="dt_toolbar">
-                <a className="btn btn-outline-secondary" href="{{ url_for('auth.profile_webauthn_register_route') }}">
+                <Link className="btn btn-outline-secondary" to="/auth/profile/webauthn/register">
                   Register new
-                </a>
+                </Link>
               </div>
               <DataTable
                 id="profile_webauthn_table"
                 ajax={{
-                  url: env.VITE_SERVER_URL + 'auth/profile/webauthn/list.json',
+                  url: env.VITE_SERVER_URL + '/auth/profile/webauthn/list.json',
                   type: 'POST',
                   xhrFields: { withCredentials: true },
+                  beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
                 }}
                 columns={columns}
                 ordering={false}

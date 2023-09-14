@@ -18,3 +18,11 @@ export const escapeHtml = (unsafeString: string): string => {
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;')
 }
+
+export const base64ToArrayBuffer = (base64String: string): Uint8Array => {
+  return Uint8Array.from(atob(base64String), (c) => c.charCodeAt(0))
+}
+
+export const arrayBufferToBase64 = (buffer: Uint8Array) => {
+  return btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''))
+}
