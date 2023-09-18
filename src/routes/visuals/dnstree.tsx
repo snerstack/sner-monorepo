@@ -1,10 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import env from 'app-env'
 import clsx from 'clsx'
 import * as d3 from 'd3'
@@ -17,7 +10,14 @@ import Heading from '@/components/Heading'
 
 import '../../styles/dnstree.css'
 
-type D3Node = {
+type D3Link = {
+  source: Node
+  target: Node
+  index: number
+  id: number
+}
+
+interface D3Node extends d3.SimulationNodeDatum {
   id: number
   index: number
   name: string
@@ -28,11 +28,7 @@ type D3Node = {
   y: number
 }
 
-type D3Link = {
-  source: Node
-  target: Node
-  index: number
-}
+interface FLink extends d3.SimulationLinkDatum<D3Node> {}
 
 const DnsTreePage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -62,11 +58,11 @@ const DnsTreePage = () => {
     const svg = d3.select('svg').attr('width', width).attr('height', height)
 
     let linkElements: d3.Selection<SVGLineElement, D3Link, SVGGElement, unknown>
-    let nodeElements: d3.Selection<SVGCircleElement, D3Node, SVGGElement, unknown> & string
+    let nodeElements: d3.Selection<SVGCircleElement, D3Node, SVGGElement, unknown>
     let textElements: d3.Selection<SVGTextElement, D3Node, SVGGElement, unknown>
 
     const linkForce = d3
-      .forceLink()
+      .forceLink<D3Node, FLink>()
       .id((link) => link.id)
       .distance(parseInt(searchParams.get('distance')!))
       .strength(1)
@@ -78,22 +74,23 @@ const DnsTreePage = () => {
       .force('center', d3.forceCenter(width / 2, height / 2))
 
     const dragDrop = d3
-      .drag()
-      .on('start', (node) => {
-        node.fx = node.x
-        node.fy = node.y
+      .drag<SVGCircleElement, D3Node>()
+      .on('start', (event: d3.D3DragEvent<SVGCircleElement, D3Node, D3Node>) => {
+        event.subject.fx = event.subject.x
+        event.subject.fy = event.subject.y
       })
-      .on('drag', (node) => {
+      .on('drag', (event: d3.D3DragEvent<SVGCircleElement, D3Node, D3Node>) => {
         simulation.alphaTarget(0.7).restart()
-        node.fx = d3.event.x
-        node.fy = d3.event.y
+
+        event.subject.fx = event.x
+        event.subject.fy = event.y
       })
-      .on('end', (node) => {
-        if (!d3.event.active) {
+      .on('end', (event: d3.D3DragEvent<SVGCircleElement, D3Node, D3Node>) => {
+        if (!event.active) {
           simulation.alphaTarget(0)
         }
-        node.fx = null
-        node.fy = null
+        event.subject.fx = null
+        event.subject.fy = null
       })
 
     d3.json(
@@ -133,12 +130,10 @@ const DnsTreePage = () => {
           return Object.prototype.hasOwnProperty.call(d, 'size') ? d.size : 5
         })
         .style('fill', (_d, i) => {
-          return colors(i)
+          return colors(i.toString())
         })
         .call(dragDrop)
-      nodeElements.append('title').text(function (d) {
-        return d.id
-      })
+      nodeElements.append('title').text((d) => d.id)
 
       textElements = svg
         .append('g')
@@ -155,7 +150,9 @@ const DnsTreePage = () => {
         .attr('dy', 4)
 
       simulation.nodes(nodes).on('tick', ticked)
-      simulation.force('link').links(links)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      simulation.force<d3.ForceLink<any, any>>('link')!.links(links)
     }
 
     function ticked() {
@@ -177,16 +174,16 @@ const DnsTreePage = () => {
 
       linkElements
         .attr('x1', (d) => {
-          return d.source.x
+          return (d.source as unknown as D3Node).x
         })
         .attr('y1', (d) => {
-          return d.source.y
+          return (d.source as unknown as D3Node).y
         })
         .attr('x2', (d) => {
-          return d.target.x
+          return (d.target as unknown as D3Node).x
         })
         .attr('y2', (d) => {
-          return d.target.y
+          return (d.target as unknown as D3Node).y
         })
     }
 
@@ -256,7 +253,7 @@ const DnsTreePage = () => {
   )
 }
 
-function remToPixels(rem) {
+function remToPixels(rem: number) {
   return rem * parseFloat(getComputedStyle(document.documentElement).fontSize)
 }
 

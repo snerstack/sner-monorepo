@@ -8,9 +8,11 @@ import DeleteButton from '@/components/Buttons/DeleteButton'
 import EditButton from '@/components/Buttons/EditButton'
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
+import { useCookie } from 'react-use'
 
 const UserListPage = () => {
   const navigate = useNavigate()
+  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const columns = [
     Column('id'),
@@ -64,6 +66,7 @@ const UserListPage = () => {
           url: env.VITE_SERVER_URL + '/auth/user/list.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
+          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
       />
     </div>
