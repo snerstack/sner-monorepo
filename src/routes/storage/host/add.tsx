@@ -1,6 +1,7 @@
 import { unique } from '@/utils'
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -39,6 +40,9 @@ const HostAddPage = () => {
   }
   return (
     <div>
+      <Helmet>
+        <title>Hosts / Add - sner4</title>
+      </Helmet>
       <Heading headings={['Hosts', 'Add']} />
       <form id="host_form" method="post">
         <TextField

@@ -44,6 +44,7 @@ import VulnListPage from '@/routes/storage/vuln/list'
 import VisualsPage from '@/routes/visuals'
 import env from 'app-env'
 import { useEffect, useState } from 'react'
+import { HelmetProvider } from 'react-helmet-async'
 import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements, redirect } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 import { RecoilRoot } from 'recoil'
@@ -278,7 +279,9 @@ function App() {
 export default function WrappedApp() {
   return (
     <RecoilRoot>
-      <App />
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
     </RecoilRoot>
   )
 }

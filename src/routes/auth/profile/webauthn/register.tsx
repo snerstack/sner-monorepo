@@ -4,6 +4,7 @@ import { isAxiosError } from 'axios'
 import { decode, encode } from 'cbor-x'
 import clsx from 'clsx'
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -67,6 +68,9 @@ const WebAuthnRegisterPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>User profile / Register WebAuthn credential - sner4</title>
+      </Helmet>
       <Heading headings={['User profile', 'Register WebAuthn credential']} />
       <div>
         To register new credential:

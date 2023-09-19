@@ -1,6 +1,7 @@
 import env from 'app-env'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -73,10 +74,11 @@ const QueueEditPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Queues / Edit - sner4</title>
+      </Helmet>
       <Heading headings={['Queues', 'Edit']} />
       <form id="queue_form" method="post">
-        {/* {{ form.csrf_token }}*/}
-        {/* <input id="csrf_token" name="csrf_token" type="hidden" value="random-csrf-value-4654654" /> */}
         <TextField
           name="name"
           label="Name"

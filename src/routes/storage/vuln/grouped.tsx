@@ -1,6 +1,7 @@
 import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
@@ -57,6 +58,9 @@ const VulnGroupedPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Vulns / Grouped - sner4</title>
+      </Helmet>
       <Heading headings={['Vulns', 'Grouped']}>
         <div className="breadcrumb-buttons pl-2">
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">

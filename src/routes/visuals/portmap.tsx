@@ -1,5 +1,6 @@
 import env from 'app-env'
 import { Fragment, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -24,6 +25,10 @@ const PortmapPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Visuals / Portmap - sner4</title>
+      </Helmet>
+
       <Heading headings={['Visuals', 'Portmap']}>
         <div className="breadcrumb-buttons pl-2">
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">

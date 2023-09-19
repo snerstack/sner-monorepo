@@ -1,6 +1,7 @@
 import { unique } from '@/utils'
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -58,6 +59,9 @@ const VulnEditPage = () => {
   }
   return (
     <div>
+      <Helmet>
+        <title>Vulns / Edit - sner4</title>
+      </Helmet>
       <Heading headings={['Vulns', 'Edit']} />
       <form id="vuln_form" method="post">
         <div className="form-group row">

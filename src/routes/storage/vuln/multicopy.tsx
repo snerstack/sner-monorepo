@@ -1,6 +1,7 @@
 import { unique } from '@/utils'
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useCookie } from 'react-use'
@@ -70,6 +71,9 @@ const VulnMulticopyPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Vulns / Multicopy - sner4</title>
+      </Helmet>
       <Heading headings={['Vulns', 'Multicopy']} />
 
       <DataTable

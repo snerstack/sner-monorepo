@@ -2,6 +2,7 @@ import env from 'app-env'
 import { isAxiosError } from 'axios'
 import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -49,6 +50,10 @@ const TOTPPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>User profile / 2-factor authentication setup - sner4</title>
+      </Helmet>
+
       <Heading headings={['User profile', secret ? '2-factor authentication setup (enable)' : 'Disable']} />
       <div>
         To enable two-factor authentication::

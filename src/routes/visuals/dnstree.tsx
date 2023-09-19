@@ -2,6 +2,7 @@ import env from 'app-env'
 import clsx from 'clsx'
 import * as d3 from 'd3'
 import { useLayoutEffect, useRef } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -195,6 +196,9 @@ const DnsTreePage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Visuals / DNS Tree - sner4</title>
+      </Helmet>
       <Heading headings={['Visuals', 'DNS Tree']}>
         <div className="breadcrumb-buttons pl-2">
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">

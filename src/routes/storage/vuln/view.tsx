@@ -1,6 +1,7 @@
 import { escapeHtml } from '@/utils'
 import env from 'app-env'
 import clsx from 'clsx'
+import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
 import {
@@ -21,6 +22,12 @@ const VulnViewPage = () => {
   const vuln = useLoaderData() as Vuln
   return (
     <div>
+      <Helmet>
+        <title>
+          Vulns / View / {vuln.address} {vuln.hostname || ''} / {vuln.name} {vuln.xtype} - sner4
+        </title>
+      </Helmet>
+
       <Heading
         headings={[
           'Vuln',

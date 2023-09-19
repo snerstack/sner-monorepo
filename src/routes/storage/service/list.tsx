@@ -1,6 +1,7 @@
 import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie, useSessionStorage } from 'react-use'
 
@@ -146,6 +147,9 @@ const ServiceListPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Services / List - sner4</title>
+      </Helmet>
       <Heading headings={['Services']}>
         <div className="breadcrumb-buttons pl-2">
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">

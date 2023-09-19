@@ -1,5 +1,6 @@
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -58,6 +59,9 @@ const UserEditPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Users / Edit - sner4</title>
+      </Helmet>
       <Heading headings={['Users', 'Edit']} />
       <form id="login_form" method="post">
         {/* {{ form.csrf_token }}*/}

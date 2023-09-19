@@ -1,5 +1,6 @@
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -33,6 +34,10 @@ const WebAuthnEditPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>User profile / Edit WebAuthn credential - sner4</title>
+      </Helmet>
+
       <Heading headings={['User profile', 'Edit WebAuthn credential']} />
 
       <form id="webauthn_edit_form" method="post">

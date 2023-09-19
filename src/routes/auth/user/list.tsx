@@ -1,5 +1,7 @@
 import env from 'app-env'
+import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
+import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 
@@ -8,7 +10,6 @@ import DeleteButton from '@/components/Buttons/DeleteButton'
 import EditButton from '@/components/Buttons/EditButton'
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
-import { useCookie } from 'react-use'
 
 const UserListPage = () => {
   const navigate = useNavigate()
@@ -51,6 +52,9 @@ const UserListPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Users / List - sner4</title>
+      </Helmet>
       <Heading headings={['Users']}>
         <div className="breadcrumb-buttons pl-2">
           <Link className="btn btn-outline-primary" to="/auth/user/add">

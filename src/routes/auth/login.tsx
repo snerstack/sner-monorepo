@@ -1,5 +1,6 @@
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
@@ -51,6 +52,9 @@ const LoginPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Login - sner4</title>
+      </Helmet>
       <Heading headings={['Login']} />
       <form id="login_form" method="post">
         <TextField

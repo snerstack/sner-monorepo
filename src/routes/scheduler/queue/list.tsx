@@ -1,4 +1,5 @@
 import env from 'app-env'
+import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useCookie } from 'react-use'
@@ -87,6 +88,10 @@ const QueueListPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Queues / List - sner4</title>
+      </Helmet>
+
       <Heading headings={['Queues']}>
         <div className="breadcrumb-buttons pl-2">
           <Link className="btn btn-outline-primary" to="/scheduler/queue/add">

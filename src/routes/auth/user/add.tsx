@@ -1,5 +1,6 @@
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -54,10 +55,11 @@ const UserAddPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Users / Add - sner4</title>
+      </Helmet>
       <Heading headings={['Users', 'Add']} />
       <form id="login_form" method="post">
-        {/* {{ form.csrf_token }}*/}
-        {/* <input id="csrf_token" name="csrf_token" type="hidden" value="random-csrf-value-4654654" /> */}
         <TextField
           name="username"
           label="Username"

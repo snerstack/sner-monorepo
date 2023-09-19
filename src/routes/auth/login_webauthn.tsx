@@ -3,6 +3,7 @@ import env from 'app-env'
 import { isAxiosError } from 'axios'
 import { decode, encode } from 'cbor-x'
 import { useEffect } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
@@ -63,6 +64,9 @@ const WebAuthnLoginPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Login Webauthn - sner4</title>
+      </Helmet>
       <Heading headings={['WebAuthn Login']} />
       <div>
         To login with registered Webauthn authenticator

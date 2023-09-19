@@ -1,5 +1,6 @@
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -26,6 +27,10 @@ const QueueEnqueuePage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Queues / Enqueue - sner4</title>
+      </Helmet>
+
       <Heading headings={['Queues', 'Enqueue']} />
       <form id="queue_enqueue_form" method="post">
         <TextAreaField

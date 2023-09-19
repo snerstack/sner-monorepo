@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async'
 import { useLoaderData } from 'react-router-dom'
 
 import Heading from '@/components/Heading'
@@ -7,6 +8,10 @@ const InternalsPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Visuals / Internals - sner4</title>
+      </Helmet>
+
       <Heading headings={['Visuals', 'Internals']} />
 
       <h2>Exclusions</h2>

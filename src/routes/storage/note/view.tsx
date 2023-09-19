@@ -1,5 +1,6 @@
 import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
+import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
 import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
@@ -31,6 +32,11 @@ const NoteViewPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>
+          Notes / View / {note.address} {note.hostname || ''} / {note.xtype} - sner4
+        </title>
+      </Helmet>
       <Heading headings={['Note', `${note.address} ${note.hostname || ''}`, note.xtype]}>
         <div className="breadcrumb-buttons pl-2">
           <div className="btn-group">

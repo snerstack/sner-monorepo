@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import * as d3 from 'd3'
 import d3Cloud from 'd3-cloud'
 import { useLayoutEffect, useRef } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -104,6 +105,9 @@ const PortinfosPage = () => {
   }, [searchParams])
   return (
     <div>
+      <Helmet>
+        <title>Visuals / Port infos - sner4</title>
+      </Helmet>
       <Heading headings={['Visuals', 'Port infos']}>
         <div className="breadcrumb-buttons pl-2">
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">

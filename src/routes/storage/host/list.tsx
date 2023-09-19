@@ -1,6 +1,7 @@
 import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie, useSessionStorage } from 'react-use'
 
@@ -141,6 +142,10 @@ const HostListPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Hosts / List - sner4</title>
+      </Helmet>
+
       <Heading headings={['Hosts']}>
         <div className="breadcrumb-buttons pl-2">
           <Link className="btn btn-outline-primary" to="/storage/host/add">

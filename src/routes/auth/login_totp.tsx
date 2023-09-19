@@ -1,6 +1,7 @@
 import env from 'app-env'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
@@ -37,6 +38,9 @@ const TOTPLoginPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Login TOTP - sner4</title>
+      </Helmet>
       <Heading headings={['Login with 2FA']} />
 
       <form id="totp_code_form" method="post">

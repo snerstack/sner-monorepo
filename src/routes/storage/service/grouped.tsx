@@ -1,5 +1,6 @@
 import env from 'app-env'
 import clsx from 'clsx'
+import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
@@ -43,6 +44,9 @@ const ServiceGroupedPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Services / Grouped - sner4</title>
+      </Helmet>
       <Heading headings={['Services', 'Grouped']}>
         <div className="breadcrumb-buttons pl-2">
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">

@@ -1,6 +1,7 @@
 import { unique } from '@/utils'
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -48,6 +49,10 @@ const ServiceAddPage = () => {
   }
   return (
     <div>
+      <Helmet>
+        <title>Services / Add - sner4</title>
+      </Helmet>
+
       <Heading headings={['Services', 'Add']} />
       <form id="service_form" method="post">
         <div className="form-group row">

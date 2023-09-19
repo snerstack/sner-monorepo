@@ -1,6 +1,7 @@
 import env from 'app-env'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -57,6 +58,10 @@ const ChangePasswordPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>User profile / Change password - sner4</title>
+      </Helmet>
+
       <Heading headings={['User profile', 'Change password']} />
       <form id="user_change_password_form" method="post">
         <PasswordField

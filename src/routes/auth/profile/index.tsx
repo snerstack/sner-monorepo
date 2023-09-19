@@ -1,5 +1,6 @@
 import env from 'app-env'
 import { useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useCookie } from 'react-use'
@@ -40,6 +41,10 @@ const ProfilePage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>User profile - sner4</title>
+      </Helmet>
+
       <Heading headings={['User profile']} />
       <table className="table table-sm auth-user-profile">
         <tbody>

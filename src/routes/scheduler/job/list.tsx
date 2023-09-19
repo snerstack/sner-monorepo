@@ -1,4 +1,5 @@
 import env from 'app-env'
+import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
@@ -53,6 +54,10 @@ const JobListPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Jobs / List - sner4</title>
+      </Helmet>
+
       <Heading headings={['Jobs']} />
       <div id="job_list_table_toolbar" className="dt_toolbar">
         <div id="job_list_table_toolbox" className="dt_toolbar_toolbox_alwaysvisible">

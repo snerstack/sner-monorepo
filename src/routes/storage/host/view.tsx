@@ -2,6 +2,7 @@ import { escapeHtml } from '@/utils'
 import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useCookie, useLocalStorage, useSessionStorage } from 'react-use'
 
@@ -456,6 +457,11 @@ const HostViewPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>
+          Hosts / View / {host.address} {host.hostname || ''} - sner4
+        </title>
+      </Helmet>
       <Heading headings={['Host', `${host.address} ${host.hostname}`]}>
         <div className="breadcrumb-buttons pl-2">
           <div className="btn-group">
