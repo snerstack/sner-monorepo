@@ -7,8 +7,6 @@ import InternalsPage from './routes/visuals/internals'
 import PortinfosPage from './routes/visuals/portinfos'
 import PortmapPage from './routes/visuals/portmap'
 import BaseLayout from '@/layouts/BaseLayout'
-import NotAuthorizedPage from '@/routes/403'
-import NotFoundPage from '@/routes/404'
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import LoginPage from '@/routes/auth/login'
 import TOTPLoginPage from '@/routes/auth/login_totp'
@@ -21,6 +19,8 @@ import WebAuthnRegisterPage from '@/routes/auth/profile/webauthn/register'
 import UserAddPage from '@/routes/auth/user/add'
 import UserEditPage from '@/routes/auth/user/edit'
 import UserListPage from '@/routes/auth/user/list'
+import NotAuthorizedPage from '@/routes/forbidden'
+import NotFoundPage from '@/routes/not-found'
 import RootPage from '@/routes/root'
 import JobListPage from '@/routes/scheduler/job/list'
 import QueueAddPage from '@/routes/scheduler/queue/add'
@@ -46,12 +46,13 @@ import env from 'app-env'
 import { useEffect, useState } from 'react'
 import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements, redirect } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
+import { RecoilRoot } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
 
 import httpClient from '@/lib/httpClient'
 
-export default function App() {
+function App() {
   const [user, setUser] = useRecoilState(userState)
   const [isChecking, setIsChecking] = useState<boolean>(true)
 
@@ -265,11 +266,19 @@ export default function App() {
         </Route>
 
         <Route path="forbidden" element={<NotAuthorizedPage />} />
-        <Route path="404" element={<NotFoundPage />} />
+        <Route path="not-found" element={<NotFoundPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>,
     ),
   )
 
   return <RouterProvider router={router} />
+}
+
+export default function WrappedApp() {
+  return (
+    <RecoilRoot>
+      <App />
+    </RecoilRoot>
+  )
 }
