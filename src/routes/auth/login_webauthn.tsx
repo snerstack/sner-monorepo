@@ -30,6 +30,8 @@ const WebAuthnLoginPage = () => {
   useEffect(() => {
     console.info(window.PublicKeyCredential ? 'WebAuthn supported' : 'WebAuthn NOT supported')
 
+    if (!window.PublicKeyCredential) return
+
     void (async () => {
       try {
         const pkcco = await getPublicKeyCredentialRequestOptions()

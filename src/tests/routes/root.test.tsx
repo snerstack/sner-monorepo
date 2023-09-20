@@ -1,10 +1,12 @@
 import RootPage from '@/routes/root'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
+import { renderWithProviders } from '../renderWithProviders'
+
 describe('Home page', () => {
-  it('shows home page', () => {
-    render(<RootPage />)
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Slow Network Recon Service')
+  it('shows title', () => {
+    renderWithProviders(<RootPage />, '/')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Slow Network Recon Service')
   })
 })

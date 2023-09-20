@@ -36,6 +36,7 @@ const NumberField = ({
           type="number"
           placeholder={placeholder}
           name={name}
+          id={name}
           required={required}
           value={_state}
           onChange={(e) => _setState(e.target.valueAsNumber)}

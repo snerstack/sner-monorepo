@@ -64,8 +64,6 @@ const UserEditPage = () => {
       </Helmet>
       <Heading headings={['Users', 'Edit']} />
       <form id="login_form" method="post">
-        {/* {{ form.csrf_token }}*/}
-        {/* <input id="csrf_token" name="csrf_token" type="hidden" value="random-csrf-value-4654654" /> */}
         <TextField
           name="username"
           label="Username"

@@ -34,6 +34,7 @@ const TextAreaField = ({
         <textarea
           className={clsx('form-control', errors.length > 0 && 'is-invalid')}
           name={name}
+          id={name}
           placeholder={placeholder}
           required={required}
           rows={rows}

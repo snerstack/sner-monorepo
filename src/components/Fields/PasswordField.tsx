@@ -33,6 +33,7 @@ const PasswordField = ({
           className={clsx('form-control', errors.length > 0 && 'is-invalid')}
           type="password"
           name={name}
+          id={name}
           placeholder={placeholder}
           required={required}
           value={_state}

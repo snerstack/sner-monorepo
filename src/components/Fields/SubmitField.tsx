@@ -20,6 +20,7 @@ const SubmitField = ({
           className={clsx('btn btn-primary', errors && 'is-invalid')}
           type="submit"
           name="submit"
+          id={name}
           value={name}
           onClick={(e) => {
             e.preventDefault()

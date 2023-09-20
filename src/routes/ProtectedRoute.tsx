@@ -1,9 +1,14 @@
 import { Navigate, Outlet } from 'react-router-dom'
+import { useRecoilValue } from 'recoil'
 
-const ProtectedRoute = ({ authenticated, authorized }: { authenticated: boolean; authorized: boolean }) => {
-  if (!authenticated) return <Navigate to="/auth/login" />
+import { userState } from '@/atoms/userAtom'
 
-  if (!authorized) return <Navigate to="/forbidden" />
+const ProtectedRoute = ({ requiredRole }: { requiredRole: string }) => {
+  const user = useRecoilValue(userState)
+
+  if (!user.isAuthenticated) return <Navigate to="/auth/login" />
+
+  if (!user.roles.includes(requiredRole)) return <Navigate to="/forbidden" />
 
   return <Outlet />
 }

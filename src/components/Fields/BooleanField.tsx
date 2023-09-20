@@ -29,10 +29,10 @@ const BooleanField = ({
             className={clsx('form-check-input', errors.length > 0 && 'is-invalid')}
             type="checkbox"
             name={name}
+            id={name}
             required={required}
             checked={_state}
             onChange={(e) => _setState(e.target.checked)}
-            id={name}
           />
           <label className="form-check-label" htmlFor={name}>
             {label}
