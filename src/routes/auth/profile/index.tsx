@@ -129,10 +129,11 @@ const ProfilePage = () => {
                       onClick={(e) => {
                         e.preventDefault()
                         httpClient
-                          .post<{ apikey: string }>(env.VITE_SERVER_URL + '/auth/profile/apikey/revoke')
-                          .then(() => {
+                          .post<{ message: string }>(env.VITE_SERVER_URL + '/auth/profile/apikey/revoke')
+                          .then((resp) => {
                             setNewApikey('')
                             setHasApikey(false)
+                            toast.success(resp.data.message)
                           })
                           .catch(() => toast.error('Error while revoking the apikey.'))
                       }}

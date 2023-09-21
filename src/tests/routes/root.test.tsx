@@ -6,7 +6,7 @@ import { renderWithProviders } from '../renderWithProviders'
 
 describe('Home page', () => {
   it('shows title', () => {
-    renderWithProviders(<RootPage />, '/')
+    renderWithProviders({ element: <RootPage />, path: '/' })
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Slow Network Recon Service')
   })
 })

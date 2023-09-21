@@ -10,14 +10,20 @@ import httpClient from '@/lib/httpClient'
 
 describe('Login page', () => {
   it('shows form', () => {
-    renderWithProviders(<LoginPage />, '/auth/login')
+    renderWithProviders({
+      element: <LoginPage />,
+      path: '/auth/login',
+    })
     expect(screen.getByLabelText('Username')).toHaveValue('')
     expect(screen.getByLabelText('Password')).toHaveValue('')
     expect(screen.getByRole('button')).toHaveValue('Login')
   })
 
   it('login with invalid credentials', async () => {
-    renderWithProviders(<LoginPage />, '/auth/login')
+    renderWithProviders({
+      element: <LoginPage />,
+      path: '/auth/login',
+    })
 
     vi.spyOn(httpClient, 'post').mockRejectedValueOnce({ error: { code: 401, message: 'Invalid credentials.' } })
 
@@ -35,12 +41,7 @@ describe('Login page', () => {
   })
 
   it('login with valid credentials', async () => {
-    renderWithProviders(<LoginPage />, '/auth/login', [
-      {
-        path: '/',
-        element: <RootPage />,
-      },
-    ])
+    renderWithProviders({ element: <LoginPage />, path: '/auth/login', routes: [{ path: '/', element: <RootPage /> }] })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
       data: {
@@ -65,12 +66,11 @@ describe('Login page', () => {
   })
 
   it('totp login redirect', async () => {
-    renderWithProviders(<LoginPage />, '/auth/login', [
-      {
-        path: '/auth/login_totp',
-        element: <TOTPLoginPage />,
-      },
-    ])
+    renderWithProviders({
+      element: <LoginPage />,
+      path: '/auth/login',
+      routes: [{ path: '/auth/login_totp', element: <TOTPLoginPage /> }],
+    })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
       data: {
@@ -92,12 +92,11 @@ describe('Login page', () => {
   })
 
   it('webauthn login redirect', async () => {
-    renderWithProviders(<LoginPage />, '/auth/login', [
-      {
-        path: '/auth/login_webauthn',
-        element: <WebAuthnLoginPage />,
-      },
-    ])
+    renderWithProviders({
+      element: <LoginPage />,
+      path: '/auth/login',
+      routes: [{ path: '/auth/login_webauthn', element: <WebAuthnLoginPage /> }],
+    })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
       data: {
