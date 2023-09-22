@@ -2,11 +2,12 @@ import LoginPage from '@/routes/auth/login'
 import TOTPLoginPage from '@/routes/auth/login_totp'
 import WebAuthnLoginPage from '@/routes/auth/login_webauthn'
 import RootPage from '@/routes/root'
-import { renderWithProviders } from '@/tests/renderWithProviders'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import httpClient from '@/lib/httpClient'
+
+import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Login page', () => {
   it('shows form', () => {

@@ -1,9 +1,10 @@
 import ProfilePage from '@/routes/auth/profile'
-import { renderWithProviders } from '@/tests/renderWithProviders'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import httpClient from '@/lib/httpClient'
+
+import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Profile page', () => {
   it('shows profile data', async () => {

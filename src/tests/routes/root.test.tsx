@@ -2,7 +2,7 @@ import RootPage from '@/routes/root'
 import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { renderWithProviders } from '../renderWithProviders'
+import { renderWithProviders } from '../utils/renderWithProviders'
 
 describe('Home page', () => {
   it('shows title', () => {

@@ -1,5 +1,5 @@
 import env from 'app-env'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -30,8 +30,10 @@ const UserEditPage = () => {
   const [password, setPassword] = useState<string>('')
   const [apiNetworks, setApiNetworks] = useState<string>(user.api_networks.join('\n'))
 
+  const [usernameErrors, setUsernameErrors] = useState<string[]>([])
+
   const editUserHandler = async () => {
-    if (username === '') return
+    if (username === '') return setUsernameErrors(['Username is required.'])
 
     const formData = new FormData()
     formData.append('username', username)
@@ -57,6 +59,10 @@ const UserEditPage = () => {
     }
   }
 
+  useEffect(() => {
+    setUsernameErrors([])
+  }, [username])
+
   return (
     <div>
       <Helmet>
@@ -71,6 +77,7 @@ const UserEditPage = () => {
           required={true}
           _state={username}
           _setState={setUsername}
+          errors={usernameErrors}
         />
         <TextField name="email" label="Email" placeholder="Email" _state={email} _setState={setEmail} />
         <MultiCheckboxField name="roles" label="Roles" _state={roles} _setState={setRoles} />

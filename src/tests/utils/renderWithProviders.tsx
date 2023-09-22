@@ -14,7 +14,7 @@ export function renderWithProviders({
   element: ReactElement
   path: string
   loader?: LoaderFunction
-  routes?: { element: ReactElement; path: string }[]
+  routes?: { element: ReactElement; path: string; loader?: LoaderFunction }[]
 }) {
   const router = createMemoryRouter(
     [
