@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
@@ -28,7 +27,7 @@ const LoginPage = () => {
 
     try {
       const resp = await httpClient.post<User | { totp_login_required: boolean } | { webauthn_login: boolean }>(
-        env.VITE_SERVER_URL + '/auth/login',
+        import.meta.env.VITE_SERVER_URL + '/auth/login',
         formData,
       )
 

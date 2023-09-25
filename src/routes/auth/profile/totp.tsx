@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { isAxiosError } from 'axios'
 import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
@@ -37,7 +36,10 @@ const TOTPPage = () => {
     formData.append('code', code)
 
     try {
-      const resp = await httpClient.post<{ message: string }>(env.VITE_SERVER_URL + '/auth/profile/totp', formData)
+      const resp = await httpClient.post<{ message: string }>(
+        import.meta.env.VITE_SERVER_URL + '/auth/profile/totp',
+        formData,
+      )
 
       toast.success(resp.data.message)
       navigate('/auth/profile')

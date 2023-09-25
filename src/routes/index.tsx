@@ -42,14 +42,13 @@ import DnsTreePage from '@/routes/visuals/dnstree'
 import InternalsPage from '@/routes/visuals/internals'
 import PortinfosPage from '@/routes/visuals/portinfos'
 import PortmapPage from '@/routes/visuals/portmap'
-import env from 'app-env'
 import { Route, createRoutesFromElements, redirect } from 'react-router-dom'
 
 import httpClient from '@/lib/httpClient'
 
 const requestDataHandler = async (url: string) => {
   try {
-    const resp = await httpClient.get<unknown>(env.VITE_SERVER_URL + url)
+    const resp = await httpClient.get<unknown>(import.meta.env.VITE_SERVER_URL + url)
 
     return resp.data
   } catch {

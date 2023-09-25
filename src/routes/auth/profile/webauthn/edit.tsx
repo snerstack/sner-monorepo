@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
@@ -21,7 +20,7 @@ const WebAuthnEditPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        env.VITE_SERVER_URL + `/auth/profile/webauthn/edit/${cred.id}`,
+        import.meta.env.VITE_SERVER_URL + `/auth/profile/webauthn/edit/${cred.id}`,
         formData,
       )
 

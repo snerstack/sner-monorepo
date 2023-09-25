@@ -1,4 +1,3 @@
-import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -103,7 +102,7 @@ const VulnGroupedPage = () => {
         columns={columns}
         ajax={{
           url:
-            env.VITE_SERVER_URL +
+            import.meta.env.VITE_SERVER_URL +
             '/storage/vuln/grouped.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',

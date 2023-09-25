@@ -1,5 +1,4 @@
 import { escapeHtml } from '@/utils'
-import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -222,7 +221,7 @@ const NoteListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {env.VITE_NOTE_TAGS.map((tag) => (
+            {import.meta.env.VITE_NOTE_TAGS.split(',').map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/note/tag_multiid" tableId="note_list_table" />
             ))}
           </div>{' '}
@@ -250,7 +249,11 @@ const NoteListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton tags={env.VITE_NOTE_TAGS} url="/storage/note/tag_multiid" tableId="note_list_table" />
+              <TagsDropdownButton
+                tags={import.meta.env.VITE_NOTE_TAGS.split(',')}
+                url="/storage/note/tag_multiid"
+                tableId="note_list_table"
+              />
             </div>
             <a
               className="btn btn-outline-secondary"
@@ -283,7 +286,7 @@ const NoteListPage = () => {
         columns={columns}
         ajax={{
           url:
-            env.VITE_SERVER_URL +
+            import.meta.env.VITE_SERVER_URL +
             '/storage/note/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',

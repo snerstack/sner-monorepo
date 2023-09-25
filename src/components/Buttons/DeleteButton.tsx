@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
@@ -11,7 +10,7 @@ const DeleteButton = ({ url }: { url: string }) => {
       onClick={(e) => {
         e.preventDefault()
         httpClient
-          .post(env.VITE_SERVER_URL + url)
+          .post(import.meta.env.VITE_SERVER_URL + url)
           .then(() => window.location.reload())
           .catch(() => toast.error('Error while deleting a row.'))
       }}

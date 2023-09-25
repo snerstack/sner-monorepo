@@ -1,5 +1,4 @@
 import { escapeHtml } from '@/utils'
-import env from 'app-env'
 import clsx from 'clsx'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
@@ -40,7 +39,7 @@ const VulnViewPage = () => {
             <a className="btn btn-outline-primary disabled">
               <i className="fas fa-tag text-primary"></i>
             </a>
-            {env.VITE_VULN_TAGS.map((tag) => (
+            {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" id={vuln.id} />
             ))}
           </div>{' '}

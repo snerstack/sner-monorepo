@@ -1,5 +1,4 @@
 import { escapeHtml } from '@/utils'
-import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -501,7 +500,7 @@ const HostViewPage = () => {
               <i className="fas fa-tag text-primary"></i>
             </a>
             <>
-              {env.VITE_HOST_TAGS.map((tag) => (
+              {import.meta.env.VITE_HOST_TAGS.split(',').map((tag) => (
                 <TagButton tag={tag} key={tag} url="/storage/host/tag_multiid" id={host.id} />
               ))}
             </>
@@ -612,7 +611,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {env.VITE_SERVICE_TAGS.map((tag) => (
+                  {import.meta.env.VITE_SERVICE_TAGS.split(',').map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -646,7 +645,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={env.VITE_SERVICE_TAGS}
+                      tags={import.meta.env.VITE_SERVICE_TAGS.split(',')}
                       url="/storage/service/tag_multiid"
                       tableId="host_view_service_table"
                     />
@@ -666,7 +665,7 @@ const HostViewPage = () => {
               id="host_view_service_table"
               columns={serviceColumns}
               ajax={{
-                url: env.VITE_SERVER_URL + `/storage/service/list.json?filter=Host.id=="${host.id}"`,
+                url: import.meta.env.VITE_SERVER_URL + `/storage/service/list.json?filter=Host.id=="${host.id}"`,
                 type: 'POST',
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
@@ -710,7 +709,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {env.VITE_VULN_TAGS.map((tag) => (
+                  {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
                     <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" tableId="host_view_vuln_table" />
                   ))}
                 </div>{' '}
@@ -739,7 +738,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={env.VITE_VULN_TAGS}
+                      tags={import.meta.env.VITE_VULN_TAGS.split(',')}
                       url="/storage/vuln/tag_multiid"
                       tableId="host_view_vuln_table"
                     />
@@ -759,7 +758,7 @@ const HostViewPage = () => {
               id="host_view_vuln_table"
               columns={vulnColumns}
               ajax={{
-                url: env.VITE_SERVER_URL + `/storage/vuln/list.json?filter=Host.id=="${host.id}"`,
+                url: import.meta.env.VITE_SERVER_URL + `/storage/vuln/list.json?filter=Host.id=="${host.id}"`,
                 type: 'POST',
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
@@ -805,7 +804,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {env.VITE_NOTE_TAGS.map((tag) => (
+                  {import.meta.env.VITE_NOTE_TAGS.split(',').map((tag) => (
                     <TagButton tag={tag} key={tag} url="/storage/note/tag_multiid" tableId="host_view_note_table" />
                   ))}
                 </div>{' '}
@@ -834,7 +833,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={env.VITE_NOTE_TAGS}
+                      tags={import.meta.env.VITE_NOTE_TAGS.split(',')}
                       url="/storage/note/tag_multiid"
                       tableId="host_view_note_table"
                     />
@@ -854,7 +853,7 @@ const HostViewPage = () => {
               id="host_view_note_table"
               columns={noteColumns}
               ajax={{
-                url: env.VITE_SERVER_URL + `/storage/note/list.json?filter=Host.id=="${host.id}"`,
+                url: import.meta.env.VITE_SERVER_URL + `/storage/note/list.json?filter=Host.id=="${host.id}"`,
                 type: 'POST',
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

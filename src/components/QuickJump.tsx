@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -13,7 +12,7 @@ const QuickJump = () => {
   const autocompleteHandler = async (searchTerm: string) => {
     try {
       const resp = await httpClient.get<string[]>(
-        env.VITE_SERVER_URL + `/storage/quickjump_autocomplete?term=${searchTerm}`,
+        import.meta.env.VITE_SERVER_URL + `/storage/quickjump_autocomplete?term=${searchTerm}`,
       )
 
       setSuggestions(resp.data)
@@ -27,7 +26,10 @@ const QuickJump = () => {
     formData.append('quickjump', quickjump)
 
     try {
-      const resp = await httpClient.post<{ url: string }>(env.VITE_SERVER_URL + '/storage/quickjump', formData)
+      const resp = await httpClient.post<{ url: string }>(
+        import.meta.env.VITE_SERVER_URL + '/storage/quickjump',
+        formData,
+      )
 
       navigate(resp.data.url)
 

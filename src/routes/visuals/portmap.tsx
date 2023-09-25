@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
@@ -86,7 +85,7 @@ const PortmapPage = () => {
                 to={`/storage/service/list?filter=Service.port=="${port}"`}
                 onMouseEnter={() => {
                   httpClient
-                    .get<PortDetails>(env.VITE_SERVER_URL + `/visuals/portmap_portstat/${port}.json`)
+                    .get<PortDetails>(import.meta.env.VITE_SERVER_URL + `/visuals/portmap_portstat/${port}.json`)
                     .then((resp) => setPortDetails(resp.data))
                     .catch(() => toast.error('Error while fetching data.'))
                 }}

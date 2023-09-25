@@ -1,4 +1,3 @@
-import env from 'app-env'
 import clsx from 'clsx'
 import * as d3 from 'd3'
 import { useLayoutEffect, useRef } from 'react'
@@ -95,7 +94,7 @@ const DnsTreePage = () => {
       })
 
     d3.json(
-      env.VITE_SERVER_URL +
+      import.meta.env.VITE_SERVER_URL +
         `/visuals/dnstree.json?crop=${searchParams.get('crop')}&distance=${searchParams.get('distance')}`,
       { credentials: 'include' },
     )

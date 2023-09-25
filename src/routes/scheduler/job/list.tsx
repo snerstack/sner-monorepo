@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCookie } from 'react-use'
@@ -21,8 +20,6 @@ const JobListPage = () => {
     Column('queue_name'),
     Column('assignment', {
       render: (data: string) => {
-        if (!data) return
-
         if (data.length >= 100) {
           return data.substring(0, 99) + '...'
         }
@@ -76,7 +73,7 @@ const JobListPage = () => {
         id="job_list_table"
         columns={columns}
         ajax={{
-          url: env.VITE_SERVER_URL + '/scheduler/job/list.json',
+          url: import.meta.env.VITE_SERVER_URL + '/scheduler/job/list.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

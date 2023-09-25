@@ -1,4 +1,3 @@
-import env from 'app-env'
 import clsx from 'clsx'
 import * as d3 from 'd3'
 import d3Cloud from 'd3-cloud'
@@ -56,7 +55,7 @@ const PortinfosPage = () => {
 
     // generate graph layout
     d3.json(
-      env.VITE_SERVER_URL +
+      import.meta.env.VITE_SERVER_URL +
         `/visuals/portinfos.json?crop=${searchParams.get('crop')}&limit=${searchParams.get('limit')}`,
       { credentials: 'include' },
     )

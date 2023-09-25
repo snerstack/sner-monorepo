@@ -1,5 +1,4 @@
 import { escapeHtml } from '@/utils'
-import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -268,7 +267,7 @@ const VulnListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {env.VITE_VULN_TAGS.map((tag) => (
+            {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" tableId="vuln_list_table" />
             ))}
           </div>{' '}
@@ -296,7 +295,11 @@ const VulnListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton tags={env.VITE_VULN_TAGS} url="/storage/vuln/tag_multiid" tableId="vuln_list_table" />
+              <TagsDropdownButton
+                tags={import.meta.env.VITE_VULN_TAGS.split(',')}
+                url="/storage/vuln/tag_multiid"
+                tableId="vuln_list_table"
+              />
             </div>
             <a
               className="btn btn-outline-secondary"
@@ -337,7 +340,7 @@ const VulnListPage = () => {
         columns={columns}
         ajax={{
           url:
-            env.VITE_SERVER_URL +
+            import.meta.env.VITE_SERVER_URL +
             '/storage/vuln/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',

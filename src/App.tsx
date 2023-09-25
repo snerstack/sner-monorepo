@@ -1,5 +1,4 @@
 import { routes } from './routes'
-import env from 'app-env'
 import { useEffect, useState } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -14,7 +13,7 @@ export default function App() {
 
   const authHandler = () => {
     httpClient
-      .get<User>(env.VITE_SERVER_URL + '/auth/user/@me')
+      .get<User>(import.meta.env.VITE_SERVER_URL + '/auth/user/@me')
       .then((resp) => {
         setUser({ ...resp.data, isAuthenticated: true })
         setIsChecking(false)

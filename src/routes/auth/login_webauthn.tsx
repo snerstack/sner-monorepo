@@ -1,5 +1,4 @@
 import { arrayBufferToBase64, base64ToArrayBuffer } from '@/utils'
-import env from 'app-env'
 import { isAxiosError } from 'axios'
 import { decode, encode } from 'cbor-x'
 import { useEffect } from 'react'
@@ -51,7 +50,7 @@ const WebAuthnLoginPage = () => {
     formData.append('assertion', assertion)
 
     try {
-      const resp = await httpClient.post<User>(env.VITE_SERVER_URL + '/auth/login_webauthn', formData)
+      const resp = await httpClient.post<User>(import.meta.env.VITE_SERVER_URL + '/auth/login_webauthn', formData)
 
       setUser({ ...resp.data, isAuthenticated: true })
 
@@ -85,7 +84,7 @@ const WebAuthnLoginPage = () => {
 export default WebAuthnLoginPage
 
 const getPublicKeyCredentialRequestOptions = async (): Promise<CredentialCreationOptions> => {
-  const resp = await httpClient.post<string>(env.VITE_SERVER_URL + '/auth/login_webauthn_pkcro')
+  const resp = await httpClient.post<string>(import.meta.env.VITE_SERVER_URL + '/auth/login_webauthn_pkcro')
 
   return decode(base64ToArrayBuffer(resp.data)) as CredentialCreationOptions
 }

@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
@@ -44,7 +43,10 @@ const UserAddPage = () => {
     formData.append('api_networks', apiNetworks)
 
     try {
-      const resp = await httpClient.post<{ message: string }>(env.VITE_SERVER_URL + '/auth/user/add', formData)
+      const resp = await httpClient.post<{ message: string }>(
+        import.meta.env.VITE_SERVER_URL + '/auth/user/add',
+        formData,
+      )
 
       toast.success(resp.data.message)
       navigate('/auth/user/list')

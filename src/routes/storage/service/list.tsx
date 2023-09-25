@@ -1,4 +1,3 @@
-import env from 'app-env'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -186,7 +185,7 @@ const ServiceListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {env.VITE_SERVICE_TAGS.map((tag) => (
+            {import.meta.env.VITE_SERVICE_TAGS.split(',').map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/service/tag_multiid" tableId="service_list_table" />
             ))}
           </div>{' '}
@@ -215,7 +214,7 @@ const ServiceListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={env.VITE_SERVICE_TAGS}
+                tags={import.meta.env.VITE_SERVICE_TAGS.split(',')}
                 url="/storage/service/tag_multiid"
                 tableId="service_list_table"
               />
@@ -251,7 +250,7 @@ const ServiceListPage = () => {
         columns={columns}
         ajax={{
           url:
-            env.VITE_SERVER_URL +
+            import.meta.env.VITE_SERVER_URL +
             '/storage/service/list.json' +
             (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
           type: 'POST',

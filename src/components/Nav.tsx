@@ -1,6 +1,5 @@
 import NavLink from './NavLink'
 import QuickJump from './QuickJump'
-import env from 'app-env'
 import clsx from 'clsx'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -27,7 +26,7 @@ const Nav = () => {
 
   const logoutHandler = async () => {
     try {
-      await httpClient.get(env.VITE_SERVER_URL + '/auth/logout')
+      await httpClient.get(import.meta.env.VITE_SERVER_URL + '/auth/logout')
 
       setCurrentUser({ id: 0, username: '', email: '', roles: [], isAuthenticated: false })
 

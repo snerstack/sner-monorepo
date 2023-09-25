@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -55,7 +54,7 @@ const QueueListPage = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   httpClient
-                    .post(env.VITE_SERVER_URL + `/scheduler/queue/flush/${row['id']}`)
+                    .post(import.meta.env.VITE_SERVER_URL + `/scheduler/queue/flush/${row['id']}`)
                     .then(() => window.location.reload())
                     .catch(() => toast.error('Error while flusing the queue.'))
                 }}
@@ -69,7 +68,7 @@ const QueueListPage = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   httpClient
-                    .post(env.VITE_SERVER_URL + `/scheduler/queue/prune/${row['id']}`)
+                    .post(import.meta.env.VITE_SERVER_URL + `/scheduler/queue/prune/${row['id']}`)
                     .then(() => window.location.reload())
                     .catch(() => toast.error('Error while pruning the queue.'))
                 }}
@@ -104,7 +103,7 @@ const QueueListPage = () => {
         id="queue_list_table"
         columns={columns}
         ajax={{
-          url: env.VITE_SERVER_URL + '/scheduler/queue/list.json',
+          url: import.meta.env.VITE_SERVER_URL + '/scheduler/queue/list.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

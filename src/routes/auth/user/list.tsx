@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCookie } from 'react-use'
@@ -21,7 +20,6 @@ const UserListPage = () => {
     Column('email'),
     Column('apikey', {
       createdCell: (cell, _data: string, row: UserListRow) => {
-        console.log(row)
         renderElements(
           cell,
           <>
@@ -67,7 +65,7 @@ const UserListPage = () => {
         id="user_list_table"
         columns={columns}
         ajax={{
-          url: env.VITE_SERVER_URL + '/auth/user/list.json',
+          url: import.meta.env.VITE_SERVER_URL + '/auth/user/list.json',
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

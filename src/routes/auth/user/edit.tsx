@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
@@ -48,7 +47,7 @@ const UserEditPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        env.VITE_SERVER_URL + `/auth/user/edit/${user.id}`,
+        import.meta.env.VITE_SERVER_URL + `/auth/user/edit/${user.id}`,
         formData,
       )
 

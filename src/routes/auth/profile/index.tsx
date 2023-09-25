@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData, useNavigate } from 'react-router-dom'
@@ -84,7 +83,7 @@ const ProfilePage = () => {
               <DataTable
                 id="profile_webauthn_table"
                 ajax={{
-                  url: env.VITE_SERVER_URL + '/auth/profile/webauthn/list.json',
+                  url: import.meta.env.VITE_SERVER_URL + '/auth/profile/webauthn/list.json',
                   type: 'POST',
                   xhrFields: { withCredentials: true },
                   beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
@@ -108,7 +107,7 @@ const ProfilePage = () => {
                   onClick={(e) => {
                     e.preventDefault()
                     httpClient
-                      .post<{ apikey: string }>(env.VITE_SERVER_URL + '/auth/profile/apikey/generate')
+                      .post<{ apikey: string }>(import.meta.env.VITE_SERVER_URL + '/auth/profile/apikey/generate')
                       .then((resp) => {
                         setNewApikey(resp.data.apikey)
                         setHasApikey(true)
@@ -129,7 +128,7 @@ const ProfilePage = () => {
                       onClick={(e) => {
                         e.preventDefault()
                         httpClient
-                          .post<{ message: string }>(env.VITE_SERVER_URL + '/auth/profile/apikey/revoke')
+                          .post<{ message: string }>(import.meta.env.VITE_SERVER_URL + '/auth/profile/apikey/revoke')
                           .then((resp) => {
                             setNewApikey('')
                             setHasApikey(false)

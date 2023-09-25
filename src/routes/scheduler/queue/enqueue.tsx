@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -20,7 +19,7 @@ const QueueEnqueuePage = () => {
     formData.append('targets', targets)
 
     httpClient
-      .post(env.VITE_SERVER_URL + `/scheduler/queue/enqueue/${id}`, formData)
+      .post(import.meta.env.VITE_SERVER_URL + `/scheduler/queue/enqueue/${id}`, formData)
       .then(() => navigate(-1))
       .catch(() => toast.error('Error while enqueuing'))
   }

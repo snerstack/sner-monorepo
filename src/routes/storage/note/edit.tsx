@@ -1,5 +1,4 @@
 import { unique } from '@/utils'
-import env from 'app-env'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
@@ -38,7 +37,7 @@ const NoteEditPage = () => {
     formData.append('comment', comment)
 
     try {
-      await httpClient.post(env.VITE_SERVER_URL + `/storage/note/edit/${note.id}`, formData)
+      await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/note/edit/${note.id}`, formData)
 
       navigate(-1)
     } catch (err) {
@@ -97,7 +96,11 @@ const NoteEditPage = () => {
           name="tags"
           label="Tags"
           placeholder="Tags"
-          defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
+          defaultTags={unique([
+            ...import.meta.env.VITE_HOST_TAGS.split(','),
+            ...import.meta.env.VITE_VULN_TAGS.split(','),
+            ...import.meta.env.VITE_ANNOTATE_TAGS.split(','),
+          ]).sort()}
           _state={tags}
           _setState={setTags}
         />

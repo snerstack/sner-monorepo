@@ -1,13 +1,13 @@
 /// <reference types="vitest" />
 /// <reference types="vite/client" />
-import EnvCaster from '@niku/vite-env-caster/dist/index'
 import react from '@vitejs/plugin-react-swc'
 import * as path from 'path'
 import { defineConfig } from 'vite'
+import { configDefaults } from 'vitest/dist/config.js'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), EnvCaster()],
+  plugins: [react()],
   resolve: {
     alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }],
   },
@@ -15,5 +15,6 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.ts'],
+    exclude: [...configDefaults.exclude, 'tests/mocks/*'],
   },
 })

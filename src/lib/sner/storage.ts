@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { Api } from 'datatables.net-bs4'
 import { toast } from 'react-toastify'
 
@@ -162,7 +161,7 @@ export const tagAction = ({
     formData.append(key, ids[key].toString())
   }
 
-  httpClient.post(env.VITE_SERVER_URL + url, formData).catch(() => toast.error('Error while adding a tag'))
+  httpClient.post(import.meta.env.VITE_SERVER_URL + url, formData).catch(() => toast.error('Error while adding a tag'))
 }
 
 export const deleteRow = (tableId: string, url: string) => {
@@ -184,7 +183,7 @@ export const deleteRow = (tableId: string, url: string) => {
   }
 
   httpClient
-    .post(env.VITE_SERVER_URL + url, formData)
+    .post(import.meta.env.VITE_SERVER_URL + url, formData)
     .then(() => api.draw())
     .catch(() => toast.error('Error while deleting a row'))
 }

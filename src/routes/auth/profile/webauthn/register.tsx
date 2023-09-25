@@ -1,5 +1,4 @@
 import { arrayBufferToBase64, base64ToArrayBuffer } from '@/utils'
-import env from 'app-env'
 import { isAxiosError } from 'axios'
 import { decode, encode } from 'cbor-x'
 import clsx from 'clsx'
@@ -52,7 +51,7 @@ const WebAuthnRegisterPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        env.VITE_SERVER_URL + '/auth/profile/webauthn/register',
+        import.meta.env.VITE_SERVER_URL + '/auth/profile/webauthn/register',
         formData,
       )
 
@@ -101,7 +100,7 @@ const WebAuthnRegisterPage = () => {
 export default WebAuthnRegisterPage
 
 const getPublicKeyCredentialRequestOptions = async (): Promise<CredentialCreationOptions> => {
-  const resp = await httpClient.post<string>(env.VITE_SERVER_URL + '/auth/profile/webauthn/pkcco')
+  const resp = await httpClient.post<string>(import.meta.env.VITE_SERVER_URL + '/auth/profile/webauthn/pkcco')
 
   return decode(base64ToArrayBuffer(resp.data)) as CredentialCreationOptions
 }

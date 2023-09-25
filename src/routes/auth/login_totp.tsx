@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -24,7 +23,7 @@ const TOTPLoginPage = () => {
     formData.append('code', code)
 
     try {
-      const resp = await httpClient.post<User>(env.VITE_SERVER_URL + '/auth/login_totp', formData)
+      const resp = await httpClient.post<User>(import.meta.env.VITE_SERVER_URL + '/auth/login_totp', formData)
 
       setUser({ ...resp.data, isAuthenticated: true })
 

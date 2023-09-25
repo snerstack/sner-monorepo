@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -47,7 +46,7 @@ const QueueEditPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        env.VITE_SERVER_URL + `/scheduler/queue/edit/${queue.id}`,
+        import.meta.env.VITE_SERVER_URL + `/scheduler/queue/edit/${queue.id}`,
         formData,
       )
 

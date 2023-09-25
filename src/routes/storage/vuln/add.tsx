@@ -1,5 +1,4 @@
 import { unique } from '@/utils'
-import env from 'app-env'
 import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
@@ -71,9 +70,9 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
 
     try {
       if (type === 'host') {
-        await httpClient.post(env.VITE_SERVER_URL + `/storage/vuln/add/host/${hostId}`, formData)
+        await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/host/${hostId}`, formData)
       } else {
-        await httpClient.post(env.VITE_SERVER_URL + `/storage/vuln/add/service/${serviceId}`, formData)
+        await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/service/${serviceId}`, formData)
       }
 
       navigate(-1)
@@ -134,7 +133,11 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
           name="tags"
           label="Tags"
           placeholder="Tags"
-          defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
+          defaultTags={unique([
+            ...import.meta.env.VITE_HOST_TAGS.split(','),
+            ...import.meta.env.VITE_VULN_TAGS.split(','),
+            ...import.meta.env.VITE_ANNOTATE_TAGS.split(''),
+          ]).sort()}
           _state={tags}
           _setState={setTags}
         />

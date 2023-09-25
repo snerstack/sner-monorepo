@@ -1,4 +1,3 @@
-import env from 'app-env'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { ModalBody, ModalTitle } from 'react-bootstrap'
 import Modal from 'react-bootstrap/Modal'
@@ -31,7 +30,7 @@ const MultipleTagModal = ({
     }
 
     httpClient
-      .post(env.VITE_SERVER_URL + multipleTag.url, formData)
+      .post(import.meta.env.VITE_SERVER_URL + multipleTag.url, formData)
       .then(() => {
         setMultipleTag({ ...multipleTag, show: false })
         getTableApi(multipleTag.tableId).draw()

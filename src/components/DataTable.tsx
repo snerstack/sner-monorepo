@@ -5,12 +5,6 @@ import { useSearchParams } from 'react-router-dom'
 
 interface TableConfig extends Config {
   id: string
-  ajax: Config['ajax'] & {
-    url: string
-    type: string
-    xhrFields: { withCredentials: boolean }
-    beforeSend: (req: XMLHttpRequest) => void
-  }
 }
 
 const DataTable = ({ id, ...props }: TableConfig) => {

@@ -1,13 +1,11 @@
-declare module 'app-env' {
-  interface ENV {
-    VITE_SERVER_URL: string
-    VITE_HOST_TAGS: string[]
-    VITE_SERVICE_TAGS: string[]
-    VITE_VULN_TAGS: string[]
-    VITE_NOTE_TAGS: string[]
-    VITE_ANNOTATE_TAGS: string[]
-  }
+interface ImportMetaEnv {
+  readonly VITE_HOST_TAGS: string
+  readonly VITE_SERVICE_TAGS: string
+  readonly VITE_VULN_TAGS: string
+  readonly VITE_NOTE_TAGS: string
+  readonly VITE_ANNOTATE_TAGS: string
+}
 
-  const appEnv: ENV
-  export default appEnv
+interface ImportMeta {
+  readonly env: ImportMetaEnv
 }

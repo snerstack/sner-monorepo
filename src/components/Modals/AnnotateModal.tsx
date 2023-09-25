@@ -1,5 +1,4 @@
 import { unique } from '@/utils'
-import env from 'app-env'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { ModalBody, ModalTitle } from 'react-bootstrap'
 import Modal from 'react-bootstrap/Modal'
@@ -29,7 +28,7 @@ const AnnotateModal = ({
     formData.append('comment', comment)
 
     httpClient
-      .post(env.VITE_SERVER_URL + annotate.url, formData)
+      .post(import.meta.env.VITE_SERVER_URL + annotate.url, formData)
       .then(() => {
         setAnnotate({ ...annotate, show: false })
         getTableApi(annotate.tableId).draw()
@@ -49,7 +48,11 @@ const AnnotateModal = ({
           placeholder="Tags"
           _state={tags.length === 0 ? annotate.tags : tags}
           _setState={setTags}
-          defaultTags={unique([...env.VITE_HOST_TAGS, ...env.VITE_VULN_TAGS, ...env.VITE_ANNOTATE_TAGS]).sort()}
+          defaultTags={unique([
+            ...import.meta.env.VITE_HOST_TAGS.split(','),
+            ...import.meta.env.VITE_VULN_TAGS.split(','),
+            ...import.meta.env.VITE_ANNOTATE_TAGS.split(','),
+          ]).sort()}
         />{' '}
         <TextAreaField
           name="comment"
