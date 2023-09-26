@@ -47,11 +47,11 @@ const HostListPage = () => {
         renderElements(
           cell,
           <a
-            href={`/storage/host/view/${row['id']}`}
             onClick={(e) => {
               e.preventDefault()
               navigate(`/storage/host/view/${row['id']}`)
             }}
+            href={`/storage/host/view/${row['id']}`}
           >
             {data}
           </a>,
@@ -68,7 +68,7 @@ const HostListPage = () => {
         renderElements(
           cell,
           <div
-            onDoubleClick={() =>
+            onDoubleClick={() => {
               setAnnotate({
                 show: true,
                 tags: data,
@@ -76,7 +76,7 @@ const HostListPage = () => {
                 tableId: 'host_list_table',
                 url: `/storage/host/annotate/${row['id']}`,
               })
-            }
+            }}
           >
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
