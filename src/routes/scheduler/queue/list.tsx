@@ -50,6 +50,7 @@ const QueueListPage = () => {
               <a
                 className="btn btn-outline-secondary"
                 title="Flush all targets from queue"
+                data-testid="queue-flush"
                 href={`/scheduler/queue/flush/${row['id']}`}
                 onClick={(e) => {
                   e.preventDefault()
@@ -64,6 +65,7 @@ const QueueListPage = () => {
               <a
                 className="btn btn-outline-secondary"
                 title="Delete all jobs associated with queue"
+                data-testid="queue-prune"
                 href={`/scheduler/queue/prune/${row['id']}`}
                 onClick={(e) => {
                   e.preventDefault()

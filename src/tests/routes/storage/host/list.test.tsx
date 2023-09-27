@@ -25,7 +25,7 @@ describe('Host list page', () => {
     })
   })
 
-  it('views a host', async () => {
+  it('views host', async () => {
     renderWithProviders({
       element: <HostListPage />,
       path: '/storage/host/list',
@@ -65,18 +65,17 @@ describe('Host list page', () => {
     })
   })
 
-  it('annotates a host', async () => {
+  it('annotates host', async () => {
     renderWithProviders({
       element: <HostListPage />,
       path: '/storage/host/list',
     })
 
-    await waitFor(async () => {
-      const cells = await screen.findAllByRole('cell')
-      const tagCell = cells[6].children[0]
-      const commentCell = cells[7].children[0]
+    await waitFor(() => {
+      const tagsCell = screen.getAllByTestId('host_tags_annotate')[0]
+      const commentCell = screen.getAllByTestId('host_comment_annotate')[0]
 
-      fireEvent.doubleClick(tagCell)
+      fireEvent.doubleClick(tagsCell)
 
       expect(screen.getByText('Annotate')).toBeInTheDocument()
 
@@ -84,5 +83,57 @@ describe('Host list page', () => {
 
       expect(screen.getByText('Annotate')).toBeInTheDocument()
     })
+  })
+
+  it('selects all hosts', async () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('host_select_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
+  it('unselects all hosts', async () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('host_unselect_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
+  it('sets multiple tags', () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    const tagMultipleButton = screen.getByTestId('host_set_multiple_tag')
+
+    fireEvent.click(tagMultipleButton)
+
+    expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
+  })
+
+  it('unsets multiple tags', () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    const tagMultipleButton = screen.getByTestId('host_unset_multiple_tag')
+
+    fireEvent.click(tagMultipleButton)
+
+    expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
   })
 })

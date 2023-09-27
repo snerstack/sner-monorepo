@@ -68,6 +68,7 @@ const HostListPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="host_tags_annotate"
             onDoubleClick={() => {
               setAnnotate({
                 show: true,
@@ -93,6 +94,7 @@ const HostListPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="host_comment_annotate"
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
@@ -159,21 +161,12 @@ const HostListPage = () => {
       <div id="host_list_table_toolbar" className="dt_toolbar">
         <div id="host_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}>
           <div className="btn-group">
-            <a
-              className="btn btn-outline-secondary disabled"
-              onClick={() =>
-                setMultipleTag({
-                  show: true,
-                  action: 'set',
-                  tableId: 'host_list_table',
-                  url: '/storage/host/tag_multiid',
-                })
-              }
-            >
+            <a className="btn btn-outline-secondary disabled">
               <i className="fas fa-check-square"></i>
             </a>
             <a
               className="btn btn-outline-secondary"
+              data-testid="host_select_all"
               href="#"
               title="select all"
               onClick={() => {
@@ -185,6 +178,7 @@ const HostListPage = () => {
             </a>
             <a
               className="btn btn-outline-secondary abutton_selectnone"
+              data-testid="host_unselect_all"
               href="#"
               title="unselect all"
               onClick={() => {
@@ -199,6 +193,7 @@ const HostListPage = () => {
             <a
               className="btn btn-outline-secondary"
               href="#"
+              data-testid="host_set_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,
@@ -217,6 +212,7 @@ const HostListPage = () => {
           <div className="btn-group">
             <a
               className="btn btn-outline-secondary text-secondary"
+              data-testid="host_unset_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,

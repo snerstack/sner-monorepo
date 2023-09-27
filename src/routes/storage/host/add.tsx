@@ -33,6 +33,8 @@ const HostAddPage = () => {
       await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/host/add`, formData)
 
       navigate(-1)
+
+      toast.success('Successfully added a new host.')
     } catch (err) {
       toast.error('Error while adding a host.')
     }

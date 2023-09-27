@@ -69,6 +69,7 @@ const HostViewPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="service_tags_annotate"
             onDoubleClick={() =>
               setAnnotateService({
                 show: true,
@@ -94,6 +95,7 @@ const HostViewPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="service_comment_annotate"
             onDoubleClick={() =>
               setAnnotateService({
                 show: true,
@@ -200,10 +202,11 @@ const HostViewPage = () => {
         renderElements(
           cell,
           <a
-            href={`/vuln/view/${row['id']}`}
+            href={`/storage/vuln/view/${row['id']}`}
+            data-testid="vuln-link"
             onClick={(e) => {
               e.preventDefault()
-              navigate(`/vuln/view/${row['id']}`)
+              navigate(`/storage/vuln/view/${row['id']}`)
             }}
           >
             {row['name']}
@@ -241,6 +244,7 @@ const HostViewPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="vuln_tags_annotate"
             onDoubleClick={() =>
               setAnnotateVuln({
                 show: true,
@@ -266,6 +270,7 @@ const HostViewPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="vuln_comment_annotate"
             onDoubleClick={() =>
               setAnnotateVuln({
                 show: true,
@@ -385,6 +390,7 @@ const HostViewPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="note_tags_annotate"
             onDoubleClick={() =>
               setAnnotateNote({
                 show: true,
@@ -410,6 +416,7 @@ const HostViewPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="note_comment_annotate"
             onDoubleClick={() =>
               setAnnotateNote({
                 show: true,
@@ -551,6 +558,7 @@ const HostViewPage = () => {
         <li className="nav-item">
           <a
             className={clsx('nav-link', activeTab === 'service' && 'active')}
+            data-testid="services_tab"
             href="#"
             onClick={() => setActiveTab('service')}
           >
@@ -560,6 +568,7 @@ const HostViewPage = () => {
         <li className="nav-item">
           <a
             className={clsx('nav-link', activeTab === 'vuln' && 'active')}
+            data-testid="vulns_tab"
             href="#"
             onClick={() => setActiveTab('vuln')}
           >
@@ -569,6 +578,7 @@ const HostViewPage = () => {
         <li className="nav-item">
           <a
             className={clsx('nav-link', activeTab === 'note' && 'active')}
+            data-testid="notes_tab"
             href="#"
             onClick={() => setActiveTab('note')}
           >
@@ -600,6 +610,7 @@ const HostViewPage = () => {
                   <a
                     className="btn btn-outline-secondary"
                     href="#"
+                    data-testid="service_set_multiple_tag"
                     onClick={() =>
                       setMultipleTagService({
                         show: true,
@@ -624,6 +635,7 @@ const HostViewPage = () => {
                   <a
                     className="btn btn-outline-secondary"
                     href="#"
+                    data-testid="service_unset_multiple_tag"
                     onClick={() =>
                       setMultipleTagService({
                         show: true,
@@ -698,6 +710,7 @@ const HostViewPage = () => {
                   <a
                     className="btn btn-outline-secondary"
                     href="#"
+                    data-testid="vuln_set_multiple_tag"
                     onClick={() =>
                       setMultipleTagService({
                         show: true,
@@ -717,6 +730,7 @@ const HostViewPage = () => {
                   <a
                     className="btn btn-outline-secondary"
                     href="#"
+                    data-testid="vuln_unset_multiple_tag"
                     onClick={() =>
                       setMultipleTagService({
                         show: true,
@@ -793,6 +807,7 @@ const HostViewPage = () => {
                   <a
                     className="btn btn-outline-secondary"
                     href="#"
+                    data-testid="note_set_multiple_tag"
                     onClick={() =>
                       setMultipleTagService({
                         show: true,
@@ -812,6 +827,7 @@ const HostViewPage = () => {
                   <a
                     className="btn btn-outline-secondary"
                     href="#"
+                    data-testid="note_unset_multiple_tag"
                     onClick={() =>
                       setMultipleTagService({
                         show: true,
