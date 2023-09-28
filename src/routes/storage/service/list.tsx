@@ -70,6 +70,7 @@ const ServiceListPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="service_tags_annotate"
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
@@ -95,6 +96,7 @@ const ServiceListPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="service_comment_annotate"
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
@@ -174,6 +176,7 @@ const ServiceListPage = () => {
             <a
               className="btn btn-outline-secondary"
               href="#"
+              data-testid="service_set_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,
@@ -193,6 +196,7 @@ const ServiceListPage = () => {
             <a
               className="btn btn-outline-secondary"
               href="#"
+              data-testid="service_unset_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,

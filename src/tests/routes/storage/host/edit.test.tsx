@@ -1,6 +1,4 @@
-import HostAddPage from '@/routes/storage/host/add'
 import HostEditPage from '@/routes/storage/host/edit'
-import HostListPage from '@/routes/storage/host/list'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 

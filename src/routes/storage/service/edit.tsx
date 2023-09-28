@@ -39,9 +39,14 @@ const ServiceEditPage = () => {
     formData.append('comment', comment)
 
     try {
-      await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/service/edit/${service.id}`, formData)
+      const resp = await httpClient.post<{ message: string }>(
+        import.meta.env.VITE_SERVER_URL + `/storage/service/edit/${service.id}`,
+        formData,
+      )
 
       navigate(-1)
+
+      toast.success(resp.data.message)
     } catch (err) {
       toast.error('Error while editing a service.')
     }

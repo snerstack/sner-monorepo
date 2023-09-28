@@ -42,6 +42,8 @@ const ServiceAddPage = () => {
       await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/service/add/${host.id}`, formData)
 
       navigate(-1)
+
+      toast.success('Successfully added a new service.')
     } catch (err) {
       toast.error('Error while editing a service.')
     }
