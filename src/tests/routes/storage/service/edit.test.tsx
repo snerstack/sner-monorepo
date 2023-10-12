@@ -42,10 +42,10 @@ describe('Service edit page', () => {
     })
   })
 
-  it('edits new service', async () => {
+  it('edits service', async () => {
     renderWithProviders({
       element: <ServiceEditPage />,
-      path: '/storage/service/add/1',
+      path: '/storage/service/edit/1',
       loader: loader,
       routes: [{ element: <ServiceListPage />, path: '/storage/service/list' }],
     })
@@ -70,10 +70,10 @@ describe('Service edit page', () => {
     })
   })
 
-  it('edits new service (error)', async () => {
+  it('edits service (error)', async () => {
     renderWithProviders({
       element: <ServiceEditPage />,
-      path: '/storage/service/add/1',
+      path: '/storage/service/edit/1',
       loader: loader,
     })
 

@@ -1,5 +1,6 @@
 import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
+import { Fragment } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
@@ -86,7 +87,7 @@ const VulnViewPage = () => {
             <td className="service_endpoint_dropdown">
               <div className="dropdown d-flex">
                 {vuln.service_id ? (
-                  <a className="flex-fill" data-toggle="dropdown">
+                  <a className="flex-fill" data-toggle="dropdown" data-testid="service_link">
                     {'<'}Service {vuln.service_id}: {vuln.address} {vuln.service_proto}.{vuln.service_port}
                     {'>'}
                   </a>
@@ -124,20 +125,20 @@ const VulnViewPage = () => {
             <th>refs</th>
             <td>
               {vuln.refs.map((ref) => (
-                <>
+                <Fragment key={ref}>
                   <a rel="noreferrer" href={getUrlForRef(ref)}>
                     {getTextForRef(ref)}
                   </a>{' '}
-                </>
+                </Fragment>
               ))}
               {vuln.refs.length === 0 && 'None'}
             </td>
             <th>tags</th>
             <td className="abutton_annotate_view" colSpan={3}>
               {vuln.tags.map((tag) => (
-                <>
+                <Fragment key={tag}>
                   <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
-                </>
+                </Fragment>
               ))}
             </td>
           </tr>

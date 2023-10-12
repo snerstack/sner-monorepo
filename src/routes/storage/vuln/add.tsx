@@ -76,6 +76,8 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
       }
 
       navigate(-1)
+
+      toast.success('Vuln has been successfully added.')
     } catch (err) {
       toast.error('Error while adding a vuln.')
     }

@@ -49,9 +49,16 @@ const VulnEditPage = () => {
     formData.append('comment', comment)
 
     try {
-      await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/vuln/edit/${vuln.id}`, formData)
+      const resp = await httpClient.post<{ message: string }>(
+        import.meta.env.VITE_SERVER_URL + `/storage/vuln/edit/${vuln.id}`,
+        formData,
+      )
 
-      navigate(-1)
+      navigate('/storage/vuln/list')
+
+      console.log(resp.data.message)
+
+      toast.success(resp.data.message)
     } catch (err) {
       toast.error('Error while editing a vuln.')
     }

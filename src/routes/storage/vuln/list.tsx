@@ -145,6 +145,7 @@ const VulnListPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="vuln_tags_annotate"
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
@@ -170,6 +171,7 @@ const VulnListPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="vuln_comment_annotate"
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
@@ -256,6 +258,7 @@ const VulnListPage = () => {
             <a
               className="btn btn-outline-secondary"
               href="#"
+              data-testid="vuln_set_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,
@@ -275,6 +278,7 @@ const VulnListPage = () => {
             <a
               className="btn btn-outline-secondary abutton_freetag_unset_multiid"
               href="#"
+              data-testid="vuln_unset_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,
