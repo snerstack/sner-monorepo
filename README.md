@@ -25,10 +25,11 @@ You can edit enviroment variables in `.env.development` or `.env` for production
 
 ### Run tests
 
-`npm run lint`
+```
+npm run lint
+npm run test
+```
 
 ## Build
 
-```
-npm run build
-```
+`npm run build`
