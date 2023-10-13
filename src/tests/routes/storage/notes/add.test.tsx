@@ -1,5 +1,5 @@
 import HostViewPage from '@/routes/storage/host/view'
-import VulnAddPage from '@/routes/storage/vuln/add'
+import NoteAddPage from '@/routes/storage/note/add'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -39,57 +39,49 @@ const serviceLoader = () =>
     tags: [],
   })
 
-describe('Vuln add page', () => {
+describe('Note add page', () => {
   it('shows form (host)', async () => {
     renderWithProviders({
-      element: <VulnAddPage type="host" />,
-      path: '/storage/vuln/add/host/1',
+      element: <NoteAddPage type="host" />,
+      path: '/storage/note/add/host/1',
       loader: hostLoader,
     })
 
     await waitFor(() => {
       const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
-      expect(listItems.includes('Vulns')).toBeTruthy()
+      expect(listItems.includes('Notes')).toBeTruthy()
       expect(listItems.includes('Add')).toBeTruthy()
       expect(screen.getByLabelText('Host ID')).toHaveValue(1)
       expect(screen.getByLabelText('Service ID')).toHaveValue(0)
       expect(screen.getByLabelText('Via target')).toHaveValue('')
-      expect(screen.getByLabelText('Name')).toHaveValue('')
       expect(screen.getByLabelText('xType')).toHaveValue('')
-      expect(screen.getByLabelText('Descr')).toHaveValue('')
-      expect(screen.getByLabelText('Data')).toHaveValue('')
-      expect(screen.getByLabelText('Refs')).toHaveValue('')
       expect(screen.getByLabelText('Comment')).toHaveValue('')
     })
   })
 
   it('shows form (service)', async () => {
     renderWithProviders({
-      element: <VulnAddPage type="service" />,
-      path: '/storage/vuln/add/service/52',
+      element: <NoteAddPage type="service" />,
+      path: '/storage/note/add/service/52',
       loader: serviceLoader,
     })
 
     await waitFor(() => {
       const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
-      expect(listItems.includes('Vulns')).toBeTruthy()
+      expect(listItems.includes('Notes')).toBeTruthy()
       expect(listItems.includes('Add')).toBeTruthy()
       expect(screen.getByLabelText('Host ID')).toHaveValue(37)
       expect(screen.getByLabelText('Service ID')).toHaveValue(52)
       expect(screen.getByLabelText('Via target')).toHaveValue('')
-      expect(screen.getByLabelText('Name')).toHaveValue('')
       expect(screen.getByLabelText('xType')).toHaveValue('')
-      expect(screen.getByLabelText('Descr')).toHaveValue('')
-      expect(screen.getByLabelText('Data')).toHaveValue('')
-      expect(screen.getByLabelText('Refs')).toHaveValue('')
       expect(screen.getByLabelText('Comment')).toHaveValue('')
     })
   })
 
-  it('adds new vuln (host)', async () => {
+  it('adds new note (host)', async () => {
     renderWithProviders({
-      element: <VulnAddPage type="host" />,
-      path: '/storage/vuln/add/host/1',
+      element: <NoteAddPage type="host" />,
+      path: '/storage/note/add/host/1',
       loader: hostLoader,
       routes: [{ element: <HostViewPage />, path: '/storage/host/view/1', loader: hostLoader }],
     })
@@ -101,23 +93,22 @@ describe('Vuln add page', () => {
     })
 
     await waitFor(() => {
-      const nameInput = screen.getByLabelText('Name')
+      const dataInput = screen.getByLabelText('Data')
       const addButton = screen.getByRole('button', { name: 'Add' })
 
-      fireEvent.change(nameInput, { target: { value: 'new_vuln_name' } })
-      fireEvent.click(screen.getByLabelText('high'))
+      fireEvent.change(dataInput, { target: { value: 'new_data' } })
       fireEvent.click(addButton)
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Vuln has been successfully added.')).toBeInTheDocument()
+      expect(screen.getByText('Note has been successfully added.')).toBeInTheDocument()
     })
   })
 
-  it('adds new vuln (service)', async () => {
+  it('adds new note (service)', async () => {
     renderWithProviders({
-      element: <VulnAddPage type="service" />,
-      path: '/storage/vuln/add/service/52',
+      element: <NoteAddPage type="service" />,
+      path: '/storage/note/add/service/52',
       loader: serviceLoader,
       routes: [{ element: <HostViewPage />, path: '/storage/host/view/37', loader: hostLoader }],
     })
@@ -129,22 +120,21 @@ describe('Vuln add page', () => {
     })
 
     await waitFor(() => {
-      const nameInput = screen.getByLabelText('Name')
+      const dataInput = screen.getByLabelText('Data')
       const addButton = screen.getByRole('button', { name: 'Add' })
 
-      fireEvent.change(nameInput, { target: { value: 'new_vuln_name' } })
-      fireEvent.click(screen.getByLabelText('high'))
+      fireEvent.change(dataInput, { target: { value: 'new_data' } })
       fireEvent.click(addButton)
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Vuln has been successfully added.')).toBeInTheDocument()
+      expect(screen.getByText('Note has been successfully added.')).toBeInTheDocument()
     })
   })
 
-  it('adds new vuln (error)', async () => {
+  it('adds new note (error)', async () => {
     renderWithProviders({
-      element: <VulnAddPage type="host" />,
+      element: <NoteAddPage type="host" />,
       path: '/storage/vuln/add/host/1',
       loader: hostLoader,
     })
@@ -152,11 +142,10 @@ describe('Vuln add page', () => {
     vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
 
     await waitFor(() => {
-      const nameInput = screen.getByLabelText('Name')
+      const dataInput = screen.getByLabelText('Data')
       const addButton = screen.getByRole('button', { name: 'Add' })
 
-      fireEvent.change(nameInput, { target: { value: 'new_vuln_name' } })
-      fireEvent.click(screen.getByLabelText('high'))
+      fireEvent.change(dataInput, { target: { value: 'new_data' } })
       fireEvent.click(addButton)
     })
   })

@@ -58,12 +58,20 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
 
     try {
       if (type === 'host') {
-        await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/note/add/host/${hostId}`, formData)
+        const resp = await httpClient.post<{ host_id: number }>(
+          import.meta.env.VITE_SERVER_URL + `/storage/note/add/host/${hostId}`,
+          formData,
+        )
+        navigate(`/storage/host/view/${resp.data.host_id}`)
       } else {
-        await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/note/add/service/${serviceId}`, formData)
+        const resp = await httpClient.post<{ host_id: number }>(
+          import.meta.env.VITE_SERVER_URL + `/storage/note/add/service/${serviceId}`,
+          formData,
+        )
+        navigate(`/storage/host/view/${resp.data.host_id}`)
       }
 
-      navigate(-1)
+      toast.success('Note has been successfully added.')
     } catch (err) {
       toast.error('Error while adding a note.')
     }

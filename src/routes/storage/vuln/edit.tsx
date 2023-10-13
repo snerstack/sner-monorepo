@@ -56,8 +56,6 @@ const VulnEditPage = () => {
 
       navigate('/storage/vuln/list')
 
-      console.log(resp.data.message)
-
       toast.success(resp.data.message)
     } catch (err) {
       toast.error('Error while editing a vuln.')

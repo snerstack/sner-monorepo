@@ -70,12 +70,18 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
 
     try {
       if (type === 'host') {
-        await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/host/${hostId}`, formData)
+        const resp = await httpClient.post<{ host_id: number }>(
+          import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/host/${hostId}`,
+          formData,
+        )
+        navigate(`/storage/host/view/${resp.data.host_id}`)
       } else {
-        await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/service/${serviceId}`, formData)
+        const resp = await httpClient.post<{ host_id: number }>(
+          import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/service/${serviceId}`,
+          formData,
+        )
+        navigate(`/storage/host/view/${resp.data.host_id}`)
       }
-
-      navigate(-1)
 
       toast.success('Vuln has been successfully added.')
     } catch (err) {

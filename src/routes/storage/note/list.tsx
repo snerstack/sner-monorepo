@@ -111,6 +111,7 @@ const NoteListPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="note_tags_annotate"
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
@@ -136,6 +137,7 @@ const NoteListPage = () => {
         renderElements(
           cell,
           <div
+            data-testid="note_comment_annotate"
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
@@ -210,6 +212,7 @@ const NoteListPage = () => {
             <a
               className="btn btn-outline-secondary abutton_freetag_set_multiid"
               href="#"
+              data-testid="note_set_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,
@@ -229,6 +232,7 @@ const NoteListPage = () => {
             <a
               className="btn btn-outline-secondary abutton_freetag_unset_multiid"
               href="#"
+              data-testid="note_unset_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,

@@ -18,11 +18,11 @@ const NoteEditPage = () => {
 
   const [hostId, setHostId] = useState<number>(note.host_id)
   const [serviceId, setServiceId] = useState<number>(note.service_id || 0)
-  const [viaTarget, setViaTarget] = useState<string>(note.via_target)
+  const [viaTarget, setViaTarget] = useState<string>(note.via_target || '')
   const [xtype, setXtype] = useState<string>(note.xtype)
   const [data, setData] = useState<string>(note.data)
   const [tags, setTags] = useState<string[]>(note.tags)
-  const [comment, setComment] = useState<string>(note.comment)
+  const [comment, setComment] = useState<string>(note.comment || '')
 
   const navigate = useNavigate()
 
@@ -37,9 +37,14 @@ const NoteEditPage = () => {
     formData.append('comment', comment)
 
     try {
-      await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/note/edit/${note.id}`, formData)
+      const resp = await httpClient.post<{ message: string }>(
+        import.meta.env.VITE_SERVER_URL + `/storage/note/edit/${note.id}`,
+        formData,
+      )
 
       navigate(-1)
+
+      toast.success(resp.data.message)
     } catch (err) {
       toast.error('Error while editing a note.')
     }
