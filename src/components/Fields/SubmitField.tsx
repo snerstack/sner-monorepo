@@ -15,7 +15,7 @@ const SubmitField = ({
   const HorizontalParent = horizontal ? 'div' : Fragment
   return (
     <div className={clsx('form-group', horizontal && 'row')}>
-      <HorizontalParent className={clsx(horizontal && 'col-sm-10 offset-sm-2')}>
+      <HorizontalParent {...(horizontal ? { className: 'col-sm-10 offset-sm-2' } : {})}>
         <input
           className={clsx('btn btn-primary', errors && 'is-invalid')}
           type="submit"

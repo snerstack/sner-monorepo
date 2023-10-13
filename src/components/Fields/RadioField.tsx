@@ -26,7 +26,7 @@ const RadioField = ({
       <label className={clsx(horizontal && 'col-sm-2 col-form-label')} htmlFor={name}>
         {label}
       </label>
-      <HorizontalParent className={clsx(horizontal && 'col-sm-10')}>
+      <HorizontalParent {...(horizontal ? { className: 'col-sm-10' } : {})}>
         <ul className="form-control border-0 mb-0">
           {_state.options.map((option, index) => (
             <li className="form-check form-check-inline" key={index}>

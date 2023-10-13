@@ -33,7 +33,7 @@ const MultiCheckboxField = ({
       <label className={clsx(horizontal && 'col-sm-2 col-form-label')} htmlFor={name}>
         {label}
       </label>
-      <HorizontalParent className={clsx(horizontal && 'col-sm-10')}>
+      <HorizontalParent {...(horizontal ? { className: 'col-sm-10' } : {})}>
         <ul className="multiple_checkbox_field">
           {_state.map((option, index) => (
             <li key={index}>

@@ -1,5 +1,5 @@
 import HostAddPage from '@/routes/storage/host/add'
-import HostListPage from '@/routes/storage/host/list'
+import HostViewPage from '@/routes/storage/host/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -24,7 +24,27 @@ describe('Host add page', () => {
     renderWithProviders({
       element: <HostAddPage />,
       path: '/storage/host/add',
-      routes: [{ element: <HostListPage />, path: '/storage/host/list' }],
+      routes: [
+        {
+          element: <HostViewPage />,
+          path: '/storage/host/view/1',
+          loader: () =>
+            Promise.resolve({
+              address: '127.4.4.4',
+              comment: '',
+              created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+              hostname: 'testhost.testdomain.test<script>alert(1);</script>',
+              id: 1,
+              modified: 'Wed, 27 Sep 2023 18:23:19 GMT',
+              notesCount: 3,
+              os: 'Test Linux 1',
+              rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
+              servicesCount: 4,
+              tags: ['reviewed'],
+              vulnsCount: 12,
+            }),
+        },
+      ],
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
@@ -33,21 +53,22 @@ describe('Host add page', () => {
       },
     })
 
-    const addressInput = screen.getByLabelText('Address')
-    const hostnameInput = screen.getByLabelText('Hostname')
-    const osInput = screen.getByLabelText('Os')
-    const commentInput = screen.getByLabelText('Comment')
-    const addButton = screen.getByRole('button', { name: 'Add' })
+    await waitFor(() => {
+      const addressInput = screen.getByLabelText('Address')
+      const hostnameInput = screen.getByLabelText('Hostname')
+      const osInput = screen.getByLabelText('Os')
+      const commentInput = screen.getByLabelText('Comment')
+      const addButton = screen.getByRole('button', { name: 'Add' })
 
-    fireEvent.change(addressInput, { target: { value: '127.1.2.3' } })
-    fireEvent.change(hostnameInput, { target: { value: 'localhost' } })
-    fireEvent.change(osInput, { target: { value: 'linux' } })
-    fireEvent.change(commentInput, { target: { value: 'test comment' } })
-    fireEvent.click(addButton)
+      fireEvent.change(addressInput, { target: { value: '127.1.2.3' } })
+      fireEvent.change(hostnameInput, { target: { value: 'localhost' } })
+      fireEvent.change(osInput, { target: { value: 'linux' } })
+      fireEvent.change(commentInput, { target: { value: 'test comment' } })
+      fireEvent.click(addButton)
+    })
 
     await waitFor(() => {
       expect(screen.getByText('Successfully added a new host.')).toBeInTheDocument()
-      expect(screen.getByRole('list')).toHaveTextContent('Hosts')
     })
   })
 
@@ -55,7 +76,6 @@ describe('Host add page', () => {
     renderWithProviders({
       element: <HostAddPage />,
       path: '/storage/host/add',
-      routes: [{ element: <HostListPage />, path: '/storage/host/list' }],
     })
 
     vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))

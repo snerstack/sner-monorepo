@@ -30,9 +30,12 @@ const HostAddPage = () => {
     formData.append('comment', comment)
 
     try {
-      await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/host/add`, formData)
+      const resp = await httpClient.post<{ host_id: number }>(
+        import.meta.env.VITE_SERVER_URL + `/storage/host/add`,
+        formData,
+      )
 
-      navigate(-1)
+      navigate(`/storage/host/view/${resp.data.host_id}`)
 
       toast.success('Successfully added a new host.')
     } catch (err) {

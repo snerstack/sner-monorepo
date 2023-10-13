@@ -88,7 +88,7 @@ describe('Note list page', () => {
     })
   })
 
-  it('sets multiple tags', () => {
+  it('sets multiple tags', async () => {
     renderWithProviders({
       element: <NoteListPage />,
       path: '/storage/note/list',
@@ -98,10 +98,12 @@ describe('Note list page', () => {
 
     fireEvent.click(tagMultipleButton)
 
-    expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
+    })
   })
 
-  it('unsets multiple tags', () => {
+  it('unsets multiple tags', async () => {
     renderWithProviders({
       element: <NoteListPage />,
       path: '/storage/note/list',
@@ -111,6 +113,8 @@ describe('Note list page', () => {
 
     fireEvent.click(tagMultipleButton)
 
-    expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
+    })
   })
 })

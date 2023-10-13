@@ -39,9 +39,12 @@ const ServiceAddPage = () => {
     formData.append('comment', comment)
 
     try {
-      await httpClient.post(import.meta.env.VITE_SERVER_URL + `/storage/service/add/${host.id}`, formData)
+      const resp = await httpClient.post<{ host_id: number }>(
+        import.meta.env.VITE_SERVER_URL + `/storage/service/add/${host.id}`,
+        formData,
+      )
 
-      navigate(-1)
+      navigate(`/storage/host/view/${resp.data.host_id}`)
 
       toast.success('Successfully added a new service.')
     } catch (err) {

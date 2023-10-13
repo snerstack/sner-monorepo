@@ -23,7 +23,7 @@ const BooleanField = ({
   const HorizontalParent = horizontal ? 'div' : Fragment
   return (
     <div className={clsx('form-group', horizontal && 'row', required && 'required')}>
-      <HorizontalParent className={clsx(horizontal && 'col-sm-10 offset-sm-2')}>
+      <HorizontalParent {...(horizontal ? { className: 'col-sm-10 offset-sm-2' } : {})}>
         <div className={clsx('form-check', errors.length > 0 && 'is-invalid')}>
           <input
             className={clsx('form-check-input', errors.length > 0 && 'is-invalid')}

@@ -229,11 +229,11 @@ const HostViewPage = () => {
           cell,
           <>
             {row['refs'].map((ref) => (
-              <>
+              <Fragment key={ref}>
                 <a rel="noreferrer" href={getUrlForRef(ref)}>
                   {getTextForRef(ref)}
                 </a>{' '}
-              </>
+              </Fragment>
             ))}
           </>,
         ),

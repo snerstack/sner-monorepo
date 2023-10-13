@@ -1,5 +1,6 @@
 import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
+import { Fragment } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
@@ -106,9 +107,9 @@ const NoteViewPage = () => {
             <th>tags</th>
             <td className="abutton_annotate_view" colSpan={3}>
               {note.tags.map((tag) => (
-                <>
+                <Fragment key={tag}>
                   <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
-                </>
+                </Fragment>
               ))}
             </td>
           </tr>
@@ -137,26 +138,30 @@ const NoteViewPage = () => {
           <h2>Findings</h2>
           {Object.prototype.hasOwnProperty.call(JSON.parse(note.data), 'findings') && (
             <table className="table table-sm table-hover">
-              <tr>
-                <th>section</th>
-                <th>severity</th>
-                <th>id</th>
-                <th>finding</th>
-                <th>cve</th>
-                <th>data</th>
-              </tr>
-              {Object.keys((JSON.parse(note.data) as TestSsl)['findings']).map((section) =>
-                (JSON.parse(note.data) as TestSsl)['findings'][section].map((item) => (
-                  <tr key={item.id}>
-                    <td>{section}</td>
-                    <td>{item.severity}</td>
-                    <td>{item.id}</td>
-                    <td>{item.finding}</td>
-                    <td>{item.cve}</td>
-                    <td>{JSON.stringify(item)}</td>
-                  </tr>
-                )),
-              )}
+              <thead>
+                <tr>
+                  <th>section</th>
+                  <th>severity</th>
+                  <th>id</th>
+                  <th>finding</th>
+                  <th>cve</th>
+                  <th>data</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.keys((JSON.parse(note.data) as TestSsl)['findings']).map((section) =>
+                  (JSON.parse(note.data) as TestSsl)['findings'][section].map((item) => (
+                    <tr key={item.id}>
+                      <td>{section}</td>
+                      <td>{item.severity}</td>
+                      <td>{item.id}</td>
+                      <td>{item.finding}</td>
+                      <td>{item.cve}</td>
+                      <td>{JSON.stringify(item)}</td>
+                    </tr>
+                  )),
+                )}
+              </tbody>
             </table>
           )}
 

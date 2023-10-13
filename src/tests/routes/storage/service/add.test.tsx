@@ -1,5 +1,5 @@
+import HostViewPage from '@/routes/storage/host/view'
 import ServiceAddPage from '@/routes/storage/service/add'
-import ServiceListPage from '@/routes/storage/service/list'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -48,7 +48,27 @@ describe('Service add page', () => {
       element: <ServiceAddPage />,
       path: '/storage/service/add/1',
       loader: loader,
-      routes: [{ element: <ServiceListPage />, path: '/storage/service/list' }],
+      routes: [
+        {
+          element: <HostViewPage />,
+          path: '/storage/host/view/1',
+          loader: () =>
+            Promise.resolve({
+              address: '127.4.4.4',
+              comment: '',
+              created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+              hostname: 'testhost.testdomain.test<script>alert(1);</script>',
+              id: 1,
+              modified: 'Wed, 27 Sep 2023 18:23:19 GMT',
+              notesCount: 3,
+              os: 'Test Linux 1',
+              rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
+              servicesCount: 4,
+              tags: ['reviewed'],
+              vulnsCount: 12,
+            }),
+        },
+      ],
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
@@ -79,7 +99,6 @@ describe('Service add page', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Successfully added a new service.')).toBeInTheDocument()
-      expect(screen.getByRole('list')).toHaveTextContent('Services')
     })
   })
 
@@ -88,7 +107,6 @@ describe('Service add page', () => {
       element: <ServiceAddPage />,
       path: '/storage/service/add/1',
       loader: loader,
-      routes: [{ element: <ServiceListPage />, path: '/storage/service/list' }],
     })
 
     vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))

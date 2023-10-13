@@ -12,6 +12,7 @@ const DataTable = ({ id, ...props }: TableConfig) => {
   const [searchParams] = useSearchParams()
 
   const DEFAULT_CONFIG: Config = {
+    autoWidth: false,
     serverSide: true,
     processing: true,
     dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> <"row"<"col-sm-12"p>> <"row"<"col-sm-12"rt>> <"row"<"col-sm-6"i><"col-sm-6"p>>',

@@ -28,7 +28,7 @@ const PasswordField = ({
       <label className={clsx(horizontal && 'col-sm-2 col-form-label')} htmlFor={name}>
         {label}
       </label>
-      <HorizontalParent className={clsx(horizontal && 'col-sm-10')}>
+      <HorizontalParent {...(horizontal ? { className: 'col-sm-10' } : {})}>
         <input
           className={clsx('form-control', errors.length > 0 && 'is-invalid')}
           type="password"
