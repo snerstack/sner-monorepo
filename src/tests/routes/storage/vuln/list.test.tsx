@@ -2,7 +2,9 @@ import HostViewPage from '@/routes/storage/host/view'
 import VulnListPage from '@/routes/storage/vuln/list'
 import VulnViewPage from '@/routes/storage/vuln/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import httpClient from '@/lib/httpClient'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
@@ -126,11 +128,23 @@ describe('Vuln list page', () => {
       const commentCell = screen.getAllByTestId('vuln_comment_annotate')[0]
 
       fireEvent.doubleClick(tagsCell)
-
       expect(screen.getByText('Annotate')).toBeInTheDocument()
 
-      fireEvent.doubleClick(commentCell)
+      vi.spyOn(httpClient, 'post').mockResolvedValue('')
 
+      const tagsField = screen.getByTestId('tags-field')
+      const tagsInput = tagsField.querySelector('input')!
+      const defaultTags = screen.getByTestId('default-tags')
+      const commentInput = screen.getByLabelText('Comment')
+      const saveButton = screen.getByRole('button', { name: 'Save' })
+
+      fireEvent.change(tagsInput, { target: { value: 'new_tag' } })
+      fireEvent.keyDown(tagsInput, { key: 'Enter', code: 13, charCode: 13 })
+      fireEvent.click(defaultTags.children[0])
+      fireEvent.change(commentInput, { target: { value: 'new_comment' } })
+      fireEvent.click(saveButton)
+
+      fireEvent.doubleClick(commentCell)
       expect(screen.getByText('Annotate')).toBeInTheDocument()
     })
   })
@@ -141,12 +155,28 @@ describe('Vuln list page', () => {
       path: '/storage/vuln/list',
     })
 
+    await waitFor(() => {
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[0])
+    })
+
     const tagMultipleButton = screen.getByTestId('vuln_set_multiple_tag')
 
     fireEvent.click(tagMultipleButton)
 
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
     await waitFor(() => {
       expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
+
+      const tagsField = screen.getByTestId('tags-field')
+      const tagsInput = tagsField.querySelector('input')!
+      const saveButton = screen.getByRole('button', { name: 'Save' })
+
+      fireEvent.change(tagsInput, { target: { value: 'new_tag' } })
+      fireEvent.keyDown(tagsInput, { key: 'Enter', code: 13, charCode: 13 })
+      fireEvent.click(saveButton)
     })
   })
 

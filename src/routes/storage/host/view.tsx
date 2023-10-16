@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
-import { useCookie, useLocalStorage, useSessionStorage } from 'react-use'
+import { useCookie, useLocalStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
 import {
@@ -32,8 +32,6 @@ import MultipleTagModal from '@/components/Modals/MultipleTagModal'
 const HostViewPage = () => {
   const host = useLoaderData() as Host
   const [activeTab, setActiveTab] = useLocalStorage('host_view_tabs_active')
-  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
-  const [viaTargetVisible] = useSessionStorage('dt_viatarget_column_visible', false)
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
 
@@ -51,6 +49,9 @@ const HostViewPage = () => {
     tableId: '',
     url: '',
   })
+
+  const toolboxesVisible = sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? true : false
+  const viaTargetVisible = sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? true : false
 
   const serviceColumns = [
     ColumnSelect({ visible: toolboxesVisible }),

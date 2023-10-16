@@ -3,7 +3,6 @@ import QuickJump from './QuickJump'
 import clsx from 'clsx'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useSessionStorage } from 'react-use'
 import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
@@ -12,8 +11,6 @@ import httpClient from '@/lib/httpClient'
 
 const Nav = () => {
   const [currentUser, setCurrentUser] = useRecoilState(userState)
-  const [toolboxesVisible, setToolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
-  const [viaTargetVisible, setViaTargetVisible] = useSessionStorage('dt_viatarget_column_visible', false)
 
   const { pathname } = useLocation()
   const navigate = useNavigate()
@@ -122,32 +119,35 @@ const Nav = () => {
                   className="dropdown-item"
                   href="#"
                   onClick={() => {
-                    if (!confirm('Toggle will remove any datatable states and reaload the page. Are you sure?')) return
+                    sessionStorage.setItem(
+                      'dt_viatarget_column_visible',
+                      sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? 'false' : 'true',
+                    )
 
-                    setViaTargetVisible(!viaTargetVisible)
-
-                    window.location.reload()
+                    navigate(0)
                   }}
                 >
-                  Toggle via_target ({viaTargetVisible ? 'true' : 'false'})
+                  Toggle via_target (
+                  {sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? 'true' : 'false'})
                 </a>
                 <a
                   className="dropdown-item"
                   href="#"
                   onClick={() => {
-                    if (!confirm('Toggle will remove any datatable states and reaload the page. Are you sure?')) return
-
-                    setToolboxesVisible(!toolboxesVisible)
+                    sessionStorage.setItem(
+                      'dt_toolboxes_visible',
+                      sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? 'false' : 'true',
+                    )
 
                     /* the saved states must be removed, the save state has precedence over dt initialization values */
                     Object.keys(sessionStorage)
                       .filter((key) => key.startsWith('DataTables_'))
                       .map((key) => sessionStorage.removeItem(key))
 
-                    window.location.reload()
+                    navigate(0)
                   }}
                 >
-                  Toggle DT toolboxes ({toolboxesVisible ? 'true' : 'false'})
+                  Toggle DT toolboxes ({sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? 'true' : 'false'})
                 </a>
                 {currentUser.roles.includes('user') && (
                   <Link className="dropdown-item" to="/auth/profile">

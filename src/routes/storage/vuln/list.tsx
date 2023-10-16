@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useCookie, useSessionStorage } from 'react-use'
+import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
 import {
@@ -30,8 +30,6 @@ import MultipleTagModal from '@/components/Modals/MultipleTagModal'
 
 const VulnListPage = () => {
   const [searchParams] = useSearchParams()
-  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
-  const [viaTargetVisible] = useSessionStorage('dt_viatarget_column_visible', false)
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
   const [annotate, setAnnotate] = useState<Annotate>({
@@ -47,6 +45,8 @@ const VulnListPage = () => {
     tableId: '',
     url: '',
   })
+
+  const viaTargetVisible = sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? true : false
 
   const columns = [
     ColumnSelect({ visible: true }),
@@ -352,7 +352,7 @@ const VulnListPage = () => {
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
         order={[1, 'asc']}
-        select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+        select={{ style: 'multi', selector: 'td:first-child' }}
       />
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />

@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useCookie, useSessionStorage } from 'react-use'
+import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
 import { deleteRow, getColorForTag } from '@/lib/sner/storage'
@@ -22,7 +22,6 @@ import MultipleTagModal from '@/components/Modals/MultipleTagModal'
 
 const ServiceListPage = () => {
   const [searchParams] = useSearchParams()
-  const [toolboxesVisible] = useSessionStorage('dt_toolboxes_visible', false)
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
   const [annotate, setAnnotate] = useState<Annotate>({
@@ -38,6 +37,8 @@ const ServiceListPage = () => {
     tableId: '',
     url: '',
   })
+
+  const toolboxesVisible = sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? true : false
 
   const columns = [
     ColumnSelect({ visible: toolboxesVisible }),

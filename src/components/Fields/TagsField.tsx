@@ -28,14 +28,14 @@ const TagsField = ({
 }) => {
   const HorizontalParent = horizontal ? 'div' : Fragment
   return (
-    <div className={clsx('form-group', horizontal && 'row', required && 'required')}>
+    <div className={clsx('form-group', horizontal && 'row', required && 'required')} data-testid="tags-field">
       <label className={clsx(horizontal && 'col-sm-2 col-form-label')} htmlFor={name}>
         {label}
       </label>
       <HorizontalParent {...(horizontal ? { className: 'col-sm-10' } : {})}>
         <TagsInput value={_state} onChange={_setState} name={name} placeHolder={placeholder} />
         {defaultTags.length > 0 && (
-          <div className="mt-3">
+          <div className="mt-3" data-testid="default-tags">
             {defaultTags.map((tag) => (
               <Fragment key={tag}>
                 <a

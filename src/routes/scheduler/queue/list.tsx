@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useCookie } from 'react-use'
 
-import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
+import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 
 import Button from '@/components/Buttons/Button'
@@ -56,7 +56,7 @@ const QueueListPage = () => {
                   e.preventDefault()
                   httpClient
                     .post(import.meta.env.VITE_SERVER_URL + `/scheduler/queue/flush/${row['id']}`)
-                    .then(() => window.location.reload())
+                    .then(() => getTableApi('queue_list_table').draw())
                     .catch(() => toast.error('Error while flusing the queue.'))
                 }}
               >
@@ -71,7 +71,7 @@ const QueueListPage = () => {
                   e.preventDefault()
                   httpClient
                     .post(import.meta.env.VITE_SERVER_URL + `/scheduler/queue/prune/${row['id']}`)
-                    .then(() => window.location.reload())
+                    .then(() => getTableApi('queue_list_table').draw())
                     .catch(() => toast.error('Error while pruning the queue.'))
                 }}
               >

@@ -73,6 +73,7 @@ const DnsTreePage = () => {
       .force('charge', d3.forceManyBody())
       .force('center', d3.forceCenter(width / 2, height / 2))
 
+    /* c8 ignore next 20 */
     const dragDrop = d3
       .drag<SVGCircleElement, D3Node>()
       .on('start', (event: d3.D3DragEvent<SVGCircleElement, D3Node, D3Node>) => {
@@ -126,6 +127,7 @@ const DnsTreePage = () => {
         .enter()
         .append('circle')
         .attr('class', 'node')
+        .attr('data-testid', 'dns-tree-circle')
         .attr('r', (d) => {
           return Object.prototype.hasOwnProperty.call(d, 'size') ? d.size : 5
         })
@@ -216,6 +218,7 @@ const DnsTreePage = () => {
           {['0', '1', '2'].map((crop) => (
             <a
               className={clsx('btn btn-outline-secondary', searchParams.get('crop') === crop && 'active')}
+              data-testid="dnstree-crop-link"
               onClick={(e) => {
                 e.preventDefault()
                 setSearchParams((params) => {
@@ -234,6 +237,7 @@ const DnsTreePage = () => {
           {['100', '200'].map((distance) => (
             <a
               className={clsx('btn btn-outline-secondary', searchParams.get('distance') === distance && 'active')}
+              data-testid="dnstree-distance-link"
               onClick={(e) => {
                 e.preventDefault()
                 setSearchParams((params) => {

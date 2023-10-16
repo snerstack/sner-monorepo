@@ -8,6 +8,7 @@ import { serviceGroupedHandler } from './handlers/storage/service/grouped'
 import { serviceListHandler } from './handlers/storage/service/list'
 import { vulnGroupedHandler } from './handlers/storage/vuln/grouped'
 import { vulnListHandler } from './handlers/storage/vuln/list'
+import { dnsTreeHandler } from './handlers/visuals/dnstree'
 
 export const handlers = [
   jobListHandler,
@@ -20,4 +21,5 @@ export const handlers = [
   vulnListHandler,
   vulnGroupedHandler,
   noteListHandler,
+  dnsTreeHandler,
 ]
