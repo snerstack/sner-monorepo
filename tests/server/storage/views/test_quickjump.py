@@ -7,28 +7,26 @@ from http import HTTPStatus
 
 from flask import url_for
 
-from tests.server import get_csrf_token
-
 
 def test_quickjump_route(cl_operator, host, service):
     """test quickjump"""
 
-    data = {'quickjump': host.address, 'csrf_token': get_csrf_token(cl_operator)}
+    data = {'quickjump': host.address}
     response = cl_operator.post(url_for('storage.quickjump_route'), data)
     assert response.status_code == HTTPStatus.OK
-    assert response.json['url'] == url_for('storage.host_view_route', host_id=host.id)
+    assert response.json['url'] == f'/storage/host/view/{host.id}'
 
-    data = {'quickjump': host.hostname, 'csrf_token': get_csrf_token(cl_operator)}
+    data = {'quickjump': host.hostname}
     response = cl_operator.post(url_for('storage.quickjump_route'), data)
     assert response.status_code == HTTPStatus.OK
-    assert response.json['url'] == url_for('storage.host_view_route', host_id=host.id)
+    assert response.json['url'] == f'/storage/host/view/{host.id}'
 
-    data = {'quickjump': service.port, 'csrf_token': get_csrf_token(cl_operator)}
+    data = {'quickjump': service.port}
     response = cl_operator.post(url_for('storage.quickjump_route'), data)
     assert response.status_code == HTTPStatus.OK
-    assert response.json['url'].startswith(f"{url_for('storage.service_list_route')}?filter=")
+    assert response.json['url'].startswith("/storage/service/list?filter=")
 
-    data = {'quickjump': 'notfound', 'csrf_token': get_csrf_token(cl_operator)}
+    data = {'quickjump': 'notfound'}
     response = cl_operator.post(url_for('storage.quickjump_route'), data, status='*')
     assert response.status_code == HTTPStatus.NOT_FOUND
 

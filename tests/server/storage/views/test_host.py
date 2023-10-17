@@ -12,13 +12,6 @@ from sner.server.storage.models import Host
 from tests.server.storage.views import check_annotate, check_delete_multiid, check_tag_multiid
 
 
-def test_host_list_route(cl_operator):
-    """host list route test"""
-
-    response = cl_operator.get(url_for('storage.host_list_route'))
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_host_list_json_route(cl_operator, host):
     """host list_json route test"""
 
@@ -44,13 +37,9 @@ def test_host_add_route(cl_operator, host_factory):
 
     ahost = host_factory.build()
 
-    form = cl_operator.get(url_for('storage.host_add_route')).forms['host_form']
-    form['address'] = ahost.address
-    form['hostname'] = ahost.hostname
-    form['os'] = ahost.os
-    form['comment'] = ahost.comment
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    form_data = [('address', ahost.address), ('hostname', ahost.hostname), ('os', ahost.os), ('comment', ahost.comment)]
+    response = cl_operator.post(url_for('storage.host_add_route'), params=form_data)
+    assert response.status_code == HTTPStatus.OK
 
     thost = Host.query.filter(Host.hostname == ahost.hostname).one()
     assert thost.hostname == ahost.hostname
@@ -61,24 +50,24 @@ def test_host_add_route(cl_operator, host_factory):
 def test_host_edit_route(cl_operator, host):
     """host edit route test"""
 
-    form = cl_operator.get(url_for('storage.host_edit_route', host_id=host.id)).forms['host_form']
-    form['hostname'] = 'edited-'+form['hostname'].value
-    form['comment'] = ''
-    form['return_url'] = url_for('storage.host_list_route')
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_operator.get(url_for('storage.host_view_json_route', host_id=host.id))
+    new_hostname = f'{response.json["hostname"]}_edited'
+
+    form_data = [('address', host.address), ('hostname', new_hostname), ('comment', '')]
+    response = cl_operator.post(url_for('storage.host_edit_route', host_id=host.id), params=form_data)
+
+    assert response.status_code == HTTPStatus.OK
 
     thost = Host.query.get(host.id)
-    assert thost.hostname == form['hostname'].value
+    assert thost.hostname == new_hostname
     assert thost.comment is None
 
 
 def test_host_delete_route(cl_operator, host):
     """host delete route test"""
 
-    form = cl_operator.get(url_for('storage.host_delete_route', host_id=host.id)).form
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_operator.post(url_for('storage.host_delete_route', host_id=host.id))
+    assert response.status_code == HTTPStatus.OK
 
     assert not Host.query.get(host.id)
 
@@ -87,13 +76,6 @@ def test_host_annotate_route(cl_operator, host):
     """host annotate route test"""
 
     check_annotate(cl_operator, 'storage.host_annotate_route', host)
-
-
-def test_host_view_route(cl_operator, host):
-    """host view route test"""
-
-    response = cl_operator.get(url_for('storage.host_view_route', host_id=host.id))
-    assert response.status_code == HTTPStatus.OK
 
 
 def test_host_tag_multiid_route(cl_operator, host):

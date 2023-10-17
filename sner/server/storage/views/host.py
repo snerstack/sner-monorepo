@@ -7,7 +7,7 @@ from http import HTTPStatus
 
 import json
 from datatables import ColumnDT, DataTables
-from flask import jsonify, redirect, render_template, request, Response, url_for
+from flask import jsonify, request, Response
 from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
@@ -17,15 +17,7 @@ from sner.server.storage.core import model_annotate, model_delete_multiid, model
 from sner.server.storage.forms import HostForm, MultiidForm, TagMultiidForm
 from sner.server.storage.models import Host, Note, Service, Vuln
 from sner.server.storage.views import blueprint
-from sner.server.utils import filter_query, relative_referrer, SnerJSONEncoder, valid_next_url
-
-
-@blueprint.route('/host/list')
-@session_required('operator')
-def host_list_route():
-    """list hosts"""
-
-    return render_template('storage/host/list.html')
+from sner.server.utils import filter_query, SnerJSONEncoder, error_response
 
 
 @blueprint.route('/host/list.json', methods=['GET', 'POST'])
@@ -57,13 +49,13 @@ def host_list_json_route():
         .outerjoin(query_cnt_vulns, Host.id == query_cnt_vulns.c.host_id) \
         .outerjoin(query_cnt_notes, Host.id == query_cnt_notes.c.host_id)
     if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
 
     hosts = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(hosts, cls=SnerJSONEncoder), mimetype='application/json')
 
 
-@blueprint.route('/host/add', methods=['GET', 'POST'])
+@blueprint.route('/host/add', methods=['POST'])
 @session_required('operator')
 def host_add_route():
     """add host"""
@@ -75,29 +67,28 @@ def host_add_route():
         form.populate_obj(host)
         db.session.add(host)
         db.session.commit()
-        return redirect(url_for('storage.host_view_route', host_id=host.id))
+        return jsonify({'host_id': host.id})
 
-    return render_template('storage/host/addedit.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/host/edit/<host_id>', methods=['GET', 'POST'])
+@blueprint.route('/host/edit/<host_id>', methods=['POST'])
 @session_required('operator')
 def host_edit_route(host_id):
     """edit host"""
 
     host = Host.query.get(host_id)
-    form = HostForm(obj=host, return_url=relative_referrer())
+    form = HostForm(obj=host)
 
     if form.validate_on_submit():
         form.populate_obj(host)
         db.session.commit()
-        if valid_next_url(form.return_url.data):
-            return redirect(form.return_url.data)
+        return jsonify({'message': 'Host has been successfully edited.'})
 
-    return render_template('storage/host/addedit.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/host/delete/<host_id>', methods=['GET', 'POST'])
+@blueprint.route('/host/delete/<host_id>', methods=['POST'])
 @session_required('operator')
 def host_delete_route(host_id):
     """delete host"""
@@ -107,9 +98,9 @@ def host_delete_route(host_id):
     if form.validate_on_submit():
         db.session.delete(Host.query.get(host_id))
         db.session.commit()
-        return redirect(url_for('storage.host_list_route'))
+        return jsonify({'message': 'Host has been successfully deleted.'})
 
-    return render_template('button-delete.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/host/annotate/<model_id>', methods=['GET', 'POST'])
@@ -117,15 +108,6 @@ def host_delete_route(host_id):
 def host_annotate_route(model_id):
     """annotate vuln"""
     return model_annotate(Host, model_id)
-
-
-@blueprint.route('/host/view/<host_id>')
-@session_required('operator')
-def host_view_route(host_id):
-    """view host"""
-
-    host = Host.query.get(host_id)
-    return render_template('storage/host/view.html', host=host, button_form=ButtonForm())
 
 
 @blueprint.route('/host/view/<host_id>.json')
@@ -136,10 +118,7 @@ def host_view_json_route(host_id):
     host = Host.query.get(host_id)
 
     if host is None:
-        return jsonify({"error": {
-            "code": 404,
-            "message": "Host not found."
-        }}), HTTPStatus.NOT_FOUND
+        return error_response(message='Host not found.', code=HTTPStatus.NOT_FOUND)
 
     return jsonify({
         "id": host.id,
@@ -166,7 +145,8 @@ def host_delete_multiid_route():
     if form.validate_on_submit():
         model_delete_multiid(Host, [tmp.data for tmp in form.ids.entries])
         return '', HTTPStatus.OK
-    return jsonify({'message': 'Invalid form submitted.'}), HTTPStatus.BAD_REQUEST
+
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/host/tag_multiid', methods=['POST'])
@@ -175,7 +155,9 @@ def host_tag_multiid_route():
     """tag multiple route"""
 
     form = TagMultiidForm()
+
     if form.validate_on_submit():
         model_tag_multiid(Host, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
         return '', HTTPStatus.OK
-    return jsonify({'message': 'Invalid form submitted.'}), HTTPStatus.BAD_REQUEST
+
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)

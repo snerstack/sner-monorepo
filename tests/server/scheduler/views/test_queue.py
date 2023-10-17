@@ -12,13 +12,6 @@ from flask import url_for
 from sner.server.scheduler.models import Job, Queue
 
 
-def test_queue_list_route(cl_operator):
-    """queue list route test"""
-
-    response = cl_operator.get(url_for('scheduler.queue_list_route'))
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_queue_list_json_route(cl_operator, queue):
     """queue list_json route test"""
 
@@ -47,13 +40,10 @@ def test_queue_add_route(cl_operator, queue_factory):
 
     aqueue = queue_factory.build()
 
-    form = cl_operator.get(url_for('scheduler.queue_add_route')).forms['queue_form']
-    form['name'] = aqueue.name
-    form['config'] = aqueue.config
-    form['group_size'] = aqueue.group_size
-    form['priority'] = aqueue.priority
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    form_data = [('name', aqueue.name), ('config', aqueue.config), ('group_size', aqueue.group_size), ('priority', aqueue.priority)]
+    response = cl_operator.post(url_for('scheduler.queue_add_route'), params=form_data, expect_errors=True)
+
+    assert response.status_code == HTTPStatus.OK
 
     tqueue = Queue.query.filter(Queue.name == aqueue.name).one()
     assert tqueue.name == aqueue.name
@@ -64,37 +54,39 @@ def test_queue_add_route_config_validation(cl_operator, queue_factory):
 
     aqueue = queue_factory.build()
 
-    form = cl_operator.get(url_for('scheduler.queue_add_route')).forms['queue_form']
-    form['name'] = aqueue.name
-    form['config'] = ''
-    form['group_size'] = aqueue.group_size
-    form['priority'] = aqueue.priority
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//div[@class="invalid-feedback" and contains(text(), "Invalid YAML")]')
+    form_data = [('name', aqueue.name), ('config', ''), ('group_size', aqueue.group_size), ('priority', aqueue.priority)]
+    response = cl_operator.post(url_for('scheduler.queue_add_route'), params=form_data, expect_errors=True)
 
-    form = response.forms['queue_form']
-    form['config'] = "module: 'notexist'"
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//div[@class="invalid-feedback" and text()="Invalid module specified"]')
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Invalid YAML: 'NoneType' object has no attribute 'read'" in response.json['error']['errors']['config']
 
-    form = response.forms['queue_form']
-    form['config'] = "module: 'dummy'\nadditionalKey: 'value'\n"
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//div[@class="invalid-feedback" and contains(text(), "Invalid config")]')
+    form_data = [('name', aqueue.name), ('config', 'queue_form'), ('group_size', aqueue.group_size), ('priority', aqueue.priority)]
+    response = cl_operator.post(url_for('scheduler.queue_add_route'), params=form_data, expect_errors=True)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert 'Invalid module specified' in response.json['error']['errors']['config']
+
+    form_data = [('name', aqueue.name), ('config', "module: 'dummy'\nadditionalKey: 'value'\n"), ('group_size', aqueue.group_size),
+                 ('priority', aqueue.priority)]
+    response = cl_operator.post(url_for('scheduler.queue_add_route'), params=form_data, expect_errors=True)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert "Invalid config: Missing key: 'args'" in response.json['error']['errors']['config']
 
 
 def test_queue_edit_route(cl_operator, queue):
     """queue edit route test"""
 
-    form = cl_operator.get(url_for('scheduler.queue_edit_route', queue_id=queue.id)).forms['queue_form']
-    form['name'] = f'{form["name"].value} edited'
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_operator.get(url_for('scheduler.queue_json_route', queue_id=queue.id))
+    new_name = f'{response.json["name"]}_edited'
 
-    assert Queue.query.get(queue.id).name == form['name'].value
+    form_data = [('name', new_name), ('config', response.json['config']), ('group_size', response.json['group_size']),
+                 ('priority', response.json['priority'])]
+    response = cl_operator.post(url_for('scheduler.queue_edit_route', queue_id=queue.id), params=form_data)
+
+    assert response.status_code == HTTPStatus.OK
+
+    assert Queue.query.get(queue.id).name == new_name
 
 
 def test_queue_enqueue_route(cl_operator, queue, target_factory):
@@ -102,9 +94,9 @@ def test_queue_enqueue_route(cl_operator, queue, target_factory):
 
     atarget = target_factory.build(queue=queue)
 
-    form = cl_operator.get(url_for('scheduler.queue_enqueue_route', queue_id=queue.id)).forms['queue_enqueue_form']
-    form['targets'] = f'{atarget.target}\n \n '
-    response = form.submit()
+    form_data = [('targets', f'{atarget.target}\n \n ')]
+    response = cl_operator.post(url_for('scheduler.queue_enqueue_route', queue_id=queue.id), params=form_data)
+
     assert response.status_code == HTTPStatus.OK
 
     tqueue = Queue.query.get(queue.id)
@@ -117,9 +109,8 @@ def test_queue_flush_route(cl_operator, target):
 
     queue_id = target.queue_id
 
-    form = cl_operator.get(url_for('scheduler.queue_flush_route', queue_id=target.queue_id)).form
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_operator.post(url_for('scheduler.queue_flush_route', queue_id=target.queue_id))
+    assert response.status_code == HTTPStatus.OK
 
     assert not Queue.query.get(queue_id).targets
 
@@ -127,9 +118,8 @@ def test_queue_flush_route(cl_operator, target):
 def test_queue_prune_route(cl_operator, job_completed):
     """queue flush route test"""
 
-    form = cl_operator.get(url_for('scheduler.queue_prune_route', queue_id=job_completed.queue_id)).form
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_operator.post(url_for('scheduler.queue_prune_route', queue_id=job_completed.queue_id))
+    assert response.status_code == HTTPStatus.OK
 
     assert not Job.query.filter(Job.queue_id == job_completed.queue_id).all()
     assert not Path(job_completed.output_abspath).exists()
@@ -138,8 +128,7 @@ def test_queue_prune_route(cl_operator, job_completed):
 def test_queue_prune_route_runningjob(cl_operator, job):
     """queue flush route test with running job; should fail, delete running job would corrupt heatmap"""
 
-    form = cl_operator.get(url_for('scheduler.queue_prune_route', queue_id=job.queue_id)).form
-    response = form.submit(expect_errors=True)
+    response = cl_operator.post(url_for('scheduler.queue_prune_route', queue_id=job.queue_id), expect_errors=True)
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
     assert len(Job.query.filter(Job.queue_id == job.queue_id).all()) == 1
@@ -151,9 +140,8 @@ def test_queue_delete_route(cl_operator, job_completed):
     tqueue = Queue.query.get(job_completed.queue_id)
     assert Path(tqueue.data_abspath)
 
-    form = cl_operator.get(url_for('scheduler.queue_delete_route', queue_id=tqueue.id)).form
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_operator.post(url_for('scheduler.queue_delete_route', queue_id=tqueue.id))
+    assert response.status_code == HTTPStatus.OK
 
     assert not Queue.query.get(tqueue.id)
     assert not Path(tqueue.data_abspath).exists()
@@ -162,8 +150,7 @@ def test_queue_delete_route(cl_operator, job_completed):
 def test_queue_delete_route_runningjob(cl_operator, job):
     """queue delete route test with running job; should fail as deleting queue with running job would corrupt heatmap"""
 
-    form = cl_operator.get(url_for('scheduler.queue_delete_route', queue_id=job.queue_id)).form
-    response = form.submit(expect_errors=True)
+    response = cl_operator.post(url_for('scheduler.queue_delete_route', queue_id=job.queue_id), expect_errors=True)
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
     assert len(Job.query.filter(Job.queue_id == job.queue_id).all()) == 1

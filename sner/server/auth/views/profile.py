@@ -13,7 +13,7 @@ from socket import getfqdn
 from datatables import ColumnDT, DataTables
 from fido2 import cbor
 from fido2.webauthn import AttestationObject, CollectedClientData
-from flask import current_app, flash, redirect, render_template, request, Response, session, url_for, jsonify
+from flask import current_app, render_template, request, Response, session, jsonify
 from flask_login import current_user
 from sqlalchemy import literal_column
 
@@ -24,25 +24,12 @@ from sner.server.auth.views import blueprint
 from sner.server.extensions import db, webauthn
 from sner.server.forms import ButtonForm
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.utils import SnerJSONEncoder
+from sner.server.utils import SnerJSONEncoder, error_response
 
 
 def random_string(length=32):
     """generates random string"""
     return ''.join([SystemRandom().choice(string.ascii_letters + string.digits) for i in range(length)])
-
-
-@blueprint.route('/profile', methods=['GET', 'POST'])
-@session_required('user')
-def profile_route():
-    """general user profile route"""
-
-    return render_template(
-        'auth/profile/index.html',
-        user=User.query.filter(User.id == current_user.id).one(),
-        button_form=ButtonForm(),
-        new_apikey=session.pop('new_apikey', None)
-    )
 
 
 @blueprint.route('/profile.json')
@@ -55,8 +42,7 @@ def profile_json_route():
         "email": current_user.email,
         "api_networks": current_user.api_networks,
         "has_apikey": current_user.apikey is not None,
-        "has_totp": current_user.totp is not None,
-        "webauthn_credentials": current_user.webauthn_credentials
+        "has_totp": current_user.totp is not None
         })
 
 
@@ -66,21 +52,19 @@ def profile_changepassword_route():
     """user profile change password"""
 
     form = UserChangePasswordForm()
+
     if form.validate_on_submit():
         user = User.query.filter(User.id == current_user.id).one()
 
         if not PWS.compare(PWS.hash(form.current_password.data, PWS.get_salt(user.password)), user.password):
-            return jsonify({"error": {"code": HTTPStatus.BAD_REQUEST, "message": "Invalid current password."}}), HTTPStatus.BAD_REQUEST
+            return error_response(message="Invalid current password.", code=HTTPStatus.BAD_REQUEST)
 
         user.password = PWS.hash(form.password1.data)
         db.session.commit()
         current_app.logger.info('auth.profile password changed')
         return jsonify({"message": "Password successfully changed."})
 
-    return jsonify({"error": {
-        "code": HTTPStatus.BAD_REQUEST,
-        "errors": form.errors
-    }}), HTTPStatus.BAD_REQUEST
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/profile/totp', methods=['GET', 'POST'])
@@ -100,10 +84,8 @@ def profile_totp_route():
                 session.pop('totp_new_secret', None)
                 current_app.logger.info('auth.profile totp enabled')
                 return jsonify({"message": "TOTP successfully enabled."})
-            return jsonify({"error": {
-                "code": 400,
-                "message": "Invalid code."
-            }}), HTTPStatus.BAD_REQUEST
+
+            return error_response(message='Invalid code.', code=HTTPStatus.BAD_REQUEST)
 
         # disable totp
         if TOTPImpl(user.totp).verify_code(form.code.data):
@@ -112,10 +94,8 @@ def profile_totp_route():
             session.pop('totp_new_secret', None)
             current_app.logger.info('auth.profile totp disabled')
             return jsonify({"message": "TOTP successfully disabled."})
-        return jsonify({"error": {
-            "code": 400,
-            "message": "Invalid code."
-        }}), HTTPStatus.BAD_REQUEST
+
+        return error_response(message='Invalid code.', code=HTTPStatus.BAD_REQUEST)
 
     provisioning_url = None
     if not user.totp:
@@ -177,6 +157,7 @@ def profile_webauthn_pkcco_route():
     """get publicKeyCredentialCreationOptions"""
 
     form = ButtonForm()
+
     if form.validate_on_submit():
         user = User.query.get(current_user.id)
         user_handle = random_string()
@@ -188,10 +169,10 @@ def profile_webauthn_pkcco_route():
         session['webauthn_register_state'] = state
         return Response(b64encode(cbor.encode(pkcco)).decode('utf-8'), mimetype='text/plain')
 
-    return '', HTTPStatus.BAD_REQUEST
+    return error_response(message='Error', code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/profile/webauthn/register', methods=['GET', 'POST'])
+@blueprint.route('/profile/webauthn/register', methods=['POST'])
 @session_required('user')
 def profile_webauthn_register_route():
     """register credential for current user"""
@@ -214,15 +195,25 @@ def profile_webauthn_register_route():
             db.session.commit()
 
             current_app.logger.info('auth.profile webauthn registered new credential')
-            return redirect(url_for('auth.profile_route'))
+            return jsonify({'message': 'Webauthn credential registered successfully.'})
         except (KeyError, ValueError) as exc:
             current_app.logger.exception(exc)
-            flash('Error during registration.', 'error')
+            return error_response(message="Error during registration.", code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     return render_template('auth/profile/webauthn_register.html', form=form)
 
 
-@blueprint.route('/profile/webauthn/edit/<webauthn_id>', methods=['GET', 'POST'])
+@blueprint.route('/profile/webauthn/<webauthn_id>.json')
+@session_required('user')
+def profile_webauthn_route(webauthn_id):
+    """get registered credential"""
+
+    cred = WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one()
+
+    return jsonify({"id": cred.id, "name": cred.name})
+
+
+@blueprint.route('/profile/webauthn/edit/<webauthn_id>', methods=['POST'])
 @session_required('user')
 def profile_webauthn_edit_route(webauthn_id):
     """edit registered credential"""
@@ -233,12 +224,12 @@ def profile_webauthn_edit_route(webauthn_id):
         form.populate_obj(cred)
         db.session.commit()
         current_app.logger.info('auth.profile webauthn credential edited')
-        return redirect(url_for('auth.profile_route'))
+        return jsonify({'message': 'Webauthn credential has been successfully edited.'})
 
-    return render_template('auth/profile/webauthn_edit.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/profile/webauthn/delete/<webauthn_id>', methods=['GET', 'POST'])
+@blueprint.route('/profile/webauthn/delete/<webauthn_id>', methods=['POST'])
 @session_required('user')
 def profile_webauthn_delete_route(webauthn_id):
     """delete registered credential"""
@@ -249,12 +240,12 @@ def profile_webauthn_delete_route(webauthn_id):
             WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one())
         db.session.commit()
         current_app.logger.info('auth.profile webauthn credential deleted')
-        return redirect(url_for('auth.profile_route'))
+        return jsonify({'message': 'Webauthn credential has been successfully deleted.'})
 
-    return render_template('button-delete.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/profile/apikey/<action>', methods=['GET', 'POST'])
+@blueprint.route('/profile/apikey/<action>', methods=['POST'])
 @session_required('user')
 def profile_apikey_route(action):
     """user manage apikey for self"""
@@ -268,4 +259,4 @@ def profile_apikey_route(action):
             UserManager.apikey_revoke(current_user)
             return jsonify({"message": "Apikey successfully revoked."})
 
-    return render_template('button-generic.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)

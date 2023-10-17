@@ -7,7 +7,7 @@ from http import HTTPStatus
 
 import json
 from datatables import ColumnDT, DataTables
-from flask import jsonify, redirect, render_template, request, Response, url_for
+from flask import jsonify, request, Response
 from sqlalchemy import func, literal_column
 from sqlalchemy.dialects import postgresql
 
@@ -18,7 +18,7 @@ from sner.server.storage.core import model_annotate, model_delete_multiid, model
 from sner.server.storage.forms import MultiidForm, ServiceForm, TagMultiidForm
 from sner.server.storage.models import Host, Service
 from sner.server.storage.views import blueprint
-from sner.server.utils import filter_query, relative_referrer, SnerJSONEncoder, valid_next_url
+from sner.server.utils import filter_query, SnerJSONEncoder, error_response
 
 
 def service_info_column(crop):
@@ -27,14 +27,6 @@ def service_info_column(crop):
     if crop:
         return func.array_to_string(func.string_to_array(Service.info, ' ', type_=postgresql.ARRAY(db.String))[1:int(crop)], ' ')
     return Service.info
-
-
-@blueprint.route('/service/list')
-@session_required('operator')
-def service_list_route():
-    """list services"""
-
-    return render_template('storage/service/list.html')
 
 
 @blueprint.route('/service/list.json', methods=['GET', 'POST'])
@@ -63,7 +55,7 @@ def service_list_json_route():
     ]
     query = db.session.query().select_from(Service).outerjoin(Host)
     if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
 
     services = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(services, cls=SnerJSONEncoder), mimetype='application/json')
@@ -77,10 +69,7 @@ def service_view_json_route(service_id):
     service = Service.query.get(service_id)
 
     if service is None:
-        return jsonify({"error": {
-            "code": 404,
-            "message": "Service not found."
-        }}), HTTPStatus.NOT_FOUND
+        return error_response(message='Service not found.', code=HTTPStatus.NOT_FOUND)
 
     return jsonify({
         "id": service.id,
@@ -97,12 +86,11 @@ def service_view_json_route(service_id):
     })
 
 
-@blueprint.route('/service/add/<host_id>', methods=['GET', 'POST'])
+@blueprint.route('/service/add/<host_id>', methods=['POST'])
 @session_required('operator')
 def service_add_route(host_id):
     """add service to host"""
 
-    host = Host.query.get(host_id)
     form = ServiceForm(host_id=host_id)
 
     if form.validate_on_submit():
@@ -110,29 +98,28 @@ def service_add_route(host_id):
         form.populate_obj(service)
         db.session.add(service)
         db.session.commit()
-        return redirect(url_for('storage.host_view_route', host_id=service.host_id))
+        return jsonify({'host_id': service.host_id})
 
-    return render_template('storage/service/addedit.html', form=form, host=host)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/service/edit/<service_id>', methods=['GET', 'POST'])
+@blueprint.route('/service/edit/<service_id>', methods=['POST'])
 @session_required('operator')
 def service_edit_route(service_id):
     """edit service"""
 
     service = Service.query.get(service_id)
-    form = ServiceForm(obj=service, return_url=relative_referrer())
+    form = ServiceForm(obj=service)
 
     if form.validate_on_submit():
         form.populate_obj(service)
         db.session.commit()
-        if valid_next_url(form.return_url.data):
-            return redirect(form.return_url.data)
+        return jsonify({'message': 'Service has been successfully edited.'})
 
-    return render_template('storage/service/addedit.html', form=form, host=service.host)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/service/delete/<service_id>', methods=['GET', 'POST'])
+@blueprint.route('/service/delete/<service_id>', methods=['POST'])
 @session_required('operator')
 def service_delete_route(service_id):
     """delete service"""
@@ -143,12 +130,12 @@ def service_delete_route(service_id):
         service = Service.query.get(service_id)
         db.session.delete(service)
         db.session.commit()
-        return redirect(url_for('storage.host_view_route', host_id=service.host_id))
+        return jsonify({'message': 'Service has been successfully deleted.'})
 
-    return render_template('button-delete.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/service/annotate/<model_id>', methods=['GET', 'POST'])
+@blueprint.route('/service/annotate/<model_id>', methods=['POST'])
 @session_required('operator')
 def service_annotate_route(model_id):
     """annotate service"""
@@ -164,7 +151,8 @@ def service_delete_multiid_route():
     if form.validate_on_submit():
         model_delete_multiid(Service, [tmp.data for tmp in form.ids.entries])
         return '', HTTPStatus.OK
-    return jsonify({'message': 'Invalid form submitted.'}), HTTPStatus.BAD_REQUEST
+
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/service/tag_multiid', methods=['POST'])
@@ -176,15 +164,8 @@ def service_tag_multiid_route():
     if form.validate_on_submit():
         model_tag_multiid(Service, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
         return '', HTTPStatus.OK
-    return jsonify({'message': 'Invalid form submitted.'}), HTTPStatus.BAD_REQUEST
 
-
-@blueprint.route('/service/grouped')
-@session_required('operator')
-def service_grouped_route():
-    """view grouped services"""
-
-    return render_template('storage/service/grouped.html')
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/service/grouped.json', methods=['GET', 'POST'])
@@ -200,7 +181,7 @@ def service_grouped_json_route():
     # join allows filter over host attrs
     query = db.session.query().select_from(Service).join(Host).group_by(info_column)
     if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
 
     services = DataTables(request.values.to_dict(), query, columns).output_result()
     return jsonify(services)

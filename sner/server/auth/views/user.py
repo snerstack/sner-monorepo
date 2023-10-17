@@ -6,7 +6,7 @@ auth user views; user management
 from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
-from flask import jsonify, redirect, render_template, request, url_for
+from flask import jsonify, request
 from flask_login import current_user
 from sqlalchemy import literal_column
 
@@ -17,7 +17,7 @@ from sner.server.auth.views import blueprint
 from sner.server.extensions import db
 from sner.server.forms import ButtonForm
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.utils import filter_query
+from sner.server.utils import filter_query, error_response
 
 
 @blueprint.route('/user/@me')
@@ -32,18 +32,7 @@ def user_me_route():
             "roles": current_user.roles
             })
 
-    return jsonify({"error": {
-        "code": 401,
-        "message": "Not authenticated."
-    }}), HTTPStatus.UNAUTHORIZED
-
-
-@blueprint.route('/user/list')
-@session_required('admin')
-def user_list_route():
-    """list users"""
-
-    return render_template('auth/user/list.html')
+    return error_response(message='Not authenticated.', code=HTTPStatus.UNAUTHORIZED)
 
 
 @blueprint.route('/user/list.json', methods=['GET', 'POST'])
@@ -62,7 +51,7 @@ def user_list_json_route():
     ]
     query = db.session.query().select_from(User)
     if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
 
     users = DataTables(request.values.to_dict(), query, columns).output_result()
     return jsonify(users)
@@ -85,7 +74,7 @@ def user_json_route(user_id):
         })
 
 
-@blueprint.route('/user/add', methods=['GET', 'POST'])
+@blueprint.route('/user/add', methods=['POST'])
 @session_required('admin')
 def user_add_route():
     """add user"""
@@ -101,10 +90,10 @@ def user_add_route():
         db.session.commit()
         return jsonify({"message": "Successfully added a new user."})
 
-    return render_template('auth/user/addedit.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/user/edit/<user_id>', methods=['GET', 'POST'])
+@blueprint.route('/user/edit/<user_id>', methods=['POST'])
 @session_required('admin')
 def user_edit_route(user_id):
     """edit task"""
@@ -119,10 +108,10 @@ def user_edit_route(user_id):
         db.session.commit()
         return jsonify({"message": "Successfully edited a user."})
 
-    return render_template('auth/user/addedit.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/user/delete/<user_id>', methods=['GET', 'POST'])
+@blueprint.route('/user/delete/<user_id>', methods=['POST'])
 @session_required('admin')
 def user_delete_route(user_id):
     """delete user"""
@@ -132,9 +121,9 @@ def user_delete_route(user_id):
     if form.validate_on_submit():
         db.session.delete(User.query.get(user_id))
         db.session.commit()
-        return redirect(url_for('auth.user_list_route'))
+        return jsonify({"message": "User has been successfully deleted."})
 
-    return render_template('button-delete.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/user/apikey/<user_id>/<action>', methods=['POST'])
@@ -153,4 +142,4 @@ def user_apikey_route(user_id, action):
             UserManager.apikey_revoke(user)
             return jsonify({'message': 'Apikey operation', 'detail': 'Apikey revoked'}), HTTPStatus.OK
 
-    return jsonify({'message': 'Apikey operation', 'detail': 'Invalid request'}), HTTPStatus.BAD_REQUEST
+    return error_response(message='Invalid request.', code=HTTPStatus.BAD_REQUEST)

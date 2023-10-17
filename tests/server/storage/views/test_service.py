@@ -12,13 +12,6 @@ from sner.server.storage.models import Service
 from tests.server.storage.views import check_annotate, check_delete_multiid, check_tag_multiid
 
 
-def test_service_list_route(cl_operator):
-    """service list route test"""
-
-    response = cl_operator.get(url_for('storage.service_list_route'))
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_service_list_json_route(cl_operator, service):
     """service list_json route test"""
 
@@ -51,15 +44,10 @@ def test_service_add_route(cl_operator, host, service_factory):
 
     aservice = service_factory.build(host=host)
 
-    form = cl_operator.get(url_for('storage.service_add_route', host_id=aservice.host.id)).forms['service_form']
-    form['proto'] = aservice.proto
-    form['port'] = aservice.port
-    form['state'] = aservice.state
-    form['name'] = aservice.name
-    form['info'] = aservice.info
-    form['comment'] = aservice.comment
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    form_data = [('host_id', host.id), ('proto', aservice.proto), ('port', aservice.port), ('state', aservice.state),
+                 ('name', aservice.name), ('info', aservice.info), ('comment', aservice.comment)]
+    response = cl_operator.post(url_for('storage.service_add_route', host_id=aservice.host.id), params=form_data)
+    assert response.status_code == HTTPStatus.OK
 
     tservice = Service.query.filter(Service.info == aservice.info).one()
     assert tservice.proto == aservice.proto
@@ -71,24 +59,25 @@ def test_service_add_route(cl_operator, host, service_factory):
 def test_service_edit_route(cl_operator, service):
     """service edit route test"""
 
-    form = cl_operator.get(url_for('storage.service_edit_route', service_id=service.id)).forms['service_form']
-    form['state'] = 'down'
-    form['info'] = 'edited ' + form['info'].value
-    form['return_url'] = url_for('storage.service_list_route')
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_operator.get(url_for('storage.service_view_json_route', service_id=service.id))
+    new_info = f'{response.json["info"]}_edited'
+
+    form_data = [('host_id', response.json['host_id']), ('port', response.json['port']), ('proto', response.json['proto']),
+                 ('state', 'down'), ('info', new_info)]
+    response = cl_operator.post(url_for('storage.service_edit_route', service_id=service.id), params=form_data)
+
+    assert response.status_code == HTTPStatus.OK
 
     tservice = Service.query.get(service.id)
-    assert tservice.state == form['state'].value
-    assert tservice.info == form['info'].value
+    assert tservice.state == 'down'
+    assert tservice.info == new_info
 
 
 def test_service_delete_route(cl_operator, service):
     """service delete route test"""
 
-    form = cl_operator.get(url_for('storage.service_delete_route', service_id=service.id)).form
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_operator.post(url_for('storage.service_delete_route', service_id=service.id))
+    assert response.status_code == HTTPStatus.OK
 
     assert not Service.query.get(service.id)
 
@@ -109,13 +98,6 @@ def test_service_delete_multiid_route(cl_operator, service):
     """service delete_multiid route test"""
 
     check_delete_multiid(cl_operator, 'storage.service_delete_multiid_route', service)
-
-
-def test_service_grouped_route(cl_operator):
-    """service grouped route test"""
-
-    response = cl_operator.get(url_for('storage.service_grouped_route'))
-    assert response.status_code == HTTPStatus.OK
 
 
 def test_service_grouped_json_route(cl_operator, service):

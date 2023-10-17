@@ -10,7 +10,7 @@ from http import HTTPStatus
 from io import StringIO
 from typing import Union
 
-from flask import current_app, render_template
+from flask import current_app
 from pytimeparse import parse as timeparse
 from sqlalchemy import case, cast, delete, func, or_, not_, select, update
 from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY
@@ -20,7 +20,7 @@ from sner.lib import format_host_address
 from sner.server.extensions import db
 from sner.server.storage.forms import AnnotateForm
 from sner.server.storage.models import Host, Note, Service, Vuln
-from sner.server.utils import filter_query, windowed_query
+from sner.server.utils import filter_query, windowed_query, error_response
 
 
 def get_related_models(model_name, model_id):
@@ -46,7 +46,7 @@ def model_annotate(model, model_id):
         db.session.commit()
         return '', HTTPStatus.OK
 
-    return render_template('storage/annotate.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 def tag_add(model, tag: Union[str, list]):

@@ -11,7 +11,7 @@ from flask import url_for
 def test_auth_session(cl_user):
     """test session auth"""
 
-    response = cl_user.get(url_for('auth.profile_route'))
+    response = cl_user.get(url_for('auth.profile_json_route'))
     assert response.status_code == HTTPStatus.OK
 
     # session authenticated user should not access api
@@ -23,7 +23,7 @@ def test_auth_apikey(api_user):
     """test session auth"""
 
     # apikey authenticated user should not access webui
-    response = api_user.get(url_for('auth.profile_route'), status='*')
+    response = api_user.get(url_for('auth.profile_json_route'), status='*')
     assert response.status_code == HTTPStatus.FORBIDDEN
 
     response = api_user.post_json(url_for('api.v2_public_storage_host_route'), {'address': '192.0.2.1'})

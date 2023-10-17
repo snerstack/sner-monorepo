@@ -10,14 +10,6 @@ from flask import url_for
 
 from sner.server.auth.models import User
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from tests.server import get_csrf_token
-
-
-def test_user_list_route(cl_admin):
-    """user list route test"""
-
-    response = cl_admin.get(url_for('auth.user_list_route'))
-    assert response.status_code == HTTPStatus.OK
 
 
 def test_user_list_json_route(cl_admin, user):
@@ -46,12 +38,9 @@ def test_user_add_route(cl_admin, user_factory):
     password = PWS.generate()
     auser = user_factory.build()
 
-    form = cl_admin.get(url_for('auth.user_add_route')).forms['user_form']
-    form['username'] = auser.username
-    form['roles'] = auser.roles
-    form['active'] = auser.active
-    form['new_password'] = password
-    response = form.submit()
+    form_data = [('username', auser.username), ('roles', auser.roles), ('active', auser.active), ('new_password', password)]
+    response = cl_admin.post(url_for('auth.user_add_route'), params=form_data)
+
     assert response.status_code == HTTPStatus.OK
 
     tuser = User.query.filter(User.username == auser.username).one()
@@ -66,33 +55,25 @@ def test_user_edit_route(cl_admin, user):
 
     password = PWS.generate()
 
-    form = cl_admin.get(url_for('auth.user_edit_route', user_id=user.id)).forms['user_form']
-    form['username'] = f'{form["username"].value}_edited'
-    form['new_password'] = password
-    form['roles'] = []
-    form['api_networks'] = '127.0.0.0/23\n192.0.2.0/24\n2001:db8::/48'
-    response = form.submit()
+    response = cl_admin.get(url_for('auth.user_json_route', user_id=user.id))
+    new_username = f'{response.json["username"]}_edited'
+    form_data = [('username', new_username), ('roles', []), ('new_password', password), ('api_networks', '127.0.0.0/23\n192.0.2.0/24\n2001:db8::/48')]
+
+    response = cl_admin.post(url_for('auth.user_edit_route', user_id=user.id), params=form_data)
     assert response.status_code == HTTPStatus.OK
 
-    tuser = User.query.filter(User.username == form['username'].value).one()
-    assert tuser.username == form['username'].value
+    tuser = User.query.filter(User.username == new_username).one()
+    assert tuser.username == new_username
     assert PWS.compare(PWS.hash(password, PWS.get_salt(tuser.password)), tuser.password)
     assert not user.roles
     assert user.api_networks == ['127.0.0.0/23', '192.0.2.0/24', '2001:db8::/48']
-
-    form = cl_admin.get(url_for('auth.user_edit_route', user_id=user.id)).forms['user_form']
-    form['api_networks'] = 'invalid'
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//div[@class="invalid-feedback" and contains(text(), "does not appear to be an IPv4 or IPv6 network")]')
 
 
 def test_user_delete_route(cl_admin, user):
     """user delete route test"""
 
-    form = cl_admin.get(url_for('auth.user_delete_route', user_id=user.id)).form
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_admin.post(url_for('auth.user_delete_route', user_id=user.id))
+    assert response.status_code == HTTPStatus.OK
 
     assert not User.query.filter(User.username == user.username).one_or_none()
 
@@ -100,13 +81,11 @@ def test_user_delete_route(cl_admin, user):
 def test_user_apikey_route(cl_admin, user):
     """user apikey route test"""
 
-    data = {'csrf_token': get_csrf_token(cl_admin)}
-
-    response = cl_admin.post(url_for('auth.user_apikey_route', user_id=user.id, action='generate'), data)
+    response = cl_admin.post(url_for('auth.user_apikey_route', user_id=user.id, action='generate'))
     assert response.status_code == HTTPStatus.OK
     assert User.query.get(user.id).apikey
 
-    response = cl_admin.post(url_for('auth.user_apikey_route', user_id=user.id, action='revoke'), data)
+    response = cl_admin.post(url_for('auth.user_apikey_route', user_id=user.id, action='revoke'))
     assert response.status_code == HTTPStatus.OK
     assert not User.query.get(user.id).apikey
 

@@ -7,7 +7,7 @@ from http import HTTPStatus
 
 import json
 from datatables import ColumnDT, DataTables
-from flask import jsonify, redirect, render_template, request, Response, url_for
+from flask import jsonify, request, Response
 from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
@@ -17,15 +17,7 @@ from sner.server.storage.core import model_annotate, get_related_models, model_d
 from sner.server.storage.forms import MultiidForm, NoteForm, TagMultiidForm
 from sner.server.storage.models import Host, Note, Service
 from sner.server.storage.views import blueprint
-from sner.server.utils import filter_query, relative_referrer, SnerJSONEncoder, valid_next_url
-
-
-@blueprint.route('/note/list')
-@session_required('operator')
-def note_list_route():
-    """list notes"""
-
-    return render_template('storage/note/list.html')
+from sner.server.utils import filter_query, SnerJSONEncoder, error_response
 
 
 @blueprint.route('/note/list.json', methods=['GET', 'POST'])
@@ -55,7 +47,7 @@ def note_list_json_route():
     ]
     query = db.session.query().select_from(Note).outerjoin(Host, Note.host_id == Host.id).outerjoin(Service, Note.service_id == Service.id)
     if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
 
     notes = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(notes, cls=SnerJSONEncoder), mimetype='application/json')
@@ -69,10 +61,7 @@ def note_view_json_route(note_id):
     note = Note.query.get(note_id)
 
     if note is None:
-        return jsonify({"error": {
-            "code": 404,
-            "message": "Note not found."
-        }}), HTTPStatus.NOT_FOUND
+        return error_response(message='Note not found.', code=HTTPStatus.NOT_FOUND)
 
     return jsonify({
         "id": note.id,
@@ -93,7 +82,7 @@ def note_view_json_route(note_id):
     })
 
 
-@blueprint.route('/note/add/<model_name>/<model_id>', methods=['GET', 'POST'])
+@blueprint.route('/note/add/<model_name>/<model_id>', methods=['POST'])
 @session_required('operator')
 def note_add_route(model_name, model_id):
     """add note to host"""
@@ -106,9 +95,9 @@ def note_add_route(model_name, model_id):
         form.populate_obj(note)
         db.session.add(note)
         db.session.commit()
-        return redirect(url_for('storage.host_view_route', host_id=note.host_id))
+        return jsonify({'host_id': host.id})
 
-    return render_template('storage/note/addedit.html', form=form, host=host, service=service)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/note/edit/<note_id>', methods=['GET', 'POST'])
@@ -117,18 +106,17 @@ def note_edit_route(note_id):
     """edit note"""
 
     note = Note.query.get(note_id)
-    form = NoteForm(obj=note, return_url=relative_referrer())
+    form = NoteForm(obj=note)
 
     if form.validate_on_submit():
         form.populate_obj(note)
         db.session.commit()
-        if valid_next_url(form.return_url.data):
-            return redirect(form.return_url.data)
+        return jsonify({'message': 'Note has been successfully edited.'})
 
-    return render_template('storage/note/addedit.html', form=form, host=note.host, service=note.service)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/note/delete/<note_id>', methods=['GET', 'POST'])
+@blueprint.route('/note/delete/<note_id>', methods=['POST'])
 @session_required('operator')
 def note_delete_route(note_id):
     """delete note"""
@@ -138,25 +126,16 @@ def note_delete_route(note_id):
         note = Note.query.get(note_id)
         db.session.delete(note)
         db.session.commit()
-        return redirect(url_for('storage.host_view_route', host_id=note.host_id))
+        return jsonify({'message': 'Note has been successfully deleted.'})
 
-    return render_template('button-delete.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/note/annotate/<model_id>', methods=['GET', 'POST'])
+@blueprint.route('/note/annotate/<model_id>', methods=['POST'])
 @session_required('operator')
 def note_annotate_route(model_id):
     """annotate note"""
     return model_annotate(Note, model_id)
-
-
-@blueprint.route('/note/view/<note_id>')
-@session_required('operator')
-def note_view_route(note_id):
-    """view note"""
-
-    note = Note.query.get(note_id)
-    return render_template('storage/note/view.html', note=note, button_form=ButtonForm())
 
 
 @blueprint.route('/note/delete_multiid', methods=['POST'])
@@ -168,7 +147,8 @@ def note_delete_multiid_route():
     if form.validate_on_submit():
         model_delete_multiid(Note, [tmp.data for tmp in form.ids.entries])
         return '', HTTPStatus.OK
-    return jsonify({'message': 'Invalid form submitted.'}), HTTPStatus.BAD_REQUEST
+
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/note/tag_multiid', methods=['POST'])
@@ -180,15 +160,8 @@ def note_tag_multiid_route():
     if form.validate_on_submit():
         model_tag_multiid(Note, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
         return '', HTTPStatus.OK
-    return jsonify({'message': 'Invalid form submitted.'}), HTTPStatus.BAD_REQUEST
 
-
-@blueprint.route('/note/grouped')
-@session_required('operator')
-def note_grouped_route():
-    """view grouped notes"""
-
-    return render_template('storage/note/grouped.html')
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/note/grouped.json', methods=['GET', 'POST'])

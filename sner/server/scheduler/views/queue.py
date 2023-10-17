@@ -6,7 +6,7 @@ scheduler queue views
 from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
-from flask import jsonify, redirect, render_template, request, url_for
+from flask import jsonify, request
 from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
@@ -16,15 +16,7 @@ from sner.server.scheduler.core import QueueManager
 from sner.server.scheduler.forms import QueueEnqueueForm, QueueForm
 from sner.server.scheduler.models import Job, Queue, Target
 from sner.server.scheduler.views import blueprint
-from sner.server.utils import filter_query
-
-
-@blueprint.route('/queue/list', methods=['GET'])
-@session_required('operator')
-def queue_list_route():
-    """list queues"""
-
-    return render_template('scheduler/queue/list.html')
+from sner.server.utils import filter_query, error_response
 
 
 @blueprint.route('/queue/list.json', methods=['GET', 'POST'])
@@ -74,7 +66,7 @@ def queue_json_route(queue_id):
         })
 
 
-@blueprint.route('/queue/add', methods=['GET', 'POST'])
+@blueprint.route('/queue/add', methods=['POST'])
 @session_required('operator')
 def queue_add_route():
     """queue add"""
@@ -88,13 +80,10 @@ def queue_add_route():
         db.session.commit()
         return jsonify({"message": "Queue has been successfully added."})
 
-    return jsonify({"error": {
-        "code": HTTPStatus.BAD_REQUEST,
-        "errors": form.errors
-    }}), HTTPStatus.BAD_REQUEST
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/queue/edit/<queue_id>', methods=['GET', 'POST'])
+@blueprint.route('/queue/edit/<queue_id>', methods=['POST'])
 @session_required('operator')
 def queue_edit_route(queue_id):
     """queue edit"""
@@ -107,10 +96,7 @@ def queue_edit_route(queue_id):
         db.session.commit()
         return jsonify({"message": "Queue has been successfully edited."})
 
-    return jsonify({"error": {
-        "code": HTTPStatus.BAD_REQUEST,
-        "errors": form.errors
-    }}), HTTPStatus.BAD_REQUEST
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/queue/enqueue/<queue_id>', methods=['GET', 'POST'])
@@ -123,10 +109,11 @@ def queue_enqueue_route(queue_id):
     if form.validate_on_submit():
         QueueManager.enqueue(Queue.query.get(queue_id), form.data['targets'])
         return jsonify({"message": "success"})
-    return render_template('scheduler/queue/enqueue.html', form=form)
+
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/queue/flush/<queue_id>', methods=['GET', 'POST'])
+@blueprint.route('/queue/flush/<queue_id>', methods=['POST'])
 @session_required('operator')
 def queue_flush_route(queue_id):
     """queue flush; flush all targets from queue"""
@@ -135,12 +122,12 @@ def queue_flush_route(queue_id):
 
     if form.validate_on_submit():
         QueueManager.flush(Queue.query.get(queue_id))
-        return redirect(url_for('scheduler.queue_list_route'))
+        return jsonify({'message': 'Queue has been successfully flushed.'})
 
-    return render_template('button-generic.html', form=form, button_caption='Flush')
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/queue/prune/<queue_id>', methods=['GET', 'POST'])
+@blueprint.route('/queue/prune/<queue_id>', methods=['POST'])
 @session_required('operator')
 def queue_prune_route(queue_id):
     """queue prune; delete all queue jobs"""
@@ -150,14 +137,14 @@ def queue_prune_route(queue_id):
     if form.validate_on_submit():
         try:
             QueueManager.prune(Queue.query.get(queue_id))
-            return redirect(url_for('scheduler.queue_list_route'))
+            return jsonify({'message': 'Queue has been successfully pruned.'})
         except RuntimeError as exc:
-            return jsonify({'message': f'Failed: {exc}'}), HTTPStatus.INTERNAL_SERVER_ERROR
+            return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    return render_template('button-generic.html', form=form, button_caption='Prune')
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/queue/delete/<queue_id>', methods=['GET', 'POST'])
+@blueprint.route('/queue/delete/<queue_id>', methods=['POST'])
 @session_required('operator')
 def queue_delete_route(queue_id):
     """queue delete"""
@@ -167,8 +154,8 @@ def queue_delete_route(queue_id):
     if form.validate_on_submit():
         try:
             QueueManager.delete(Queue.query.get(queue_id))
-            return redirect(url_for('scheduler.queue_list_route'))
+            return jsonify({'message': 'Queue has been successfully deleted.'})
         except RuntimeError as exc:
-            return jsonify({'message': f'Failed: {exc}'}), HTTPStatus.INTERNAL_SERVER_ERROR
+            return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    return render_template('button-delete.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)

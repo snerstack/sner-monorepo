@@ -12,7 +12,7 @@ import sys
 import flask.cli
 from flask import Flask, has_request_context, render_template, request
 from flask_login import current_user
-from flask_wtf.csrf import generate_csrf
+from flask_wtf.csrf import generate_csrf, CSRFProtect
 from flask_cors import CORS
 from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -189,7 +189,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app.config.update(DEFAULT_CONFIG)  # default config
     app.config.update(config_from_yaml(config_file))  # service configuration
     app.config.update(config_from_yaml(os.environ.get(config_env)))  # wsgi/container config
-    app.config["WTF_CSRF_ENABLED"] = False  # csrf temporary disabled due to frontend development
+    app.config['WTF_CSRF_ENABLED'] = False
 
     if app.config["DEBUG"]:
         logging.getLogger('sner.server').setLevel(logging.DEBUG)
@@ -199,6 +199,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app.session_interface = FilesystemSessionInterface(os.path.join(app.config['SNER_VAR'], 'sessions'), app.config['SNER_SESSION_IDLETIME'])
 
     CORS(app, supports_credentials=True)
+    CSRFProtect(app)
 
     db.init_app(app)
     jsglue.init_app(app)
@@ -268,9 +269,6 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
         """parse json"""
         return yaml_dump(data)
 
-    # globaly enable flask_wtf csrf token helper
-    # least intrusive way to pass token into every view without enforcing csrf on all routes
-    app.add_template_global(name='csrf_token', f=generate_csrf)
     app.add_template_global(name='sner_version', f=__version__)
 
     @app.shell_context_processor
@@ -296,6 +294,11 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
             'User': auth_models.User,
             'WebauthnCredential': auth_models.WebauthnCredential,
         }
+
+    @app.after_request
+    def inject_csrf_token(response):
+        response.set_cookie('XSRF-TOKEN', generate_csrf())
+        return response
 
     @app.route('/')
     def index_route():

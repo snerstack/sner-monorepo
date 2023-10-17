@@ -8,6 +8,7 @@ from flask import url_for
 from webtest import TestApp
 
 from sner.server.password_supervisor import PasswordSupervisor as PWS
+from tests.server import get_csrf_token
 
 
 @pytest.fixture
@@ -27,10 +28,10 @@ def client_in_roles(ufactory, clnt, roles):
 
     password = PWS.generate()
     user = ufactory.create(username='pytest_user', password=PWS.hash(password), roles=roles)
-    form = clnt.get(url_for('auth.login_route')).forms['login_form']
-    form['username'] = user.username
-    form['password'] = password
-    form.submit()
+
+    form_data = [('username', user.username), ('password', password), ('csrf_token', get_csrf_token(clnt))]
+    clnt.post(url_for('auth.login_route'), params=form_data)
+
     return clnt
 
 

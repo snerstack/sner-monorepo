@@ -15,14 +15,6 @@ from sner.server.auth.core import TOTPImpl
 from sner.server.auth.models import User, WebauthnCredential
 from sner.server.extensions import db, webauthn
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from tests.server import get_csrf_token
-
-
-def test_profile_route(cl_user):
-    """user profile index test"""
-
-    response = cl_user.get(url_for('auth.profile_route'))
-    assert response.status_code == HTTPStatus.OK
 
 
 def test_profile_changepassword_route(cl_user):
@@ -58,6 +50,8 @@ def test_profile_changepassword_route(cl_user):
 
 def test_profile_totp_route_enable(cl_user):
     """user profile enable totp"""
+
+    response = cl_user.get(url_for('auth.profile_totp_route'))
 
     form_data = [('code', 'invalid')]
     response = cl_user.post(url_for('auth.profile_totp_route'), params=form_data, expect_errors=True)
@@ -109,20 +103,18 @@ def test_profile_webauthn_register_route(cl_user):
 
     device = SoftWebauthnDevice()
 
-    response = cl_user.get(url_for('auth.profile_webauthn_register_route'))
-    # some javascript code must be emulated
-    pkcco = cbor.decode(b64decode(cl_user.post(url_for('auth.profile_webauthn_pkcco_route'), {'csrf_token': get_csrf_token(cl_user)}).body))
+    # # some javascript code must be emulated
+    pkcco = cbor.decode(b64decode(cl_user.post(url_for('auth.profile_webauthn_pkcco_route')).body))
     attestation = device.create(pkcco, f'https://{webauthn.rp.id}')
     attestation_data = {
         'clientDataJSON': attestation['response']['clientDataJSON'],
         'attestationObject': attestation['response']['attestationObject']}
-    form = response.forms['webauthn_register_form']
-    form['attestation'] = b64encode(cbor.encode(attestation_data))
-    # and back to standard test codeflow
-    form['name'] = 'pytest token'
-    response = form.submit()
 
-    assert response.status_code == HTTPStatus.FOUND
+    form_data = [('attestation', b64encode(cbor.encode(attestation_data))), ('name', 'pytest token')]
+
+    response = cl_user.post(url_for('auth.profile_webauthn_register_route'), params=form_data)
+
+    assert response.status_code == HTTPStatus.OK
     user = User.query.filter(User.username == 'pytest_user').one()
     assert user.webauthn_credentials
 
@@ -130,18 +122,19 @@ def test_profile_webauthn_register_route(cl_user):
 def test_profile_webauthn_pkcco_route_invalid_request(cl_user):
     """test error handling in pkcco route"""
 
-    response = cl_user.post(url_for('auth.profile_webauthn_pkcco_route'), status='*')
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_user.post(url_for('auth.profile_webauthn_pkcco_route'), status='*', headers={"Cookie": ""})
+
+    assert response.status_code == HTTPStatus.FOUND
 
 
 def test_profile_webauthn_register_route_invalid_attestation(cl_user):
     """register new credential for user; error handling"""
 
-    form = cl_user.get(url_for('auth.profile_webauthn_register_route')).forms['webauthn_register_form']
-    form['attestation'] = 'invalid'
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//script[contains(text(), "toastr[\'error\'](\'Error during registration.\');")]')
+    form_data = [('attestation', 'invalid')]
+    response = cl_user.post(url_for('auth.profile_webauthn_register_route'), params=form_data, expect_errors=True)
+
+    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert response.json['error']['message'] == 'Error during registration.'
 
 
 def test_profile_webauthn_edit_route(cl_user, webauthn_credential_factory):
@@ -149,12 +142,13 @@ def test_profile_webauthn_edit_route(cl_user, webauthn_credential_factory):
 
     wncred = webauthn_credential_factory.create(user=User.query.filter(User.username == 'pytest_user').one())
 
-    form = cl_user.post(url_for('auth.profile_webauthn_edit_route', webauthn_id=wncred.id)).forms['webauthn_edit_form']
-    form['name'] = f'{form["name"].value}  edited'
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    new_name = f'{wncred.name}_edited'
+    form_data = [('name', new_name)]
 
-    assert wncred.name == form['name'].value
+    response = cl_user.post(url_for('auth.profile_webauthn_edit_route', webauthn_id=wncred.id), params=form_data)
+    assert response.status_code == HTTPStatus.OK
+
+    assert wncred.name == new_name
 
 
 def test_profile_webauthn_delete_route(cl_user, webauthn_credential_factory):
@@ -162,9 +156,8 @@ def test_profile_webauthn_delete_route(cl_user, webauthn_credential_factory):
 
     wncred = webauthn_credential_factory.create(user=User.query.filter(User.username == 'pytest_user').one())
 
-    form = cl_user.get(url_for('auth.profile_webauthn_delete_route', webauthn_id=wncred.id)).form
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_user.post(url_for('auth.profile_webauthn_delete_route', webauthn_id=wncred.id))
+    assert response.status_code == HTTPStatus.OK
 
     assert not WebauthnCredential.query.get(wncred.id)
 
@@ -175,12 +168,10 @@ def test_profile_apikey_route(cl_user):
     user = User.query.filter(User.username == 'pytest_user').one()
     assert not user.apikey
 
-    form = cl_user.get(url_for('auth.profile_apikey_route', action='generate')).form
-    response = form.submit()
+    response = cl_user.post(url_for('auth.profile_apikey_route', action='generate'))
     assert response.status_code == HTTPStatus.OK
     assert user.apikey
 
-    form = cl_user.get(url_for('auth.profile_apikey_route', action='revoke')).form
-    response = form.submit()
+    response = cl_user.post(url_for('auth.profile_apikey_route', action='revoke'))
     assert response.status_code == HTTPStatus.OK
     assert not user.apikey

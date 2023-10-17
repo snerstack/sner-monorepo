@@ -37,7 +37,6 @@ class HostForm(FlaskForm):
     tags = TextAreaListField('Tags', render_kw={'class': 'form-control tageditor'})
     comment = TextAreaNoneField('Comment')
     submit = SubmitField('Save')
-    return_url = HiddenField()
 
 
 class ServiceForm(FlaskForm):
@@ -52,7 +51,6 @@ class ServiceForm(FlaskForm):
     tags = TextAreaListField('Tags', render_kw={'class': 'form-control tageditor'})
     comment = TextAreaNoneField('Comment')
     submit = SubmitField('Save')
-    return_url = HiddenField()
 
 
 class VulnForm(FlaskForm):
@@ -71,7 +69,6 @@ class VulnForm(FlaskForm):
     tags = TextAreaListField('Tags', render_kw={'class': 'form-control tageditor', 'rows': 6})
     comment = TextAreaNoneField('Comment')
     submit = SubmitField('Save')
-    return_url = HiddenField()
 
 
 class NoteForm(FlaskForm):
@@ -85,7 +82,6 @@ class NoteForm(FlaskForm):
     tags = TextAreaListField('Tags', render_kw={'class': 'form-control tageditor'})
     comment = TextAreaNoneField('Comment')
     submit = SubmitField('Save')
-    return_url = HiddenField()
 
 
 class MultiidForm(FlaskForm):

@@ -9,13 +9,6 @@ from http import HTTPStatus
 from flask import url_for
 
 
-def test_dnstree_route(cl_operator):
-    """dnstree route test"""
-
-    response = cl_operator.get(url_for('visuals.dnstree_route'))
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_dnstree_json_route(cl_operator, host):
     """dnstree.json route test"""
 

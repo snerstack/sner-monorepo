@@ -8,7 +8,7 @@ from datetime import datetime
 from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
-from flask import jsonify, redirect, render_template, request, Response, url_for
+from flask import jsonify, request, Response
 from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
@@ -17,15 +17,7 @@ from sner.server.forms import ButtonForm
 from sner.server.scheduler.core import JobManager
 from sner.server.scheduler.models import Job, Queue
 from sner.server.scheduler.views import blueprint
-from sner.server.utils import filter_query, SnerJSONEncoder
-
-
-@blueprint.route('/job/list')
-@session_required('operator')
-def job_list_route():
-    """list jobs"""
-
-    return render_template('scheduler/job/list.html')
+from sner.server.utils import filter_query, SnerJSONEncoder, error_response
 
 
 @blueprint.route('/job/list.json', methods=['GET', 'POST'])
@@ -45,13 +37,13 @@ def job_list_json_route():
     ]
     query = db.session.query().select_from(Job).outerjoin(Queue)
     if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
 
     jobs = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(jobs, cls=SnerJSONEncoder), mimetype='application/json')
 
 
-@blueprint.route('/job/delete/<job_id>', methods=['GET', 'POST'])
+@blueprint.route('/job/delete/<job_id>', methods=['POST'])
 @session_required('operator')
 def job_delete_route(job_id):
     """delete job"""
@@ -61,14 +53,14 @@ def job_delete_route(job_id):
     if form.validate_on_submit():
         try:
             JobManager.delete(Job.query.get(job_id))
-            return redirect(url_for('scheduler.job_list_route'))
+            return jsonify({'message': 'Job has been successfully deleted.'})
         except RuntimeError as exc:
-            return jsonify({'message': f'Failed: {exc}'}), HTTPStatus.INTERNAL_SERVER_ERROR
+            return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    return render_template('button-delete.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/job/reconcile/<job_id>', methods=['GET', 'POST'])
+@blueprint.route('/job/reconcile/<job_id>', methods=['POST'])
 @session_required('operator')
 def job_reconcile_route(job_id):
     """reconcile job"""
@@ -77,14 +69,14 @@ def job_reconcile_route(job_id):
     if form.validate_on_submit():
         try:
             JobManager.reconcile(Job.query.get(job_id))
-            return redirect(url_for('scheduler.job_list_route'))
+            return jsonify({'message': 'Job has been successfully reconciled.'})
         except RuntimeError as exc:
-            return jsonify({'message': f'Failed: {exc}'}), HTTPStatus.INTERNAL_SERVER_ERROR
+            return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    return render_template('button-generic.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/job/repeat/<job_id>', methods=['GET', 'POST'])
+@blueprint.route('/job/repeat/<job_id>', methods=['POST'])
 @session_required('operator')
 def job_repeat_route(job_id):
     """repeat job; requeues targets into same queue, used for rescheduling of failed jobs"""
@@ -93,6 +85,6 @@ def job_repeat_route(job_id):
 
     if form.validate_on_submit():
         JobManager.repeat(Job.query.get(job_id))
-        return redirect(url_for('scheduler.job_list_route'))
+        return jsonify({'message': 'Job has been successfully repeated.'})
 
-    return render_template('button-generic.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)

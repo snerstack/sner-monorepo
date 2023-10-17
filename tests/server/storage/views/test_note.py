@@ -12,13 +12,6 @@ from sner.server.storage.models import Note
 from tests.server.storage.views import check_annotate, check_delete_multiid, check_tag_multiid
 
 
-def test_note_list_route(cl_operator):
-    """note list route test"""
-
-    response = cl_operator.get(url_for('storage.note_list_route'))
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_note_list_json_route(cl_operator, note):
     """note list_json route test"""
 
@@ -44,12 +37,10 @@ def test_note_add_route(cl_operator, host, service, note_factory):
 
     anote = note_factory.build(host=host, service=service)
 
-    form = cl_operator.get(url_for('storage.note_add_route', model_name='service', model_id=anote.service.id)).forms['note_form']
-    form['xtype'] = anote.xtype
-    form['data'] = anote.data
-    form['comment'] = anote.comment
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    form_data = [('host_id', anote.host.id), ('service_id', anote.service.id), ('xtype', anote.xtype), ('data', anote.data),
+                 ('comment', anote.comment)]
+    response = cl_operator.post(url_for('storage.note_add_route', model_name='service', model_id=anote.service.id), params=form_data)
+    assert response.status_code == HTTPStatus.OK
 
     tnote = Note.query.filter(Note.data == anote.data).one()
     assert tnote.xtype == anote.xtype
@@ -60,22 +51,22 @@ def test_note_add_route(cl_operator, host, service, note_factory):
 def test_note_edit_route(cl_operator, note):
     """note edit route test"""
 
-    form = cl_operator.get(url_for('storage.note_edit_route', note_id=note.id)).forms['note_form']
-    form['data'] = 'edited ' + form['data'].value
-    form['return_url'] = url_for('storage.note_list_route')
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    new_data = f'{note.data}_edited'
+
+    form_data = [('host_id', note.host.id), ('data', new_data)]
+    response = cl_operator.post(url_for('storage.note_edit_route', note_id=note.id), params=form_data)
+
+    assert response.status_code == HTTPStatus.OK
 
     tnote = Note.query.get(note.id)
-    assert tnote.data == form['data'].value
+    assert tnote.data == new_data
 
 
 def test_note_delete_route(cl_operator, note):
     """note delete route test"""
 
-    form = cl_operator.get(url_for('storage.note_delete_route', note_id=note.id)).form
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    response = cl_operator.post(url_for('storage.note_delete_route', note_id=note.id))
+    assert response.status_code == HTTPStatus.OK
 
     assert not Note.query.get(note.id)
 

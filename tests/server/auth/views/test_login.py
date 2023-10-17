@@ -24,18 +24,15 @@ def test_session_login(client, user_factory):
     password = PWS.generate()
     user = user_factory.create(password=PWS.hash(password))
 
-    form = client.get(url_for('auth.login_route')).forms['login_form']
-    form['username'] = user.username
-    form['password'] = 'invalid'
-    response = form.submit(expect_errors=True)
+    form_data = [('username', user.username), ('password', 'invalid'), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_route'), params=form_data, expect_errors=True)
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json["error"]["message"] == "Invalid credentials."
 
-    form = client.get(url_for('auth.login_route')).forms['login_form']
-    form['username'] = user.username
-    form['password'] = password
-    response = form.submit()
+    form_data = [('username', user.username), ('password', password), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_route'), params=form_data)
+
     assert response.status_code == HTTPStatus.OK
 
 
@@ -47,27 +44,10 @@ def test_session_logout(cl_user):
     assert response.json["message"] == "Successfully logged out."
 
 
-def test_session_unauthorized(client, user_factory):
-    """test for not logged in, redirect and final login"""
-
-    password = PWS.generate()
-    user = user_factory.create(password=PWS.hash(password))
-
-    response = client.get(url_for('auth.profile_route'))
-    assert response.status_code == HTTPStatus.FOUND
-    assert '/auth/login?next=' in response.headers['Location']
-
-    form = response.follow().forms['login_form']
-    form['username'] = user.username
-    form['password'] = password
-    response = form.submit()
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_session_forbidden(cl_user):
     """access forbidden"""
 
-    response = cl_user.get(url_for('auth.user_list_route'), status='*')
+    response = cl_user.get(url_for('auth.user_list_json_route'), status='*')
     assert response.status_code == HTTPStatus.FORBIDDEN
 
 
@@ -78,24 +58,17 @@ def test_login_totp(client, user_factory):
     secret = TOTPImpl.random_base32()
     user = user_factory(password=PWS.hash(password), totp=secret)
 
-    response = client.get(url_for('auth.login_totp_route'))
-    assert response.status_code == HTTPStatus.FOUND
-    assert url_for('auth.login_route') in response.headers['Location']
-
-    form = client.get(url_for('auth.login_route')).forms['login_form']
-    form['username'] = user.username
-    form['password'] = password
-    response = form.submit()
+    form_data = [('username', user.username), ('password', password), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_route'), params=form_data)
     assert response.status_code == HTTPStatus.OK
 
-    form = client.get(url_for('auth.login_totp_route')).forms['totp_code_form']
-    form['code'] = 'invalid'
-    response = form.submit(expect_errors=True)
+    form_data = [('code', 'invalid'), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_totp_route'), params=form_data, expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json["error"]["message"] == "Invalid code."
 
-    form['code'] = TOTPImpl(secret).current_code()
-    response = form.submit()
+    form_data = [('code', TOTPImpl(secret).current_code()), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_totp_route'), params=form_data)
     assert response.status_code == HTTPStatus.OK
 
 
@@ -106,12 +79,11 @@ def test_login_webauthn(client, webauthn_credential_factory):
     device.cred_init(webauthn.rp.id, b'randomhandle')
     wncred = webauthn_credential_factory.create(initialized_device=device)
 
-    form = client.get(url_for('auth.login_route')).forms['login_form']
-    form['username'] = wncred.user.username
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
+    form_data = [('username', wncred.user.username), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_route'), params=form_data)
+    assert response.status_code == HTTPStatus.OK
+    assert response.json["webauthn_login"]
 
-    response = response.follow()
     # some javascript code muset be emulated
     pkcro = cbor.decode(b64decode(client.post(url_for('auth.login_webauthn_pkcro_route'), {'csrf_token': get_csrf_token(client)}).body))
     assertion = device.get(pkcro, f'https://{webauthn.rp.id}')
@@ -121,9 +93,10 @@ def test_login_webauthn(client, webauthn_credential_factory):
         'clientDataJSON': assertion['response']['clientDataJSON'],
         'signature': assertion['response']['signature'],
         'userHandle': assertion['response']['userHandle']}
-    form = response.forms['webauthn_login_form']
-    form['assertion'] = b64encode(cbor.encode(assertion_data))
-    response = form.submit()
+
+    form_data = [('assertion', b64encode(cbor.encode(assertion_data))), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_webauthn_route'), params=form_data)
+
     # and back to standard test codeflow
     assert response.status_code == HTTPStatus.OK
 
@@ -138,21 +111,16 @@ def test_profile_webauthn_pkcro_route_invalid_request(client):
 def test_login_webauthn_invalid_assertion(client, webauthn_credential):
     """test login by webauthn; error hanling"""
 
-    response = client.get(url_for('auth.login_webauthn_route'))
-    assert response.status_code == HTTPStatus.FOUND
-    assert url_for('auth.login_route') in response.headers['Location']
-
-    form = client.get(url_for('auth.login_route')).forms['login_form']
-    form['username'] = webauthn_credential.user.username
-    response = form.submit()
-    assert response.status_code == HTTPStatus.FOUND
-
-    response = response.follow()
-    form = response.forms['webauthn_login_form']
-    form['assertion'] = 'invalid'
-    response = form.submit()
+    form_data = [('username', webauthn_credential.user.username), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_route'), params=form_data)
     assert response.status_code == HTTPStatus.OK
-    assert response.lxml.xpath('//script[contains(text(), "toastr[\'error\'](\'Login error during Webauthn authentication.\');")]')
+    assert response.json["webauthn_login"]
+
+    form_data = [('assertion', 'invalid'), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_webauthn_route'), params=form_data, expect_errors=True)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json["error"]["message"] == "Error during Webauthn authentication."
 
 
 def test_login_oidc_route(client, user):
@@ -164,13 +132,12 @@ def test_login_oidc_route(client, user):
     patch_oauth_redirect = patch.object(oauth.OIDC_DEFAULT, 'authorize_redirect', authorize_redirect_mock)
     patch_oauth_token = patch.object(oauth.OIDC_DEFAULT, 'authorize_access_token', authorize_access_token_mock)
     with patch_oauth_redirect, patch_oauth_token:
-        response = client.get(url_for('auth.login_oidc_route'))
+        response = client.get(url_for('auth.login_oidc_route'), expect_errors=True)
         assert response.status_code == HTTPStatus.FOUND
         assert response.headers['Location'] == 'fake_redir_to_idp'
 
         response = client.get(url_for('auth.login_oidc_callback_route'))
-        assert response.status_code == HTTPStatus.FOUND
-        assert response.headers['Location'] == url_for('index_route')
+        assert response.status_code == HTTPStatus.OK
 
     authorize_redirect_mock.assert_called_once()
     authorize_access_token_mock.assert_called_once()
@@ -183,9 +150,9 @@ def test_login_oidc_route_noexist_user(client):
 
     patch_oauth_token = patch.object(oauth.OIDC_DEFAULT, 'authorize_access_token', authorize_access_token_mock)
     with patch_oauth_token:
-        response = client.get(url_for('auth.login_oidc_callback_route'))
-        assert response.status_code == HTTPStatus.FOUND
-        assert response.headers['Location'] == url_for('auth.login_route')
+        response = client.get(url_for('auth.login_oidc_callback_route'), expect_errors=True)
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert response.json['error']['message'] == 'OIDC authentication error.'
 
     authorize_access_token_mock.assert_called_once()
 
@@ -195,13 +162,13 @@ def test_login_oidc_route_disabled_oidc(client):
 
     current_app.config['OIDC_NAME'] = None
 
-    response = client.get(url_for('auth.login_oidc_route'))
-    assert response.status_code == HTTPStatus.FOUND
-    assert response.headers['Location'] == url_for('auth.login_route')
+    response = client.get(url_for('auth.login_oidc_route'), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json['error']['message'] == 'OIDC is not enabled.'
 
-    response = client.get(url_for('auth.login_oidc_callback_route'))
-    assert response.status_code == HTTPStatus.FOUND
-    assert response.headers['Location'] == url_for('auth.login_route')
+    response = client.get(url_for('auth.login_oidc_callback_route'), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json['error']['message'] == 'OIDC is not enabled.'
 
 
 def test_login_oidc_route_handle_oidc_errors(client):
@@ -214,19 +181,13 @@ def test_login_oidc_route_handle_oidc_errors(client):
     patch_oauth_token = patch.object(oauth.OIDC_DEFAULT, 'authorize_access_token', authorize_access_token_mock)
 
     with patch_oauth_redirect, patch_oauth_token:
-        response = client.get(url_for('auth.login_oidc_route'))
-        assert response.status_code == HTTPStatus.FOUND
-        assert response.headers['Location'] == url_for('auth.login_route')
-        response = response.follow()
-        assert response.status_code == HTTPStatus.OK
-        assert response.lxml.xpath('//script[contains(text(), "toastr[\'error\'](\'OIDC Authentication error\');")]')
+        response = client.get(url_for('auth.login_oidc_route'), expect_errors=True)
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert response.json['error']['message'] == 'OIDC authentication error.'
 
-        response = client.get(url_for('auth.login_oidc_callback_route'))
-        assert response.status_code == HTTPStatus.FOUND
-        assert response.headers['Location'] == url_for('auth.login_route')
-        response = response.follow()
-        assert response.status_code == HTTPStatus.OK
-        assert response.lxml.xpath('//script[contains(text(), "toastr[\'error\'](\'OIDC Authentication error\');")]')
+        response = client.get(url_for('auth.login_oidc_callback_route'), expect_errors=True)
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+        assert response.json['error']['message'] == 'OIDC authentication error.'
 
     authorize_redirect_mock.assert_called_once()
     authorize_access_token_mock.assert_called_once()

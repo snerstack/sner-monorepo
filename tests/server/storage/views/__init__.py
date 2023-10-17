@@ -7,16 +7,12 @@ from http import HTTPStatus
 
 from flask import url_for
 
-from tests.server import get_csrf_token
-
 
 def check_annotate(clnt, route_name, test_model):
     """check annotate functionality"""
 
-    form = clnt.get(url_for(route_name, model_id=test_model.id)).form
-    form['tags'] = 'tag1\ntag2'
-    form['comment'] = 'annotated'
-    response = form.submit()
+    data = {'tags': 'tag1\ntag2', 'comment': 'annotated', 'ids-0': test_model.id}
+    response = clnt.post(url_for(route_name, model_id=test_model.id), data)
     assert response.status_code == HTTPStatus.OK
 
     model = test_model.__class__.query.get(test_model.id)
@@ -27,12 +23,12 @@ def check_annotate(clnt, route_name, test_model):
 def check_tag_multiid(clnt, route_name, test_model):
     """check multiid tagging"""
 
-    data = {'tag': 'testtag', 'action': 'set', 'ids-0': test_model.id, 'csrf_token': get_csrf_token(clnt)}
+    data = {'tag': 'testtag', 'action': 'set', 'ids-0': test_model.id}
     response = clnt.post(url_for(route_name), data)
     assert response.status_code == HTTPStatus.OK
     assert 'testtag' in test_model.__class__.query.get(test_model.id).tags
 
-    data = {'tag': 'testtag', 'action': 'unset', 'ids-0': test_model.id, 'csrf_token': get_csrf_token(clnt)}
+    data = {'tag': 'testtag', 'action': 'unset', 'ids-0': test_model.id}
     response = clnt.post(url_for(route_name), data)
     assert response.status_code == HTTPStatus.OK
     assert 'testtag' not in test_model.__class__.query.get(test_model.id).tags
@@ -45,7 +41,7 @@ def check_delete_multiid(clnt, route_name, test_model):
     """check multiid delete"""
 
     test_model_id = test_model.id
-    data = {'ids-0': test_model.id, 'csrf_token': get_csrf_token(clnt)}
+    data = {'ids-0': test_model.id}
     response = clnt.post(url_for(route_name), data)
     assert response.status_code == HTTPStatus.OK
     assert not test_model.query.get(test_model_id)

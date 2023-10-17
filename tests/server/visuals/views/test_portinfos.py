@@ -9,13 +9,6 @@ from http import HTTPStatus
 from flask import url_for
 
 
-def test_portinfos_route(cl_operator):
-    """portinfos route test"""
-
-    response = cl_operator.get(url_for('visuals.portinfos_route'))
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_portinfos_json_route(cl_operator, service):
     """portinfos json route test"""
 

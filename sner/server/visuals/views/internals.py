@@ -17,8 +17,9 @@ from sner.server.visuals.views import blueprint
 def internals_json_route():
     """show various internals"""
 
-    return render_template(
-        'visuals/internals.html',
-        metrics=get_metrics(),
-        heatmap_check=SchedulerService.heatmap_check()
-    )
+    return jsonify({
+        "exclusions": yaml.dump(current_app.config['SNER_EXCLUSIONS']),
+        "planner": yaml.dump(current_app.config['SNER_PLANNER']),
+        "metrics": get_metrics(),
+        "heatmap_check": SchedulerService.heatmap_check()
+        })

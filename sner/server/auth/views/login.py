@@ -9,21 +9,22 @@ from http import HTTPStatus
 from authlib.common.errors import AuthlibBaseError
 from fido2 import cbor
 from fido2.webauthn import AuthenticatorData, CollectedClientData
-from flask import current_app, flash, redirect, request, render_template, Response, session, url_for, jsonify
+from flask import current_app, Response, session, url_for, jsonify
 from flask_login import login_user, logout_user
 from requests.exceptions import HTTPError
 from sqlalchemy import func
 
-from sner.server.auth.core import regenerate_session, redirect_after_login, TOTPImpl, webauthn_credentials
+from sner.server.auth.core import regenerate_session, TOTPImpl, webauthn_credentials
 from sner.server.auth.forms import LoginForm, TotpCodeForm, WebauthnLoginForm
 from sner.server.auth.models import User
 from sner.server.auth.views import blueprint
 from sner.server.extensions import login_manager, oauth, webauthn
 from sner.server.forms import ButtonForm
 from sner.server.password_supervisor import PasswordSupervisor as PWS
+from sner.server.utils import error_response
 
 
-@blueprint.route('/login', methods=['GET', 'POST'])
+@blueprint.route('/login', methods=['POST'])
 def login_route():
     """login route"""
 
@@ -51,14 +52,9 @@ def login_route():
             else:
                 if user.webauthn_credentials:
                     session['webauthn_login_user_id'] = user.id
-                    return redirect(url_for('auth.login_webauthn_route', **request.args))
+                    return jsonify({"webauthn_login": True})
 
-        return jsonify({"error": {
-            "code": 401,
-            "message": "Invalid credentials."
-        }}), HTTPStatus.UNAUTHORIZED
-
-    return render_template('auth/login.html', form=form, oauth_enabled=bool(current_app.config['OIDC_NAME']))
+    return error_response(message='Invalid credentials.', code=HTTPStatus.UNAUTHORIZED)
 
 
 @blueprint.route('/logout')
@@ -72,7 +68,7 @@ def logout_route():
     return jsonify({"message": "Successfully logged out."})
 
 
-@blueprint.route('/login_totp', methods=['GET', 'POST'])
+@blueprint.route('/login_totp', methods=['POST'])
 def login_totp_route():
     """login totp route"""
 
@@ -93,12 +89,9 @@ def login_totp_route():
                         "roles": user.roles
             })
 
-        return jsonify({"error": {
-            "code": 400,
-            "message": "Invalid code."
-        }}), HTTPStatus.BAD_REQUEST
+        return error_response(message='Invalid code.', code=HTTPStatus.BAD_REQUEST)
 
-    return render_template('auth/login_totp.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/login_webauthn_pkcro', methods=['POST'])
@@ -137,13 +130,18 @@ def login_webauthn_route():
             regenerate_session()
             login_user(user)
             current_app.logger.info('auth.login webauthn')
-            return redirect_after_login()
+            return jsonify({
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "roles": user.roles
+            })
 
         except (KeyError, ValueError) as exc:
             current_app.logger.exception(exc)
-            flash('Login error during Webauthn authentication.', 'error')
+            return error_response(message='Error during Webauthn authentication.', code=HTTPStatus.BAD_REQUEST)
 
-    return render_template('auth/login_webauthn.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/login_oidc')
@@ -151,8 +149,10 @@ def login_oidc_route():
     """login oidc"""
 
     if not current_app.config['OIDC_NAME']:
-        flash('OIDC not enabled', 'error')
-        return redirect(url_for('auth.login_route'))
+        return jsonify({'error': {
+            'code': HTTPStatus.BAD_REQUEST,
+            'message': 'OIDC is not enabled.'
+        }}), HTTPStatus.BAD_REQUEST
 
     redirect_uri = current_app.config.get(
         f'{current_app.config["OIDC_NAME"]}_REDIRECT_URI',
@@ -162,8 +162,8 @@ def login_oidc_route():
         return getattr(oauth, current_app.config['OIDC_NAME']).authorize_redirect(redirect_uri)
     except (HTTPError, AuthlibBaseError) as exc:
         current_app.logger.exception(exc)
-        flash('OIDC Authentication error', 'error')
-    return redirect(url_for('auth.login_route'))
+
+    return error_response(message='OIDC authentication error.', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 @blueprint.route('/login_oidc_callback')
@@ -171,16 +171,14 @@ def login_oidc_callback_route():
     """login oidc callback"""
 
     if not current_app.config['OIDC_NAME']:
-        flash('OIDC not enabled', 'error')
-        return redirect(url_for('auth.login_route'))
+        return error_response(message='OIDC is not enabled.', code=HTTPStatus.BAD_REQUEST)
 
     try:
         token = getattr(oauth, current_app.config['OIDC_NAME']).authorize_access_token()
         userinfo = token.get('userinfo')
     except (HTTPError, AuthlibBaseError) as exc:
         current_app.logger.exception(exc)
-        flash('OIDC Authentication error', 'error')
-        return redirect(url_for('auth.login_route'))
+        return error_response(message='OIDC authentication error.', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     if userinfo and userinfo.get('email'):
         user = User.query.filter(User.active, func.lower(User.email) == userinfo.get('email').lower()).one_or_none()
@@ -188,7 +186,11 @@ def login_oidc_callback_route():
             regenerate_session()
             login_user(user)
             current_app.logger.info('auth.login oidc')
-            return redirect(url_for('index_route'))
+            return jsonify({
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "roles": user.roles
+            })
 
-    flash('OIDC Authentication failed', 'error')
-    return redirect(url_for('auth.login_route'))
+    return error_response(message='OIDC authentication error.', code=HTTPStatus.INTERNAL_SERVER_ERROR)

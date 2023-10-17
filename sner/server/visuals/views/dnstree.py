@@ -5,20 +5,12 @@ controller dnstree
 
 from http import HTTPStatus
 
-from flask import jsonify, render_template, request
+from flask import jsonify, request
 
 from sner.server.auth.core import session_required
 from sner.server.storage.models import Host
 from sner.server.utils import filter_query
 from sner.server.visuals.views import blueprint
-
-
-@blueprint.route('/dnstree')
-@session_required('operator')
-def dnstree_route():
-    """dns hierarchy tree visualization"""
-
-    return render_template('visuals/dnstree.html')
 
 
 @blueprint.route('/dnstree.json')

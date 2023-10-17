@@ -6,9 +6,10 @@ misc utils used in server
 import datetime
 import json
 from urllib.parse import urlunparse, urlparse
+from http import HTTPStatus
 
 import yaml
-from flask import current_app, request
+from flask import current_app, request, jsonify
 from lark.exceptions import LarkError
 from sqlalchemy_filters import apply_filters
 from werkzeug.exceptions import HTTPException
@@ -106,3 +107,24 @@ def filter_query(query, qfilter):
         return None
 
     return query
+
+
+def error_response(message, errors=None, code=HTTPStatus.BAD_REQUEST):
+    """Returns a JSON error response following the Google JSON Style Guide."""
+    if errors is not None:
+        return jsonify({
+            'apiVersion': "2.0",
+            'error': {
+                'code': code,
+                'message': message,
+                'errors': errors
+            }
+        }), code
+
+    return jsonify({
+        'apiVersion': "2.0",
+        'error': {
+            'code': code,
+            'message': message
+        }
+    }), code

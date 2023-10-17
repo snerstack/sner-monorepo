@@ -8,7 +8,7 @@ from datetime import datetime
 from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
-from flask import current_app, jsonify, redirect, render_template, request, Response, url_for
+from flask import current_app, jsonify, request, Response
 from sqlalchemy import cast, func, literal_column, or_, select, union
 
 from sner.server.auth.core import session_required
@@ -26,15 +26,7 @@ from sner.server.storage.core import (
 from sner.server.storage.forms import MultiidForm, TagMultiidForm, VulnMulticopyForm, VulnForm
 from sner.server.storage.models import Host, Note, Service, Vuln
 from sner.server.storage.views import blueprint
-from sner.server.utils import filter_query, relative_referrer, SnerJSONEncoder, valid_next_url
-
-
-@blueprint.route('/vuln/list')
-@session_required('operator')
-def vuln_list_route():
-    """list vulns"""
-
-    return render_template('storage/vuln/list.html')
+from sner.server.utils import filter_query, SnerJSONEncoder, error_response
 
 
 @blueprint.route('/vuln/list.json', methods=['GET', 'POST'])
@@ -66,7 +58,7 @@ def vuln_list_json_route():
     ]
     query = db.session.query().select_from(Vuln).outerjoin(Host, Vuln.host_id == Host.id).outerjoin(Service, Vuln.service_id == Service.id)
     if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
 
     vulns = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype='application/json')
@@ -80,10 +72,7 @@ def vuln_view_json_route(vuln_id):
     vuln = Vuln.query.get(vuln_id)
 
     if vuln is None:
-        return jsonify({"error": {
-            "code": 404,
-            "message": "Vuln not found."
-        }}), HTTPStatus.NOT_FOUND
+        return error_response(message='Vuln not found.', code=HTTPStatus.NOT_FOUND)
 
     return jsonify({
         "id": vuln.id,
@@ -109,7 +98,7 @@ def vuln_view_json_route(vuln_id):
     })
 
 
-@blueprint.route('/vuln/add/<model_name>/<model_id>', methods=['GET', 'POST'])
+@blueprint.route('/vuln/add/<model_name>/<model_id>', methods=['POST'])
 @session_required('operator')
 def vuln_add_route(model_name, model_id):
     """add vuln to host or service"""
@@ -122,29 +111,28 @@ def vuln_add_route(model_name, model_id):
         form.populate_obj(vuln)
         db.session.add(vuln)
         db.session.commit()
-        return redirect(url_for('storage.host_view_route', host_id=vuln.host_id))
+        return jsonify({'host_id': host.id})
 
-    return render_template('storage/vuln/addedit.html', form=form, host=host, service=service)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/vuln/edit/<vuln_id>', methods=['GET', 'POST'])
+@blueprint.route('/vuln/edit/<vuln_id>', methods=['POST'])
 @session_required('operator')
 def vuln_edit_route(vuln_id):
     """edit vuln"""
 
     vuln = Vuln.query.get(vuln_id)
-    form = VulnForm(obj=vuln, return_url=relative_referrer())
+    form = VulnForm(obj=vuln)
 
     if form.validate_on_submit():
         form.populate_obj(vuln)
         db.session.commit()
-        if valid_next_url(form.return_url.data):
-            return redirect(form.return_url.data)
+        return jsonify({'message': 'Vuln has been successfully edited.'})
 
-    return render_template('storage/vuln/addedit.html', form=form, host=vuln.host, service=vuln.service)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/vuln/delete/<vuln_id>', methods=['GET', 'POST'])
+@blueprint.route('/vuln/delete/<vuln_id>', methods=['POST'])
 def vuln_delete_route(vuln_id):
     """delete vuln"""
 
@@ -153,25 +141,16 @@ def vuln_delete_route(vuln_id):
         vuln = Vuln.query.get(vuln_id)
         db.session.delete(vuln)
         db.session.commit()
-        return redirect(url_for('storage.host_view_route', host_id=vuln.host_id))
+        return jsonify({'message': 'Vuln has been successfully deleted.'})
 
-    return render_template('button-delete.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
-@blueprint.route('/vuln/annotate/<model_id>', methods=['GET', 'POST'])
+@blueprint.route('/vuln/annotate/<model_id>', methods=['POST'])
 @session_required('operator')
 def vuln_annotate_route(model_id):
     """annotate vuln"""
     return model_annotate(Vuln, model_id)
-
-
-@blueprint.route('/vuln/view/<vuln_id>')
-@session_required('operator')
-def vuln_view_route(vuln_id):
-    """view vuln"""
-
-    vuln = Vuln.query.get(vuln_id)
-    return render_template('storage/vuln/view.html', vuln=vuln, button_form=ButtonForm())
 
 
 @blueprint.route('/vuln/delete_multiid', methods=['POST'])
@@ -183,7 +162,8 @@ def vuln_delete_multiid_route():
     if form.validate_on_submit():
         model_delete_multiid(Vuln, [tmp.data for tmp in form.ids.entries])
         return '', HTTPStatus.OK
-    return jsonify({'message': 'Invalid form submitted.'}), HTTPStatus.BAD_REQUEST
+
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/vuln/tag_multiid', methods=['POST'])
@@ -195,15 +175,8 @@ def vuln_tag_multiid_route():
     if form.validate_on_submit():
         model_tag_multiid(Vuln, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
         return '', HTTPStatus.OK
-    return jsonify({'message': 'Invalid form submitted.'}), HTTPStatus.BAD_REQUEST
 
-
-@blueprint.route('/vuln/grouped')
-@session_required('operator')
-def vuln_grouped_route():
-    """view grouped vulns"""
-
-    return render_template('storage/vuln/grouped.html')
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/vuln/grouped.json', methods=['GET', 'POST'])
@@ -227,7 +200,7 @@ def vuln_grouped_json_route():
         .group_by(Vuln.name, Vuln.severity, vuln_tags_query.c.utags)
     )
     if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
 
     vulns = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype='application/json')
@@ -257,7 +230,7 @@ def vuln_export_route():
     )
 
 
-@blueprint.route('/vuln/multicopy/<int:vuln_id>', methods=['GET', 'POST'])
+@blueprint.route('/vuln/multicopy/<int:vuln_id>', methods=['POST'])
 @session_required('operator')
 def vuln_multicopy_route(vuln_id):
     """copu vuln"""
@@ -276,9 +249,11 @@ def vuln_multicopy_route(vuln_id):
         db.session.commit()
 
         filter_string = 'Vuln.id in ' + json.dumps([vuln_id] + [x.id for x in new_vulns])
-        return redirect(url_for('storage.vuln_list_route', filter=filter_string))
+        return jsonify({
+            "filter_string": filter_string
+        })
 
-    return render_template('storage/vuln/multicopy.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/vuln/multicopy/<int:vuln_id>.json', methods=['POST'])
@@ -303,11 +278,7 @@ def vuln_multicopy_json_route(vuln_id):
             "new_vulns": json.dumps([vuln_id] + [x.id for x in new_vulns])
         })
 
-    return jsonify({
-        "error": {
-            "code": HTTPStatus.BAD_REQUEST,
-        }
-    }), HTTPStatus.BAD_REQUEST
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/vuln/multicopy_endpoints.json', methods=['GET', 'POST'])
