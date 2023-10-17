@@ -11,7 +11,6 @@ from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
-from sner.server.forms import ButtonForm
 from sner.server.scheduler.core import QueueManager
 from sner.server.scheduler.forms import QueueEnqueueForm, QueueForm
 from sner.server.scheduler.models import Job, Queue, Target
@@ -118,13 +117,8 @@ def queue_enqueue_route(queue_id):
 def queue_flush_route(queue_id):
     """queue flush; flush all targets from queue"""
 
-    form = ButtonForm()
-
-    if form.validate_on_submit():
-        QueueManager.flush(Queue.query.get(queue_id))
-        return jsonify({'message': 'Queue has been successfully flushed.'})
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    QueueManager.flush(Queue.query.get(queue_id))
+    return jsonify({'message': 'Queue has been successfully flushed.'})
 
 
 @blueprint.route('/queue/prune/<queue_id>', methods=['POST'])
@@ -132,16 +126,11 @@ def queue_flush_route(queue_id):
 def queue_prune_route(queue_id):
     """queue prune; delete all queue jobs"""
 
-    form = ButtonForm()
-
-    if form.validate_on_submit():
-        try:
-            QueueManager.prune(Queue.query.get(queue_id))
-            return jsonify({'message': 'Queue has been successfully pruned.'})
-        except RuntimeError as exc:
-            return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    try:
+        QueueManager.prune(Queue.query.get(queue_id))
+        return jsonify({'message': 'Queue has been successfully pruned.'})
+    except RuntimeError as exc:
+        return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 @blueprint.route('/queue/delete/<queue_id>', methods=['POST'])
@@ -149,13 +138,9 @@ def queue_prune_route(queue_id):
 def queue_delete_route(queue_id):
     """queue delete"""
 
-    form = ButtonForm()
+    try:
+        QueueManager.delete(Queue.query.get(queue_id))
+        return jsonify({'message': 'Queue has been successfully deleted.'})
+    except RuntimeError as exc:
+        return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    if form.validate_on_submit():
-        try:
-            QueueManager.delete(Queue.query.get(queue_id))
-            return jsonify({'message': 'Queue has been successfully deleted.'})
-        except RuntimeError as exc:
-            return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)

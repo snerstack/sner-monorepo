@@ -13,7 +13,6 @@ from sqlalchemy import cast, func, literal_column, or_, select, union
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
-from sner.server.forms import ButtonForm
 from sner.server.storage.core import (
     model_annotate,
     filtered_vuln_tags_query,
@@ -136,14 +135,10 @@ def vuln_edit_route(vuln_id):
 def vuln_delete_route(vuln_id):
     """delete vuln"""
 
-    form = ButtonForm()
-    if form.validate_on_submit():
-        vuln = Vuln.query.get(vuln_id)
-        db.session.delete(vuln)
-        db.session.commit()
-        return jsonify({'message': 'Vuln has been successfully deleted.'})
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    vuln = Vuln.query.get(vuln_id)
+    db.session.delete(vuln)
+    db.session.commit()
+    return jsonify({'message': 'Vuln has been successfully deleted.'})
 
 
 @blueprint.route('/vuln/annotate/<model_id>', methods=['POST'])
@@ -228,32 +223,6 @@ def vuln_export_route():
         mimetype='text/csv',
         headers={'Content-Disposition': f'attachment; filename=export-{datetime.now().isoformat()}.csv'}
     )
-
-
-@blueprint.route('/vuln/multicopy/<int:vuln_id>', methods=['POST'])
-@session_required('operator')
-def vuln_multicopy_route(vuln_id):
-    """copu vuln"""
-
-    vuln = Vuln.query.get(vuln_id)
-    form = VulnMulticopyForm(obj=vuln)
-
-    if form.validate_on_submit():
-        new_vulns = []
-        for endpoint in form.endpoints.data:
-            vuln = Vuln()
-            form.populate_obj(vuln)
-            vuln.update(endpoint)
-            db.session.add(vuln)
-            new_vulns.append(vuln)
-        db.session.commit()
-
-        filter_string = 'Vuln.id in ' + json.dumps([vuln_id] + [x.id for x in new_vulns])
-        return jsonify({
-            "filter_string": filter_string
-        })
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/vuln/multicopy/<int:vuln_id>.json', methods=['POST'])

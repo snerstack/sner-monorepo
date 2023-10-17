@@ -13,7 +13,6 @@ from sqlalchemy.dialects import postgresql
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
-from sner.server.forms import ButtonForm
 from sner.server.storage.core import model_annotate, model_delete_multiid, model_tag_multiid
 from sner.server.storage.forms import MultiidForm, ServiceForm, TagMultiidForm
 from sner.server.storage.models import Host, Service
@@ -124,15 +123,10 @@ def service_edit_route(service_id):
 def service_delete_route(service_id):
     """delete service"""
 
-    form = ButtonForm()
-
-    if form.validate_on_submit():
-        service = Service.query.get(service_id)
-        db.session.delete(service)
-        db.session.commit()
-        return jsonify({'message': 'Service has been successfully deleted.'})
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    service = Service.query.get(service_id)
+    db.session.delete(service)
+    db.session.commit()
+    return jsonify({'message': 'Service has been successfully deleted.'})
 
 
 @blueprint.route('/service/annotate/<model_id>', methods=['POST'])

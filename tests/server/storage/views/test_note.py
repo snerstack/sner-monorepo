@@ -71,6 +71,38 @@ def test_note_delete_route(cl_operator, note):
     assert not Note.query.get(note.id)
 
 
+def test_note_view_json_route(cl_operator, note):
+    """note view json route test"""
+
+    response = cl_operator.get(url_for('storage.note_view_json_route', note_id=note.id))
+    assert response.status_code == HTTPStatus.OK
+    assert response.json['id'] == 1
+    assert response.json['hostname'] == 'localhost.localdomain'
+
+
+def test_note_invalid_add_request(cl_operator, host, service, note_factory):
+    """note invalid add request"""
+
+    anote = note_factory.build(host=host, service=service)
+
+    response = cl_operator.post(url_for('storage.note_add_route', model_name='service', model_id=anote.service.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_note_invalid_edit_request(cl_operator, note):
+    """note invalid edit request"""
+
+    response = cl_operator.post(url_for('storage.note_edit_route', note_id=note.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_note_invalid_view_request(cl_operator):
+    """note invalid view request"""
+
+    response = cl_operator.get(url_for('storage.note_view_json_route', note_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_note_annotate_route(cl_operator, note):
     """note annotate route test"""
 

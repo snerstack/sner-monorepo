@@ -71,6 +71,18 @@ def test_host_delete_route(cl_operator, host):
 
     assert not Host.query.get(host.id)
 
+def test_host_invalid_form_requests(cl_operator, host):
+    """host invalid requests test"""
+
+    response = cl_operator.post(url_for('storage.host_add_route'), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    response = cl_operator.post(url_for('storage.host_edit_route', host_id=host.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    response = cl_operator.get(url_for('storage.host_view_json_route', host_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
 
 def test_host_annotate_route(cl_operator, host):
     """host annotate route test"""

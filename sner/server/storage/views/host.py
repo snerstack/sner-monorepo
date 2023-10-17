@@ -12,7 +12,6 @@ from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
-from sner.server.forms import ButtonForm
 from sner.server.storage.core import model_annotate, model_delete_multiid, model_tag_multiid
 from sner.server.storage.forms import HostForm, MultiidForm, TagMultiidForm
 from sner.server.storage.models import Host, Note, Service, Vuln
@@ -93,14 +92,9 @@ def host_edit_route(host_id):
 def host_delete_route(host_id):
     """delete host"""
 
-    form = ButtonForm()
-
-    if form.validate_on_submit():
-        db.session.delete(Host.query.get(host_id))
-        db.session.commit()
-        return jsonify({'message': 'Host has been successfully deleted.'})
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    db.session.delete(Host.query.get(host_id))
+    db.session.commit()
+    return jsonify({'message': 'Host has been successfully deleted.'})
 
 
 @blueprint.route('/host/annotate/<model_id>', methods=['GET', 'POST'])

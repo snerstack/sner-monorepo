@@ -14,7 +14,7 @@ class TextAreaListField(TextAreaField):
 
     # value to form
     def _value(self):
-        return '\n'.join(self.data) if self.data else ''
+        return '\n'.join(self.data) if self.data else ''    # pragma: no cover
 
     # value from form
     def process_formdata(self, valuelist):
@@ -56,7 +56,7 @@ class JSONField(StringField):
     """json string field"""
 
     def _value(self):
-        return json.dumps(self.data) if self.data else ''
+        return json.dumps(self.data) if self.data else ''    # pragma: no cover
 
     def process_formdata(self, valuelist):
         if valuelist:

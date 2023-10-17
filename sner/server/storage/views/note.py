@@ -12,7 +12,6 @@ from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
-from sner.server.forms import ButtonForm
 from sner.server.storage.core import model_annotate, get_related_models, model_delete_multiid, model_tag_multiid
 from sner.server.storage.forms import MultiidForm, NoteForm, TagMultiidForm
 from sner.server.storage.models import Host, Note, Service
@@ -121,14 +120,10 @@ def note_edit_route(note_id):
 def note_delete_route(note_id):
     """delete note"""
 
-    form = ButtonForm()
-    if form.validate_on_submit():
-        note = Note.query.get(note_id)
-        db.session.delete(note)
-        db.session.commit()
-        return jsonify({'message': 'Note has been successfully deleted.'})
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    note = Note.query.get(note_id)
+    db.session.delete(note)
+    db.session.commit()
+    return jsonify({'message': 'Note has been successfully deleted.'})
 
 
 @blueprint.route('/note/annotate/<model_id>', methods=['POST'])

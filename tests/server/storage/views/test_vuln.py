@@ -73,6 +73,36 @@ def test_vuln_delete_route(cl_operator, vuln):
     assert not Vuln.query.get(vuln.id)
 
 
+def test_vuln_invalid_add_request(cl_operator, host, service, vuln_factory):
+    """vuln invalid add request"""
+
+    avuln = vuln_factory.build(host=host, service=service)
+
+    response = cl_operator.post(url_for('storage.vuln_add_route', model_name='service', model_id=avuln.service.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_vuln_invalid_edit_request(cl_operator, vuln):
+    """vuln invalid edit request"""
+
+    response = cl_operator.post(url_for('storage.vuln_edit_route', vuln_id=vuln.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_vuln_invalid_view_request(cl_operator):
+    """vuln invalid view request"""
+
+    response = cl_operator.get(url_for('storage.vuln_view_json_route', vuln_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_vuln_invalid_multicopy_json_request(cl_operator, vuln):
+    """vuln invalid multicopy json request"""
+
+    response = cl_operator.post(url_for('storage.vuln_multicopy_json_route', vuln_id=vuln.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
 def test_vuln_annotate_route(cl_operator, vuln):
     """vuln annotate route test"""
 
@@ -148,13 +178,13 @@ def test_vuln_export_route(cl_operator, vuln):
     assert f',"{vuln.name}",' in response.body.decode('utf-8')
 
 
-def test_vuln_multicopy_route(cl_operator, vuln, host_factory):
+def test_vuln_multicopy_json_route(cl_operator, vuln, host_factory):
     """vuln multicopy route test"""
 
     host = host_factory.create()
 
     form_data = [('name', vuln.name), ('severity', vuln.severity), ('endpoints', json.dumps([{"host_id": host.id}]))]
-    response = cl_operator.post(url_for('storage.vuln_multicopy_route', vuln_id=vuln.id), params=form_data)
+    response = cl_operator.post(url_for('storage.vuln_multicopy_json_route', vuln_id=vuln.id), params=form_data)
 
     assert response.status_code == HTTPStatus.OK
     assert Vuln.query.filter(Vuln.name == vuln.name).count() == 2

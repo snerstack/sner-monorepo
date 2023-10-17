@@ -154,3 +154,11 @@ def test_queue_delete_route_runningjob(cl_operator, job):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
     assert len(Job.query.filter(Job.queue_id == job.queue_id).all()) == 1
+
+
+def test_queue_invalid_form_requests(cl_operator, queue):
+    response = cl_operator.post(url_for('scheduler.queue_edit_route', queue_id=queue.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    response = cl_operator.post(url_for('scheduler.queue_enqueue_route', queue_id=queue.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST

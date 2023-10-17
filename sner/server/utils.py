@@ -32,15 +32,6 @@ class SnerJSONEncoder(json.JSONEncoder):
         return super().default(o)  # pragma: no cover  ; no such elements
 
 
-def relative_referrer():
-    """makes relative relative from absolute"""
-
-    if request.referrer:
-        url = urlparse(request.referrer)
-        return urlunparse(('', '', url.path, url.params, url.query, url.fragment))
-    return None
-
-
 def valid_next_url(nexturl):
     """validates next= and return_url= urls"""
 

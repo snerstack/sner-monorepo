@@ -3,16 +3,10 @@
 visuals views
 """
 
-from flask import Blueprint, render_template
+from flask import Blueprint
 
 
 blueprint = Blueprint('visuals', __name__)  # pylint: disable=invalid-name
-
-
-@blueprint.route('/')
-def index_route():
-    """visuals index"""
-    return render_template('visuals/index.html')
 
 
 import sner.server.visuals.views.dnstree  # noqa: E402  pylint: disable=wrong-import-position

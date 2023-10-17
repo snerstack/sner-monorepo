@@ -12,8 +12,19 @@ from sner.server.auth.models import User
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 
 
+def test_user_me_route(cl_user, user):
+    """user me route test"""
+    response = cl_user.get(url_for('auth.user_me_route'))
+    assert response.status_code == HTTPStatus.OK
+    assert response.json['email'] == user.email
+
+def test_user_me_unauthenticated(client):
+    """user me route unauthenticated test"""
+    response = client.get(url_for('auth.user_me_route'), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+
 def test_user_list_json_route(cl_admin, user):
-    """user list_json route test"""
+    """user list json route test"""
 
     response = cl_admin.post(url_for('auth.user_list_json_route'), {'draw': 1, 'start': 0, 'length': 1, 'search[value]': user.username})
     assert response.status_code == HTTPStatus.OK
@@ -50,6 +61,12 @@ def test_user_add_route(cl_admin, user_factory):
     assert tuser.roles == auser.roles
 
 
+def test_user_invalid_add_route(cl_admin):
+    """user add invalid route test"""
+    response = cl_admin.post(url_for('auth.user_add_route'), params=[('new_password', 'psw')], expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
 def test_user_edit_route(cl_admin, user):
     """user edit route test"""
 
@@ -67,6 +84,12 @@ def test_user_edit_route(cl_admin, user):
     assert PWS.compare(PWS.hash(password, PWS.get_salt(tuser.password)), tuser.password)
     assert not user.roles
     assert user.api_networks == ['127.0.0.0/23', '192.0.2.0/24', '2001:db8::/48']
+
+
+def test_user_invalid_edit_route(cl_admin, user):
+    """user edit invalid route test"""
+    response = cl_admin.post(url_for('auth.user_edit_route', user_id=user.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_user_delete_route(cl_admin, user):

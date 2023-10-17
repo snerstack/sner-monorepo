@@ -82,6 +82,19 @@ def test_service_delete_route(cl_operator, service):
     assert not Service.query.get(service.id)
 
 
+def test_service_invalid_form_requests(cl_operator, service):
+    """service invalid requests test"""
+
+    response = cl_operator.post(url_for('storage.service_add_route', host_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    response = cl_operator.post(url_for('storage.service_edit_route', service_id=service.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    response = cl_operator.get(url_for('storage.service_view_json_route', service_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_service_annotate_route(cl_operator, service):
     """service annotate route test"""
 

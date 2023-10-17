@@ -32,14 +32,6 @@ def regenerate_session():
         delattr(g, 'csrf_token')
 
 
-def redirect_after_login():
-    """handle next after successfull login"""
-
-    if ('next' in request.args) and valid_next_url(request.args.get('next')):
-        return redirect(request.args.get('next'))
-    return redirect(url_for('index_route'))
-
-
 @login_manager.user_loader
 def user_loader(user_id):
     """flask_login user loader; user loaded from session"""

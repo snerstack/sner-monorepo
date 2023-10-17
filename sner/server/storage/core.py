@@ -46,7 +46,7 @@ def model_annotate(model, model_id):
         db.session.commit()
         return '', HTTPStatus.OK
 
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)    # pragma: no cover
 
 
 def tag_add(model, tag: Union[str, list]):

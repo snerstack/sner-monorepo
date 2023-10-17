@@ -13,7 +13,6 @@ from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
-from sner.server.forms import ButtonForm
 from sner.server.scheduler.core import JobManager
 from sner.server.scheduler.models import Job, Queue
 from sner.server.scheduler.views import blueprint
@@ -48,16 +47,11 @@ def job_list_json_route():
 def job_delete_route(job_id):
     """delete job"""
 
-    form = ButtonForm()
-
-    if form.validate_on_submit():
-        try:
-            JobManager.delete(Job.query.get(job_id))
-            return jsonify({'message': 'Job has been successfully deleted.'})
-        except RuntimeError as exc:
-            return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    try:
+        JobManager.delete(Job.query.get(job_id))
+        return jsonify({'message': 'Job has been successfully deleted.'})
+    except RuntimeError as exc:
+        return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 @blueprint.route('/job/reconcile/<job_id>', methods=['POST'])
@@ -65,15 +59,11 @@ def job_delete_route(job_id):
 def job_reconcile_route(job_id):
     """reconcile job"""
 
-    form = ButtonForm()
-    if form.validate_on_submit():
-        try:
-            JobManager.reconcile(Job.query.get(job_id))
-            return jsonify({'message': 'Job has been successfully reconciled.'})
-        except RuntimeError as exc:
-            return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    try:
+        JobManager.reconcile(Job.query.get(job_id))
+        return jsonify({'message': 'Job has been successfully reconciled.'})
+    except RuntimeError as exc:
+        return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 @blueprint.route('/job/repeat/<job_id>', methods=['POST'])
@@ -81,10 +71,5 @@ def job_reconcile_route(job_id):
 def job_repeat_route(job_id):
     """repeat job; requeues targets into same queue, used for rescheduling of failed jobs"""
 
-    form = ButtonForm()
-
-    if form.validate_on_submit():
-        JobManager.repeat(Job.query.get(job_id))
-        return jsonify({'message': 'Job has been successfully repeated.'})
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    JobManager.repeat(Job.query.get(job_id))
+    return jsonify({'message': 'Job has been successfully repeated.'})
