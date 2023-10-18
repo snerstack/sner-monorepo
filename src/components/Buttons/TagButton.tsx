@@ -6,6 +6,7 @@ import { getSelectedIdsFormData, tagAction } from '@/lib/sner/storage'
 const TagButton = ({ tag, url, tableId, id }: { tag: string; url: string; tableId?: string; id?: number }) => {
   return (
     <a
+      data-testid="tag-btn"
       className="btn btn-outline-secondary abutton_tag_multiid"
       href="#"
       title={`add tag ${tag}`}

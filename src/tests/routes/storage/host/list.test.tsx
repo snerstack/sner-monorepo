@@ -65,6 +65,36 @@ describe('Host list page', () => {
     })
   })
 
+  it('filters results', async () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    const filterForm = screen.getByTestId('filter-form')
+    const filterInput = filterForm.querySelector('input')!
+    const filterButton = screen.getByTestId('filter-btn')
+
+    fireEvent.change(filterInput, { target: { value: 'Host.address=="127.4.4.4"' } })
+    fireEvent.click(filterButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('127.4.4.4')).toBeInTheDocument()
+      expect(screen.queryByText('127.3.3.3')).toBeNull()
+      expect(screen.queryByText('127.128.129.130')).toBeNull()
+    })
+
+    const unfilterButton = screen.getByTestId('unfilter-btn')
+
+    fireEvent.click(unfilterButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('127.4.4.4')).toBeInTheDocument()
+      expect(screen.getByText('127.3.3.3')).toBeInTheDocument()
+      expect(screen.getByText('127.128.129.130')).toBeInTheDocument()
+    })
+  })
+
   it('annotates host', async () => {
     renderWithProviders({
       element: <HostListPage />,

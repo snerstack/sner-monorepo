@@ -13,13 +13,18 @@ const FilterForm = ({ url }: { url: string }) => {
   }, [searchParams])
 
   return (
-    <form id="filter_form" className={clsx('form filter_bar collapse', searchParams.has('filter') && 'show')}>
+    <form
+      id="filter_form"
+      className={clsx('form filter_bar collapse', searchParams.has('filter') && 'show')}
+      data-testid="filter-form"
+    >
       <div className="input-group flex-fill">
         <div className="input-group-prepend">
           <a className="btn btn-outline-secondary disabled">
             <i className="fas fa-filter"></i>
           </a>
           <Link
+            data-testid="unfilter-btn"
             className="btn btn-info"
             to={url}
             onClick={() =>
@@ -42,6 +47,7 @@ const FilterForm = ({ url }: { url: string }) => {
         />
         <div className="input-group-append">
           <a
+            data-testid="filter-btn"
             className="btn btn-outline-secondary"
             onClick={() => {
               setSearchParams((params) => {

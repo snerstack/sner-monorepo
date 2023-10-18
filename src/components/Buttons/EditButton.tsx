@@ -10,6 +10,7 @@ const EditButton = ({
 }) => {
   return (
     <a
+      data-testid="edit-btn"
       className="btn btn-outline-secondary"
       href={url}
       onClick={(e) => {

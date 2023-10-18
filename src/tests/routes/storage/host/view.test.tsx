@@ -1,7 +1,9 @@
 import HostViewPage from '@/routes/storage/host/view'
 import VulnViewPage from '@/routes/storage/vuln/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import httpClient from '@/lib/httpClient'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
@@ -34,6 +36,26 @@ describe('Host view page', () => {
       expect(listItems.includes('Host')).toBeTruthy()
       expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
     })
+  })
+
+  it('sets tag', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[0])
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
+    const tagButton = screen.getAllByTestId('tag-btn')[0]
+
+    fireEvent.click(tagButton)
   })
 
   it('views vuln', async () => {

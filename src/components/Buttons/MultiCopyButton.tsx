@@ -10,6 +10,7 @@ const MultiCopyButton = ({
 }) => {
   return (
     <a
+      data-testid="multicopy-btn"
       className="btn btn-outline-secondary"
       href={url}
       onClick={(e) => {

@@ -8,6 +8,7 @@ const TagsDropdownButton = ({ tags, url, tableId }: { tags: string[]; url: strin
     <div className="dropdown-menu">
       {tags.map((tag) => (
         <a
+          data-testid="tag-dropdown-btn"
           className="dropdown-item striked"
           href="#"
           title={`remove tag ${tag}`}

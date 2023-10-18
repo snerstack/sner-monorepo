@@ -1,5 +1,6 @@
 import HostViewPage from '@/routes/storage/host/view'
 import VulnListPage from '@/routes/storage/vuln/list'
+import VulnMulticopyPage from '@/routes/storage/vuln/multicopy'
 import VulnViewPage from '@/routes/storage/vuln/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
@@ -117,6 +118,48 @@ describe('Vuln list page', () => {
     })
   })
 
+  it('redirects to multicopy page', async () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+      routes: [
+        {
+          element: <VulnMulticopyPage />,
+          path: '/storage/vuln/multicopy/1',
+          loader: () =>
+            Promise.resolve({
+              address: '127.4.4.4',
+              comment: null,
+              created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+              data: 'agg vuln data',
+              descr: 'aggregable vuln description',
+              host_id: 1,
+              hostname: 'testhost.testdomain.test<script>alert(1);</script>',
+              id: 1,
+              import_time: null,
+              modified: 'Tue, 29 Aug 2023 14:08:10 GMT',
+              name: 'aggregable vuln',
+              refs: [],
+              rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
+              service_id: null,
+              service_port: null,
+              service_proto: null,
+              severity: 'high',
+              tags: ['reportdata'],
+              via_target: null,
+              xtype: 'x.agg',
+            }),
+        },
+      ],
+    })
+
+    await waitFor(() => {
+      const multicopyButton = screen.getAllByTestId('multicopy-btn')[0]
+
+      fireEvent.click(multicopyButton)
+    })
+  })
+
   it('annotates vuln', async () => {
     renderWithProviders({
       element: <VulnListPage />,
@@ -149,6 +192,44 @@ describe('Vuln list page', () => {
     })
   })
 
+  it('sets tag', async () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+    })
+
+    await waitFor(() => {
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[0])
+    })
+
+    const tagButton = screen.getAllByTestId('tag-btn')[0]
+
+    fireEvent.click(tagButton)
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+  })
+
+  it('unsets tag', async () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+    })
+
+    await waitFor(() => {
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[0])
+    })
+
+    const tagButton = screen.getAllByTestId('tag-dropdown-btn')[0]
+
+    fireEvent.click(tagButton)
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+  })
+
   it('sets multiple tags', async () => {
     renderWithProviders({
       element: <VulnListPage />,
@@ -161,11 +242,11 @@ describe('Vuln list page', () => {
       fireEvent.click(cells[0])
     })
 
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
     const tagMultipleButton = screen.getByTestId('vuln_set_multiple_tag')
 
     fireEvent.click(tagMultipleButton)
-
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
 
     await waitFor(() => {
       expect(screen.getByText('Tag multiple items')).toBeInTheDocument()

@@ -1,5 +1,6 @@
 import HostViewPage from '@/routes/storage/host/view'
 import NoteListPage from '@/routes/storage/note/list'
+import NoteViewPage from '@/routes/storage/note/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -65,6 +66,43 @@ describe('Note list page', () => {
       const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
       expect(listItems.includes('Host')).toBeTruthy()
       expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
+    })
+  })
+
+  it('redirects to view page', async () => {
+    renderWithProviders({
+      element: <NoteListPage />,
+      path: '/storage/note/list',
+      routes: [
+        {
+          element: <NoteViewPage />,
+          path: '/storage/note/view/1',
+          loader: () =>
+            Promise.resolve({
+              address: '127.4.4.4',
+              comment: null,
+              created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+              data: '["cpe:/o:microsoft:windows_nt:3.5.1"]',
+              host_id: 1,
+              hostname: 'testhost.testdomain.test<script>alert(1);</script>',
+              id: 1,
+              import_time: null,
+              modified: 'Thu, 31 Aug 2023 17:50:08 GMT',
+              service_id: 1,
+              service_port: 12345,
+              service_proto: 'tcp',
+              tags: ['report', 'falsepositive', 'info'],
+              via_target: null,
+              xtype: 'deb',
+            }),
+        },
+      ],
+    })
+
+    await waitFor(() => {
+      const viewButton = screen.getAllByTestId('view-btn')[0]
+
+      fireEvent.click(viewButton)
     })
   })
 

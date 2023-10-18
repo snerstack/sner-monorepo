@@ -45,8 +45,8 @@ describe('User add page', () => {
 
     fireEvent.change(usernameInput, { target: { value: 'test_user' } })
     fireEvent.change(passwordInput, { target: { value: 'test_password' } })
-    fireEvent.change(userRoleCheckbox, { target: { checked: true } })
-    fireEvent.change(adminRoleCheckbox, { target: { checked: true } })
+    fireEvent.click(userRoleCheckbox)
+    fireEvent.click(adminRoleCheckbox)
     fireEvent.click(addButton)
 
     await waitFor(() => {

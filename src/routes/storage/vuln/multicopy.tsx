@@ -48,7 +48,7 @@ const VulnMulticopyPage = () => {
 
     try {
       const resp = await httpClient.post<{ new_vulns: string }>(
-        import.meta.env.VITE_SERVER_URL + `/storage/vuln/multicopy/${vuln.id}`,
+        import.meta.env.VITE_SERVER_URL + `/storage/vuln/multicopy/${vuln.id}.json`,
         formData,
       )
 

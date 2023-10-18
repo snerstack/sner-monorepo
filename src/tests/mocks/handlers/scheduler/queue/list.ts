@@ -7,7 +7,7 @@ const data = {
       active: true,
       config: 'module: six_dns_discover\ndelay: 1\n',
       group_size: 1000,
-      id: 2,
+      id: 1,
       name: 'sner six_dns_discover',
       nr_jobs: 5,
       nr_targets: 9,

@@ -5,6 +5,7 @@ import httpClient from '@/lib/httpClient'
 const DeleteButton = ({ url }: { url: string }) => {
   return (
     <a
+      data-testid="delete-btn"
       className="btn btn-outline-secondary"
       href={url}
       onClick={(e) => {
