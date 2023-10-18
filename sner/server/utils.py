@@ -5,11 +5,11 @@ misc utils used in server
 
 import datetime
 import json
-from urllib.parse import urlunparse, urlparse
+from urllib.parse import urlparse
 from http import HTTPStatus
 
 import yaml
-from flask import current_app, request, jsonify
+from flask import current_app, jsonify
 from lark.exceptions import LarkError
 from sqlalchemy_filters import apply_filters
 from werkzeug.exceptions import HTTPException

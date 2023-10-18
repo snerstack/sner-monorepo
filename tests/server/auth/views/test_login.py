@@ -58,18 +58,29 @@ def test_login_totp(client, user_factory):
     secret = TOTPImpl.random_base32()
     user = user_factory(password=PWS.hash(password), totp=secret)
 
-    form_data = [('username', user.username), ('password', password), ('csrf_token', get_csrf_token(client))]
+    form_data = [('username', user.username), ('password', password)]
     response = client.post(url_for('auth.login_route'), params=form_data)
     assert response.status_code == HTTPStatus.OK
 
-    form_data = [('code', 'invalid'), ('csrf_token', get_csrf_token(client))]
+    form_data = [('code', 'invalid')]
     response = client.post(url_for('auth.login_totp_route'), params=form_data, expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json["error"]["message"] == "Invalid code."
 
-    form_data = [('code', TOTPImpl(secret).current_code()), ('csrf_token', get_csrf_token(client))]
+    response = client.post(url_for('auth.login_totp_route'), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+    form_data = [('code', TOTPImpl(secret).current_code())]
     response = client.post(url_for('auth.login_totp_route'), params=form_data)
     assert response.status_code == HTTPStatus.OK
+
+
+def test_login_totp_unauthorized(client):
+    """test unauthorized login totp"""
+
+    form_data = [('code', 'invalid')]
+    response = client.post(url_for('auth.login_totp_route'), params=form_data, expect_errors=True)
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
 def test_login_webauthn(client, webauthn_credential_factory):
@@ -79,13 +90,13 @@ def test_login_webauthn(client, webauthn_credential_factory):
     device.cred_init(webauthn.rp.id, b'randomhandle')
     wncred = webauthn_credential_factory.create(initialized_device=device)
 
-    form_data = [('username', wncred.user.username), ('csrf_token', get_csrf_token(client))]
+    form_data = [('username', wncred.user.username)]
     response = client.post(url_for('auth.login_route'), params=form_data)
     assert response.status_code == HTTPStatus.OK
     assert response.json["webauthn_login"]
 
     # some javascript code muset be emulated
-    pkcro = cbor.decode(b64decode(client.post(url_for('auth.login_webauthn_pkcro_route'), {'csrf_token': get_csrf_token(client)}).body))
+    pkcro = cbor.decode(b64decode(client.post(url_for('auth.login_webauthn_pkcro_route')).body))
     assertion = device.get(pkcro, f'https://{webauthn.rp.id}')
     assertion_data = {
         'credentialRawId': assertion['rawId'],
@@ -94,11 +105,18 @@ def test_login_webauthn(client, webauthn_credential_factory):
         'signature': assertion['response']['signature'],
         'userHandle': assertion['response']['userHandle']}
 
-    form_data = [('assertion', b64encode(cbor.encode(assertion_data))), ('csrf_token', get_csrf_token(client))]
+    form_data = [('assertion', b64encode(cbor.encode(assertion_data)))]
     response = client.post(url_for('auth.login_webauthn_route'), params=form_data)
 
     # and back to standard test codeflow
     assert response.status_code == HTTPStatus.OK
+
+
+def test_login_webauthn_unauthorized(client):
+    """test unauthorized login webauthn"""
+
+    response = client.post(url_for('auth.login_webauthn_route'), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
 def test_profile_webauthn_pkcro_route_invalid_request(client):

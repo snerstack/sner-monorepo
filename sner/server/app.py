@@ -10,7 +10,7 @@ import os
 import sys
 
 import flask.cli
-from flask import Flask, has_request_context, render_template, request
+from flask import Flask, has_request_context, request, render_template
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf, CSRFProtect
 from flask_cors import CORS
@@ -23,7 +23,6 @@ from sner.server.extensions import api, db, jsglue, migrate, login_manager, oaut
 from sner.server.parser import load_parser_plugins
 from sner.server.scheduler.core import ExclMatcher
 from sner.server.sessions import FilesystemSessionInterface
-from sner.server.utils import yaml_dump
 from sner.version import __version__
 
 # blueprints and commands
@@ -263,11 +262,6 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     def from_json(data):
         """parse json"""
         return json.loads(data)
-
-    @app.template_filter('yaml_dump')
-    def yamldump(data):
-        """parse json"""
-        return yaml_dump(data)
 
     app.add_template_global(name='sner_version', f=__version__)
 

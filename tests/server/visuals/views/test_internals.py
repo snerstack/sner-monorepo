@@ -3,7 +3,6 @@
 visuals.views.internals tests
 """
 
-import json
 from http import HTTPStatus
 
 from flask import url_for
@@ -15,4 +14,3 @@ def test_internals_json_route(cl_admin):
     response = cl_admin.get(url_for('visuals.internals_json_route'))
     assert response.status_code == HTTPStatus.OK
     assert response.json['exclusions'] == '- - regex\n  - ^tcp://.*:22$\n- - network\n  - 127.66.66.0/26\n'
-

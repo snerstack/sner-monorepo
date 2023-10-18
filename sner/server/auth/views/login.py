@@ -18,7 +18,7 @@ from sner.server.auth.core import regenerate_session, TOTPImpl, webauthn_credent
 from sner.server.auth.forms import LoginForm, TotpCodeForm, WebauthnLoginForm
 from sner.server.auth.models import User
 from sner.server.auth.views import blueprint
-from sner.server.extensions import login_manager, oauth, webauthn
+from sner.server.extensions import oauth, webauthn
 from sner.server.forms import ButtonForm
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 from sner.server.utils import error_response
@@ -74,7 +74,7 @@ def login_totp_route():
 
     user = User.query.filter(User.active, User.id == session.get('totp_login_user_id')).one_or_none()
     if not user:
-        return login_manager.unauthorized()
+        return error_response(message='Unauthorized.', code=HTTPStatus.UNAUTHORIZED)
 
     form = TotpCodeForm()
     if form.validate_on_submit():
@@ -114,7 +114,7 @@ def login_webauthn_route():
 
     user = User.query.filter(User.active, User.id == session.get('webauthn_login_user_id')).one_or_none()
     if not user:
-        return login_manager.unauthorized()
+        return error_response(message='Unauthorized.', code=HTTPStatus.UNAUTHORIZED)
 
     form = WebauthnLoginForm()
     if form.validate_on_submit():

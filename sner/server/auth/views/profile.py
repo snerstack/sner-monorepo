@@ -13,7 +13,7 @@ from socket import getfqdn
 from datatables import ColumnDT, DataTables
 from fido2 import cbor
 from fido2.webauthn import AttestationObject, CollectedClientData
-from flask import current_app, render_template, request, Response, session, jsonify
+from flask import current_app, request, Response, session, jsonify
 from flask_login import current_user
 from sqlalchemy import literal_column
 
@@ -22,7 +22,6 @@ from sner.server.auth.forms import TotpCodeForm, UserChangePasswordForm, Webauth
 from sner.server.auth.models import User, WebauthnCredential
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db, webauthn
-from sner.server.forms import ButtonForm
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 from sner.server.utils import SnerJSONEncoder, error_response
 
@@ -156,20 +155,15 @@ def profile_webauthn_list_json_route():
 def profile_webauthn_pkcco_route():
     """get publicKeyCredentialCreationOptions"""
 
-    form = ButtonForm()
-
-    if form.validate_on_submit():
-        user = User.query.get(current_user.id)
-        user_handle = random_string()
-        exclude_credentials = webauthn_credentials(user)
-        pkcco, state = webauthn.register_begin(
-            {'id': user_handle.encode('utf-8'), 'name': user.username, 'displayName': user.username},
-            exclude_credentials)
-        session['webauthn_register_user_handle'] = user_handle
-        session['webauthn_register_state'] = state
-        return Response(b64encode(cbor.encode(pkcco)).decode('utf-8'), mimetype='text/plain')
-
-    return error_response(message='Error', code=HTTPStatus.BAD_REQUEST)
+    user = User.query.get(current_user.id)
+    user_handle = random_string()
+    exclude_credentials = webauthn_credentials(user)
+    pkcco, state = webauthn.register_begin(
+        {'id': user_handle.encode('utf-8'), 'name': user.username, 'displayName': user.username},
+        exclude_credentials)
+    session['webauthn_register_user_handle'] = user_handle
+    session['webauthn_register_state'] = state
+    return Response(b64encode(cbor.encode(pkcco)).decode('utf-8'), mimetype='text/plain')
 
 
 @blueprint.route('/profile/webauthn/register', methods=['POST'])
@@ -200,7 +194,7 @@ def profile_webauthn_register_route():
             current_app.logger.exception(exc)
             return error_response(message="Error during registration.", code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    return render_template('auth/profile/webauthn_register.html', form=form)
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/profile/webauthn/<webauthn_id>.json')
@@ -234,15 +228,11 @@ def profile_webauthn_edit_route(webauthn_id):
 def profile_webauthn_delete_route(webauthn_id):
     """delete registered credential"""
 
-    form = ButtonForm()
-    if form.validate_on_submit():
-        db.session.delete(
-            WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one())
-        db.session.commit()
-        current_app.logger.info('auth.profile webauthn credential deleted')
-        return jsonify({'message': 'Webauthn credential has been successfully deleted.'})
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    db.session.delete(
+        WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one())
+    db.session.commit()
+    current_app.logger.info('auth.profile webauthn credential deleted')
+    return jsonify({'message': 'Webauthn credential has been successfully deleted.'})
 
 
 @blueprint.route('/profile/apikey/<action>', methods=['POST'])
@@ -250,13 +240,11 @@ def profile_webauthn_delete_route(webauthn_id):
 def profile_apikey_route(action):
     """user manage apikey for self"""
 
-    form = ButtonForm()
-    if form.validate_on_submit():
-        if action == 'generate':
-            return jsonify({"apikey": UserManager.apikey_generate(current_user)})
+    if action == 'generate':
+        return jsonify({"apikey": UserManager.apikey_generate(current_user)})
 
-        if action == 'revoke':
-            UserManager.apikey_revoke(current_user)
-            return jsonify({"message": "Apikey successfully revoked."})
+    if action == 'revoke':
+        UserManager.apikey_revoke(current_user)
+        return jsonify({"message": "Apikey successfully revoked."})
 
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return error_response(message='Bad action.', code=HTTPStatus.BAD_REQUEST)

@@ -143,4 +143,3 @@ def queue_delete_route(queue_id):
         return jsonify({'message': 'Queue has been successfully deleted.'})
     except RuntimeError as exc:
         return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
-

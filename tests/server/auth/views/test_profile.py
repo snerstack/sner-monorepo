@@ -66,6 +66,9 @@ def test_profile_totp_route_enable(cl_user):
     user = User.query.filter(User.username == 'pytest_user').one()
     assert user.totp
 
+    response = cl_user.get(url_for('auth.profile_totp_route'))
+    assert response.status_code == HTTPStatus.OK
+
 
 def test_profile_totp_route_disable(cl_user):
     """user profile disable totp"""
@@ -136,6 +139,19 @@ def test_profile_webauthn_register_route_invalid_attestation(cl_user):
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     assert response.json['error']['message'] == 'Error during registration.'
 
+    response = cl_user.post(url_for('auth.profile_webauthn_register_route'), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
+def test_profile_webauthn_route(cl_user, webauthn_credential_factory):
+    """profile webauthn credentials route test"""
+    wncred = webauthn_credential_factory.create(user=User.query.filter(User.username == 'pytest_user').one())
+
+    response = cl_user.get(url_for('auth.profile_webauthn_route', webauthn_id=wncred.id))
+    assert response.status_code == HTTPStatus.OK
+    assert response.json['id'] == 1
+    assert response.json['name'] == 'testcredential'
+
 
 def test_profile_webauthn_edit_route(cl_user, webauthn_credential_factory):
     """profile edit webauthn credentials route test"""
@@ -149,6 +165,17 @@ def test_profile_webauthn_edit_route(cl_user, webauthn_credential_factory):
     assert response.status_code == HTTPStatus.OK
 
     assert wncred.name == new_name
+
+
+def test_profile_webauthn_edit_route_invalid_request(cl_user, webauthn_credential_factory):
+    """profile invalid edit webauthn credentials route test"""
+
+    wncred = webauthn_credential_factory.create(user=User.query.filter(User.username == 'pytest_user').one())
+
+    form_data = [('name', "A"*300)]
+
+    response = cl_user.post(url_for('auth.profile_webauthn_edit_route', webauthn_id=wncred.id), params=form_data, expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
 def test_profile_webauthn_delete_route(cl_user, webauthn_credential_factory):
@@ -175,3 +202,6 @@ def test_profile_apikey_route(cl_user):
     response = cl_user.post(url_for('auth.profile_apikey_route', action='revoke'))
     assert response.status_code == HTTPStatus.OK
     assert not user.apikey
+
+    response = cl_user.post(url_for('auth.profile_apikey_route', action='invalid'), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST

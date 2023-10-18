@@ -18,10 +18,12 @@ def test_user_me_route(cl_user, user):
     assert response.status_code == HTTPStatus.OK
     assert response.json['email'] == user.email
 
+
 def test_user_me_unauthenticated(client):
     """user me route unauthenticated test"""
     response = client.get(url_for('auth.user_me_route'), expect_errors=True)
     assert response.status_code == HTTPStatus.UNAUTHORIZED
+
 
 def test_user_list_json_route(cl_admin, user):
     """user list json route test"""
@@ -49,7 +51,8 @@ def test_user_add_route(cl_admin, user_factory):
     password = PWS.generate()
     auser = user_factory.build()
 
-    form_data = [('username', auser.username), ('roles', auser.roles), ('active', auser.active), ('new_password', password)]
+    form_data = [('username', auser.username), ('roles', auser.roles), ('active', auser.active), ('new_password', password),
+                 ('api_networks', auser.api_networks)]
     response = cl_admin.post(url_for('auth.user_add_route'), params=form_data)
 
     assert response.status_code == HTTPStatus.OK
@@ -63,7 +66,7 @@ def test_user_add_route(cl_admin, user_factory):
 
 def test_user_invalid_add_route(cl_admin):
     """user add invalid route test"""
-    response = cl_admin.post(url_for('auth.user_add_route'), params=[('new_password', 'psw')], expect_errors=True)
+    response = cl_admin.post(url_for('auth.user_add_route'), params=[('new_password', 'psw'), ('api_networks', 'invalid')], expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 

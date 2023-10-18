@@ -15,13 +15,12 @@ from cryptography.hazmat.primitives.twofactor import InvalidToken as InvalidTOTP
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
 from fido2 import cbor
 from fido2.webauthn import AttestedCredentialData
-from flask import _request_ctx_stack, current_app, g, redirect, request, url_for
+from flask import _request_ctx_stack, current_app, g
 from flask_login import current_user
 
 from sner.server.auth.models import User
 from sner.server.extensions import db, login_manager
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.utils import valid_next_url
 
 
 def regenerate_session():

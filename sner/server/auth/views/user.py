@@ -116,14 +116,10 @@ def user_edit_route(user_id):
 def user_delete_route(user_id):
     """delete user"""
 
-    form = ButtonForm()
+    db.session.delete(User.query.get(user_id))
+    db.session.commit()
 
-    if form.validate_on_submit():
-        db.session.delete(User.query.get(user_id))
-        db.session.commit()
-        return jsonify({"message": "User has been successfully deleted."})
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return jsonify({"message": "User has been successfully deleted."})
 
 
 @blueprint.route('/user/apikey/<user_id>/<action>', methods=['POST'])

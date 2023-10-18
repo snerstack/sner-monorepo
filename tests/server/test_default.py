@@ -7,12 +7,11 @@ import os
 import re
 import sys
 from datetime import datetime
-from http import HTTPStatus
 from io import StringIO
 from unittest.mock import patch
 
 import pytest
-from flask import current_app, url_for
+from flask import current_app
 
 from sner.server.app import cli, create_app
 from sner.version import __version__
@@ -54,14 +53,6 @@ def test_shell():
 
     assert pytest_wrapped_e.value.code == 0
     assert 'sqlalchemy.orm.scoping.scoped_session' in buf_stdout.getvalue()
-
-
-def test_index_route(client):
-    """test root url"""
-
-    response = client.get(url_for('index_route'))
-    assert response.status_code == HTTPStatus.OK
-    assert 'logo.png' in response
 
 
 def test_cli():

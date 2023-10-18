@@ -157,6 +157,7 @@ def test_queue_delete_route_runningjob(cl_operator, job):
 
 
 def test_queue_invalid_form_requests(cl_operator, queue):
+    """queue invalid requests test"""
     response = cl_operator.post(url_for('scheduler.queue_edit_route', queue_id=queue.id), expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
 

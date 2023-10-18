@@ -38,7 +38,8 @@ def test_host_add_route(cl_operator, host_factory):
     ahost = host_factory.build()
 
     form_data = [('address', ahost.address), ('hostname', ahost.hostname), ('os', ahost.os), ('comment', ahost.comment)]
-    response = cl_operator.post(url_for('storage.host_add_route'), params=form_data)
+    response = cl_operator.post(url_for('storage.host_add_route'), params=form_data, expect_errors=True)
+
     assert response.status_code == HTTPStatus.OK
 
     thost = Host.query.filter(Host.hostname == ahost.hostname).one()
@@ -70,6 +71,7 @@ def test_host_delete_route(cl_operator, host):
     assert response.status_code == HTTPStatus.OK
 
     assert not Host.query.get(host.id)
+
 
 def test_host_invalid_form_requests(cl_operator, host):
     """host invalid requests test"""
