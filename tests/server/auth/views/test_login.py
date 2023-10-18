@@ -119,6 +119,22 @@ def test_login_webauthn_unauthorized(client):
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
+def test_login_webauthn_invalid_request(client, webauthn_credential_factory):
+    """test invalid login webauthn"""
+
+    device = SoftWebauthnDevice()
+    device.cred_init(webauthn.rp.id, b'randomhandle')
+    wncred = webauthn_credential_factory.create(initialized_device=device)
+
+    form_data = [('username', wncred.user.username)]
+    response = client.post(url_for('auth.login_route'), params=form_data)
+    assert response.status_code == HTTPStatus.OK
+    assert response.json["webauthn_login"]
+
+    response = client.post(url_for('auth.login_webauthn_route'), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
 def test_profile_webauthn_pkcro_route_invalid_request(client):
     """test error handling in pkcro route"""
 
