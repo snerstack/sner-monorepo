@@ -27,6 +27,9 @@ describe('Note list page', () => {
       expect(screen.getByText('46865/tcp')).toBeInTheDocument()
       expect(screen.getByText('testssl')).toBeInTheDocument()
     })
+
+    sessionStorage.setItem('dt_toolboxes_visible', 'true')
+    sessionStorage.setItem('dt_viatarget_column_visible', 'true')
   })
 
   it('views host', async () => {
@@ -66,6 +69,26 @@ describe('Note list page', () => {
       const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
       expect(listItems.includes('Host')).toBeTruthy()
       expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
+    })
+  })
+
+  it('filters results', async () => {
+    renderWithProviders({
+      element: <NoteListPage />,
+      path: '/storage/note/list',
+    })
+
+    const filterForm = screen.getByTestId('filter-form')
+    const filterInput = filterForm.querySelector('input')!
+    const filterButton = screen.getByTestId('filter-btn')
+
+    fireEvent.change(filterInput, { target: { value: 'Host.address=="127.4.4.4"' } })
+    fireEvent.click(filterButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('127.4.4.4')).toBeInTheDocument()
+      expect(screen.queryByText('127.3.3.3')).toBeNull()
+      expect(screen.queryByText('127.128.129.130')).toBeNull()
     })
   })
 
@@ -114,14 +137,20 @@ describe('Note list page', () => {
 
     await waitFor(() => {
       const tagsCell = screen.getAllByTestId('note_tags_annotate')[0]
+      const tagsCellEmptyComment = screen.getAllByTestId('note_tags_annotate')[1]
       const commentCell = screen.getAllByTestId('note_comment_annotate')[0]
+      const commentCellEmptyComment = screen.getAllByTestId('note_comment_annotate')[1]
 
       fireEvent.doubleClick(tagsCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
 
+      fireEvent.doubleClick(tagsCellEmptyComment)
       expect(screen.getByText('Annotate')).toBeInTheDocument()
 
       fireEvent.doubleClick(commentCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
 
+      fireEvent.doubleClick(commentCellEmptyComment)
       expect(screen.getByText('Annotate')).toBeInTheDocument()
     })
   })

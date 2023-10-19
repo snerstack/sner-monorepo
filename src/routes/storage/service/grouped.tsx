@@ -60,6 +60,7 @@ const ServiceGroupedPage = () => {
             <a className="btn btn-outline-secondary disabled">crop at:</a>
             {['1', '2', '3', '4', '5'].map((crop) => (
               <Link
+                data-testid="grouped-crop-link"
                 className={clsx('btn btn-outline-secondary', searchParams.get('crop') === crop && 'active')}
                 to={`/storage/service/grouped?crop=${crop}`}
                 key={crop}
@@ -68,6 +69,7 @@ const ServiceGroupedPage = () => {
               </Link>
             ))}
             <Link
+              data-testid="grouped-crop-link"
               className={clsx('btn btn-outline-secondary', !searchParams.get('crop') && 'active')}
               to="/storage/service/grouped"
             >

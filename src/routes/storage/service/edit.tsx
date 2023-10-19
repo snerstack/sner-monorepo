@@ -17,7 +17,7 @@ const ServiceEditPage = () => {
   const service = useLoaderData() as Service
 
   const [hostId, setHostId] = useState<number>(service.host_id)
-  const [proto, setProto] = useState<string>(service.proto || '')
+  const [proto, setProto] = useState<string>(service.proto)
   const [port, setPort] = useState<number>(service.port)
   const [state, setState] = useState<string>(service.state || '')
   const [name, setName] = useState<string>(service.name || '')

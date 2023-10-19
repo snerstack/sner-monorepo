@@ -35,10 +35,11 @@ const NoteViewPage = () => {
     <div>
       <Helmet>
         <title>
-          Notes / View / {note.address} {note.hostname || ''} / {note.xtype} - sner4
+          Notes / View / {note.address}
+          {note.hostname ? ' ' + note.hostname : ''} / {note.xtype} - sner4
         </title>
       </Helmet>
-      <Heading headings={['Note', `${note.address} ${note.hostname || ''}`, note.xtype]}>
+      <Heading headings={['Note', `${note.address}${note.hostname ? ' ' + note.hostname : ''}`, note.xtype]}>
         <div className="breadcrumb-buttons pl-2">
           <div className="btn-group">
             <div className="btn-group dropdown dropleft">

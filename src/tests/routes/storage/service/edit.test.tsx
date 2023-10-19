@@ -46,6 +46,47 @@ describe('Service edit page', () => {
     renderWithProviders({
       element: <ServiceEditPage />,
       path: '/storage/service/edit/1',
+      loader: () =>
+        Promise.resolve({
+          address: '127.4.4.4',
+          comment: '',
+          host_id: 1,
+          hostname: '',
+          id: 1,
+          info: '',
+          name: '',
+          port: 12345,
+          proto: 'tcp',
+          state: '',
+          tags: [],
+        }),
+      routes: [{ element: <ServiceListPage />, path: '/storage/service/list' }],
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: {
+        message: 'Service has been successfully edited.',
+      },
+    })
+
+    await waitFor(() => {
+      const nameInput = screen.getByLabelText('Name')
+      const editButton = screen.getByRole('button', { name: 'Edit' })
+
+      fireEvent.change(nameInput, { target: { value: 'edited_name' } })
+      fireEvent.click(editButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Service has been successfully edited.')).toBeInTheDocument()
+      expect(screen.getByRole('list')).toHaveTextContent('Services')
+    })
+  })
+
+  it('edits service (no optinal values)', async () => {
+    renderWithProviders({
+      element: <ServiceEditPage />,
+      path: '/storage/service/edit/1',
       loader: loader,
       routes: [{ element: <ServiceListPage />, path: '/storage/service/list' }],
     })

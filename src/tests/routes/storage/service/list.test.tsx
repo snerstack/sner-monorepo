@@ -23,6 +23,8 @@ describe('Service list page', () => {
       expect(screen.getByText('testhost1.testdomain.test')).toBeInTheDocument()
       expect(screen.getByText('420')).toBeInTheDocument()
     })
+
+    sessionStorage.setItem('dt_toolboxes_visible', 'true')
   })
 
   it('views host', async () => {
@@ -65,6 +67,26 @@ describe('Service list page', () => {
     })
   })
 
+  it('filters results', async () => {
+    renderWithProviders({
+      element: <ServiceListPage />,
+      path: '/storage/service/list',
+    })
+
+    const filterForm = screen.getByTestId('filter-form')
+    const filterInput = filterForm.querySelector('input')!
+    const filterButton = screen.getByTestId('filter-btn')
+
+    fireEvent.change(filterInput, { target: { value: 'Host.address=="127.4.4.4"' } })
+    fireEvent.click(filterButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('127.4.4.4')).toBeInTheDocument()
+      expect(screen.queryByText('127.3.3.3')).toBeNull()
+      expect(screen.queryByText('127.128.129.130')).toBeNull()
+    })
+  })
+
   it('annotates service', async () => {
     renderWithProviders({
       element: <ServiceListPage />,
@@ -73,14 +95,20 @@ describe('Service list page', () => {
 
     await waitFor(() => {
       const tagsCell = screen.getAllByTestId('service_tags_annotate')[0]
+      const tagsCellEmptyComment = screen.getAllByTestId('service_tags_annotate')[1]
       const commentCell = screen.getAllByTestId('service_comment_annotate')[0]
+      const commentCellEmptyComment = screen.getAllByTestId('service_comment_annotate')[1]
 
       fireEvent.doubleClick(tagsCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
 
+      fireEvent.doubleClick(tagsCellEmptyComment)
       expect(screen.getByText('Annotate')).toBeInTheDocument()
 
       fireEvent.doubleClick(commentCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
 
+      fireEvent.doubleClick(commentCellEmptyComment)
       expect(screen.getByText('Annotate')).toBeInTheDocument()
     })
   })

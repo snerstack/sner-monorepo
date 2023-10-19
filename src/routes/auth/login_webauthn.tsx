@@ -34,6 +34,7 @@ const WebAuthnLoginPage = () => {
     void (async () => {
       try {
         const pkcco = await getPublicKeyCredentialRequestOptions()
+
         const assertion = (await navigator.credentials.get(pkcco)) as PublicKeyCredential
         const packedAssertion = getPackedAssertion(assertion as CustomPublicKeyCredential)
 

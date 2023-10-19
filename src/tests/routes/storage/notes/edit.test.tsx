@@ -76,6 +76,51 @@ describe('Note edit page', () => {
     })
   })
 
+  it('edits note (no optional values)', async () => {
+    renderWithProviders({
+      element: <NoteEditPage />,
+      path: '/storage/note/edit/1',
+      loader: () =>
+        Promise.resolve({
+          address: '127.4.4.4',
+          comment: null,
+          created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+          data: '["cpe:/o:microsoft:windows_nt:3.5.1"]',
+          host_id: 1,
+          hostname: null,
+          id: 1,
+          import_time: null,
+          modified: 'Thu, 31 Aug 2023 17:50:08 GMT',
+          service_id: null,
+          service_port: null,
+          service_proto: null,
+          tags: ['report', 'falsepositive', 'info'],
+          via_target: null,
+          xtype: 'deb',
+        }),
+      routes: [{ element: <NoteListPage />, path: '/storage/note/list' }],
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: {
+        message: 'Note has been successfully edited.',
+      },
+    })
+
+    await waitFor(() => {
+      const dataInput = screen.getByLabelText('Data')
+      const editButton = screen.getByRole('button', { name: 'Edit' })
+
+      fireEvent.change(dataInput, { target: { value: 'edited_data' } })
+      fireEvent.click(editButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Note has been successfully edited.')).toBeInTheDocument()
+      expect(screen.getByRole('list')).toHaveTextContent('Notes')
+    })
+  })
+
   it('edits note (error)', async () => {
     renderWithProviders({
       element: <NoteEditPage />,

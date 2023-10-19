@@ -27,6 +27,8 @@ describe('Vuln list page', () => {
       expect(screen.getByText('testhost1.testdomain.test')).toBeInTheDocument()
       expect(screen.getByText('another test vulnerability')).toBeInTheDocument()
     })
+
+    sessionStorage.setItem('dt_viatarget_column_visible', 'true')
   })
 
   it('views host', async () => {
@@ -118,6 +120,26 @@ describe('Vuln list page', () => {
     })
   })
 
+  it('filters results', async () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+    })
+
+    const filterForm = screen.getByTestId('filter-form')
+    const filterInput = filterForm.querySelector('input')!
+    const filterButton = screen.getByTestId('filter-btn')
+
+    fireEvent.change(filterInput, { target: { value: 'Vuln.name=="aggregable vuln"' } })
+    fireEvent.click(filterButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('aggregable vuln')).toBeInTheDocument()
+      expect(screen.queryByText('PHP 5.6.x < 5.6.32 Multiple Vulnerabilities')).toBeNull()
+      expect(screen.queryByText('test vulnerability')).toBeNull()
+    })
+  })
+
   it('redirects to multicopy page', async () => {
     renderWithProviders({
       element: <VulnListPage />,
@@ -192,11 +214,60 @@ describe('Vuln list page', () => {
     })
   })
 
+  it('deletes vuln', async () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
+    await waitFor(() => {
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[0])
+    })
+
+    window.confirm = vi.fn(() => true)
+
+    const deleteRowButton = screen.getByTestId('delete-row-btn')
+
+    fireEvent.click(deleteRowButton)
+  })
+
+  it('deletes vuln (error)', () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+    })
+
+    window.confirm = vi.fn(() => true)
+
+    const deleteRowButton = screen.getByTestId('delete-row-btn')
+
+    fireEvent.click(deleteRowButton)
+  })
+
+  it('deletes vuln (not confirmed)', () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+    })
+
+    window.confirm = vi.fn(() => false)
+
+    const deleteRowButton = screen.getByTestId('delete-row-btn')
+
+    fireEvent.click(deleteRowButton)
+  })
+
   it('sets tag', async () => {
     renderWithProviders({
       element: <VulnListPage />,
       path: '/storage/vuln/list',
     })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
 
     await waitFor(() => {
       // selects first row
@@ -207,8 +278,21 @@ describe('Vuln list page', () => {
     const tagButton = screen.getAllByTestId('tag-btn')[0]
 
     fireEvent.click(tagButton)
+  })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+  it('sets tag (error)', async () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+    })
+
+    const tagButton = screen.getAllByTestId('tag-btn')[0]
+
+    fireEvent.click(tagButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('No items selected')).toBeInTheDocument()
+    })
   })
 
   it('unsets tag', async () => {

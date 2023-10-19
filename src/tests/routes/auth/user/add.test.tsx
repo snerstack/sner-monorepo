@@ -67,6 +67,9 @@ describe('User add page', () => {
     const passwordInput = screen.getByLabelText('Password')
     const addButton = screen.getByRole('button', { name: 'Add' })
 
+    fireEvent.change(usernameInput, { target: { value: '' } })
+    fireEvent.click(addButton)
+
     fireEvent.change(usernameInput, { target: { value: 'test_user' } })
     fireEvent.change(passwordInput, { target: { value: 'test_password' } })
     fireEvent.click(addButton)

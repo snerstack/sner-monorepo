@@ -306,6 +306,7 @@ const VulnListPage = () => {
               />
             </div>
             <a
+              data-testid="delete-row-btn"
               className="btn btn-outline-secondary"
               href="#"
               onClick={() => deleteRow('vuln_list_table', '/storage/vuln/delete_multiid')}

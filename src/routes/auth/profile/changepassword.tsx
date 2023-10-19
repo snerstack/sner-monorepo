@@ -17,11 +17,9 @@ const ChangePasswordPage = () => {
   const [newPassword, setNewPassword] = useState<string>('')
   const [newPasswordAgain, setNewPasswordAgain] = useState<string>('')
 
-  const [currentPasswordErrors, setCurrentPasswordErrors] = useState<string[]>([])
   const [newPasswordErrors, setNewPasswordErrors] = useState<string[]>([])
 
   const newPasswordHandler = async () => {
-    setCurrentPasswordErrors([])
     setNewPasswordErrors([])
 
     const formData = new FormData()
@@ -43,14 +41,18 @@ const ChangePasswordPage = () => {
           error: { code: number; message?: string; errors?: { current_password?: string[]; password1?: string[] } }
         }>(err)
       ) {
-        const message = err.response?.data.error.message
-
-        if (message) return toast.error(message)
-
         const errors = err.response?.data.error.errors
 
-        setCurrentPasswordErrors(errors?.current_password ?? [])
-        setNewPasswordErrors(errors?.password1 ?? [])
+        if (errors) {
+          if (errors.password1) {
+            setNewPasswordErrors(errors.password1)
+          }
+          return
+        }
+
+        const message = err.response?.data.error.message
+
+        toast.error(message)
       }
     }
   }
@@ -70,7 +72,6 @@ const ChangePasswordPage = () => {
           required={true}
           _state={currentPassword}
           _setState={setCurrentPassword}
-          errors={currentPasswordErrors}
         />
         <PasswordField
           name="new_password"

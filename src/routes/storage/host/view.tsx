@@ -469,7 +469,7 @@ const HostViewPage = () => {
           Hosts / View / {host.address} {host.hostname || ''} - sner4
         </title>
       </Helmet>
-      <Heading headings={['Host', `${host.address} ${host.hostname}`]}>
+      <Heading headings={['Host', `${host.address}${host.hostname ? ' ' + host.hostname : ''}`]}>
         <div className="breadcrumb-buttons pl-2">
           <div className="btn-group">
             <a className="btn btn-light disabled">

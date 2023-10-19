@@ -84,6 +84,56 @@ describe('Vuln edit page', () => {
     })
   })
 
+  it('edits vuln (no optional values)', async () => {
+    renderWithProviders({
+      element: <VulnEditPage />,
+      path: '/storage/vuln/edit/1',
+      loader: () =>
+        Promise.resolve({
+          address: '127.4.4.4',
+          comment: null,
+          created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+          data: null,
+          descr: null,
+          host_id: 1,
+          hostname: null,
+          id: 1,
+          import_time: null,
+          modified: 'Tue, 29 Aug 2023 14:08:10 GMT',
+          name: 'aggregable vuln',
+          refs: [],
+          rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
+          service_id: 1,
+          service_port: 80,
+          service_proto: 'tcp',
+          severity: 'high',
+          tags: [],
+          via_target: null,
+          xtype: null,
+        }),
+      routes: [{ element: <VulnListPage />, path: '/storage/vuln/list' }],
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: {
+        message: 'Vuln has been successfully edited.',
+      },
+    })
+
+    await waitFor(() => {
+      const nameInput = screen.getByLabelText('Name')
+      const editButton = screen.getByRole('button', { name: 'Edit' })
+
+      fireEvent.change(nameInput, { target: { value: 'edited_name' } })
+      fireEvent.click(editButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Vuln has been successfully edited.')).toBeInTheDocument()
+      expect(screen.getByRole('list')).toHaveTextContent('Vulns')
+    })
+  })
+
   it('edits vuln (error)', async () => {
     renderWithProviders({
       element: <VulnEditPage />,

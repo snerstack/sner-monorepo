@@ -96,4 +96,45 @@ describe('Portmap page', () => {
       expect(screen.getByText('serverz.localhost')).toBeInTheDocument()
     })
   })
+
+  it('shows portstat (no hostname and portname)', async () => {
+    renderWithProviders({
+      element: <PortmapPage />,
+      path: '/visuals/portmap',
+      loader: portmapLoader,
+    })
+
+    vi.spyOn(httpClient, 'get').mockResolvedValueOnce({
+      data: {
+        comments: [],
+        hosts: [
+          {
+            host_address: '127.128.129.130',
+            host_hostname: null,
+            host_id: 37,
+          },
+        ],
+        infos: [],
+        port: '443',
+        portname: null,
+        stats: [
+          {
+            count: 1,
+            proto: 'tcp',
+          },
+        ],
+      },
+    })
+
+    await waitFor(() => {
+      const portLink = screen.getByRole('link', { name: '443' })
+
+      fireEvent.mouseEnter(portLink)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('127.128.129.130')).toBeInTheDocument()
+      expect(screen.queryByText('serverz.localhost')).toBeNull()
+    })
+  })
 })

@@ -2,8 +2,8 @@ import { rest } from 'msw'
 
 const data = {
   draw: '1',
-  recordsTotal: '10',
-  recordsFiltered: '10',
+  recordsTotal: '4',
+  recordsFiltered: '4',
   data: [
     {
       id: 1,
@@ -35,7 +35,7 @@ const data = {
       xtype: 'sner.testnote',
       data: 'testnote data',
       tags: [],
-      comment: 'test note comment',
+      comment: '',
       created: '2023-07-17T20:01:09',
       modified: '2023-08-29T15:32:07',
       import_time: null,
@@ -59,9 +59,31 @@ const data = {
       import_time: null,
       _buttons: 1,
     },
+    {
+      id: 182,
+      host_id: 77,
+      host_address: '127.0.0.8',
+      host_hostname: 'localhost',
+      service_proto: 'tcp',
+      service_port: 139,
+      service: '139/tcp',
+      via_target: 'localhost',
+      xtype: 'cpe',
+      data: '',
+      tags: [],
+      comment: null,
+      created: '2023-10-13T08:53:44',
+      modified: '2023-10-13T08:53:44',
+      import_time: '2019-03-11T19:36:12',
+      _buttons: 1,
+    },
   ],
 }
 
-export const noteListHandler = rest.post('http://localhost:18000/storage/note/list.json', (_, res, ctx) => {
+export const noteListHandler = rest.post('http://localhost:18000/storage/note/list.json', (req, res, ctx) => {
+  if (req.url.searchParams.get('filter') === 'Host.address=="127.4.4.4"') {
+    return res(ctx.json({ draw: '1', recordsTotal: '1', recordsFiltered: '1', data: [data.data[0]] }))
+  }
+
   return res(ctx.json(data))
 })

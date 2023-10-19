@@ -20,6 +20,26 @@ describe('Vuln grouped page', () => {
     })
   })
 
+  it('filters results', async () => {
+    renderWithProviders({
+      element: <VulnGroupedPage />,
+      path: '/storage/vuln/grouped',
+    })
+
+    const filterForm = screen.getByTestId('filter-form')
+    const filterInput = filterForm.querySelector('input')!
+    const filterButton = screen.getByTestId('filter-btn')
+
+    fireEvent.change(filterInput, { target: { value: 'Vuln.name=="aggregable vuln"' } })
+    fireEvent.click(filterButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('aggregable vuln')).toBeInTheDocument()
+      expect(screen.queryByText('PHP 5.6.x < 5.6.32 Multiple Vulnerabilities')).toBeNull()
+      expect(screen.queryByText('test vulnerability')).toBeNull()
+    })
+  })
+
   it('filters based on name', async () => {
     renderWithProviders({
       element: <VulnGroupedPage />,

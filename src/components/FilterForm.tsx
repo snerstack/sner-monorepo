@@ -8,7 +8,7 @@ const FilterForm = ({ url }: { url: string }) => {
 
   useEffect(() => {
     if (searchParams.has('filter')) {
-      setFilter(searchParams.get('filter') ?? '')
+      setFilter(searchParams.get('filter')!)
     }
   }, [searchParams])
 

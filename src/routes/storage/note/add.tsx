@@ -37,8 +37,8 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
       setAddress(loaderData.address)
       setHostname(loaderData.hostname || '')
       setHostId(loaderData.host_id)
-      setPort(loaderData.port || 0)
-      setProto(loaderData.proto || '')
+      setPort(loaderData.port)
+      setProto(loaderData.proto)
       setServiceId(loaderData.id)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

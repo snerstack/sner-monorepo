@@ -8,6 +8,8 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 describe('Host list page', () => {
   it('shows table of hosts', async () => {
     renderWithProviders({ element: <HostListPage />, path: '/storage/host/list' })
+    sessionStorage.setItem('dt_toolboxes_visible', 'true')
+
     expect(screen.getByRole('list')).toHaveTextContent('Hosts')
 
     await waitFor(() => {

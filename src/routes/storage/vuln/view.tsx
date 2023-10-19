@@ -24,15 +24,17 @@ const VulnViewPage = () => {
     <div>
       <Helmet>
         <title>
-          Vulns / View / {vuln.address} {vuln.hostname || ''} / {vuln.name} {vuln.xtype} - sner4
+          Vulns / View / {vuln.address}
+          {vuln.hostname ? ' ' + vuln.hostname + ' ' : ''} / {vuln.name}
+          {vuln.xtype ? ' ' + vuln.xtype : ''} - sner4
         </title>
       </Helmet>
 
       <Heading
         headings={[
           'Vuln',
-          `${vuln.address} ${vuln.hostname || ''}`,
-          `${vuln.name} ${vuln.xtype ? `(${vuln.xtype})` : ''}`,
+          `${vuln.address}${vuln.hostname ? ' ' + vuln.hostname : ''}`,
+          `${vuln.name}${vuln.xtype ? ` (${vuln.xtype})` : ''}`,
         ]}
       >
         <div className="breadcrumb-buttons pl-2">

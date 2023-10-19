@@ -20,6 +20,26 @@ describe('Service grouped page', () => {
     })
   })
 
+  it('filters results', async () => {
+    renderWithProviders({
+      element: <ServiceGroupedPage />,
+      path: '/storage/service/grouped',
+    })
+
+    const filterForm = screen.getByTestId('filter-form')
+    const filterInput = filterForm.querySelector('input')!
+    const filterButton = screen.getByTestId('filter-btn')
+
+    fireEvent.change(filterInput, { target: { value: 'Host.address=="127.4.4.4"' } })
+    fireEvent.click(filterButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('null')).toBeInTheDocument()
+      expect(screen.getByText('testservice banner')).toBeInTheDocument()
+      expect(screen.queryByText('test info')).toBeNull()
+    })
+  })
+
   it('filters based on info', async () => {
     renderWithProviders({
       element: <ServiceGroupedPage />,
@@ -36,5 +56,19 @@ describe('Service grouped page', () => {
     await waitFor(() => {
       expect(screen.getByRole('list')).toHaveTextContent('Services')
     })
+  })
+
+  it('changes crop', () => {
+    renderWithProviders({
+      element: <ServiceGroupedPage />,
+      path: '/storage/service/grouped',
+    })
+
+    const cropLinks = screen.getAllByTestId('grouped-crop-link')
+
+    fireEvent.click(cropLinks[0])
+    fireEvent.click(cropLinks[1])
+    fireEvent.click(cropLinks[2])
+    fireEvent.click(cropLinks[3])
   })
 })

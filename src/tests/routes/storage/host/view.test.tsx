@@ -36,6 +36,37 @@ describe('Host view page', () => {
       expect(listItems.includes('Host')).toBeTruthy()
       expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
     })
+
+    sessionStorage.setItem('dt_toolboxes_visible', 'true')
+    sessionStorage.setItem('dt_viatarget_column_visible', 'true')
+  })
+
+  it('shows host (no hostname)', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: () =>
+        Promise.resolve({
+          address: '127.4.4.4',
+          comment: '',
+          created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+          hostname: '',
+          id: 1,
+          modified: 'Fri, 01 Sep 2023 12:01:37 GMT',
+          notesCount: 3,
+          os: 'Test Linux 1',
+          rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
+          servicesCount: 1,
+          tags: ['reviewed'],
+          vulnsCount: 12,
+        }),
+    })
+
+    await waitFor(() => {
+      const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
+      expect(listItems.includes('Host')).toBeTruthy()
+      expect(listItems.includes('127.4.4.4')).toBeTruthy()
+    })
   })
 
   it('sets tag', async () => {
@@ -121,14 +152,20 @@ describe('Host view page', () => {
 
     await waitFor(() => {
       const tagsCell = screen.getAllByTestId('service_tags_annotate')[0]
+      const tagsCellEmptyComment = screen.getAllByTestId('service_tags_annotate')[1]
       const commentCell = screen.getAllByTestId('service_comment_annotate')[0]
+      const commentCellEmptyComment = screen.getAllByTestId('service_comment_annotate')[1]
 
       fireEvent.doubleClick(tagsCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
 
+      fireEvent.doubleClick(tagsCellEmptyComment)
       expect(screen.getByText('Annotate')).toBeInTheDocument()
 
       fireEvent.doubleClick(commentCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
 
+      fireEvent.doubleClick(commentCellEmptyComment)
       expect(screen.getByText('Annotate')).toBeInTheDocument()
     })
   })
@@ -145,11 +182,9 @@ describe('Host view page', () => {
       const commentCell = screen.getAllByTestId('vuln_comment_annotate')[0]
 
       fireEvent.doubleClick(tagsCell)
-
       expect(screen.getByText('Annotate')).toBeInTheDocument()
 
       fireEvent.doubleClick(commentCell)
-
       expect(screen.getByText('Annotate')).toBeInTheDocument()
     })
   })
@@ -163,14 +198,20 @@ describe('Host view page', () => {
 
     await waitFor(() => {
       const tagsCell = screen.getAllByTestId('note_tags_annotate')[0]
+      const tagsCellEmptyComment = screen.getAllByTestId('note_tags_annotate')[1]
       const commentCell = screen.getAllByTestId('note_comment_annotate')[0]
+      const commentCellEmptyComment = screen.getAllByTestId('note_comment_annotate')[1]
 
       fireEvent.doubleClick(tagsCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
 
+      fireEvent.doubleClick(tagsCellEmptyComment)
       expect(screen.getByText('Annotate')).toBeInTheDocument()
 
       fireEvent.doubleClick(commentCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
 
+      fireEvent.doubleClick(commentCellEmptyComment)
       expect(screen.getByText('Annotate')).toBeInTheDocument()
     })
   })

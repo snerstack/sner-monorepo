@@ -48,7 +48,7 @@ describe('Note view page', () => {
           created: 'Fri, 13 Oct 2023 08:53:44 GMT',
           data: '{"id": "smb-os-discovery", "output": "\\n  OS: Windows 6.1 (Samba 4.5.16-Debian)\\n  Computer name: localtest\\n  NetBIOS computer name: LOCALTEST\\\\x00\\n  Domain name: localtestdomain\\n  FQDN: localtest\\n  System time: 2019-03-11T19:36:27+01:00\\n", "elements": {"os": "Windows 6.1", "lanmanager": "Samba 4.5.16-Debian", "server": "LOCALTEST\\\\x00", "date": "2019-03-11T19:36:27+01:00", "fqdn": "localtest", "domain_dns": "localtestdomain", "workgroup": "WORKGROUP\\\\x00"}}',
           host_id: 77,
-          hostname: 'localhost',
+          hostname: '',
           id: 173,
           import_time: 'Mon, 11 Mar 2019 19:36:12 GMT',
           modified: 'Fri, 13 Oct 2023 08:53:44 GMT',
@@ -64,7 +64,7 @@ describe('Note view page', () => {
     await waitFor(() => {
       const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
       expect(listItems.includes('Note')).toBeTruthy()
-      expect(listItems.includes('127.0.0.1 localhost')).toBeTruthy()
+      expect(listItems.includes('127.0.0.1')).toBeTruthy()
       expect(listItems.includes('nmap.smb-os-discovery')).toBeTruthy()
     })
   })
