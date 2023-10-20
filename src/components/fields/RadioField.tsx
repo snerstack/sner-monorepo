@@ -58,18 +58,5 @@ const RadioField = ({
       </HorizontalParent>
     </div>
   )
-  // <div class='{{form_group_classes}}'>
-  // 	{{label_output}}
-  // 	<div {{'class=col-sm-10' if horizontal}}>
-  // 		<ul class='form-control border-0 mb-0'>
-  // 			{% for option in field %}
-  // 				<li class='form-check form-check-inline'>
-  // 					{{option(class_='form-check-input')}}
-  // 					{{option.label(class_='form-check-label')}}
-  // 				</li>
-  // 			{% endfor %}
-  // 		</ul>
-  // 	</div>
-  // </div>
 }
 export default RadioField

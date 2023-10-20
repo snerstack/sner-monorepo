@@ -6,12 +6,12 @@ import { useCookie } from 'react-use'
 import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 
-import Button from '@/components/Buttons/Button'
-import ButtonGroup from '@/components/Buttons/ButtonGroup'
-import DeleteButton from '@/components/Buttons/DeleteButton'
-import EditButton from '@/components/Buttons/EditButton'
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
+import Button from '@/components/buttons/Button'
+import ButtonGroup from '@/components/buttons/ButtonGroup'
+import DeleteButton from '@/components/buttons/DeleteButton'
+import EditButton from '@/components/buttons/EditButton'
 
 const QueueListPage = () => {
   const navigate = useNavigate()

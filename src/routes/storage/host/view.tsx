@@ -15,19 +15,19 @@ import {
   getUrlForRef,
 } from '@/lib/sner/storage'
 
-import Button from '@/components/Buttons/Button'
-import ButtonGroup from '@/components/Buttons/ButtonGroup'
-import DeleteButton from '@/components/Buttons/DeleteButton'
-import DropdownButton from '@/components/Buttons/DropdownButton'
-import EditButton from '@/components/Buttons/EditButton'
-import MultiCopyButton from '@/components/Buttons/MultiCopyButton'
-import TagButton from '@/components/Buttons/TagButton'
-import TagsDropdownButton from '@/components/Buttons/TagsDropdownButton'
-import ViewButton from '@/components/Buttons/ViewButton'
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
-import AnnotateModal from '@/components/Modals/AnnotateModal'
-import MultipleTagModal from '@/components/Modals/MultipleTagModal'
+import Button from '@/components/buttons/Button'
+import ButtonGroup from '@/components/buttons/ButtonGroup'
+import DeleteButton from '@/components/buttons/DeleteButton'
+import DropdownButton from '@/components/buttons/DropdownButton'
+import EditButton from '@/components/buttons/EditButton'
+import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import TagButton from '@/components/buttons/TagButton'
+import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
+import ViewButton from '@/components/buttons/ViewButton'
+import AnnotateModal from '@/components/modals/AnnotateModal'
+import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
 const HostViewPage = () => {
   const host = useLoaderData() as Host

@@ -6,11 +6,11 @@ import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
 
-import SubmitField from '@/components/Fields/SubmitField'
-import TagsField from '@/components/Fields/TagsField'
-import TextAreaField from '@/components/Fields/TextAreaField'
-import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
+import SubmitField from '@/components/fields/SubmitField'
+import TagsField from '@/components/fields/TagsField'
+import TextAreaField from '@/components/fields/TextAreaField'
+import TextField from '@/components/fields/TextField'
 
 const HostEditPage = () => {
   const host = useLoaderData() as Host

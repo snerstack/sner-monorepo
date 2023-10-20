@@ -4,12 +4,12 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 
-import Button from '@/components/Buttons/Button'
-import ButtonGroup from '@/components/Buttons/ButtonGroup'
-import DeleteButton from '@/components/Buttons/DeleteButton'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
+import Button from '@/components/buttons/Button'
+import ButtonGroup from '@/components/buttons/ButtonGroup'
+import DeleteButton from '@/components/buttons/DeleteButton'
 
 const JobListPage = () => {
   const navigate = useNavigate()

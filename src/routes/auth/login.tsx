@@ -8,10 +8,10 @@ import { userState } from '@/atoms/userAtom'
 
 import httpClient from '@/lib/httpClient'
 
-import PasswordField from '@/components/Fields/PasswordField'
-import SubmitField from '@/components/Fields/SubmitField'
-import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
+import PasswordField from '@/components/fields/PasswordField'
+import SubmitField from '@/components/fields/SubmitField'
+import TextField from '@/components/fields/TextField'
 
 const LoginPage = () => {
   const navigate = useNavigate()

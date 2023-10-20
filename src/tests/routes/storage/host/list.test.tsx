@@ -1,8 +1,11 @@
 import HostListPage from '@/routes/storage/host/list'
 import HostViewPage from '@/routes/storage/host/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
+import httpClient from '@/lib/httpClient'
+
+import { errorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Host list page', () => {
@@ -103,17 +106,57 @@ describe('Host list page', () => {
       path: '/storage/host/list',
     })
 
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce('')
+
     await waitFor(() => {
       const tagsCell = screen.getAllByTestId('host_tags_annotate')[0]
       const commentCell = screen.getAllByTestId('host_comment_annotate')[0]
 
       fireEvent.doubleClick(tagsCell)
-
       expect(screen.getByText('Annotate')).toBeInTheDocument()
+
+      const tagsInput = screen.getByTestId('tags-field').querySelector('input')!
+      const defaultTags = screen.getByTestId('default-tags')
+      const commentInput = screen.getByLabelText('Comment')
+      const saveButton = screen.getByRole('button', { name: 'Save' })
+
+      fireEvent.change(tagsInput, { target: { value: 'new_tag' } })
+      fireEvent.keyDown(tagsInput, { key: 'Enter', code: 13, charCode: 13 })
+      fireEvent.click(defaultTags.children[0])
+      fireEvent.change(commentInput, { target: { value: 'new_comment' } })
+      fireEvent.click(saveButton)
 
       fireEvent.doubleClick(commentCell)
-
       expect(screen.getByText('Annotate')).toBeInTheDocument()
+    })
+  })
+
+  it('annotates host (error)', async () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    vi.spyOn(httpClient, 'post').mockRejectedValue(errorResponse({ code: 500, message: 'Internal Server Error' }))
+
+    await waitFor(() => {
+      const tagsCell = screen.getAllByTestId('host_tags_annotate')[0]
+
+      fireEvent.doubleClick(tagsCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
+
+      const tagsInput = screen.getByTestId('tags-field').querySelector('input')!
+      const defaultTags = screen.getByTestId('default-tags')
+      const commentInput = screen.getByLabelText('Comment')
+      const saveButton = screen.getByRole('button', { name: 'Save' })
+
+      fireEvent.change(tagsInput, { target: { value: 'new_tag' } })
+      fireEvent.keyDown(tagsInput, { key: 'Enter', code: 13, charCode: 13 })
+      fireEvent.click(defaultTags.children[0])
+      fireEvent.change(commentInput, { target: { value: 'new_comment' } })
+      fireEvent.click(saveButton)
+
+      expect(screen.getByText('Error while annotating')).toBeInTheDocument()
     })
   })
 

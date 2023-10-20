@@ -9,12 +9,12 @@ import { Column, ColumnSelect, getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 
 import DataTable from '@/components/DataTable'
-import RadioField from '@/components/Fields/RadioField'
-import SubmitField from '@/components/Fields/SubmitField'
-import TagsField from '@/components/Fields/TagsField'
-import TextAreaField from '@/components/Fields/TextAreaField'
-import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
+import RadioField from '@/components/fields/RadioField'
+import SubmitField from '@/components/fields/SubmitField'
+import TagsField from '@/components/fields/TagsField'
+import TextAreaField from '@/components/fields/TextAreaField'
+import TextField from '@/components/fields/TextField'
 
 const VulnMulticopyPage = () => {
   const vuln = useLoaderData() as Vuln

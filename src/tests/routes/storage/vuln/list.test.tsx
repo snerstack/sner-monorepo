@@ -226,26 +226,28 @@ describe('Vuln list page', () => {
       // selects first row
       const cells = screen.getAllByRole('cell')
       fireEvent.click(cells[0])
+
+      window.confirm = vi.fn(() => true)
+
+      const deleteRowButton = screen.getByTestId('delete-row-btn')
+
+      fireEvent.click(deleteRowButton)
     })
-
-    window.confirm = vi.fn(() => true)
-
-    const deleteRowButton = screen.getByTestId('delete-row-btn')
-
-    fireEvent.click(deleteRowButton)
   })
 
-  it('deletes vuln (error)', () => {
+  it('deletes vuln (error)', async () => {
     renderWithProviders({
       element: <VulnListPage />,
       path: '/storage/vuln/list',
     })
 
-    window.confirm = vi.fn(() => true)
+    await waitFor(() => {
+      window.confirm = vi.fn(() => true)
 
-    const deleteRowButton = screen.getByTestId('delete-row-btn')
+      const deleteRowButton = screen.getByTestId('delete-row-btn')
 
-    fireEvent.click(deleteRowButton)
+      fireEvent.click(deleteRowButton)
+    })
   })
 
   it('deletes vuln (not confirmed)', () => {

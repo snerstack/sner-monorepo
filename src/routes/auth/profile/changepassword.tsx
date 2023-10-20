@@ -6,9 +6,9 @@ import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
 
-import PasswordField from '@/components/Fields/PasswordField'
-import SubmitField from '@/components/Fields/SubmitField'
 import Heading from '@/components/Heading'
+import PasswordField from '@/components/fields/PasswordField'
+import SubmitField from '@/components/fields/SubmitField'
 
 const ChangePasswordPage = () => {
   const navigate = useNavigate()

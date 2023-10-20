@@ -5,13 +5,13 @@ import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
 
-import BooleanField from '@/components/Fields/BooleanField'
-import MultiCheckboxField from '@/components/Fields/MultiCheckboxField'
-import PasswordField from '@/components/Fields/PasswordField'
-import SubmitField from '@/components/Fields/SubmitField'
-import TextAreaField from '@/components/Fields/TextAreaField'
-import TextField from '@/components/Fields/TextField'
 import Heading from '@/components/Heading'
+import BooleanField from '@/components/fields/BooleanField'
+import MultiCheckboxField from '@/components/fields/MultiCheckboxField'
+import PasswordField from '@/components/fields/PasswordField'
+import SubmitField from '@/components/fields/SubmitField'
+import TextAreaField from '@/components/fields/TextAreaField'
+import TextField from '@/components/fields/TextField'
 
 const UserAddPage = () => {
   const navigate = useNavigate()

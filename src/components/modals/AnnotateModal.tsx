@@ -8,9 +8,9 @@ import { toast } from 'react-toastify'
 import { getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 
-import SubmitField from '../Fields/SubmitField'
-import TagsField from '../Fields/TagsField'
-import TextAreaField from '../Fields/TextAreaField'
+import SubmitField from '../fields/SubmitField'
+import TagsField from '../fields/TagsField'
+import TextAreaField from '../fields/TextAreaField'
 
 const AnnotateModal = ({
   annotate,

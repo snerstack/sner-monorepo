@@ -12,11 +12,11 @@ import {
   getUrlForRef,
 } from '@/lib/sner/storage'
 
-import DeleteButton from '@/components/Buttons/DeleteButton'
-import EditButton from '@/components/Buttons/EditButton'
-import MultiCopyButton from '@/components/Buttons/MultiCopyButton'
-import TagButton from '@/components/Buttons/TagButton'
 import Heading from '@/components/Heading'
+import DeleteButton from '@/components/buttons/DeleteButton'
+import EditButton from '@/components/buttons/EditButton'
+import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import TagButton from '@/components/buttons/TagButton'
 
 const VulnViewPage = () => {
   const vuln = useLoaderData() as Vuln

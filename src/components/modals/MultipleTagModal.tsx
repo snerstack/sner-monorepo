@@ -8,8 +8,8 @@ import { getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 import { getSelectedIdsFormData } from '@/lib/sner/storage'
 
-import SubmitField from '../Fields/SubmitField'
-import TagsField from '../Fields/TagsField'
+import SubmitField from '../fields/SubmitField'
+import TagsField from '../fields/TagsField'
 
 const MultipleTagModal = ({
   multipleTag,

@@ -6,8 +6,8 @@ import { Link, useLoaderData } from 'react-router-dom'
 
 import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
 
-import DeleteButton from '@/components/Buttons/DeleteButton'
 import Heading from '@/components/Heading'
+import DeleteButton from '@/components/buttons/DeleteButton'
 
 type ScreenshotWeb = {
   url: string

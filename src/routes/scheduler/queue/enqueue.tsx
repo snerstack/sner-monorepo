@@ -5,9 +5,9 @@ import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
 
-import SubmitField from '@/components/Fields/SubmitField'
-import TextAreaField from '@/components/Fields/TextAreaField'
 import Heading from '@/components/Heading'
+import SubmitField from '@/components/fields/SubmitField'
+import TextAreaField from '@/components/fields/TextAreaField'
 
 const QueueEnqueuePage = () => {
   const { id } = useParams()

@@ -15,18 +15,18 @@ import {
   getUrlForRef,
 } from '@/lib/sner/storage'
 
-import ButtonGroup from '@/components/Buttons/ButtonGroup'
-import DeleteButton from '@/components/Buttons/DeleteButton'
-import DropdownButton from '@/components/Buttons/DropdownButton'
-import EditButton from '@/components/Buttons/EditButton'
-import MultiCopyButton from '@/components/Buttons/MultiCopyButton'
-import TagButton from '@/components/Buttons/TagButton'
-import TagsDropdownButton from '@/components/Buttons/TagsDropdownButton'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import AnnotateModal from '@/components/Modals/AnnotateModal'
-import MultipleTagModal from '@/components/Modals/MultipleTagModal'
+import ButtonGroup from '@/components/buttons/ButtonGroup'
+import DeleteButton from '@/components/buttons/DeleteButton'
+import DropdownButton from '@/components/buttons/DropdownButton'
+import EditButton from '@/components/buttons/EditButton'
+import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import TagButton from '@/components/buttons/TagButton'
+import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
+import AnnotateModal from '@/components/modals/AnnotateModal'
+import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
 const VulnListPage = () => {
   const [searchParams] = useSearchParams()
