@@ -3,6 +3,7 @@
 import react from '@vitejs/plugin-react-swc'
 import * as path from 'path'
 import { defineConfig } from 'vite'
+import { configDefaults } from 'vitest/dist/config.js'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,12 +15,15 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.ts'],
-    include: ['./src/tests/**/*.test.ts', './src/tests/**/*.test.tsx'],
+    exclude: [...configDefaults.exclude, 'src/tests/mocks', 'src/tests/utils'],
     testTimeout: 30000,
+    minThreads: 1,
+    maxThreads: 2,
     retry: 3,
     coverage: {
       provider: 'v8',
       lines: 100,
+      exclude: ['src/tests/mocks', 'src/tests/utils'],
     },
   },
 })
