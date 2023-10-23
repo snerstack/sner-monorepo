@@ -1,5 +1,6 @@
 import BaseLayout from '@/layouts/BaseLayout'
 import ProtectedRoute from '@/routes/ProtectedRoute'
+import SwaggerPage from '@/routes/api/doc/swagger'
 import LoginPage from '@/routes/auth/login'
 import TOTPLoginPage from '@/routes/auth/login_totp'
 import WebAuthnLoginPage from '@/routes/auth/login_webauthn'
@@ -59,6 +60,12 @@ const requestDataHandler = async (url: string) => {
 export const routes = createRoutesFromElements(
   <Route path="/" element={<BaseLayout />}>
     <Route index element={<RootPage />} />
+
+    <Route path="api">
+      <Route path="doc">
+        <Route path="swagger" element={<SwaggerPage />} />
+      </Route>
+    </Route>
 
     <Route path="auth">
       <Route path="login" element={<LoginPage />} />
