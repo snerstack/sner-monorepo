@@ -12,7 +12,7 @@ import sys
 import flask.cli
 from flask import Flask, has_request_context, request, render_template
 from flask_login import current_user
-from flask_wtf.csrf import generate_csrf, CSRFProtect
+from flask_wtf.csrf import generate_csrf, CSRFProtect, CSRFError
 from flask_cors import CORS
 from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -23,6 +23,7 @@ from sner.server.extensions import api, db, jsglue, migrate, login_manager, oaut
 from sner.server.parser import load_parser_plugins
 from sner.server.scheduler.core import ExclMatcher
 from sner.server.sessions import FilesystemSessionInterface
+from sner.server.utils import error_response
 from sner.version import __version__
 
 # blueprints and commands
@@ -188,7 +189,6 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app.config.update(DEFAULT_CONFIG)  # default config
     app.config.update(config_from_yaml(config_file))  # service configuration
     app.config.update(config_from_yaml(os.environ.get(config_env)))  # wsgi/container config
-    app.config['WTF_CSRF_ENABLED'] = False
 
     if app.config["DEBUG"]:
         logging.getLogger('sner.server').setLevel(logging.DEBUG)
@@ -198,7 +198,8 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app.session_interface = FilesystemSessionInterface(os.path.join(app.config['SNER_VAR'], 'sessions'), app.config['SNER_SESSION_IDLETIME'])
 
     CORS(app, supports_credentials=True)
-    CSRFProtect(app)
+    csrf = CSRFProtect(app)
+    csrf.exempt(api_blueprint)
 
     db.init_app(app)
     jsglue.init_app(app)
@@ -293,6 +294,10 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     def inject_csrf_token(response):
         response.set_cookie('XSRF-TOKEN', generate_csrf())
         return response
+
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(err):
+        return error_response(message=err.description, code=400)
 
     @app.route('/')
     def index_route():

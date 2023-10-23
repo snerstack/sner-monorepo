@@ -14,6 +14,12 @@ from tests.server import get_csrf_token
 @pytest.fixture
 def client(app):  # pylint: disable=redefined-outer-name
     """create webtest testapp client"""
+    return CustomTestApp(app)
+
+
+@pytest.fixture
+def client_without_csrf_token(app):  # pylint: disable=redefined-outer-name
+    """create webtest testapp client without csrf token"""
     return TestApp(app)
 
 
@@ -29,8 +35,8 @@ def client_in_roles(ufactory, clnt, roles):
     password = PWS.generate()
     user = ufactory.create(username='pytest_user', password=PWS.hash(password), roles=roles)
 
-    form_data = [('username', user.username), ('password', password), ('csrf_token', get_csrf_token(clnt))]
-    clnt.post(url_for('auth.login_route'), params=form_data)
+    form_data = [('username', user.username), ('password', password)]
+    clnt.post(url_for('auth.login_route'), headers={'X-CSRF-TOKEN': get_csrf_token(clnt)}, params=form_data)
 
     return clnt
 
@@ -54,6 +60,43 @@ def cl_admin(user_factory, client):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role admin"""
 
     yield client_in_roles(user_factory, client, ['user', 'operator', 'admin'])
+
+
+class CustomTestApp(TestApp):
+    """automatically obtaining csrf token for webtest client/app"""
+
+    def __init__(self, app):
+        super().__init__(app)
+
+    def get(self, *args, **kwargs):
+        """token setup before GET request"""
+
+        if args[0] == '/auth/user/%40me':   # prevent recursion
+            return super().get(*args, **kwargs)
+
+        headers = kwargs.get('headers', {})
+        headers['X-CSRF-TOKEN'] = get_csrf_token(self)
+        kwargs['headers'] = headers
+
+        return super().get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        """token setup before POST request"""
+
+        headers = kwargs.get('headers', {})
+        headers['X-CSRF-TOKEN'] = get_csrf_token(self)
+        kwargs['headers'] = headers
+
+        return super().post(*args, **kwargs)
+
+    def post_json(self, *args, **kwargs):
+        """token setup before POST JSON request"""
+
+        headers = kwargs.get('headers', {})
+        headers['X-CSRF-TOKEN'] = get_csrf_token(self)
+        kwargs['headers'] = headers
+
+        return super().post_json(*args, **kwargs)
 
 
 class TestAppApi(TestApp):

@@ -122,14 +122,6 @@ def test_profile_webauthn_register_route(cl_user):
     assert user.webauthn_credentials
 
 
-def test_profile_webauthn_pkcco_route_invalid_request(cl_user):
-    """test error handling in pkcco route"""
-
-    response = cl_user.post(url_for('auth.profile_webauthn_pkcco_route'), status='*', headers={"Cookie": ""})
-
-    assert response.status_code == HTTPStatus.FOUND
-
-
 def test_profile_webauthn_register_route_invalid_attestation(cl_user):
     """register new credential for user; error handling"""
 

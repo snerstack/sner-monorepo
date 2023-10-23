@@ -38,7 +38,7 @@ def test_host_add_route(cl_operator, host_factory):
     ahost = host_factory.build()
 
     form_data = [('address', ahost.address), ('hostname', ahost.hostname), ('os', ahost.os), ('comment', ahost.comment)]
-    response = cl_operator.post(url_for('storage.host_add_route'), params=form_data, expect_errors=True)
+    response = cl_operator.post(url_for('storage.host_add_route'), params=form_data)
 
     assert response.status_code == HTTPStatus.OK
 

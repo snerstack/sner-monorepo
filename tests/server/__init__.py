@@ -7,10 +7,12 @@ from flask import url_for
 
 
 def get_csrf_token(clnt):
-    """fetch index and parse csrf token"""
+    """fetch @me route and parse csrf token"""
 
-    response = clnt.get(url_for('index_route'))
-    return response.lxml.xpath('//meta[@name="csrf-token"]/@content')[0]
+    response = clnt.get(url_for('auth.user_me_route'), expect_errors=True)
+    cookie_list = response.headers.getall('Set-Cookie')
+    csrf_token = [item.split('=')[1].split(';')[0] for item in cookie_list if item.startswith('XSRF-TOKEN=')][0]
+    return csrf_token
 
 
 class DummyPostData(dict):

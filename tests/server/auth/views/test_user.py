@@ -70,6 +70,14 @@ def test_user_invalid_add_route(cl_admin):
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
+def test_user_invalid_csrf_token(client_without_csrf_token):
+    """user add invalid csrf token route test"""
+    response = client_without_csrf_token.post(url_for('auth.user_add_route'), params=[('new_password', 'psw')], expect_errors=True)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json['error']['message'] == 'The CSRF token is missing.'
+
+
 def test_user_edit_route(cl_admin, user):
     """user edit route test"""
 
