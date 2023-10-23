@@ -78,6 +78,18 @@ def test_user_invalid_csrf_token(client_without_csrf_token):
     assert response.json['error']['message'] == 'The CSRF token is missing.'
 
 
+def test_user_not_authenticated_add_route(client, user_factory):
+    """user add not authenticated route test"""
+    password = PWS.generate()
+    auser = user_factory.build()
+
+    form_data = [('username', auser.username), ('roles', auser.roles), ('active', auser.active), ('new_password', password),
+                 ('api_networks', auser.api_networks)]
+    response = client.post(url_for('auth.user_add_route'), params=form_data, expect_errors=True)
+
+    assert response.status_code == HTTPStatus.FOUND
+
+
 def test_user_edit_route(cl_admin, user):
     """user edit route test"""
 
