@@ -20,6 +20,33 @@ class MockPublicKeyCredential {
 }
 
 describe('Login Webauthn page', () => {
+  it('webauthn login (not supported)', async () => {
+    renderWithProviders({
+      element: <LoginPage />,
+      path: '/auth/login',
+      routes: [
+        { path: '/auth/login_webauthn', element: <WebAuthnLoginPage /> },
+        { path: '/', element: <RootPage /> },
+      ],
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: {
+        webauthn_login: true,
+      },
+    })
+
+    const usernameInput = screen.getByLabelText('Username')
+    const loginButton = screen.getByRole('button')
+
+    fireEvent.change(usernameInput, { target: { value: 'test_user' } })
+    fireEvent.click(loginButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('WebAuthn is not supported.')).toBeInTheDocument()
+    })
+  })
+
   Object.defineProperty(navigator, 'credentials', {
     value: {
       get: vi.fn().mockResolvedValue({

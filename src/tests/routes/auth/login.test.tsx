@@ -99,11 +99,13 @@ describe('Login page', () => {
       routes: [{ path: '/auth/login_webauthn', element: <WebAuthnLoginPage /> }],
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
-      data: {
-        webauthn_login: true,
-      },
-    })
+    vi.spyOn(httpClient, 'post')
+      .mockResolvedValueOnce({
+        data: {
+          webauthn_login: true,
+        },
+      })
+      .mockResolvedValueOnce({})
 
     const usernameInput = screen.getByLabelText('Username')
     const loginButton = screen.getByRole('button')
