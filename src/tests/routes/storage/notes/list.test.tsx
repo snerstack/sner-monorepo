@@ -10,6 +10,9 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Note list page', () => {
   it('shows table of notes', async () => {
+    sessionStorage.setItem('dt_toolboxes_visible', 'false')
+    sessionStorage.setItem('dt_viatarget_column_visible', 'false')
+
     renderWithProviders({ element: <NoteListPage />, path: '/storage/note/list' })
     expect(screen.getByRole('list')).toHaveTextContent('Notes')
 

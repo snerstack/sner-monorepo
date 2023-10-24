@@ -16,10 +16,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.ts'],
     exclude: [...configDefaults.exclude, 'src/tests/mocks', 'src/tests/utils'],
-    testTimeout: 30000,
-    minThreads: 1,
-    maxThreads: 2,
+    testTimeout: 15000,
+    threads: false,
     retry: 3,
+    reporters: ['hanging-process', 'verbose'],
     coverage: {
       provider: 'v8',
       lines: 100,

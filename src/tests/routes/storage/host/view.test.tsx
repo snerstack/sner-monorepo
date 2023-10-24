@@ -24,6 +24,8 @@ const loader = () =>
   })
 
 describe('Host view page', () => {
+  sessionStorage.setItem('dt_toolboxes_visible', 'false')
+
   it('shows host', async () => {
     renderWithProviders({
       element: <HostViewPage />,

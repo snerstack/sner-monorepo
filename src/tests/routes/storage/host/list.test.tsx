@@ -10,6 +10,8 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Host list page', () => {
   it('shows table of hosts', async () => {
+    sessionStorage.setItem('dt_toolboxes_visible', 'false')
+
     renderWithProviders({ element: <HostListPage />, path: '/storage/host/list' })
 
     expect(screen.getByRole('list')).toHaveTextContent('Hosts')

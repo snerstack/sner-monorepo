@@ -11,6 +11,8 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Vuln list page', () => {
   it('shows table of vulns', async () => {
+    sessionStorage.setItem('dt_viatarget_column_visible', 'false')
+
     renderWithProviders({ element: <VulnListPage />, path: '/storage/vuln/list' })
     expect(screen.getByRole('list')).toHaveTextContent('Vulns')
 
@@ -19,7 +21,7 @@ describe('Vuln list page', () => {
       expect(screen.getByText('testhost.testdomain.test<script>alert(1);</script>')).toBeInTheDocument()
       expect(screen.getByText('aggregable vuln')).toBeInTheDocument()
 
-      expect(screen.getByText('127.128.129.130')).toBeInTheDocument()
+      expect(screen.getAllByText('127.128.129.130')[0]).toBeInTheDocument()
       expect(screen.getByText('serverz.localhost')).toBeInTheDocument()
       expect(screen.getByText('PHP 5.6.x < 5.6.32 Multiple Vulnerabilities')).toBeInTheDocument()
 

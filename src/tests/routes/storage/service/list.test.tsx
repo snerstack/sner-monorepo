@@ -9,6 +9,8 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Service list page', () => {
   it('shows table of services', async () => {
+    sessionStorage.setItem('dt_toolboxes_visible', 'false')
+
     renderWithProviders({ element: <ServiceListPage />, path: '/storage/service/list' })
     expect(screen.getByRole('list')).toHaveTextContent('Services')
 

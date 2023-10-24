@@ -20,7 +20,7 @@ const QueueEnqueuePage = () => {
 
     httpClient
       .post(import.meta.env.VITE_SERVER_URL + `/scheduler/queue/enqueue/${id}`, formData)
-      .then(() => navigate(-1))
+      .then(() => navigate('/scheduler/queue/list'))
       .catch(() => toast.error('Error while enqueuing'))
   }
 

@@ -40,6 +40,8 @@ const HostListPage = () => {
 
   const toolboxesVisible = sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? true : false
 
+  console.log(toolboxesVisible)
+
   const columns = [
     ColumnSelect({ visible: toolboxesVisible }),
     Column('id', { visible: false }),
