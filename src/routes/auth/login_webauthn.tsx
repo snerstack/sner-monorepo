@@ -27,9 +27,10 @@ const WebAuthnLoginPage = () => {
   const [, setUser] = useRecoilState(userState)
 
   useEffect(() => {
-    console.info(window.PublicKeyCredential ? 'WebAuthn supported' : 'WebAuthn NOT supported')
-
-    if (!window.PublicKeyCredential) return
+    if (!window.PublicKeyCredential) {
+      toast.warn('WebAuthn is not supported.')
+      return
+    }
 
     void (async () => {
       try {
@@ -40,7 +41,7 @@ const WebAuthnLoginPage = () => {
 
         void loginHandler(packedAssertion)
       } catch (err) {
-        console.error(err)
+        toast.error((err as Error).message)
       }
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,7 +58,6 @@ const WebAuthnLoginPage = () => {
 
       navigate('/')
     } catch (err) {
-      console.error(err)
       if (isAxiosError<{ error: { message: string; code: number } }>(err)) {
         toast.error(err.response?.data.error.message)
       }

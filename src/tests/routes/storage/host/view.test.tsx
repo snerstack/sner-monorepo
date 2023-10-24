@@ -323,4 +323,102 @@ describe('Host view page', () => {
       expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
     })
   })
+
+  it('deletes host', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/list',
+      loader: loader,
+    })
+
+    window.location = {
+      reload: vi.fn(),
+    } as unknown as Location
+    window.confirm = vi.fn(() => true)
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
+    await waitFor(() => {
+      const deleteButton = screen.getAllByTestId('delete-btn')[0]
+
+      fireEvent.click(deleteButton)
+
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(window.location.reload).toHaveBeenCalled()
+    })
+  })
+
+  it('deletes service', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/list',
+      loader: loader,
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
+    await waitFor(() => {
+      const notesTab = screen.getByTestId('notes_tab')
+      fireEvent.click(notesTab)
+
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[0])
+
+      window.confirm = vi.fn(() => true)
+
+      const deleteRowButton = screen.getByTestId('service-delete-row-btn')
+
+      fireEvent.click(deleteRowButton)
+    })
+  })
+
+  it('deletes vuln', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/list',
+      loader: loader,
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
+    await waitFor(() => {
+      const notesTab = screen.getByTestId('notes_tab')
+      fireEvent.click(notesTab)
+
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[1])
+
+      window.confirm = vi.fn(() => true)
+
+      const deleteRowButton = screen.getByTestId('vuln-delete-row-btn')
+
+      fireEvent.click(deleteRowButton)
+    })
+  })
+  it('deletes note', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/list',
+      loader: loader,
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
+    await waitFor(() => {
+      const notesTab = screen.getByTestId('notes_tab')
+      fireEvent.click(notesTab)
+
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[2])
+
+      window.confirm = vi.fn(() => true)
+
+      const deleteRowButton = screen.getByTestId('note-delete-row-btn')
+
+      fireEvent.click(deleteRowButton)
+    })
+  })
 })

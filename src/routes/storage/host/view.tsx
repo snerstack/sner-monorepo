@@ -140,7 +140,7 @@ const HostViewPage = () => {
             <Button name="+V" title="Add vuln" url={`/storage/service/add/${row['id']}`} navigate={navigate} />
             <Button name="+N" title="Add note" url={`/storage/vuln/add/host/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/service/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/service/delete/${row['id']}`} />
+            <DeleteButton url={`/storage/service/delete/${row['id']}`} tableId="host_view_service_table" />
           </ButtonGroup>,
         ),
     }),
@@ -314,7 +314,7 @@ const HostViewPage = () => {
             />
             <EditButton url={`/storage/vuln/edit/${row['id']}`} navigate={navigate} />
             <MultiCopyButton url={`/storage/vuln/multicopy/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/vuln/delete/${row['id']}`} />
+            <DeleteButton url={`/storage/vuln/delete/${row['id']}`} tableId="host_view_vuln_table" />
           </ButtonGroup>,
         ),
     }),
@@ -456,7 +456,7 @@ const HostViewPage = () => {
             />
             <ViewButton url={`/storage/note/view/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/note/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/note/delete/${row['id']}`} />
+            <DeleteButton url={`/storage/note/delete/${row['id']}`} tableId="host_view_note_table" />
           </ButtonGroup>,
         ),
     }),
@@ -664,6 +664,7 @@ const HostViewPage = () => {
                     />
                   </div>
                   <a
+                    data-testid="service-delete-row-btn"
                     className="btn btn-outline-secondary"
                     href="#"
                     onClick={() => deleteRow('host_view_service_table', '/storage/service/delete_multiid')}
@@ -759,6 +760,7 @@ const HostViewPage = () => {
                     />
                   </div>
                   <a
+                    data-testid="vuln-delete-row-btn"
                     className="btn btn-outline-secondary abutton_delete_multiid"
                     href="#"
                     onClick={() => deleteRow('host_view_vuln_table', '/storage/vuln/delete_multiid')}
@@ -856,6 +858,7 @@ const HostViewPage = () => {
                     />
                   </div>
                   <a
+                    data-testid="note-delete-row-btn"
                     className="btn btn-outline-secondary abutton_delete_multiid"
                     href="#"
                     onClick={() => deleteRow('host_view_note_table', '/storage/note/delete_multiid')}

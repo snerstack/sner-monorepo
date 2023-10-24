@@ -17,7 +17,7 @@ const QuickJump = () => {
 
       setSuggestions(resp.data)
     } catch (err) {
-      console.log(err)
+      toast.error('Error while getting autocomplete suggestions.')
     }
   }
 

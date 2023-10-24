@@ -345,6 +345,15 @@ describe('Vuln list page', () => {
       fireEvent.keyDown(tagsInput, { key: 'Enter', code: 13, charCode: 13 })
       fireEvent.click(saveButton)
     })
+
+    fireEvent.click(tagMultipleButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
+
+      const modalBackground = screen.getByTestId('multiple-tag-modal').parentElement!
+      fireEvent.click(modalBackground)
+    })
   })
 
   it('unsets multiple tags', async () => {

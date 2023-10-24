@@ -37,7 +37,12 @@ const AnnotateModal = ({
   }
 
   return (
-    <Modal show={annotate.show} onHide={() => setAnnotate({ ...annotate, show: false })} size="lg">
+    <Modal
+      show={annotate.show}
+      onHide={() => setAnnotate({ ...annotate, show: false })}
+      size="lg"
+      data-testid="annotate-modal"
+    >
       <ModalHeader>
         <ModalTitle>Annotate</ModalTitle>
       </ModalHeader>

@@ -27,7 +27,7 @@ const WebAuthnEditPage = () => {
       toast.success(resp.data.message)
       navigate('/auth/profile')
     } catch (err) {
-      console.error(err)
+      toast.error('Error while editing a credential.')
     }
   }
 

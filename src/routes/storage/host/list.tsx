@@ -136,7 +136,7 @@ const HostListPage = () => {
             <Button name="+V" title="Add vuln" url={`/storage/vuln/add/host/${row['id']}`} navigate={navigate} />
             <Button name="+N" title="Add note" url={`/storage/note/add/host/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/host/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/host/delete/${row['id']}`} />
+            <DeleteButton url={`/storage/host/delete/${row['id']}`} tableId="host_list_table" />
           </ButtonGroup>,
         ),
     }),
@@ -241,6 +241,7 @@ const HostListPage = () => {
               />
             </div>
             <a
+              data-testid="delete-row-btn"
               className="btn btn-outline-secondary"
               href="#"
               onClick={() => deleteRow('host_list_table', '/storage/host/delete_multiid')}

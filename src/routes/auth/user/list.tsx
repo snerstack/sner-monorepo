@@ -42,7 +42,7 @@ const UserListPage = () => {
           cell,
           <ButtonGroup>
             <EditButton url={`/auth/user/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/auth/user/delete/${row['id']}`} />
+            <DeleteButton url={`/auth/user/delete/${row['id']}`} tableId="user_list_table" />
           </ButtonGroup>,
         ),
     }),

@@ -214,7 +214,7 @@ const VulnListPage = () => {
             />
             <EditButton url={`/storage/vuln/edit/${row['id']}`} navigate={navigate} />
             <MultiCopyButton url={`/storage/vuln/multicopy/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/vuln/delete/${row['id']}`} />
+            <DeleteButton url={`/storage/vuln/delete/${row['id']}`} tableId="vuln_list_table" />
           </ButtonGroup>,
         ),
     }),

@@ -31,7 +31,7 @@ const ProfilePage = () => {
           cell,
           <ButtonGroup>
             <EditButton url={`/auth/profile/webauthn/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/auth/profile/webauthn/delete/${row['id']}`} />
+            <DeleteButton url={`/auth/profile/webauthn/delete/${row['id']}`} tableId="profile_webauthn_table" />
           </ButtonGroup>,
         )
       },

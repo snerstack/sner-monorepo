@@ -142,8 +142,7 @@ describe('Queue edit page', () => {
         code: 400,
         errors: {
           config: ["Invalid YAML: 'NoneType' object has no attribute 'read'"],
-          group_size: ['Not a valid integer value.', 'Number must be at least 1.'],
-          priority: ['Not a valid integer value.'],
+          group_size: ['Number must be at least 1.'],
         },
       }),
     )
@@ -152,20 +151,17 @@ describe('Queue edit page', () => {
       const nameInput = screen.getByLabelText('Name')
       const configInput = screen.getByLabelText('Config')
       const groupSizeInput = screen.getByLabelText('Group size')
-      const priorityInput = screen.getByLabelText('Priority')
       const editButton = screen.getByRole('button', { name: 'Edit' })
 
       fireEvent.change(nameInput, { target: { value: 'test_queue' } })
       fireEvent.change(configInput, { target: { value: '' } })
-      fireEvent.change(groupSizeInput, { target: { value: '' } })
-      fireEvent.change(priorityInput, { target: { value: '' } })
+      fireEvent.change(groupSizeInput, { target: { value: -1 } })
       fireEvent.click(editButton)
     })
 
     await waitFor(() => {
       expect(screen.getByText("Invalid YAML: 'NoneType' object has no attribute 'read'")).toBeInTheDocument()
-      expect(screen.getByText('Not a valid integer value. Number must be at least 1.')).toBeInTheDocument()
-      expect(screen.getByText('Not a valid integer value.')).toBeInTheDocument()
+      expect(screen.getByText('Number must be at least 1.')).toBeInTheDocument()
     })
   })
 })

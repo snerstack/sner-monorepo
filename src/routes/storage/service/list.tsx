@@ -141,7 +141,7 @@ const ServiceListPage = () => {
             <Button name="+V" title="Add vuln" url={`/storage/vuln/add/service/${row['id']}`} navigate={navigate} />
             <Button name="+N" title="Add note" url={`/storage/note/add/service/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/service/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/service/delete/${row['id']}`} />
+            <DeleteButton url={`/storage/service/delete/${row['id']}`} tableId="service_list_table" />
           </ButtonGroup>,
         ),
     }),
@@ -225,6 +225,7 @@ const ServiceListPage = () => {
               />
             </div>
             <a
+              data-testid="delete-row-btn"
               className="btn btn-outline-secondary"
               href="#"
               onClick={() => deleteRow('service_list_table', '/storage/service/delete_multiid')}

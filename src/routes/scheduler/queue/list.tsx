@@ -80,7 +80,7 @@ const QueueListPage = () => {
             </ButtonGroup>{' '}
             <ButtonGroup>
               <EditButton url={`/scheduler/queue/edit/${row['id']}`} navigate={navigate} />
-              <DeleteButton url={`/scheduler/queue/delete/${row['id']}`} />
+              <DeleteButton url={`/scheduler/queue/delete/${row['id']}`} tableId="queue_list_table" />
             </ButtonGroup>
           </>,
         ),

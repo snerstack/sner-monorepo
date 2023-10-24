@@ -11,7 +11,6 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 describe('Host list page', () => {
   it('shows table of hosts', async () => {
     renderWithProviders({ element: <HostListPage />, path: '/storage/host/list' })
-    sessionStorage.setItem('dt_toolboxes_visible', 'true')
 
     expect(screen.getByRole('list')).toHaveTextContent('Hosts')
 
@@ -28,6 +27,8 @@ describe('Host list page', () => {
       expect(screen.getByText('serverz.localhost')).toBeInTheDocument()
       expect(screen.getByText('Microsoft Windows Vista')).toBeInTheDocument()
     })
+
+    sessionStorage.setItem('dt_toolboxes_visible', 'true')
   })
 
   it('views host', async () => {
@@ -67,6 +68,27 @@ describe('Host list page', () => {
       const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
       expect(listItems.includes('Host')).toBeTruthy()
       expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
+    })
+  })
+
+  it('deletes host', async () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
+    await waitFor(() => {
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[0])
+
+      window.confirm = vi.fn(() => true)
+
+      const deleteRowButton = screen.getByTestId('delete-row-btn')
+
+      fireEvent.click(deleteRowButton)
     })
   })
 
@@ -125,6 +147,9 @@ describe('Host list page', () => {
       fireEvent.click(defaultTags.children[0])
       fireEvent.change(commentInput, { target: { value: 'new_comment' } })
       fireEvent.click(saveButton)
+
+      const modalBackground = screen.getByTestId('annotate-modal').parentElement!
+      fireEvent.click(modalBackground)
 
       fireEvent.doubleClick(commentCell)
       expect(screen.getByText('Annotate')).toBeInTheDocument()

@@ -51,7 +51,7 @@ const UserAddPage = () => {
       toast.success(resp.data.message)
       navigate('/auth/user/list')
     } catch (err) {
-      console.error(err)
+      toast.error('Error while adding a user.')
     }
   }
 

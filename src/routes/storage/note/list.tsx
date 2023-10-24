@@ -177,7 +177,7 @@ const NoteListPage = () => {
             />
             <ViewButton url={`/storage/note/view/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/note/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/note/delete/${row['id']}`} />
+            <DeleteButton url={`/storage/note/delete/${row['id']}`} tableId="note_list_table" />
           </ButtonGroup>,
         ),
     }),
@@ -261,6 +261,7 @@ const NoteListPage = () => {
               />
             </div>
             <a
+              data-testid="delete-row-btn"
               className="btn btn-outline-secondary"
               href="#"
               onClick={() => deleteRow('note_list_table', '/storage/note/delete_multiid')}

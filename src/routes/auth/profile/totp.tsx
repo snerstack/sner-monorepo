@@ -25,7 +25,7 @@ const TOTPPage = () => {
     if (provisioning_url) {
       QRCode.toDataURL(provisioning_url)
         .then((data: string) => setQrcode(data))
-        .catch((err) => console.log(err))
+        .catch((err) => toast.error((err as Error).message))
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -39,7 +39,12 @@ const MultipleTagModal = ({
   }
 
   return (
-    <Modal show={multipleTag.show} onHide={() => setMultipleTag({ ...multipleTag, show: false })} size="lg">
+    <Modal
+      show={multipleTag.show}
+      onHide={() => setMultipleTag({ ...multipleTag, show: false })}
+      size="lg"
+      data-testid="multiple-tag-modal"
+    >
       <ModalHeader>
         <ModalTitle>{multipleTag.action === 'set' ? 'Tag multiple items' : 'Untag multiple items'}</ModalTitle>
       </ModalHeader>

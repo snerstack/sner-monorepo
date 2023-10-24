@@ -1,7 +1,9 @@
 import HostViewPage from '@/routes/storage/host/view'
 import ServiceListPage from '@/routes/storage/service/list'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+import httpClient from '@/lib/httpClient'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
@@ -84,6 +86,27 @@ describe('Service list page', () => {
       expect(screen.getByText('127.4.4.4')).toBeInTheDocument()
       expect(screen.queryByText('127.3.3.3')).toBeNull()
       expect(screen.queryByText('127.128.129.130')).toBeNull()
+    })
+  })
+
+  it('deletes host', async () => {
+    renderWithProviders({
+      element: <ServiceListPage />,
+      path: '/storage/service/list',
+    })
+
+    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+
+    await waitFor(() => {
+      // selects first row
+      const cells = screen.getAllByRole('cell')
+      fireEvent.click(cells[0])
+
+      window.confirm = vi.fn(() => true)
+
+      const deleteRowButton = screen.getByTestId('delete-row-btn')
+
+      fireEvent.click(deleteRowButton)
     })
   })
 

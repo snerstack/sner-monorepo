@@ -43,7 +43,7 @@ const JobListPage = () => {
               url={`/scheduler/job/reconcile/${row['id']}`}
               navigate={navigate}
             />
-            <DeleteButton url={`/scheduler/job/reconcile/${row['id']}`} />
+            <DeleteButton url={`/scheduler/job/reconcile/${row['id']}`} tableId="job_list_table" />
           </ButtonGroup>,
         ),
     }),

@@ -27,7 +27,10 @@ const WebAuthnRegisterPage = () => {
   const [attestation, setAttestation] = useState<string>('')
 
   useEffect(() => {
-    console.info(window.PublicKeyCredential ? 'WebAuthn supported' : 'WebAuthn NOT supported')
+    if (!window.PublicKeyCredential) {
+      toast.warn('WebAuthn is not supported.')
+      return
+    }
 
     void (async () => {
       try {
@@ -39,7 +42,7 @@ const WebAuthnRegisterPage = () => {
         setAttestation(packedAttestation)
       } catch (err) {
         setIsPrepared(false)
-        console.error(err)
+        toast.error((err as Error).message)
       }
     })()
   }, [])
@@ -58,9 +61,10 @@ const WebAuthnRegisterPage = () => {
       toast.success(resp.data.message)
       navigate('/auth/profile')
     } catch (err) {
-      console.error(err)
       if (isAxiosError<{ error: { message: string; code: number } }>(err)) {
         toast.error(err.response?.data.error.message)
+      } else {
+        toast.error((err as Error).message)
       }
     }
   }
