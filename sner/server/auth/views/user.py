@@ -132,10 +132,10 @@ def user_apikey_route(user_id, action):
     if user and form.validate_on_submit():
         if action == 'generate':
             apikey = UserManager.apikey_generate(user)
-            return jsonify({'message': 'Apikey operation', 'detail': f'New apikey generated: {apikey}'}), HTTPStatus.OK
+            return jsonify({'apikey': apikey}), HTTPStatus.OK
 
         if action == 'revoke':
             UserManager.apikey_revoke(user)
-            return jsonify({'message': 'Apikey operation', 'detail': 'Apikey revoked'}), HTTPStatus.OK
+            return jsonify({'message': 'Apikey successfully revoked.'}), HTTPStatus.OK
 
     return error_response(message='Invalid request.', code=HTTPStatus.BAD_REQUEST)
