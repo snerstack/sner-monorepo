@@ -1,18 +1,25 @@
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useCookie } from 'react-use'
+import { useRecoilState } from 'recoil'
 
-import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
+import { apikeyModalState } from '@/atoms/apikeyModalAtom'
+
+import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
+import httpClient from '@/lib/httpClient'
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import EditButton from '@/components/buttons/EditButton'
+import ApikeyModal from '@/components/modals/ApikeyModal'
 
 const UserListPage = () => {
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
+  const [, setApikeyModal] = useRecoilState(apikeyModalState)
 
   const columns = [
     Column('id'),
@@ -25,8 +32,29 @@ const UserListPage = () => {
           <>
             {row['apikey'] ? 'true' : 'false'}{' '}
             <a
-              className="btn btn-outline-secondary btn-sm abutton_userapikey"
-              data-url={`/auth/user/apikey/${row['id']}/${row['apikey'] ? 'revoke' : 'generate'}`}
+              data-testid="apikey-btn"
+              className="btn btn-outline-secondary btn-sm"
+              onClick={(e) => {
+                e.preventDefault()
+                httpClient
+                  .post<{ apikey?: string; message?: string }>(
+                    `${import.meta.env.VITE_SERVER_URL}/auth/user/apikey/${row['id']}/${
+                      row['apikey'] ? 'revoke' : 'generate'
+                    }`,
+                  )
+                  .then((res) => {
+                    if (res.data.apikey) {
+                      setApikeyModal({ show: true, apikey: res.data.apikey })
+                    } else {
+                      toast.success(res.data.message)
+                    }
+
+                    getTableApi('user_list_table').draw()
+                  })
+                  .catch(() => {
+                    toast.error('Server error.')
+                  })
+              }}
             >
               {row['apikey'] ? 'revoke' : 'generate'}
             </a>
@@ -71,6 +99,8 @@ const UserListPage = () => {
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
       />
+
+      <ApikeyModal />
     </div>
   )
 }
