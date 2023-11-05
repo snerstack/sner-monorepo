@@ -1,0 +1,2 @@
+server:
+  sqlalchemy_database_uri: "postgresql://postgres:postgres@postgres:5432/sner"

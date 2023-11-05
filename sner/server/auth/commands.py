@@ -58,6 +58,7 @@ def add_agent():
 @click.argument('username')
 @click.argument('email')
 @click.option('--roles', help='roles separated by coma')
+@click.option('--password')
 @with_appcontext
 def add_user(username, email, **kwargs):
     """add new user"""
@@ -66,8 +67,10 @@ def add_user(username, email, **kwargs):
         username=username,
         email=email,
         active=True,
-        roles=kwargs['roles'].split(',') if kwargs['roles'] else []
+        roles=kwargs['roles'].split(',') if kwargs['roles'] else [],
+        password=PWS.hash(kwargs['password']) if kwargs['password'] else None
     )
+
     db.session.add(user)
     db.session.commit()
     print(f'new user {user.username}')

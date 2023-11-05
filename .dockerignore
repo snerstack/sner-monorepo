@@ -1,0 +1,6 @@
+venv/
+sner_test_var/
+__pycache__/
+*.swp
+.coverage
+.sner-infra.*
