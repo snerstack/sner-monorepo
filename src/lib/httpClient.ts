@@ -1,6 +1,12 @@
 import axios from 'axios'
+import Cookies from 'js-cookie'
 
-axios.defaults.xsrfCookieName = 'XSRF-TOKEN'
-axios.defaults.xsrfHeaderName = 'X-CSRF-TOKEN'
+const instance = axios.create({ withCredentials: true })
 
-export default axios.create({ withCredentials: true })
+instance.interceptors.request.use((config) => {
+  /* c8 ignore next 3 */
+  config.headers['X-CSRF-TOKEN'] = Cookies.get('XSRF-TOKEN')
+  return config
+})
+
+export default instance

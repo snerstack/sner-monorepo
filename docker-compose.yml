@@ -1,0 +1,33 @@
+version: '3'
+services:
+  frontend:
+    build:
+      context: .
+    image: frontend
+    ports:
+      - '4173:4173'
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: https://github.com/Filiq/sner4.git#routes-for-frontend
+    ports:
+      - '18000:18000'
+    depends_on:
+      - postgres
+
+  postgres:
+    restart: always
+    image: postgres:latest
+    volumes:
+      - db-data:/var/lib/postgresql
+    expose:
+      - '5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sner
+
+volumes:
+  db-data:

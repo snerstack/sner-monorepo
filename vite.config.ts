@@ -15,7 +15,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/tests/setup.ts'],
-    exclude: [...configDefaults.exclude, 'src/tests/mocks', 'src/tests/utils'],
+    exclude: [...configDefaults.exclude, 'src/tests/mocks', 'src/tests/utils', 'selenium-tests'],
     testTimeout: 15000,
     threads: false,
     retry: 3,
@@ -26,7 +26,7 @@ export default defineConfig({
       functions: 100,
       branches: 100,
       statements: 100,
-      exclude: ['src/tests/mocks', 'src/tests/utils'],
+      exclude: ['src/tests/mocks', 'src/tests/utils', 'selenium-tests'],
     },
   },
 })

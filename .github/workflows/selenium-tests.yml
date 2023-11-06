@@ -1,0 +1,26 @@
+name: Selenium Tests
+
+on: [push, pull_request]
+
+jobs:
+  selenium-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+
+      - name: Start all services
+        run: sudo docker-compose -f "docker-compose.yml" up -d --build
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Run selenium tests
+        run: npm run selenium-test
+
+      - name: Stop all services
+        run: sudo docker-compose -f "docker-compose.yml" down
