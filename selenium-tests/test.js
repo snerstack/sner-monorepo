@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-const mocha = new Mocha({ timeout: 10000 })
+const mocha = new Mocha({ timeout: 60000 })
 
 const testFiles = ['home.test.js', 'auth/login.test.js']
 

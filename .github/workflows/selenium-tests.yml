@@ -7,14 +7,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Start all services
+        run: sudo docker-compose -f "docker-compose.yml" up -d --build
+
       - uses: actions/setup-node@v3
         with:
           node-version: 18.x
           cache: 'npm'
-
-      - name: Start all services
-        run: sudo docker-compose -f "docker-compose.yml" up -d --build
 
       - name: Install npm dependencies
         run: npm install
