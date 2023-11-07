@@ -1,16 +1,15 @@
 import { expect } from 'chai'
 import { afterEach, beforeEach, describe, it } from 'mocha'
-import { Builder, Key, until } from 'selenium-webdriver'
-import firefox from 'selenium-webdriver/firefox.js'
+import { until } from 'selenium-webdriver'
+
+import { loginUser } from '../utils/loginUser.js'
+import { setupDriver } from '../utils/setupDriver.js'
 
 describe('Login page', () => {
   let driver
 
-  const options = new firefox.Options()
-  options.addArguments('-headless')
-
   beforeEach(async () => {
-    driver = await new Builder().forBrowser('firefox').setFirefoxOptions(options).build()
+    driver = await setupDriver()
   })
 
   afterEach(async () => {
@@ -18,7 +17,7 @@ describe('Login page', () => {
   })
 
   it('visits login page', async () => {
-    await driver.get('http://localhost:4173' + '/')
+    await driver.get(process.env.FRONTEND_URL + '/')
 
     const loginButton = await driver.wait(until.elementLocated({ xpath: "//a[contains(text(), 'Login')]" }))
 
@@ -32,15 +31,7 @@ describe('Login page', () => {
   })
 
   it('logs in', async () => {
-    await driver.get('http://localhost:4173' + '/auth/login')
-
-    const usernameField = await driver.wait(until.elementLocated({ name: 'username' }))
-    const passwordField = await driver.wait(until.elementLocated({ name: 'password' }))
-    const loginButton = await driver.wait(until.elementLocated({ xpath: '//input[@value="Login"]' }))
-
-    await usernameField.sendKeys('testuser')
-    await passwordField.sendKeys('testpass')
-    await loginButton.click()
+    loginUser(driver)
 
     const homepageHeadline = await driver.wait(
       until.elementsLocated({ xpath: '//h1[text()="Slow Network Recon Service"]' }),
