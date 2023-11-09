@@ -178,7 +178,7 @@ const HostListPage = () => {
               All
             </a>
             <a
-              className="btn btn-outline-secondary abutton_selectnone"
+              className="btn btn-outline-secondary"
               data-testid="host_unselect_all"
               href="#"
               title="unselect all"

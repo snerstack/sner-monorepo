@@ -600,10 +600,10 @@ const HostViewPage = () => {
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
                   </a>
-                  <a className="btn btn-outline-secondary abutton_selectall" href="#">
+                  <a className="btn btn-outline-secondary" href="#">
                     All
                   </a>
-                  <a className="btn btn-outline-secondary abutton_selectnone" href="#">
+                  <a className="btn btn-outline-secondary" href="#">
                     None
                   </a>
                 </div>{' '}
@@ -701,7 +701,7 @@ const HostViewPage = () => {
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
                   </a>
-                  <a className="btn btn-outline-secondary abutton_selectall" href="#">
+                  <a className="btn btn-outline-secondary" href="#">
                     All
                   </a>
                   <a className="btn btn-outline-secondary abutton_selectnone" href="#">

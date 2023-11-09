@@ -216,6 +216,32 @@ describe('Vuln list page', () => {
     })
   })
 
+  it('selects all vulns', async () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('vuln_select_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
+  it('unselects all vulns', async () => {
+    renderWithProviders({
+      element: <VulnListPage />,
+      path: '/storage/vuln/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('vuln_unselect_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
   it('deletes vuln', async () => {
     renderWithProviders({
       element: <VulnListPage />,

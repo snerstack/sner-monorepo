@@ -181,6 +181,32 @@ describe('Note list page', () => {
     })
   })
 
+  it('selects all notes', async () => {
+    renderWithProviders({
+      element: <NoteListPage />,
+      path: '/storage/note/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('note_select_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
+  it('unselects all notes', async () => {
+    renderWithProviders({
+      element: <NoteListPage />,
+      path: '/storage/note/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('note_unselect_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
   it('sets multiple tags', async () => {
     renderWithProviders({
       element: <NoteListPage />,

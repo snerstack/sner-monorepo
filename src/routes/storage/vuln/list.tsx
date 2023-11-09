@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
-import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
+import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import {
   deleteRow,
   getColorForSeverity,
@@ -247,10 +247,28 @@ const VulnListPage = () => {
             <a className="btn btn-outline-secondary disabled">
               <i className="fas fa-check-square"></i>
             </a>
-            <a className="btn btn-outline-secondary abutton_selectall" href="#" title="select all">
+            <a
+              className="btn btn-outline-secondary"
+              data-testid="vuln_select_all"
+              href="#"
+              title="select all"
+              onClick={() => {
+                const dt = getTableApi('vuln_list_table')
+                dt.rows({ page: 'current' }).select()
+              }}
+            >
               All
             </a>
-            <a className="btn btn-outline-secondary abutton_selectnone" href="#" title="unselect all">
+            <a
+              className="btn btn-outline-secondary"
+              data-testid="vuln_unselect_all"
+              href="#"
+              title="unselect all"
+              onClick={() => {
+                const dt = getTableApi('vuln_list_table')
+                dt.rows({ page: 'current' }).deselect()
+              }}
+            >
               None
             </a>
           </div>{' '}

@@ -138,6 +138,32 @@ describe('Service list page', () => {
     })
   })
 
+  it('selects all services', async () => {
+    renderWithProviders({
+      element: <ServiceListPage />,
+      path: '/storage/service/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('service_select_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
+  it('unselects all services', async () => {
+    renderWithProviders({
+      element: <ServiceListPage />,
+      path: '/storage/service/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('service_unselect_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
   it('sets multiple tags', async () => {
     renderWithProviders({
       element: <ServiceListPage />,

@@ -6,21 +6,21 @@ import { findTableData, toggleDTToolboxes } from '../utils/datatables.js'
 import { loginUser } from '../utils/loginUser.js'
 import { setupDriver } from '../utils/setupDriver.js'
 
-describe('Host page', () => {
+describe('Service page', () => {
   let driver
 
   beforeEach(async () => {
     driver = await setupDriver()
     await loginUser(driver)
-    await driver.get(process.env.FRONTEND_URL + '/storage/host/list')
+    await driver.get(process.env.FRONTEND_URL + '/storage/service/list')
   })
 
   afterEach(async () => {
     await driver.quit()
   })
 
-  it('shows list of hosts', async () => {
-    const commentCell = await driver.wait(findTableData('host_list_table', 'a some unknown service server'))
+  it('shows list of services', async () => {
+    const commentCell = await driver.wait(findTableData('service_list_table', 'manual testservice comment'))
 
     expect(commentCell).to.exist
   })
@@ -38,7 +38,7 @@ describe('Host page', () => {
   it('toggles datatables toolbox', async () => {
     await toggleDTToolboxes(driver)
 
-    const toolbox = await driver.wait(until.elementLocated({ id: 'host_list_table_toolbox' }))
+    const toolbox = await driver.wait(until.elementLocated({ id: 'service_list_table_toolbox' }))
 
     expect(await toolbox.isDisplayed()).to.be.true
   })
@@ -58,7 +58,7 @@ describe('Host page', () => {
 
     expect(selectedRows).to.have.lengthOf(1)
 
-    const selectAllButton = await driver.wait(until.elementLocated({ xpath: '//*[@data-testid="host_select_all"]' }))
+    const selectAllButton = await driver.wait(until.elementLocated({ xpath: '//*[@data-testid="service_select_all"]' }))
 
     await selectAllButton.click()
 
@@ -67,7 +67,7 @@ describe('Host page', () => {
     expect(selectedRows).to.have.lengthOf(2)
   })
 
-  it('edits host', async () => {
+  it('edits service', async () => {
     const editRowButton = (await driver.wait(until.elementsLocated({ xpath: '//*[@data-testid="edit-btn"]' })))[0]
 
     await editRowButton.click()
@@ -83,29 +83,9 @@ describe('Host page', () => {
     await editButton.click()
 
     const firstRowTag = await driver.wait(
-      until.elementLocated({ xpath: '//*[@data-testid="host_tags_annotate"]/span[contains(text(), "todo")]' }),
+      until.elementLocated({ xpath: '//*[@data-testid="service_tags_annotate"]/span[contains(text(), "todo")]' }),
     )
 
     expect(firstRowTag).to.exist
-  })
-
-  it('views host', async () => {
-    const hostLink = await driver.wait(findTableData('host_list_table', '127.4.4.4'))
-
-    await hostLink.click()
-
-    const hostname = await driver.wait(
-      until.elementLocated({ xpath: '//li[contains(text(), "testhost.testdomain.test<script>alert(1);</script>")]' }),
-    )
-
-    expect(hostname).to.exist
-
-    const vulnsTab = await driver.wait(until.elementLocated({ xpath: '//*[@data-testid="vulns_tab"]' }))
-
-    await vulnsTab.click()
-
-    const vuln = await driver.wait(findTableData('host_view_vuln_table', 'aggregable vuln'))
-
-    expect(vuln).to.exist
   })
 })
