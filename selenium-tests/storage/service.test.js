@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { afterEach, beforeEach, describe, it } from 'mocha'
 import { until } from 'selenium-webdriver'
 
-import { findTableData, toggleDTToolboxes } from '../utils/datatables.js'
+import { findTableData, getTableRowCount, toggleDTToolboxes, waitForTableToLoad } from '../utils/datatables.js'
 import { loginUser } from '../utils/loginUser.js'
 import { setupDriver } from '../utils/setupDriver.js'
 
@@ -13,6 +13,7 @@ describe('Service page', () => {
     driver = await setupDriver()
     await loginUser(driver)
     await driver.get(process.env.FRONTEND_URL + '/storage/service/list')
+    await waitForTableToLoad(driver, 'service_list_table')
   })
 
   afterEach(async () => {
@@ -20,7 +21,9 @@ describe('Service page', () => {
   })
 
   it('shows list of services', async () => {
-    const commentCell = await driver.wait(findTableData('service_list_table', 'manual testservice comment'))
+    const commentCell = await driver.wait(
+      findTableData({ driver, tableId: 'service_list_table', expectedData: 'manual testservice comment' }),
+    )
 
     expect(commentCell).to.exist
   })
@@ -87,5 +90,21 @@ describe('Service page', () => {
     )
 
     expect(firstRowTag).to.exist
+  })
+
+  it('filters services', async () => {
+    const toggleFilterButton = await driver.findElement({ xpath: '//a[@href="#filter_form"]' })
+    const filterInput = await driver.findElement({ name: 'filter' })
+    const filterSubmitButton = await driver.findElement({ xpath: '//a[@data-testid="filter-btn"]' })
+
+    await toggleFilterButton.click()
+    await filterInput.sendKeys('Service.id==2')
+    await filterSubmitButton.click()
+
+    await waitForTableToLoad(driver, 'service_list_table')
+
+    const rowCount = await getTableRowCount({ driver, tableId: 'service_list_table' })
+
+    expect(rowCount).to.equal(1)
   })
 })

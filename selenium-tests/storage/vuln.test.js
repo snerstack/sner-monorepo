@@ -2,30 +2,29 @@ import { expect } from 'chai'
 import { afterEach, beforeEach, describe, it } from 'mocha'
 import { until } from 'selenium-webdriver'
 
-import { findTableData, toggleDTToolboxes, waitForTableToLoad } from '../utils/datatables.js'
+import { findTableData, getTableRowCount, toggleDTToolboxes, waitForTableToLoad } from '../utils/datatables.js'
 import { loginUser } from '../utils/loginUser.js'
 import { setupDriver } from '../utils/setupDriver.js'
 
-describe('Host page', () => {
+describe('Vuln page', () => {
   let driver
 
   beforeEach(async () => {
     driver = await setupDriver()
     await loginUser(driver)
-    await driver.get(process.env.FRONTEND_URL + '/storage/host/list')
-    await waitForTableToLoad(driver, 'host_list_table')
+    await driver.get(process.env.FRONTEND_URL + '/storage/vuln/list')
+    await waitForTableToLoad(driver, 'vuln_list_table')
   })
 
   afterEach(async () => {
     await driver.quit()
   })
 
-  it('shows list of hosts', async () => {
-    const commentCell = await findTableData({
-      driver,
-      tableId: 'host_list_table',
-      expectedData: 'a some unknown service server',
-    })
+  it('shows list of vulns', async () => {
+    const commentCell = await driver.wait(
+      findTableData({ driver, tableId: 'vuln_list_table', expectedData: 'a test vulnerability comment' }),
+    )
+
     expect(commentCell).to.exist
   })
 
@@ -39,12 +38,14 @@ describe('Host page', () => {
     expect(showMoreHeadline).to.exist
   })
 
-  it('toggles datatables toolbox', async () => {
-    await toggleDTToolboxes(driver)
+  it('shows service endpoints', async () => {
+    const serviceButton = await driver.wait(until.elementLocated({ xpath: '//a[text()="12345/tcp"]' }))
 
-    const toolbox = await driver.wait(until.elementLocated({ id: 'host_list_table_toolbox' }))
+    await serviceButton.click()
 
-    expect(await toolbox.isDisplayed()).to.be.true
+    const serviceEndpoint = await driver.wait(until.elementLocated({ xpath: '//a[text()="tcp://127.3.3.3:12345"]' }))
+
+    expect(serviceEndpoint).to.exist
   })
 
   it('selects rows', async () => {
@@ -62,16 +63,16 @@ describe('Host page', () => {
 
     expect(selectedRows).to.have.lengthOf(1)
 
-    const selectAllButton = await driver.wait(until.elementLocated({ xpath: '//*[@data-testid="host_select_all"]' }))
+    const selectAllButton = await driver.wait(until.elementLocated({ xpath: '//*[@data-testid="vuln_select_all"]' }))
 
     await selectAllButton.click()
 
     selectedRows = await driver.wait(until.elementsLocated({ xpath: '//tbody/tr[contains(@class, "selected")]' }))
 
-    expect(selectedRows).to.have.lengthOf(2)
+    expect(selectedRows).to.have.lengthOf(8)
   })
 
-  it('edits host', async () => {
+  it('edits vuln', async () => {
     const editRowButton = (await driver.wait(until.elementsLocated({ xpath: '//*[@data-testid="edit-btn"]' })))[0]
 
     await editRowButton.click()
@@ -87,37 +88,25 @@ describe('Host page', () => {
     await editButton.click()
 
     const firstRowTag = await driver.wait(
-      until.elementLocated({ xpath: '//*[@data-testid="host_tags_annotate"]/span[contains(text(), "todo")]' }),
+      until.elementLocated({ xpath: '//*[@data-testid="vuln_tags_annotate"]/span[contains(text(), "todo")]' }),
     )
 
     expect(firstRowTag).to.exist
   })
 
-  it('views host', async () => {
-    const hostLink = await findTableData({
-      driver,
-      tableId: 'host_list_table',
-      expectedData: '127.4.4.4',
-    })
+  it('filters vulns', async () => {
+    const toggleFilterButton = await driver.findElement({ xpath: '//a[@href="#filter_form"]' })
+    const filterInput = await driver.findElement({ name: 'filter' })
+    const filterSubmitButton = await driver.findElement({ xpath: '//a[@data-testid="filter-btn"]' })
 
-    await hostLink.click()
+    await toggleFilterButton.click()
+    await filterInput.sendKeys('Vuln.severity=="medium"')
+    await filterSubmitButton.click()
 
-    const hostname = await driver.wait(
-      until.elementLocated({ xpath: '//li[contains(text(), "testhost.testdomain.test<script>alert(1);</script>")]' }),
-    )
+    await waitForTableToLoad(driver, 'vuln_list_table')
 
-    expect(hostname).to.exist
+    const rowCount = await getTableRowCount({ driver, tableId: 'vuln_list_table' })
 
-    const vulnsTab = await driver.wait(until.elementLocated({ xpath: '//*[@data-testid="vulns_tab"]' }))
-
-    await vulnsTab.click()
-
-    const vuln = await findTableData({
-      driver,
-      tableId: 'host_view_vuln_table',
-      expectedData: 'aggregable vuln',
-    })
-
-    expect(vuln).to.exist
+    expect(rowCount).to.equal(3)
   })
 })
