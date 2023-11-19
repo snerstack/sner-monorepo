@@ -6,6 +6,7 @@ sner pytest config and fixtures
 import os
 import shutil
 from tempfile import mkdtemp
+from flask import request
 
 import pytest
 from pytest_factoryboy import register as factoryboy_register

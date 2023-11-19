@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from soft_webauthn import SoftWebauthnDevice
 
 from sner.server.extensions import db, webauthn
-from tests.selenium import webdriver_waituntil
+from tests.selenium import webdriver_waituntil, frontend_url, wait_for_js
 from tests.selenium.auth import js_variable_ready
 
 
@@ -27,7 +27,8 @@ def test_login_webauthn(live_server, selenium, webauthn_credential_factory):  # 
     # accessing from different process such as real browser
     db.session.commit()
 
-    selenium.get(url_for('auth.login_route', _external=True))
+    selenium.get(frontend_url(url_for('auth.login_route')))
+    wait_for_js(selenium)
     selenium.find_element(By.XPATH, '//form//input[@name="username"]').send_keys(wncred.user.username)
     selenium.find_element(By.XPATH, '//form//input[@type="submit"]').click()
 
@@ -36,7 +37,7 @@ def test_login_webauthn(live_server, selenium, webauthn_credential_factory):  # 
     pkcro = cbor.decode(b64decode(selenium.execute_script('return window.pkcro_raw;').encode('utf-8')))
     assertion = device.get(pkcro, f'https://{webauthn.rp.id}')
     buf = b64encode(cbor.encode(assertion)).decode('utf-8')
-    selenium.execute_script(f'authenticate_assertion(CBOR.decode(Sner.base64_to_array_buffer("{buf}")));')
+    selenium.execute_script(f'webauthnLogin(getPackedAssertion(CBORDecode(base64ToArrayBuffer("{buf}"))));')
     # and back to standard test codeflow
 
     webdriver_waituntil(selenium, EC.presence_of_element_located((By.XPATH, '//a[text()="Logout"]')))
