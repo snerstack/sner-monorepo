@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { Fragment } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, renderElements } from '@/lib/DataTables'
@@ -74,24 +74,24 @@ const VulnGroupedPage = () => {
             <a className="btn btn-outline-secondary disabled">
               <i className="fas fa-filter"></i>
             </a>
-            <a className="btn btn-outline-secondary" href='/storage/vuln/grouped?filter=Vuln.tags=="{}"'>
+            <Link className="btn btn-outline-secondary" to='/storage/vuln/grouped?filter=Vuln.tags=="{}"'>
               Not tagged
-            </a>
-            <a className="btn btn-outline-secondary" href='/storage/vuln/grouped?filter=Vuln.tags!="{}"'>
+            </Link>
+            <Link className="btn btn-outline-secondary" to='/storage/vuln/grouped?filter=Vuln.tags!="{}"'>
               Tagged
-            </a>
-            <a
+            </Link>
+            <Link
               className="btn btn-outline-secondary"
-              href='/storage/vuln/grouped?filter=Vuln.tags not_any "report" AND Vuln.tags not_any "report:data" AND Vuln.tags not_any "info"'
+              to='/storage/vuln/grouped?filter=Vuln.tags not_any "report" AND Vuln.tags not_any "report:data" AND Vuln.tags not_any "info"'
             >
               Exclude reviewed
-            </a>
-            <a
+            </Link>
+            <Link
               className="btn btn-outline-secondary"
-              href='/storage/vuln/grouped?filter=Vuln.tags any "report" OR Vuln.tags any "report:data"'
+              to='/storage/vuln/grouped?filter=Vuln.tags any "report" OR Vuln.tags any "report:data"'
             >
               Only Report
-            </a>
+            </Link>
           </div>
         </div>
       </div>

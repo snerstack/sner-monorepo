@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { ReactElement } from 'react'
 import { HelmetProvider } from 'react-helmet-async'
 import { LoaderFunction, RouterProvider, createMemoryRouter } from 'react-router-dom'
@@ -31,12 +32,15 @@ export function renderWithProviders({
     },
   )
 
-  return render(
-    <RecoilRoot>
-      <HelmetProvider>
-        <RouterProvider router={router} />
-        <ToastContainer />
-      </HelmetProvider>
-    </RecoilRoot>,
-  )
+  return {
+    user: userEvent.setup(),
+    ...render(
+      <RecoilRoot>
+        <HelmetProvider>
+          <RouterProvider router={router} />
+          <ToastContainer />
+        </HelmetProvider>
+      </RecoilRoot>,
+    ),
+  }
 }

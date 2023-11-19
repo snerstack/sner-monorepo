@@ -1,6 +1,6 @@
 import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
@@ -8,6 +8,7 @@ import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
 
 import Heading from '@/components/Heading'
 import DeleteButton from '@/components/buttons/DeleteButton'
+import AnnotateModal from '@/components/modals/AnnotateModal'
 
 type ScreenshotWeb = {
   url: string
@@ -30,6 +31,12 @@ type TestSsl = {
 
 const NoteViewPage = () => {
   const note = useLoaderData() as Note
+  const [annotate, setAnnotate] = useState<Annotate>({
+    show: false,
+    tags: note.tags,
+    comment: note.comment,
+    url: `/storage/note/annotate/${note.id}`,
+  })
 
   return (
     <div>
@@ -78,8 +85,7 @@ const NoteViewPage = () => {
               <div className="dropdown d-flex">
                 {note.service_id ? (
                   <a className="flex-fill" data-toggle="dropdown">
-                    {'<'}Service {note.service_id}: {note.address} {note.service_proto}.{note.service_port}
-                    {'>'}
+                    {`<Service ${note.service_id}: ${note.address} ${note.service_proto}.${note.service_port}>`}
                   </a>
                 ) : (
                   'No service'
@@ -106,7 +112,17 @@ const NoteViewPage = () => {
             <th>xtype</th>
             <td>{note.xtype}</td>
             <th>tags</th>
-            <td className="abutton_annotate_view" colSpan={3}>
+            <td
+              className="abutton_annotate_view"
+              data-testid="note_tags_annotate"
+              colSpan={3}
+              onDoubleClick={() =>
+                setAnnotate({
+                  ...annotate,
+                  show: true,
+                })
+              }
+            >
               {note.tags.map((tag) => (
                 <Fragment key={tag}>
                   <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
@@ -116,7 +132,17 @@ const NoteViewPage = () => {
           </tr>
           <tr>
             <th>comment</th>
-            <td className="abutton_annotate_view" colSpan={5}>
+            <td
+              className="abutton_annotate_view"
+              colSpan={5}
+              data-testid="note_comment_annotate"
+              onDoubleClick={() =>
+                setAnnotate({
+                  ...annotate,
+                  show: true,
+                })
+              }
+            >
               {note.comment}
             </td>
           </tr>
@@ -178,6 +204,7 @@ const NoteViewPage = () => {
       ) : (
         <>{note.data}</>
       )}
+      <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
     </div>
   )
 }

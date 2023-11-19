@@ -31,7 +31,9 @@ const AnnotateModal = ({
       .post(import.meta.env.VITE_SERVER_URL + annotate.url, formData)
       .then(() => {
         setAnnotate({ ...annotate, show: false })
-        getTableApi(annotate.tableId).draw()
+        if (annotate.tableId) {
+          getTableApi(annotate.tableId).draw()
+        }
       })
       .catch(() => toast.error('Error while annotating'))
   }

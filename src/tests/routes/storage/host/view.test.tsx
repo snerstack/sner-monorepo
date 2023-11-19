@@ -94,7 +94,7 @@ describe('Host view page', () => {
   it('views vuln', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
       routes: [
         {
@@ -128,7 +128,7 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
-      const vulnsTab = screen.getByTestId('vulns_tab')
+      const vulnsTab = screen.getByTestId('vuln_tab')
       fireEvent.click(vulnsTab)
     })
 
@@ -145,10 +145,29 @@ describe('Host view page', () => {
     })
   })
 
+  it('annotates host', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const tagsCell = screen.getByTestId('host_tags_annotate')
+      const commentCell = screen.getByTestId('host_comment_annotate')
+
+      fireEvent.doubleClick(tagsCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
+
+      fireEvent.doubleClick(commentCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
+    })
+  })
+
   it('annotates service', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
@@ -175,7 +194,7 @@ describe('Host view page', () => {
   it('annotates vuln', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
@@ -194,7 +213,7 @@ describe('Host view page', () => {
   it('annotates note', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
@@ -221,12 +240,12 @@ describe('Host view page', () => {
   it('sets multiple service tags', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
     await waitFor(() => {
-      const servicesTab = screen.getByTestId('services_tab')
+      const servicesTab = screen.getByTestId('service_tab')
       const tagMultipleButton = screen.getByTestId('service_set_multiple_tag')
 
       fireEvent.click(servicesTab)
@@ -239,12 +258,12 @@ describe('Host view page', () => {
   it('unsets multiple service tags', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
     await waitFor(() => {
-      const servicesTab = screen.getByTestId('services_tab')
+      const servicesTab = screen.getByTestId('service_tab')
       const tagMultipleButton = screen.getByTestId('service_unset_multiple_tag')
 
       fireEvent.click(servicesTab)
@@ -257,12 +276,12 @@ describe('Host view page', () => {
   it('sets multiple vuln tags', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
     await waitFor(() => {
-      const vulnsTab = screen.getByTestId('vulns_tab')
+      const vulnsTab = screen.getByTestId('vuln_tab')
       const tagMultipleButton = screen.getByTestId('vuln_set_multiple_tag')
 
       fireEvent.click(vulnsTab)
@@ -275,12 +294,12 @@ describe('Host view page', () => {
   it('unsets multiple vuln tags', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
     await waitFor(() => {
-      const vulnsTab = screen.getByTestId('vulns_tab')
+      const vulnsTab = screen.getByTestId('vuln_tab')
       const tagMultipleButton = screen.getByTestId('vuln_unset_multiple_tag')
 
       fireEvent.click(vulnsTab)
@@ -293,12 +312,12 @@ describe('Host view page', () => {
   it('sets multiple note tags', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
     await waitFor(() => {
-      const notesTab = screen.getByTestId('notes_tab')
+      const notesTab = screen.getByTestId('note_tab')
       const tagMultipleButton = screen.getByTestId('note_set_multiple_tag')
 
       fireEvent.click(notesTab)
@@ -311,12 +330,12 @@ describe('Host view page', () => {
   it('unsets multiple note tags', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
     await waitFor(() => {
-      const notesTab = screen.getByTestId('notes_tab')
+      const notesTab = screen.getByTestId('note_tab')
       const tagMultipleButton = screen.getByTestId('note_unset_multiple_tag')
 
       fireEvent.click(notesTab)
@@ -329,7 +348,7 @@ describe('Host view page', () => {
   it('deletes host', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
@@ -353,14 +372,14 @@ describe('Host view page', () => {
   it('deletes service', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValue('')
 
     await waitFor(() => {
-      const notesTab = screen.getByTestId('notes_tab')
+      const notesTab = screen.getByTestId('note_tab')
       fireEvent.click(notesTab)
 
       // selects first row
@@ -378,14 +397,14 @@ describe('Host view page', () => {
   it('deletes vuln', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValue('')
 
     await waitFor(() => {
-      const notesTab = screen.getByTestId('notes_tab')
+      const notesTab = screen.getByTestId('note_tab')
       fireEvent.click(notesTab)
 
       // selects first row
@@ -402,14 +421,14 @@ describe('Host view page', () => {
   it('deletes note', async () => {
     renderWithProviders({
       element: <HostViewPage />,
-      path: '/storage/host/list',
+      path: '/storage/host/view/1',
       loader: loader,
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValue('')
 
     await waitFor(() => {
-      const notesTab = screen.getByTestId('notes_tab')
+      const notesTab = screen.getByTestId('note_tab')
       fireEvent.click(notesTab)
 
       // selects first row

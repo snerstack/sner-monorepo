@@ -64,6 +64,19 @@ const WebAuthnLoginPage = () => {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.base64ToArrayBuffer = base64ToArrayBuffer // CI helper for selenium tests
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.CBORDecode = decode // CI helper for selenium tests
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.getPackedAssertion = getPackedAssertion // CI helper for selenium tests
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.webauthnLogin = loginHandler // CI helper for selenium tests
+
   return (
     <div>
       <Helmet>
@@ -86,6 +99,10 @@ export default WebAuthnLoginPage
 
 const getPublicKeyCredentialRequestOptions = async (): Promise<CredentialCreationOptions> => {
   const resp = await httpClient.post<string>(import.meta.env.VITE_SERVER_URL + '/auth/login_webauthn_pkcro')
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.pkcro_raw = resp.data // CI helper for selenium tests
 
   return decode(base64ToArrayBuffer(resp.data)) as CredentialCreationOptions
 }

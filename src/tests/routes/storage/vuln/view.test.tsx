@@ -1,37 +1,41 @@
 import VulnViewPage from '@/routes/storage/vuln/view'
-import { screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+
+import httpClient from '@/lib/httpClient'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
+
+const loader = () =>
+  Promise.resolve({
+    address: '127.4.4.4',
+    comment: null,
+    created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+    data: 'agg vuln data',
+    descr: 'aggregable vuln description',
+    host_id: 1,
+    hostname: 'testhost.testdomain.test<script>alert(1);</script>',
+    id: 1,
+    import_time: null,
+    modified: 'Tue, 29 Aug 2023 14:08:10 GMT',
+    name: 'aggregable vuln',
+    refs: [],
+    rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
+    service_id: null,
+    service_port: null,
+    service_proto: null,
+    severity: 'high',
+    tags: ['reportdata'],
+    via_target: null,
+    xtype: 'x.agg',
+  })
 
 describe('Vuln view page', () => {
   it('shows vuln', async () => {
     renderWithProviders({
       element: <VulnViewPage />,
       path: '/storage/vuln/view/1',
-      loader: () =>
-        Promise.resolve({
-          address: '127.4.4.4',
-          comment: null,
-          created: 'Mon, 17 Jul 2023 20:01:09 GMT',
-          data: 'agg vuln data',
-          descr: 'aggregable vuln description',
-          host_id: 1,
-          hostname: 'testhost.testdomain.test<script>alert(1);</script>',
-          id: 1,
-          import_time: null,
-          modified: 'Tue, 29 Aug 2023 14:08:10 GMT',
-          name: 'aggregable vuln',
-          refs: [],
-          rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
-          service_id: null,
-          service_port: null,
-          service_proto: null,
-          severity: 'high',
-          tags: ['reportdata'],
-          via_target: null,
-          xtype: 'x.agg',
-        }),
+      loader: loader,
     })
 
     await waitFor(() => {
@@ -39,6 +43,47 @@ describe('Vuln view page', () => {
       expect(listItems.includes('Vuln')).toBeTruthy()
       expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
       expect(listItems.includes('aggregable vuln (x.agg)')).toBeTruthy()
+    })
+  })
+
+  it('adds tag', async () => {
+    renderWithProviders({
+      element: <VulnViewPage />,
+      path: '/storage/vuln/view/1',
+      loader: loader,
+    })
+
+    window.location = {
+      reload: vi.fn(),
+    } as unknown as Location
+
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: '',
+    })
+
+    await waitFor(() => {
+      const infoTag = screen.getAllByTestId('tag-btn')[0]
+
+      fireEvent.click(infoTag)
+    })
+  })
+
+  it('annotates note', async () => {
+    renderWithProviders({
+      element: <VulnViewPage />,
+      path: '/storage/vuln/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const tagsCell = screen.getByTestId('vuln_tags_annotate')
+      const commentCell = screen.getByTestId('vuln_comment_annotate')
+
+      fireEvent.doubleClick(tagsCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
+
+      fireEvent.doubleClick(commentCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
     })
   })
 

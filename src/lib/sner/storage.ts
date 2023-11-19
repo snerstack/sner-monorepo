@@ -136,7 +136,7 @@ export const getSelectedIdsFormData = (dt: Api<unknown>): { [key: string]: numbe
   return data
 }
 
-export const tagAction = ({
+export const tagAction = async ({
   ids,
   tag,
   url,
@@ -161,7 +161,9 @@ export const tagAction = ({
     formData.append(key, ids[key].toString())
   }
 
-  httpClient.post(import.meta.env.VITE_SERVER_URL + url, formData).catch(() => toast.error('Error while adding a tag'))
+  await httpClient
+    .post(import.meta.env.VITE_SERVER_URL + url, formData)
+    .catch(() => toast.error('Error while adding a tag'))
 }
 
 export const deleteRow = (tableId: string, url: string) => {

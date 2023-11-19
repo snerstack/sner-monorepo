@@ -38,7 +38,7 @@ const TextAreaField = ({
           placeholder={placeholder}
           required={required}
           rows={rows}
-          value={_state}
+          value={_state || ''}
           onChange={(e) => _setState(e.target.value)}
         />
         {description && (

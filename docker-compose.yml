@@ -5,7 +5,7 @@ services:
       context: .
     image: frontend
     ports:
-      - '4173:4173'
+      - '18080:18080'
     depends_on:
       - backend
 

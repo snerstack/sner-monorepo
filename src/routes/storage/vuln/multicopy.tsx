@@ -87,16 +87,16 @@ const VulnMulticopyPage = () => {
         select={{ style: 'multi', selector: 'tr' }}
         lengthMenu={[10, 50, 100, 200]}
         drawCallback={() => {
-          const checkboxes = document.querySelectorAll('.select-checkbox')
-          checkboxes.forEach((checkbox) =>
-            checkbox.addEventListener('click', () => {
+          const rows = document.querySelectorAll('#vuln_multicopy_endpoints_table tbody tr')
+          rows.forEach((row) =>
+            row.addEventListener('click', () => {
               setTimeout(() => {
                 const dt = getTableApi('vuln_multicopy_endpoints_table')
                 const endpoints = dt
                   .rows({ selected: true })
                   .data()
                   .toArray()
-                  .map((row: VulnMulticopyRow) => row['endpoint_id'])
+                  .map((r: VulnMulticopyRow) => r['endpoint_id'])
 
                 setEndpoints(endpoints.length === 0 ? '' : JSON.stringify(endpoints))
               }, 25)

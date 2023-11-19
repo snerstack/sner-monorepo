@@ -152,4 +152,116 @@ describe('Vuln edit page', () => {
       fireEvent.click(editButton)
     })
   })
+
+  it('autocompletes host', async () => {
+    const { user } = renderWithProviders({
+      element: <VulnEditPage />,
+      path: '/storage/vuln/edit/1',
+      loader: loader,
+    })
+
+    vi.spyOn(httpClient, 'get').mockResolvedValueOnce({
+      data: [
+        {
+          label: '127.128.129.130 (hostname: testhost.testdomain.test)',
+          value: 1,
+        },
+        {
+          label: '127.3.3.3 (hostname: testhost2.testdomain.test)',
+          value: 2,
+        },
+      ],
+    })
+
+    await waitFor(() => {
+      user.click(screen.getByText('Host, Service'))
+    })
+
+    const hostInput = screen.getByLabelText('Host ID')
+    await user.type(hostInput, '1')
+
+    const suggestions = screen.getByTestId('host-autocomplete-list').children
+    expect(suggestions[0]).toHaveTextContent('127.128.129.130 (hostname: testhost.testdomain.test)')
+
+    await user.hover(suggestions[0])
+    await user.hover(suggestions[1])
+    await user.click(suggestions[0])
+  })
+
+  it('autocompletes host (error)', async () => {
+    const { user } = renderWithProviders({
+      element: <VulnEditPage />,
+      path: '/storage/vuln/edit/1',
+      loader: loader,
+    })
+
+    vi.spyOn(httpClient, 'get').mockRejectedValueOnce(errorResponse({ message: 'Server error.' }))
+
+    await waitFor(() => {
+      user.click(screen.getByText('Host, Service'))
+    })
+
+    const hostInput = screen.getByLabelText('Host ID')
+    await user.type(hostInput, '1')
+
+    await waitFor(() => {
+      expect(screen.getByText('Error while getting autocomplete suggestions.')).toBeInTheDocument()
+    })
+  })
+
+  it('autocompletes service', async () => {
+    const { user } = renderWithProviders({
+      element: <VulnEditPage />,
+      path: '/storage/vuln/edit/1',
+      loader: loader,
+    })
+
+    vi.spyOn(httpClient, 'get').mockResolvedValueOnce({
+      data: [
+        {
+          label: 'tcp/443 127.128.129.130 (hostname: testhost.testdomain.test id:1)',
+          value: 1,
+        },
+        {
+          label: 'tcp/80 127.127.127.127 (hostname: testhost2.testdomain.test id:2)',
+          value: 7,
+        },
+      ],
+    })
+
+    await waitFor(() => {
+      user.click(screen.getByText('Host, Service'))
+    })
+
+    const serviceInput = screen.getByLabelText('Service ID')
+    await user.type(serviceInput, '1')
+
+    const suggestions = screen.getByTestId('service-autocomplete-list').children
+    expect(suggestions[0]).toHaveTextContent('tcp/443 127.128.129.130 (hostname: testhost.testdomain.test id:1)')
+
+    await user.hover(suggestions[0])
+    await user.hover(suggestions[1])
+    await user.click(suggestions[0])
+  })
+
+  it('autocompletes host (error)', async () => {
+    const { user } = renderWithProviders({
+      element: <VulnEditPage />,
+      path: '/storage/vuln/edit/1',
+      loader: loader,
+    })
+
+    vi.spyOn(httpClient, 'get').mockRejectedValueOnce(errorResponse({ message: 'Server error.' }))
+
+    await waitFor(() => {
+      user.click(screen.getByText('Host, Service'))
+    })
+
+    const serviceInput = screen.getByLabelText('Service ID')
+    await user.type(serviceInput, '1')
+
+    await waitFor(() => {
+      expect(screen.getByText('Error while getting autocomplete suggestions.')).toBeInTheDocument()
+    })
+  })
 })

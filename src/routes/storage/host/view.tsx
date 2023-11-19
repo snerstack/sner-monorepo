@@ -17,6 +17,7 @@ import {
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
+import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Button from '@/components/buttons/Button'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
@@ -34,6 +35,14 @@ const HostViewPage = () => {
   const [activeTab, setActiveTab] = useLocalStorage('host_view_tabs_active')
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
+
+  const [annotateHost, setAnnotateHost] = useState<Annotate>({
+    show: false,
+    tags: host.tags,
+    comment: host.comment,
+    tableId: '',
+    url: `/storage/host/annotate/${host.id}`,
+  })
 
   const [annotateService, setAnnotateService] = useState<Annotate>({
     show: false,
@@ -60,7 +69,20 @@ const HostViewPage = () => {
     Column('host_address', { visible: false }),
     Column('host_hostname', { visible: false }),
     Column('proto'),
-    Column('port'),
+    Column('port', {
+      className: 'service_endpoint_dropdown',
+      createdCell: (cell, _data: string, row: ServiceRow) =>
+        renderElements(
+          cell,
+          <ServiceEndpointDropdown
+            service={row['port'].toString()}
+            address={row['host_address']}
+            hostname={row['host_hostname']}
+            proto={row['proto']}
+            port={row['port']}
+          />,
+        ),
+    }),
     Column('name'),
     Column('state'),
     Column('info'),
@@ -540,7 +562,11 @@ const HostViewPage = () => {
           </tr>
           <tr>
             <th>tags</th>
-            <td className="abutton_annotate_view">
+            <td
+              className="abutton_annotate_view"
+              data-testid="host_tags_annotate"
+              onDoubleClick={() => setAnnotateHost({ ...annotateHost, show: true })}
+            >
               {host.tags.map((tag) => (
                 <Fragment key={tag}>
                   <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
@@ -550,7 +576,13 @@ const HostViewPage = () => {
           </tr>
           <tr>
             <th>comment</th>
-            <td className="abutton_annotate_view">{host.comment}</td>
+            <td
+              className="abutton_annotate_view"
+              data-testid="host_comment_annotate"
+              onDoubleClick={() => setAnnotateHost({ ...annotateHost, show: true })}
+            >
+              {host.comment}
+            </td>
           </tr>
         </tbody>
       </table>
@@ -559,7 +591,7 @@ const HostViewPage = () => {
         <li className="nav-item">
           <a
             className={clsx('nav-link', activeTab === 'service' && 'active')}
-            data-testid="services_tab"
+            data-testid="service_tab"
             href="#"
             onClick={() => setActiveTab('service')}
           >
@@ -569,7 +601,7 @@ const HostViewPage = () => {
         <li className="nav-item">
           <a
             className={clsx('nav-link', activeTab === 'vuln' && 'active')}
-            data-testid="vulns_tab"
+            data-testid="vuln_tab"
             href="#"
             onClick={() => setActiveTab('vuln')}
           >
@@ -579,7 +611,7 @@ const HostViewPage = () => {
         <li className="nav-item">
           <a
             className={clsx('nav-link', activeTab === 'note' && 'active')}
-            data-testid="notes_tab"
+            data-testid="note_tab"
             href="#"
             onClick={() => setActiveTab('note')}
           >
@@ -887,6 +919,7 @@ const HostViewPage = () => {
           </div>
         </>
       </div>
+      <AnnotateModal annotate={annotateHost} setAnnotate={setAnnotateHost} />
     </div>
   )
 }

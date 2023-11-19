@@ -1,4 +1,3 @@
-import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -6,18 +5,12 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import {
-  deleteRow,
-  getColorForSeverity,
-  getColorForTag,
-  getLinksForService,
-  getTextForRef,
-  getUrlForRef,
-} from '@/lib/sner/storage'
+import { deleteRow, getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
+import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
@@ -75,27 +68,13 @@ const VulnListPage = () => {
       createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
-          <div className="dropdown d-flex">
-            <a className="flex-fill" data-toggle="dropdown">
-              {row['service']}
-            </a>
-            <div className="dropdown-menu">
-              <h6 className="dropdown-header">Service endpoint URIs</h6>
-              {getLinksForService(
-                row['host_address'],
-                row['host_hostname'],
-                row['service_proto'],
-                row['service_port'],
-              ).map((link) => (
-                <span className="dropdown-item" key={link}>
-                  <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
-                  <a rel="noreferrer" href={escapeHtml(link)}>
-                    {escapeHtml(link)}
-                  </a>
-                </span>
-              ))}
-            </div>
-          </div>,
+          <ServiceEndpointDropdown
+            service={row['service']}
+            address={row['host_address']}
+            hostname={row['host_hostname']}
+            proto={row['service_proto']}
+            port={row['service_port']}
+          />,
         ),
     }),
     Column('via_target', {

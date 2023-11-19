@@ -43,6 +43,7 @@ const QuickJump = () => {
   return (
     <div>
       <form
+        data-testid="quickjump-form"
         className="form-inline position-relative"
         style={{ display: 'block' }}
         method="post"
@@ -66,7 +67,7 @@ const QuickJump = () => {
           }}
         />
         {suggestions.length > 0 && (
-          <ul className="position-absolute w-100 mt-1 list-unstyled bg-white text-break">
+          <ul className="position-absolute w-100 mt-1 list-unstyled bg-white text-break" data-testid="quickjump-list">
             {suggestions.map((suggestion) => (
               <li
                 key={suggestion}

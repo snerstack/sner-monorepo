@@ -1,25 +1,26 @@
-import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
-import {
-  getColorForSeverity,
-  getColorForTag,
-  getLinksForService,
-  getTextForRef,
-  getUrlForRef,
-} from '@/lib/sner/storage'
+import { getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 
 import Heading from '@/components/Heading'
+import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import EditButton from '@/components/buttons/EditButton'
 import MultiCopyButton from '@/components/buttons/MultiCopyButton'
 import TagButton from '@/components/buttons/TagButton'
+import AnnotateModal from '@/components/modals/AnnotateModal'
 
 const VulnViewPage = () => {
   const vuln = useLoaderData() as Vuln
+  const [annotate, setAnnotate] = useState<Annotate>({
+    show: false,
+    tags: vuln.tags,
+    comment: vuln.comment,
+    url: `/storage/vuln/annotate/${vuln.id}`,
+  })
   return (
     <div>
       <Helmet>
@@ -43,7 +44,7 @@ const VulnViewPage = () => {
               <i className="fas fa-tag text-primary"></i>
             </a>
             {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
-              <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" id={vuln.id} />
+              <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" id={vuln.id} reloadPage={true} />
             ))}
           </div>{' '}
           <div className="btn-group">
@@ -87,29 +88,17 @@ const VulnViewPage = () => {
             </td>
             <th>service</th>
             <td className="service_endpoint_dropdown">
-              <div className="dropdown d-flex">
-                {vuln.service_id ? (
-                  <a className="flex-fill" data-toggle="dropdown" data-testid="service_link">
-                    {'<'}Service {vuln.service_id}: {vuln.address} {vuln.service_proto}.{vuln.service_port}
-                    {'>'}
-                  </a>
-                ) : (
-                  'No service'
-                )}
-                <div className="dropdown-menu">
-                  <h6 className="dropdown-header">Service endpoint URIs</h6>
-                  {getLinksForService(vuln.address, vuln.hostname, vuln.service_proto, vuln.service_port).map(
-                    (link) => (
-                      <span className="dropdown-item" key={link}>
-                        <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
-                        <a rel="noreferrer" href={escapeHtml(link)}>
-                          {escapeHtml(link)}
-                        </a>
-                      </span>
-                    ),
-                  )}
-                </div>
-              </div>
+              <ServiceEndpointDropdown
+                service={
+                  vuln.service_id
+                    ? `<Service ${vuln.service_id}: ${vuln.address} ${vuln.service_proto}.${vuln.service_port}>`
+                    : 'No service'
+                }
+                address={vuln.address}
+                hostname={vuln.hostname}
+                proto={vuln.service_proto}
+                port={vuln.service_port}
+              />
             </td>
             <th>via_target</th>
             <td>{vuln.via_target || 'None'}</td>
@@ -136,7 +125,17 @@ const VulnViewPage = () => {
               {vuln.refs.length === 0 && 'None'}
             </td>
             <th>tags</th>
-            <td className="abutton_annotate_view" colSpan={3}>
+            <td
+              className="abutton_annotate_view"
+              data-testid="vuln_tags_annotate"
+              colSpan={3}
+              onDoubleClick={() =>
+                setAnnotate({
+                  ...annotate,
+                  show: true,
+                })
+              }
+            >
               {vuln.tags.map((tag) => (
                 <Fragment key={tag}>
                   <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
@@ -146,7 +145,17 @@ const VulnViewPage = () => {
           </tr>
           <tr>
             <th>comment</th>
-            <td className="abutton_annotate_view" colSpan={5}>
+            <td
+              className="abutton_annotate_view"
+              data-testid="vuln_comment_annotate"
+              colSpan={5}
+              onDoubleClick={() =>
+                setAnnotate({
+                  ...annotate,
+                  show: true,
+                })
+              }
+            >
               {vuln.comment || 'No comment'}
             </td>
           </tr>
@@ -171,6 +180,7 @@ const VulnViewPage = () => {
 
       <h2>Data</h2>
       <div>{vuln.xtype && vuln.xtype.startsWith('nuclei.') ? <pre>{vuln.data}</pre> : <pre>{vuln.data}</pre>}</div>
+      <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
     </div>
   )
 }

@@ -8,6 +8,6 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build -- --mode development
+RUN npm run build -- --mode testing
 
-CMD npm run preview
+CMD npm run preview -- --port 18080

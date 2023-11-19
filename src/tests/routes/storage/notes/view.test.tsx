@@ -1,32 +1,34 @@
 import NoteViewPage from '@/routes/storage/note/view'
-import { screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
+
+const loader = () =>
+  Promise.resolve({
+    address: '127.4.4.4',
+    comment: null,
+    created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+    data: '["cpe:/o:microsoft:windows_nt:3.5.1"]',
+    host_id: 1,
+    hostname: 'testhost.testdomain.test<script>alert(1);</script>',
+    id: 1,
+    import_time: null,
+    modified: 'Thu, 31 Aug 2023 17:50:08 GMT',
+    service_id: 1,
+    service_port: 12345,
+    service_proto: 'tcp',
+    tags: ['report', 'falsepositive', 'info'],
+    via_target: null,
+    xtype: 'deb',
+  })
 
 describe('Note view page', () => {
   it('shows note', async () => {
     renderWithProviders({
       element: <NoteViewPage />,
       path: '/storage/note/view/1',
-      loader: () =>
-        Promise.resolve({
-          address: '127.4.4.4',
-          comment: null,
-          created: 'Mon, 17 Jul 2023 20:01:09 GMT',
-          data: '["cpe:/o:microsoft:windows_nt:3.5.1"]',
-          host_id: 1,
-          hostname: 'testhost.testdomain.test<script>alert(1);</script>',
-          id: 1,
-          import_time: null,
-          modified: 'Thu, 31 Aug 2023 17:50:08 GMT',
-          service_id: 1,
-          service_port: 12345,
-          service_proto: 'tcp',
-          tags: ['report', 'falsepositive', 'info'],
-          via_target: null,
-          xtype: 'deb',
-        }),
+      loader: loader,
     })
 
     await waitFor(() => {
@@ -34,6 +36,25 @@ describe('Note view page', () => {
       expect(listItems.includes('Note')).toBeTruthy()
       expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
       expect(listItems.includes('deb')).toBeTruthy()
+    })
+  })
+
+  it('annotates note', async () => {
+    renderWithProviders({
+      element: <NoteViewPage />,
+      path: '/storage/note/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const tagsCell = screen.getByTestId('note_tags_annotate')
+      const commentCell = screen.getByTestId('note_comment_annotate')
+
+      fireEvent.doubleClick(tagsCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
+
+      fireEvent.doubleClick(commentCell)
+      expect(screen.getByText('Annotate')).toBeInTheDocument()
     })
   })
 

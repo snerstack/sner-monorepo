@@ -7,8 +7,9 @@ import { toast } from 'react-toastify'
 import httpClient from '@/lib/httpClient'
 
 import Heading from '@/components/Heading'
-import NumberField from '@/components/fields/NumberField'
+import HostAutocompleteField from '@/components/fields/HostAutocompleteField'
 import RadioField from '@/components/fields/RadioField'
+import ServiceAutocompleteField from '@/components/fields/ServiceAutocompleteField'
 import SubmitField from '@/components/fields/SubmitField'
 import TagsField from '@/components/fields/TagsField'
 import TextAreaField from '@/components/fields/TextAreaField'
@@ -108,7 +109,7 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
           </div>
         </div>
         <div id="refs_collapse" className="collapse">
-          <NumberField
+          <HostAutocompleteField
             name="host_id"
             label="Host ID"
             placeholder="Host ID"
@@ -116,7 +117,8 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
             _state={hostId}
             _setState={setHostId}
           />
-          <NumberField
+          <ServiceAutocompleteField
+            hostId={hostId}
             name="service_id"
             label="Service ID"
             placeholder="Service ID"

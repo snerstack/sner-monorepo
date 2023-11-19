@@ -10,6 +10,7 @@ import { deleteRow, getColorForTag } from '@/lib/sner/storage'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
+import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Button from '@/components/buttons/Button'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
@@ -61,7 +62,20 @@ const ServiceListPage = () => {
     }),
     Column('host_hostname'),
     Column('proto'),
-    Column('port'),
+    Column('port', {
+      className: 'service_endpoint_dropdown',
+      createdCell: (cell, _data: string, row: ServiceRow) =>
+        renderElements(
+          cell,
+          <ServiceEndpointDropdown
+            service={row['port'].toString()}
+            address={row['host_address']}
+            hostname={row['host_hostname']}
+            proto={row['proto']}
+            port={row['port']}
+          />,
+        ),
+    }),
     Column('name'),
     Column('state'),
     Column('info'),

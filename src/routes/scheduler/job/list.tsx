@@ -1,5 +1,5 @@
 import { Helmet } from 'react-helmet-async'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
@@ -7,12 +7,12 @@ import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import Button from '@/components/buttons/Button'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
+import ReconcileButton from '@/components/buttons/ReconcileButton'
+import RepeatButton from '@/components/buttons/RepeatButton'
 
 const JobListPage = () => {
-  const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const columns = [
@@ -36,14 +36,9 @@ const JobListPage = () => {
         renderElements(
           cell,
           <ButtonGroup>
-            <Button name="Repeat" title="Repeat job" url={`/scheduler/job/repeat/${row['id']}`} navigate={navigate} />
-            <Button
-              name="Reconcile"
-              title="Forcefail job and reclaim heatmap count"
-              url={`/scheduler/job/reconcile/${row['id']}`}
-              navigate={navigate}
-            />
-            <DeleteButton url={`/scheduler/job/reconcile/${row['id']}`} tableId="job_list_table" />
+            <RepeatButton url={`/scheduler/job/repeat/${row['id']}`} tableId="job_list_table" />
+            <ReconcileButton url={`/scheduler/job/reconcile/${row['id']}`} tableId="job_list_table" />
+            <DeleteButton url={`/scheduler/job/delete/${row['id']}`} tableId="job_list_table" />
           </ButtonGroup>,
         ),
     }),

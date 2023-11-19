@@ -72,7 +72,7 @@ interface Annotate {
   show: boolean
   tags: string[]
   comment: string
-  tableId: string
+  tableId?: string
   url: string
 }
 

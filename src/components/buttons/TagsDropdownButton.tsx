@@ -13,11 +13,12 @@ const TagsDropdownButton = ({ tags, url, tableId }: { tags: string[]; url: strin
           href="#"
           title={`remove tag ${tag}`}
           key={tag}
-          onClick={(e) => {
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          onClick={async (e) => {
             e.preventDefault()
             const ids = getSelectedIdsFormData(getTableApi(tableId))
 
-            tagAction({ ids, tag, url, action: 'unset' })
+            await tagAction({ ids, tag, url, action: 'unset' })
           }}
         >
           {capitalize(tag)}
