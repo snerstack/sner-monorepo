@@ -26,7 +26,7 @@ def webdriver_waituntil(sclnt, condition):
 def dt_wait_processing(sclnt, dt_id):
     """wait until all ajax finished and dt_id processing (hopefully) ended"""
 
-    #webdriver_waituntil(sclnt, JsNoAjaxPending())
+    # webdriver_waituntil(sclnt, JsNoAjaxPending())
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.ID, f'{dt_id}_processing')))
     return sclnt.find_element(By.ID, dt_id)
 
@@ -68,11 +68,12 @@ def screenshot(sclnt):
 
 
 def wait_for_js(sclnt):
-    try:
-        return webdriver_waituntil(sclnt, EC.presence_of_element_located((By.XPATH, '//main[@id="main"]')))
-    except:
-        print(sclnt.page_source)
+    """wait for javascript to load (CSR)"""
+
+    return webdriver_waituntil(sclnt, EC.presence_of_element_located((By.XPATH, '//main[@id="main"]')))
 
 
 def frontend_url(url):
+    """create url for frontend"""
+
     return 'http://localhost:18080' + url

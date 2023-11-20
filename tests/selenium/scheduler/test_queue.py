@@ -3,14 +3,11 @@
 selenium ui tests for scheduler.queue component
 """
 
-from flask import url_for
-
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.extensions import db
 from sner.server.scheduler.models import Queue
-from tests.selenium import dt_inrow_delete, dt_rendered, dt_wait_processing, webdriver_waituntil, frontend_url, wait_for_js
+from tests.selenium import dt_inrow_delete, dt_rendered, dt_wait_processing, frontend_url, wait_for_js
 
 
 def test_queue_list_route(live_server, sl_operator, queue):  # pylint: disable=unused-argument

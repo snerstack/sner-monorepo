@@ -3,7 +3,6 @@
 selenium ui tests for quickjump
 """
 
-from flask import url_for
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from tests.selenium import webdriver_waituntil, frontend_url, wait_for_js

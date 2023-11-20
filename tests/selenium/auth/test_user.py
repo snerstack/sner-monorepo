@@ -39,13 +39,10 @@ def test_user_apikey_route(live_server, sl_admin, user):  # pylint: disable=unus
     wait_for_js(sl_admin)
     dt_rendered(sl_admin, 'user_list_table', user.username)
 
-    # disable fade, the timing interferes with the test
-    #sl_admin.execute_script('$("div#modal-global").toggleClass("fade")')
-
-    generate_btn = sl_admin.find_elements(By.XPATH, f'//a[@data-testid="apikey-btn"]')[1]
+    generate_btn = sl_admin.find_elements(By.XPATH, '//a[@data-testid="apikey-btn"]')[1]
     generate_btn.click()
     webdriver_waituntil(sl_admin, EC.visibility_of_element_located((By.XPATH, '//*[contains(@class,"modal-title") and text()="Apikey"]')))
-    
+
     sl_admin.find_element(By.XPATH, '//div[contains(@class, "modal show")]').click()
     webdriver_waituntil(sl_admin, EC.invisibility_of_element_located((By.XPATH, '//div[@data-testid="apikey-modal"]')))
     dt_rendered(sl_admin, 'user_list_table', user.username)
@@ -53,7 +50,7 @@ def test_user_apikey_route(live_server, sl_admin, user):  # pylint: disable=unus
     db.session.refresh(user)
     assert user.apikey
 
-    sl_admin.find_elements(By.XPATH, f'//a[@data-testid="apikey-btn"]')[1].click()
+    sl_admin.find_elements(By.XPATH, '//a[@data-testid="apikey-btn"]')[1].click()
     webdriver_waituntil(sl_admin, EC.visibility_of_element_located((By.XPATH, '//div[text()="Apikey successfully revoked."]')))
     dt_rendered(sl_admin, 'user_list_table', user.username)
 

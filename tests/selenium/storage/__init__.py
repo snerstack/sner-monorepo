@@ -145,7 +145,7 @@ def check_annotate(sclnt, annotate_id, test_model):
     sclnt.find_element(By.XPATH, '//textarea[@name="comment"]').send_keys('annotated comment')
     sclnt.find_element(By.XPATH, '//input[@name="submit"]').click()
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@data-testid="annotate-modal"]')))
-    #webdriver_waituntil(sclnt, JsNoAjaxPending())
+    # webdriver_waituntil(sclnt, JsNoAjaxPending())
 
     db.session.refresh(test_model)
     assert 'annotated comment' in test_model.__class__.query.get(test_model.id).comment

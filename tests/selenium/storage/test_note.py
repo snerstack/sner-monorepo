@@ -6,7 +6,6 @@ selenium ui tests for storage.note component
 import os
 import string
 
-from flask import url_for
 import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC

@@ -186,7 +186,8 @@ def test_host_view_route_services_list_selectrows(live_server, sl_operator, serv
     # wacky, to handle togglable ux
     sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
-    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'), 'host_view_service_table', load_route=False)
+    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
+                                 'host_view_service_table', load_route=False)
 
 
 def test_host_view_route_services_list_multiactions(live_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
@@ -195,7 +196,8 @@ def test_host_view_route_services_list_multiactions(live_server, sl_operator, se
     # wacky, to handle togglable ux
     sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
-    check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'), 'host_view_service_table', Service, load_route=False)
+    check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
+                                  'host_view_service_table', Service, load_route=False)
 
 
 def test_host_view_route_services_list_freetag(live_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
@@ -204,7 +206,8 @@ def test_host_view_route_services_list_freetag(live_server, sl_operator, service
     # wacky, to handle togglable ux
     sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
-    check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'), 'host_view_service_table', Service, load_route=False)
+    check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
+                             'host_view_service_table', Service, load_route=False)
 
 
 def test_host_view_route_vulns_list_inrow_delete(live_server, sl_operator, vuln):  # pylint: disable=unused-argument
@@ -251,14 +254,16 @@ def test_host_view_route_vulns_list_selectrows(live_server, sl_operator, vulns_m
     """host view tabbed vulns dt test; selections"""
 
     get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
-    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'), 'host_view_vuln_table', load_route=False)
+    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
+                                 'host_view_vuln_table', load_route=False)
 
 
 def test_host_view_route_vulns_list_multiactions(live_server, sl_operator, vulns_multiaction):  # pylint: disable=unused-argument
     """host view tabbed vulns dt test; multiactions"""
 
     get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
-    check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'), 'host_view_vuln_table', Vuln, load_route=False)
+    check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
+                                  'host_view_vuln_table', Vuln, load_route=False)
 
 
 def test_host_view_route_vulns_list_freetag(live_server, sl_operator, vulns_multiaction):  # pylint: disable=unused-argument
@@ -266,7 +271,8 @@ def test_host_view_route_vulns_list_freetag(live_server, sl_operator, vulns_mult
 
     # wacky, to handle togglable ux
     get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
-    check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'), 'host_view_vuln_table', Vuln, load_route=False)
+    check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
+                             'host_view_vuln_table', Vuln, load_route=False)
 
 
 def test_host_view_route_notes_list_inrow_delete(live_server, sl_operator, note):  # pylint: disable=unused-argument
@@ -314,7 +320,8 @@ def test_host_view_route_notes_list_selectrows(live_server, sl_operator, notes_m
     # wacky, to handle togglable ux
     sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
-    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'), 'host_view_note_table', load_route=False)
+    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'),
+                                 'host_view_note_table', load_route=False)
 
 
 def test_host_view_route_notes_list_multiactions(live_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
@@ -323,7 +330,8 @@ def test_host_view_route_notes_list_multiactions(live_server, sl_operator, notes
     # wacky, to handle togglable ux
     sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
-    check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'), 'host_view_note_table', Note, load_route=False)
+    check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'),
+                                  'host_view_note_table', Note, load_route=False)
 
 
 def test_host_view_route_notes_list_freetag(live_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument

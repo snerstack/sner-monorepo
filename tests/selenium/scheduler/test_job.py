@@ -4,14 +4,12 @@ selenium ui tests for scheduler.job component
 """
 
 import json
-from flask import url_for
 
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.extensions import db
 from sner.server.scheduler.models import Heatmap, Job, Target
-from tests.selenium import dt_inrow_delete, dt_rendered, dt_wait_processing, webdriver_waituntil, frontend_url, wait_for_js
+from tests.selenium import dt_inrow_delete, dt_rendered, dt_wait_processing, frontend_url, wait_for_js
 
 
 def test_job_list_route(live_server, sl_operator, job):  # pylint: disable=unused-argument
@@ -44,8 +42,8 @@ def test_job_list_route_inrow_reconcile(live_server, sl_operator, job):  # pylin
     wait_for_js(sl_operator)
     dt_wait_processing(sl_operator, dt_id)
     sl_operator.find_element(By.ID, dt_id).find_element(By.XPATH, '//a[@data-testid="reconcile-btn"]').click()
-    #webdriver_waituntil(sl_operator, EC.alert_is_present())
-    #sl_operator.switch_to.alert.accept()
+    # webdriver_waituntil(sl_operator, EC.alert_is_present())
+    # sl_operator.switch_to.alert.accept()
     dt_wait_processing(sl_operator, dt_id)
 
     assert job.retval == -1
