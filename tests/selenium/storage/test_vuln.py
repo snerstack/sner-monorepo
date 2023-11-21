@@ -169,11 +169,11 @@ def test_vuln_list_route_viatarget_visibility_toggle(live_server, sl_operator, v
     webdriver_waituntil(sl_operator, EC.invisibility_of_element_located((By.XPATH, '//th[contains(text(), "via_target")]')))
     sl_operator.execute_script('document.title="reload helper"')
 
-    sl_operator.find_element(By.XPATH, '//li[contains(@class, "dropdown")]/a[@id="dropdownUser"]').click()
-    webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, '//a[contains(text(), "Toggle via_target")]')))
+    sl_operator.find_element(By.XPATH, '//a[@id="dropdownUser"]').click()
+    webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, '//a[contains(text(), "Toggle via_target (true)")]')))
     sl_operator.find_element(By.XPATH, '//a[contains(text(), "Toggle via_target")]').click()
-    webdriver_waituntil(sl_operator, EC.alert_is_present())
-    sl_operator.switch_to.alert.accept()
+    # webdriver_waituntil(sl_operator, EC.alert_is_present())
+    # sl_operator.switch_to.alert.accept()
     webdriver_waituntil(sl_operator, JsDocumentReloaded())
     dt_rendered(sl_operator, 'vuln_list_table', vuln.comment)
 
@@ -201,7 +201,7 @@ def test_vuln_view_route_annotate(live_server, sl_operator, vuln):  # pylint: di
 
     sl_operator.get(frontend_url(f'/storage/vuln/view/{vuln.id}'))
     wait_for_js(sl_operator)
-    check_annotate(sl_operator, 'tags_comment_annotate', vuln)
+    check_annotate(sl_operator, 'vuln_comment_annotate', vuln)
 
 
 def test_vuln_view_route_service_endpoint_dropdown(live_server, sl_operator, vuln_factory, service):  # pylint: disable=unused-argument

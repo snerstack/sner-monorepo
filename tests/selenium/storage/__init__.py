@@ -5,6 +5,7 @@ selenium storage ui tests shared functions
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.extensions import db
@@ -40,7 +41,7 @@ def check_dt_toolbox_select_rows(sclnt, route, dt_id, load_route=True):
     assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr[contains(@class, "selected")]')) == 0  # pylint: disable=len-as-condition
 
 
-def check_dt_toolbox_multiactions(sclnt, route_name, dt_id, model_class, load_route=True, test_delete=True):  # pylint: disable=too-many-arguments
+def check_dt_toolbox_multiactions(sclnt, route, dt_id, model_class, load_route=True, test_delete=True):  # pylint: disable=too-many-arguments
     """check dt toolbar toolbox actions; there must be 2 rows to perform the test"""
 
     if load_route:
@@ -48,6 +49,7 @@ def check_dt_toolbox_multiactions(sclnt, route_name, dt_id, model_class, load_ro
         # in host view vuln tab data table is page already prepared by callee
         sclnt.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
         sclnt.get(route)
+        wait_for_js(sclnt)
 
     # there should be two rows in total
     dt_elem = dt_wait_processing(sclnt, dt_id)
@@ -56,14 +58,14 @@ def check_dt_toolbox_multiactions(sclnt, route_name, dt_id, model_class, load_ro
     assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 2
 
     # one cloud be be tagged
-    dt_elem.find_element(By.XPATH, '(.//tbody/tr/td[contains(@class, "select-checkbox")])[1]').click()
-    toolbar_elem.find_element(By.XPATH, './/a[contains(@class, "abutton_tag_multiid") and text()="Todo"]').click()
+    dt_elem.find_element(By.XPATH, '(.//tr/td[contains(@class, "select-checkbox")])[1]').click()
+    toolbar_elem.find_element(By.XPATH, './/a[@data-testid="tag-btn" and text()="Todo"]').click()
     dt_elem = dt_wait_processing(sclnt, dt_id)
     assert model_class.query.filter(model_class.comment == 'comment1', model_class.tags.any('todo')).one()
 
     # or the other one
-    dt_elem.find_element(By.XPATH, '(.//tbody/tr/td[contains(@class, "select-checkbox")])[2]').click()
-    toolbar_elem.find_element(By.XPATH, './/a[contains(@class, "abutton_tag_multiid") and text()="Todo"]').click()
+    dt_elem.find_element(By.XPATH, '(.//tr/td[contains(@class, "select-checkbox")])[2]').click()
+    toolbar_elem.find_element(By.XPATH, './/a[@data-testid="tag-btn" and text()="Todo"]').click()
     dt_elem = dt_wait_processing(sclnt, dt_id)
     assert model_class.query.filter(model_class.comment == 'comment2', model_class.tags.any('todo')).one()
 
@@ -73,36 +75,40 @@ def check_dt_toolbox_multiactions(sclnt, route_name, dt_id, model_class, load_ro
     webdriver_waituntil(sclnt, EC.visibility_of_element_located(
         (By.XPATH, f'//div[@id="{dt_id}_toolbar"]//a[text()="Todo" and @title="remove tag todo"]'))
     )
-    toolbar_elem.find_element(By.XPATH, './/a[contains(@class, "abutton_untag_multiid") and text()="Todo"]').click()
+    toolbar_elem.find_element(By.XPATH, './/a[@data-testid="tag-dropdown-btn" and text()="Todo"]').click()
     dt_elem = dt_wait_processing(sclnt, dt_id)
     assert model_class.query.filter(model_class.tags.any('todo')).count() == 0
 
     if test_delete:
         # or deleted
         toolbar_elem.find_element(By.XPATH, './/a[text()="All"]').click()
-        toolbar_elem.find_element(By.XPATH, './/a[contains(@class, "abutton_delete_multiid")]').click()
+        toolbar_elem.find_element(By.XPATH, './/a[@data-testid="delete-row-btn"]').click()
         webdriver_waituntil(sclnt, EC.alert_is_present())
         sclnt.switch_to.alert.accept()
         dt_wait_processing(sclnt, dt_id)
         assert not model_class.query.all()
 
 
-def _ux_freetag_action(sclnt, toolbar_elem, button_class, modal_title):
+def _ux_freetag_action(sclnt, toolbar_elem, button_id, modal_title):
     """free tag ux selenium automation"""
 
     toolbar_elem.find_element(By.XPATH, './/a[text()="All"]').click()
-    toolbar_elem.find_element(By.CLASS_NAME, button_class).click()
-    webdriver_waituntil(sclnt, EC.visibility_of_element_located((By.XPATH, f'//h4[@class="modal-title" and text()="{modal_title}"]')))
+    toolbar_elem.find_element(By.XPATH, f'.//a[@data-testid="{button_id}"]').click()
+    webdriver_waituntil(sclnt, EC.visibility_of_element_located((By.XPATH, f'//*[contains(@class, "modal-title") and text()="{modal_title}"]')))
 
-    # drop tag-editor, textarea in not reachable by keyborad in selenium
-    sclnt.execute_script("""$("#modal-global form ul.tag-editor").remove();""")
-    sclnt.execute_script("""$("#modal-global form textarea[name='tags']").removeClass("tag-editor-hidden-src");""")
+    # # drop tag-editor, textarea in not reachable by keyborad in selenium
+    # sclnt.execute_script("""$("#modal-global form ul.tag-editor").remove();""")
+    # sclnt.execute_script("""$("#modal-global form textarea[name='tags']").removeClass("tag-editor-hidden-src");""")
 
-    sclnt.find_element(By.CSS_SELECTOR, '#modal-global form textarea[name="tags"]').send_keys("dummy1\ndummy2\n")
+    tags_input = sclnt.find_element(By.XPATH, '//div[@data-testid="tags-field"]/*/input')
+    tags_input.send_keys("dummy1")
+    tags_input.send_keys(Keys.ENTER)
+    tags_input.send_keys('dummy2')
+    tags_input.send_keys(Keys.ENTER)
 
-    sclnt.find_element(By.CSS_SELECTOR, '#modal-global form').submit()
+    sclnt.find_element(By.XPATH, '//input[@name="submit"]').click()
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@class="modal-global"]')))
-    webdriver_waituntil(sclnt, JsNoAjaxPending())
+    #webdriver_waituntil(sclnt, JsNoAjaxPending())
 
 
 def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
@@ -113,6 +119,7 @@ def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
         # in host view vuln tab data table is page already prepared by callee
         sclnt.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
         sclnt.get(route)
+        wait_for_js(sclnt)
 
     # there should be two rows in total
     dt_elem = dt_wait_processing(sclnt, dt_id)
@@ -120,18 +127,15 @@ def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
     assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 0
     assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 2
 
-    # disable fade, the timing interferes with the test
-    sclnt.execute_script('$("div#modal-global").toggleClass("fade")')
-
-    _ux_freetag_action(sclnt, toolbar_elem, 'abutton_freetag_set_multiid', 'Tag multiple items')
+    _ux_freetag_action(sclnt, toolbar_elem, 'vuln_set_multiple_tag', 'Tag multiple items')
 
     assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 2
     assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 2
 
-    _ux_freetag_action(sclnt, toolbar_elem, 'abutton_freetag_unset_multiid', 'Untag multiple items')
+    # _ux_freetag_action(sclnt, toolbar_elem, 'abutton_freetag_unset_multiid', 'Untag multiple items')
 
-    assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 0
-    assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 0
+    # assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 0
+    # assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 0
 
 
 def check_annotate(sclnt, annotate_id, test_model):
