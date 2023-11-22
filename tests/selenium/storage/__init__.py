@@ -9,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.extensions import db
-from tests.selenium import dt_rendered, dt_wait_processing, JsNoAjaxPending, webdriver_waituntil,  wait_for_js
+from tests.selenium import dt_rendered, dt_wait_processing, webdriver_waituntil, wait_for_js, toggle_dt_toolboxes
 
 
 def check_dt_toolbox_select_rows(sclnt, route, dt_id, load_route=True):
@@ -18,8 +18,9 @@ def check_dt_toolbox_select_rows(sclnt, route, dt_id, load_route=True):
     if load_route:
         # in case of mai data tables, toggle visibility, load page and test
         # in host view vuln tab data table is page already prepared by callee
-        sclnt.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
         sclnt.get(route)
+        wait_for_js(sclnt)
+        toggle_dt_toolboxes(sclnt)
         wait_for_js(sclnt)
 
     dt_elem = dt_wait_processing(sclnt, dt_id)
@@ -47,8 +48,9 @@ def check_dt_toolbox_multiactions(sclnt, route, dt_id, model_class, load_route=T
     if load_route:
         # in case of mai data tables, toggle visibility, load page and test
         # in host view vuln tab data table is page already prepared by callee
-        sclnt.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
         sclnt.get(route)
+        wait_for_js(sclnt)
+        toggle_dt_toolboxes(sclnt)
         wait_for_js(sclnt)
 
     # there should be two rows in total
@@ -93,12 +95,8 @@ def _ux_freetag_action(sclnt, toolbar_elem, button_id, modal_title):
     """free tag ux selenium automation"""
 
     toolbar_elem.find_element(By.XPATH, './/a[text()="All"]').click()
-    toolbar_elem.find_element(By.XPATH, f'.//a[@data-testid="{button_id}"]').click()
+    toolbar_elem.find_element(By.XPATH, f'.//a[contains(@data-testid, "{button_id}")]').click()
     webdriver_waituntil(sclnt, EC.visibility_of_element_located((By.XPATH, f'//*[contains(@class, "modal-title") and text()="{modal_title}"]')))
-
-    # # drop tag-editor, textarea in not reachable by keyborad in selenium
-    # sclnt.execute_script("""$("#modal-global form ul.tag-editor").remove();""")
-    # sclnt.execute_script("""$("#modal-global form textarea[name='tags']").removeClass("tag-editor-hidden-src");""")
 
     tags_input = sclnt.find_element(By.XPATH, '//div[@data-testid="tags-field"]/*/input')
     tags_input.send_keys("dummy1")
@@ -108,7 +106,7 @@ def _ux_freetag_action(sclnt, toolbar_elem, button_id, modal_title):
 
     sclnt.find_element(By.XPATH, '//input[@name="submit"]').click()
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@class="modal-global"]')))
-    #webdriver_waituntil(sclnt, JsNoAjaxPending())
+    # webdriver_waituntil(sclnt, JsNoAjaxPending())
 
 
 def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
@@ -117,8 +115,9 @@ def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
     if load_route:
         # in case of main data tables, toggle visibility, load page and test
         # in host view vuln tab data table is page already prepared by callee
-        sclnt.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
         sclnt.get(route)
+        wait_for_js(sclnt)
+        toggle_dt_toolboxes(sclnt)
         wait_for_js(sclnt)
 
     # there should be two rows in total
@@ -127,7 +126,7 @@ def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
     assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 0
     assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 2
 
-    _ux_freetag_action(sclnt, toolbar_elem, 'vuln_set_multiple_tag', 'Tag multiple items')
+    _ux_freetag_action(sclnt, toolbar_elem, 'set_multiple_tag', 'Tag multiple items')
 
     assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 2
     assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 2
@@ -165,28 +164,16 @@ def check_service_endpoint_dropdown(sclnt, parent_elem, dropdown_value):
 def check_dt_toolbox_visibility_toggle(sclnt, route, dt_id, model_factory):
     """datatables multiaction toolboxes visibility toggle"""
 
-    class JsDocumentReloaded():  # pylint: disable=too-few-public-methods
-        """custom expected_condition, wait for document to be realoaded"""
-
-        def __call__(self, driver):
-            return driver.execute_script('return(document.readyState==="complete" && document.title!=="reload helper")')
-
     test_model = model_factory.create(comment='render helper')
     toolbox_elem = (By.ID, f'{dt_id}_toolbox')
-    toggle_elem = (By.XPATH, '//a[contains(text(), "Toggle DT toolboxes")]')
 
     sclnt.get(route)
+    wait_for_js(sclnt)
     dt_rendered(sclnt, dt_id, getattr(test_model, 'comment'))
-
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located(toolbox_elem))
-    sclnt.execute_script('document.title="reload helper"')
 
-    sclnt.find_element(By.XPATH, '//li[contains(@class, "dropdown")]/a[@id="dropdownUser"]').click()
-    webdriver_waituntil(sclnt, EC.visibility_of_element_located(toggle_elem))
-    sclnt.find_element(*toggle_elem).click()
-    webdriver_waituntil(sclnt, EC.alert_is_present())
-    sclnt.switch_to.alert.accept()
-    webdriver_waituntil(sclnt, JsDocumentReloaded())
+    toggle_dt_toolboxes(sclnt)
+    wait_for_js(sclnt)
+
     dt_rendered(sclnt, dt_id, getattr(test_model, 'comment'))
-
     webdriver_waituntil(sclnt, EC.visibility_of_element_located(toolbox_elem))

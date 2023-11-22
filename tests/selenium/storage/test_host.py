@@ -9,8 +9,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.extensions import db
-from sner.server.storage.models import Host, Note, Service, Vuln, Versioninfo, Vulnsearch
-from tests.selenium import dt_inrow_delete, dt_rendered, webdriver_waituntil, wait_for_js, frontend_url
+from sner.server.storage.models import Host, Note, Service, Vuln
+from tests.selenium import dt_inrow_delete, dt_rendered, webdriver_waituntil, wait_for_js, frontend_url, toggle_dt_toolboxes
 from tests.selenium.storage import (
     check_annotate,
     check_dt_toolbox_freetag,
@@ -87,7 +87,6 @@ def test_host_list_route_moredata_dropdown(live_server, sl_operator, host):  # p
 def test_host_list_route_selectrows(live_server, sl_operator, hosts_multiaction):  # pylint: disable=unused-argument
     """test dt selection and selection buttons"""
 
-    wait_for_js(sl_operator)
     check_dt_toolbox_select_rows(sl_operator, frontend_url('/storage/host/list'), 'host_list_table')
 
 
@@ -183,9 +182,9 @@ def test_host_view_route_services_list_moredata_dropdown(live_server, sl_operato
 def test_host_view_route_services_list_selectrows(live_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
     """host view tabbed services dt test; selections"""
 
-    # wacky, to handle togglable ux
-    sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
+    toggle_dt_toolboxes(sl_operator)
+    wait_for_js(sl_operator)
     check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
                                  'host_view_service_table', load_route=False)
 
@@ -193,9 +192,9 @@ def test_host_view_route_services_list_selectrows(live_server, sl_operator, serv
 def test_host_view_route_services_list_multiactions(live_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
     """host view tabbed services dt test; multiactions"""
 
-    # wacky, to handle togglable ux
-    sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
+    toggle_dt_toolboxes(sl_operator)
+    wait_for_js(sl_operator)
     check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
                                   'host_view_service_table', Service, load_route=False)
 
@@ -203,9 +202,9 @@ def test_host_view_route_services_list_multiactions(live_server, sl_operator, se
 def test_host_view_route_services_list_freetag(live_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
     """host view tabbed services dt test; freetag"""
 
-    # wacky, to handle togglable ux
-    sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
+    toggle_dt_toolboxes(sl_operator)
+    wait_for_js(sl_operator)
     check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
                              'host_view_service_table', Service, load_route=False)
 
@@ -254,6 +253,8 @@ def test_host_view_route_vulns_list_selectrows(live_server, sl_operator, vulns_m
     """host view tabbed vulns dt test; selections"""
 
     get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
+    toggle_dt_toolboxes(sl_operator)
+    wait_for_js(sl_operator)
     check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
                                  'host_view_vuln_table', load_route=False)
 
@@ -262,6 +263,8 @@ def test_host_view_route_vulns_list_multiactions(live_server, sl_operator, vulns
     """host view tabbed vulns dt test; multiactions"""
 
     get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
+    toggle_dt_toolboxes(sl_operator)
+    wait_for_js(sl_operator)
     check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
                                   'host_view_vuln_table', Vuln, load_route=False)
 
@@ -269,8 +272,9 @@ def test_host_view_route_vulns_list_multiactions(live_server, sl_operator, vulns
 def test_host_view_route_vulns_list_freetag(live_server, sl_operator, vulns_multiaction):  # pylint: disable=unused-argument
     """host view tabbed vulns dt test; freetag"""
 
-    # wacky, to handle togglable ux
     get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
+    toggle_dt_toolboxes(sl_operator)
+    wait_for_js(sl_operator)
     check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
                              'host_view_vuln_table', Vuln, load_route=False)
 
@@ -317,9 +321,9 @@ def test_host_view_route_notes_list_moredata_dropdown(live_server, sl_operator, 
 def test_host_view_route_notes_list_selectrows(live_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
     """host view tabbed notes dt test; selections"""
 
-    # wacky, to handle togglable ux
-    sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
+    toggle_dt_toolboxes(sl_operator)
+    wait_for_js(sl_operator)
     check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'),
                                  'host_view_note_table', load_route=False)
 
@@ -327,9 +331,9 @@ def test_host_view_route_notes_list_selectrows(live_server, sl_operator, notes_m
 def test_host_view_route_notes_list_multiactions(live_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
     """host view tabbed notes dt test; multiactions"""
 
-    # wacky, to handle togglable ux
-    sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
+    toggle_dt_toolboxes(sl_operator)
+    wait_for_js(sl_operator)
     check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'),
                                   'host_view_note_table', Note, load_route=False)
 
@@ -337,8 +341,6 @@ def test_host_view_route_notes_list_multiactions(live_server, sl_operator, notes
 def test_host_view_route_notes_list_freetag(live_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
     """host view tabbed notes dt test; freetag"""
 
-    # wacky, to handle togglable ux
-    sl_operator.execute_script("window.sessionStorage.setItem('dt_toolboxes_visible', '\"true\"');")
     get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
     check_dt_toolbox_freetag(sl_operator, 'storage.host_view_route', 'host_view_note_table', Note, load_route=False)
 
