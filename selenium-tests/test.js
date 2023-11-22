@@ -11,8 +11,13 @@ configDotenv({ path: path.join(__dirname, '../.env.testing') })
 
 const mocha = new Mocha({ timeout: 60000 })
 
-//const testFiles = ['home.test.js', 'auth/login.test.js', 'storage/host.test.js', 'storage/service.test.js']
-const testFiles = ['storage/vuln.test.js']
+const testFiles = [
+  'home.test.js',
+  'auth/login.test.js',
+  'storage/host.test.js',
+  'storage/service.test.js',
+  'storage/vuln.test.js',
+]
 
 testFiles.forEach((file) => {
   mocha.addFile(path.join(__dirname, file))

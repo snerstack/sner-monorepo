@@ -127,8 +127,8 @@ const Nav = () => {
                     navigate(0)
                   }}
                 >
-                  Toggle via_target (
-                  {sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? 'true' : 'false'})
+                  {`Toggle via_target (
+                  ${sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? 'true' : 'false'})`}
                 </a>
                 <a
                   className="dropdown-item"
@@ -147,7 +147,9 @@ const Nav = () => {
                     navigate(0)
                   }}
                 >
-                  Toggle DT toolboxes ({sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? 'true' : 'false'})
+                  {`Toggle DT toolboxes (${
+                    sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? 'true' : 'false'
+                  })`}
                 </a>
                 {currentUser.roles.includes('user') && (
                   <Link className="dropdown-item" to="/auth/profile">

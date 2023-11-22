@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useCookie, useLocalStorage } from 'react-use'
 
-import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
+import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import {
   deleteRow,
   getColorForSeverity,
@@ -632,10 +632,26 @@ const HostViewPage = () => {
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
                   </a>
-                  <a className="btn btn-outline-secondary" href="#">
+                  <a
+                    className="btn btn-outline-secondary"
+                    href="#"
+                    data-testid="host_view_service_select_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_service_table')
+                      dt.rows({ page: 'current' }).select()
+                    }}
+                  >
                     All
                   </a>
-                  <a className="btn btn-outline-secondary" href="#">
+                  <a
+                    className="btn btn-outline-secondary"
+                    href="#"
+                    data-testid="host_view_service_unselect_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_service_table')
+                      dt.rows({ page: 'current' }).deselect()
+                    }}
+                  >
                     None
                   </a>
                 </div>{' '}
@@ -733,10 +749,26 @@ const HostViewPage = () => {
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
                   </a>
-                  <a className="btn btn-outline-secondary" href="#">
+                  <a
+                    className="btn btn-outline-secondary"
+                    href="#"
+                    data-testid="host_view_vuln_select_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_vuln_table')
+                      dt.rows({ page: 'current' }).select()
+                    }}
+                  >
                     All
                   </a>
-                  <a className="btn btn-outline-secondary abutton_selectnone" href="#">
+                  <a
+                    className="btn btn-outline-secondary abutton_selectnone"
+                    href="#"
+                    data-testid="host_view_vuln_unselect_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_vuln_table')
+                      dt.rows({ page: 'current' }).deselect()
+                    }}
+                  >
                     None
                   </a>
                 </div>{' '}
@@ -831,10 +863,26 @@ const HostViewPage = () => {
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
                   </a>
-                  <a className="btn btn-outline-secondary abutton_selectall" href="#">
+                  <a
+                    className="btn btn-outline-secondary abutton_selectall"
+                    href="#"
+                    data-testid="host_view_note_select_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_note_table')
+                      dt.rows({ page: 'current' }).select()
+                    }}
+                  >
                     All
                   </a>
-                  <a className="btn btn-outline-secondary abutton_selectnone" href="#">
+                  <a
+                    className="btn btn-outline-secondary abutton_selectnone"
+                    href="#"
+                    data-testid="host_view_note_unselect_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_note_table')
+                      dt.rows({ page: 'current' }).deselect()
+                    }}
+                  >
                     None
                   </a>
                 </div>{' '}

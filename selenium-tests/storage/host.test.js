@@ -108,7 +108,7 @@ describe('Host page', () => {
 
     expect(hostname).to.exist
 
-    const vulnsTab = await driver.wait(until.elementLocated({ xpath: '//*[@data-testid="vulns_tab"]' }))
+    const vulnsTab = await driver.wait(until.elementLocated({ xpath: '//*[@data-testid="vuln_tab"]' }))
 
     await vulnsTab.click()
 

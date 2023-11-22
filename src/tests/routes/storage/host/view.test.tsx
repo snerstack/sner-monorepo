@@ -345,6 +345,60 @@ describe('Host view page', () => {
     })
   })
 
+  it('selects and unselects all service rows', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const serviceTab = screen.getByTestId('service_tab')
+      const selectAllButton = screen.getByTestId('host_view_service_select_all')
+      const unselectAllButton = screen.getByTestId('host_view_service_unselect_all')
+
+      fireEvent.click(serviceTab)
+      fireEvent.click(selectAllButton)
+      fireEvent.click(unselectAllButton)
+    })
+  })
+
+  it('selects and unselects all vuln rows', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const vulnTab = screen.getByTestId('vuln_tab')
+      const selectAllButton = screen.getByTestId('host_view_vuln_select_all')
+      const unselectAllButton = screen.getByTestId('host_view_vuln_unselect_all')
+
+      fireEvent.click(vulnTab)
+      fireEvent.click(selectAllButton)
+      fireEvent.click(unselectAllButton)
+    })
+  })
+
+  it('selects and unselects all note rows', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const noteTab = screen.getByTestId('note_tab')
+      const selectAllButton = screen.getByTestId('host_view_note_select_all')
+      const unselectAllButton = screen.getByTestId('host_view_note_unselect_all')
+
+      fireEvent.click(noteTab)
+      fireEvent.click(selectAllButton)
+      fireEvent.click(unselectAllButton)
+    })
+  })
+
   it('deletes host', async () => {
     renderWithProviders({
       element: <HostViewPage />,
