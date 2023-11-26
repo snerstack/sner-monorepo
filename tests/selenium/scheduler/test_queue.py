@@ -40,8 +40,6 @@ def test_queue_list_route_inrow_flush(live_server, sl_operator, target):  # pyli
     wait_for_js(sl_operator)
     dt_wait_processing(sl_operator, dt_id)
     sl_operator.find_element(By.ID, dt_id).find_element(By.XPATH, '//a[@data-testid="queue-flush"]').click()
-    # webdriver_waituntil(sl_operator, EC.alert_is_present())
-    # sl_operator.switch_to.alert.accept()
     dt_wait_processing(sl_operator, dt_id)
 
     assert not Queue.query.get(tqueue_id).targets

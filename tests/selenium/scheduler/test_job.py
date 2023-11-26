@@ -42,8 +42,6 @@ def test_job_list_route_inrow_reconcile(live_server, sl_operator, job):  # pylin
     wait_for_js(sl_operator)
     dt_wait_processing(sl_operator, dt_id)
     sl_operator.find_element(By.ID, dt_id).find_element(By.XPATH, '//a[@data-testid="reconcile-btn"]').click()
-    # webdriver_waituntil(sl_operator, EC.alert_is_present())
-    # sl_operator.switch_to.alert.accept()
     dt_wait_processing(sl_operator, dt_id)
 
     assert job.retval == -1
@@ -58,8 +56,6 @@ def test_job_list_route_inrow_repeat(live_server, sl_operator, job):  # pylint: 
     wait_for_js(sl_operator)
     dt_wait_processing(sl_operator, dt_id)
     sl_operator.find_element(By.ID, dt_id).find_element(By.XPATH, '//a[@data-testid="repeat-btn"]').click()
-    # webdriver_waituntil(sl_operator, EC.alert_is_present())
-    # sl_operator.switch_to.alert.accept()
     dt_wait_processing(sl_operator, dt_id)
 
     assert len(json.loads(job.assignment)['targets']) == Target.query.count()
