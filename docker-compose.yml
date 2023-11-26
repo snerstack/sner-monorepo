@@ -2,7 +2,7 @@ version: "3"
 services:
   frontend:
     build:
-      context: https://github.com/Filiq/sner-frontend.git#main
+      context: https://${TOKEN}@github.com/Filiq/sner-frontend.git#main
     ports:
       - "18080:18080"
     depends_on:
