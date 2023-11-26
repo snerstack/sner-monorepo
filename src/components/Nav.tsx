@@ -124,11 +124,17 @@ const Nav = () => {
                       sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? 'false' : 'true',
                     )
 
+                    /* the saved states must be removed, the save state has precedence over dt initialization values */
+                    Object.keys(sessionStorage)
+                      .filter((key) => key.startsWith('DataTables_'))
+                      .map((key) => sessionStorage.removeItem(key))
+
                     navigate(0)
                   }}
                 >
-                  {`Toggle via_target (
-                  ${sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? 'true' : 'false'})`}
+                  {`Toggle via_target (${
+                    sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? 'true' : 'false'
+                  })`}
                 </a>
                 <a
                   className="dropdown-item"

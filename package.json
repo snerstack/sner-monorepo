@@ -9,8 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview --host 0.0.0.0",
     "test": "vitest --coverage",
-    "test:ui": "vitest --ui",
-    "selenium-test": "node ./selenium-tests/test.js"
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "axios": "^1.4.0",
