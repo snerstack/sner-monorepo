@@ -47,10 +47,10 @@ const WebAuthnRegisterPage = () => {
     })()
   }, [])
 
-  const registerHandler = async () => {
+  const registerHandler = async (att: string) => {
     const formData = new FormData()
     formData.append('name', name)
-    formData.append('attestation', attestation)
+    formData.append('attestation', att)
 
     try {
       const resp = await httpClient.post<{ message: string }>(
@@ -68,6 +68,19 @@ const WebAuthnRegisterPage = () => {
       }
     }
   }
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.base64ToArrayBuffer = base64ToArrayBuffer // CI helper for selenium tests
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.CBORDecode = decode // CI helper for selenium tests
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.getPackedAttestation = getPackedAttestation // CI helper for selenium tests
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.registerHandler = registerHandler // CI helper for selenium tests
 
   return (
     <div>
@@ -96,7 +109,7 @@ const WebAuthnRegisterPage = () => {
           </div>
         </div>
         <TextField name="name" label="Name" placeholder="Name" _state={name} _setState={setName} />
-        <SubmitField name="Register" handler={registerHandler} />
+        <SubmitField name="Register" handler={() => registerHandler(attestation)} />
       </form>
     </div>
   )
@@ -105,6 +118,10 @@ export default WebAuthnRegisterPage
 
 const getPublicKeyCredentialRequestOptions = async (): Promise<CredentialCreationOptions> => {
   const resp = await httpClient.post<string>(import.meta.env.VITE_SERVER_URL + '/auth/profile/webauthn/pkcco')
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.pkcco_raw = resp.data // CI helper for selenium tests
 
   return decode(base64ToArrayBuffer(resp.data)) as CredentialCreationOptions
 }

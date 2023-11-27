@@ -5,7 +5,14 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import {
+  deleteRow,
+  encodeRFC3986URIComponent,
+  getColorForSeverity,
+  getColorForTag,
+  getTextForRef,
+  getUrlForRef,
+} from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -344,7 +351,7 @@ const VulnListPage = () => {
           url:
             import.meta.env.VITE_SERVER_URL +
             '/storage/vuln/list.json' +
-            (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
+            (searchParams.has('filter') ? `?filter=${encodeRFC3986URIComponent(searchParams.get('filter')!)}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

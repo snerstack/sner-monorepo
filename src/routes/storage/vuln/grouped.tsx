@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, renderElements } from '@/lib/DataTables'
-import { getColorForSeverity, getColorForTag, getVulnFilterName } from '@/lib/sner/storage'
+import { encodeRFC3986URIComponent, getColorForSeverity, getColorForTag, getVulnFilterName } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -104,7 +104,7 @@ const VulnGroupedPage = () => {
           url:
             import.meta.env.VITE_SERVER_URL +
             '/storage/vuln/grouped.json' +
-            (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
+            (searchParams.has('filter') ? `?filter=${encodeRFC3986URIComponent(searchParams.get('filter')!)}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

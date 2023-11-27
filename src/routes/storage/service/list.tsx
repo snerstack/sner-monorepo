@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForTag } from '@/lib/sner/storage'
+import { deleteRow, encodeRFC3986URIComponent, getColorForTag } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -290,7 +290,7 @@ const ServiceListPage = () => {
           url:
             import.meta.env.VITE_SERVER_URL +
             '/storage/service/list.json' +
-            (searchParams.has('filter') ? `?filter=${searchParams.get('filter')}` : ''),
+            (searchParams.has('filter') ? `?filter=${encodeRFC3986URIComponent(searchParams.get('filter')!)}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
