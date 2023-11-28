@@ -47,10 +47,10 @@ const WebAuthnRegisterPage = () => {
     })()
   }, [])
 
-  const registerHandler = async (att: string) => {
+  const registerHandler = async () => {
     const formData = new FormData()
     formData.append('name', name)
-    formData.append('attestation', att)
+    formData.append('attestation', attestation)
 
     try {
       const resp = await httpClient.post<{ message: string }>(
@@ -80,7 +80,7 @@ const WebAuthnRegisterPage = () => {
   window.getPackedAttestation = getPackedAttestation // CI helper for selenium tests
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  window.registerHandler = registerHandler // CI helper for selenium tests
+  window.setAttestation = setAttestation // CI helper for selenium tests
 
   return (
     <div>
@@ -109,7 +109,7 @@ const WebAuthnRegisterPage = () => {
           </div>
         </div>
         <TextField name="name" label="Name" placeholder="Name" _state={name} _setState={setName} />
-        <SubmitField name="Register" handler={() => registerHandler(attestation)} />
+        <SubmitField name="Register" handler={registerHandler} />
       </form>
     </div>
   )
