@@ -12,7 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.extensions import db
 from sner.server.storage.models import Service
-from tests.selenium import dt_inrow_delete, dt_rendered, dt_wait_processing, webdriver_waituntil, frontend_url, wait_for_js
+from tests.selenium import dt_inrow_delete, dt_count_rows, dt_rendered, dt_wait_processing, webdriver_waituntil, frontend_url, wait_for_js
 from tests.selenium.storage import (
     check_annotate,
     check_dt_toolbox_freetag,
@@ -110,7 +110,6 @@ def test_service_grouped_route_filter_specialchars(live_server, sl_operator, ser
     """test grouped service info view and filtering features with specialchars"""
 
     service_factory.create(info=string.printable)
-    print(string.printable)
 
     sl_operator.get(frontend_url('/storage/service/grouped'))
     wait_for_js(sl_operator)

@@ -32,4 +32,4 @@ jobs:
       - run: . venv/bin/activate && make coverage
       - run: touch .env && echo TOKEN=${{ secrets.TOKEN }} >> .env
       - run: sudo docker-compose -f "docker-compose.yml" up -d --build
-      - run: . venv/bin/activate && pytest -vv --live-server-port 18001 tests/selenium
+      - run: . venv/bin/activate && pytest -vv -x --live-server-port 18001 tests/selenium

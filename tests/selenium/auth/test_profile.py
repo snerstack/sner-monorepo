@@ -39,7 +39,7 @@ def test_profile_webauthn_register_route(live_server, sl_user):  # pylint: disab
     pkcco = cbor.decode(b64decode(sl_user.execute_script('return window.pkcco_raw;').encode('utf-8')))
     attestation = device.create(pkcco, f'https://{webauthn.rp.id}')
     buf = b64encode(cbor.encode(attestation)).decode('utf-8')
-    sl_user.execute_script(f'registerHandler(getPackedAttestation(CBORDecode(base64ToArrayBuffer("{buf}"))));')
+    sl_user.execute_script(f'setAttestation(getPackedAttestation(CBORDecode(base64ToArrayBuffer("{buf}"))));')
     # and back to standard test codeflow
     sl_user.find_element(By.XPATH, '//form[@id="webauthn_register_form"]//input[@name="name"]').send_keys('pytest token')
     sl_user.find_element(By.XPATH, '//form[@id="webauthn_register_form"]//input[@type="submit"]').click()
