@@ -3,13 +3,16 @@
 selenium based UI tests
 """
 
-from tests.selenium import frontend_url, wait_for_js
+from selenium.webdriver.support import expected_conditions as EC
+
+from tests.selenium import frontend_url, webdriver_waituntil
 
 
 def test_index_route(live_server, selenium):  # pylint: disable=unused-argument
     """very basic index hit test"""
 
     selenium.get(frontend_url("/"))
-    wait_for_js(selenium)
+
+    webdriver_waituntil(selenium, EC.title_is('Homepage - sner4'))
 
     assert 'Homepage - sner4' in selenium.title

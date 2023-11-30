@@ -105,8 +105,7 @@ def _ux_freetag_action(sclnt, toolbar_elem, button_id, modal_title):
     tags_input.send_keys(Keys.ENTER)
 
     sclnt.find_element(By.XPATH, '//input[@name="submit"]').click()
-    webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@class="modal-global"]')))
-    # webdriver_waituntil(sclnt, JsNoAjaxPending())
+    webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@class="modal-backdrop"]')))
 
 
 def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
@@ -131,7 +130,7 @@ def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
     assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 2
     assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 2
 
-    # _ux_freetag_action(sclnt, toolbar_elem, 'abutton_freetag_unset_multiid', 'Untag multiple items')
+    # _ux_freetag_action(sclnt, toolbar_elem, 'unset_multiple_tag', 'Untag multiple items')
 
     # assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 0
     # assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 0
@@ -140,15 +139,12 @@ def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
 def check_annotate(sclnt, annotate_id, test_model):
     """check annotate functionality"""
 
-    # disable fade, the timing interferes with the test
-    # sclnt.execute_script('$("div#modal-global").toggleClass("fade")')
     ActionChains(sclnt).double_click(sclnt.find_element(By.XPATH, f'//*[@data-testid="{annotate_id}"]')).perform()
     webdriver_waituntil(sclnt, EC.visibility_of_element_located((By.XPATH, '//*[contains(@class, "modal-title") and text()="Annotate"]')))
 
     sclnt.find_element(By.XPATH, '//textarea[@name="comment"]').send_keys('annotated comment')
     sclnt.find_element(By.XPATH, '//input[@name="submit"]').click()
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@data-testid="annotate-modal"]')))
-    # webdriver_waituntil(sclnt, JsNoAjaxPending())
 
     db.session.refresh(test_model)
     assert 'annotated comment' in test_model.__class__.query.get(test_model.id).comment
