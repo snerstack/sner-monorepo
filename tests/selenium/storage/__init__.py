@@ -130,10 +130,12 @@ def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
     assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 2
     assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 2
 
-    # _ux_freetag_action(sclnt, toolbar_elem, 'unset_multiple_tag', 'Untag multiple items')
+    webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[contains(@class, "fade")]')))
 
-    # assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 0
-    # assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 0
+    _ux_freetag_action(sclnt, toolbar_elem, 'unset_multiple_tag', 'Untag multiple items')
+
+    assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 0
+    assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 0
 
 
 def check_annotate(sclnt, annotate_id, test_model):
