@@ -160,7 +160,7 @@ describe('Vuln edit page', () => {
       loader: loader,
     })
 
-    vi.spyOn(httpClient, 'get').mockResolvedValueOnce({
+    vi.spyOn(httpClient, 'get').mockResolvedValue({
       data: [
         {
           label: '127.128.129.130 (hostname: testhost.testdomain.test)',
@@ -216,7 +216,7 @@ describe('Vuln edit page', () => {
       loader: loader,
     })
 
-    vi.spyOn(httpClient, 'get').mockResolvedValueOnce({
+    vi.spyOn(httpClient, 'get').mockResolvedValue({
       data: [
         {
           label: 'tcp/443 127.128.129.130 (hostname: testhost.testdomain.test id:1)',

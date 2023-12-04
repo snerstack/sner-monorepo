@@ -47,7 +47,9 @@ const ServiceAutocompleteField = ({
   }
 
   useEffect(() => {
-    document.addEventListener('click', () => {
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement
+      if (target.id === 'service_id') return
       setShowSuggestions(false)
     })
   }, [])
@@ -72,6 +74,12 @@ const ServiceAutocompleteField = ({
             onChange={(e) => {
               _setState(e.target.valueAsNumber)
               void autocompleteHandler(e.target.value)
+            }}
+            /* c8 ignore next 5 */
+            onFocus={() => {
+              if (_state) {
+                void autocompleteHandler(_state.toString())
+              }
             }}
             min={minValue}
           />

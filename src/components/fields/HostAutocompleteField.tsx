@@ -44,7 +44,9 @@ const HostAutocompleteField = ({
   }
 
   useEffect(() => {
-    document.addEventListener('click', () => {
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement
+      if (target?.id === 'host_id') return
       setShowSuggestions(false)
     })
   }, [])
@@ -69,6 +71,11 @@ const HostAutocompleteField = ({
             onChange={(e) => {
               _setState(e.target.valueAsNumber)
               void autocompleteHandler(e.target.value)
+            }}
+            onFocus={() => {
+              if (_state) {
+                void autocompleteHandler(_state.toString())
+              }
             }}
             min={minValue}
           />
