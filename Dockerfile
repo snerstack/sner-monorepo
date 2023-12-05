@@ -1,6 +1,6 @@
 FROM debian:bullseye
 
-RUN apt-get update && apt-get install -y git sudo make gcc libpq-dev python3-dev python3-venv unzip libmagic-dev
+RUN apt-get update && apt-get install -y git sudo make gcc libpq-dev python3-dev python3-venv unzip libmagic-dev postgresql-client
 
 WORKDIR /opt/sner4
 
