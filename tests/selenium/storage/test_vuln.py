@@ -278,6 +278,7 @@ def test_vuln_edit_route_autocomplete(live_server, sl_operator, vuln, host_facto
     elem_xpath = '//ul[@data-testid="host-autocomplete-list"]/li'
     webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_xpath)))
     sl_operator.find_element(By.XPATH, elem_xpath).click()
+    webdriver_waituntil(sl_operator, EC.invisibility_of_element_located((By.XPATH, elem_xpath)))
 
     elem_serviceid_xpath = '//input[@name="service_id"]'
     webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_serviceid_xpath)))
@@ -288,6 +289,7 @@ def test_vuln_edit_route_autocomplete(live_server, sl_operator, vuln, host_facto
     elem_xpath = '//ul[@data-testid="service-autocomplete-list"]/li'
     webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_xpath)))
     sl_operator.find_element(By.XPATH, elem_xpath).click()
+    webdriver_waituntil(sl_operator, EC.invisibility_of_element_located((By.XPATH, elem_xpath)))
 
     sl_operator.find_element(By.XPATH, '//form[@id="vuln_form"]//input[@type="submit"]').click()
 

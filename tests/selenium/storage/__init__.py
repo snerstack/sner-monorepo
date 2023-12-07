@@ -9,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.extensions import db
-from tests.selenium import dt_rendered, dt_wait_processing, webdriver_waituntil, wait_for_js, toggle_dt_toolboxes
+from tests.selenium import dt_rendered, dt_wait_processing, webdriver_waituntil, JsNoAjaxPending, wait_for_js, toggle_dt_toolboxes
 
 
 def check_dt_toolbox_select_rows(sclnt, route, dt_id, load_route=True):
@@ -81,14 +81,17 @@ def check_dt_toolbox_multiactions(sclnt, route, dt_id, model_class, load_route=T
     dt_elem = dt_wait_processing(sclnt, dt_id)
     assert model_class.query.filter(model_class.tags.any('todo')).count() == 0
 
-    if test_delete:
-        # or deleted
-        toolbar_elem.find_element(By.XPATH, './/a[text()="All"]').click()
-        toolbar_elem.find_element(By.XPATH, './/a[@data-testid="delete-row-btn"]').click()
-        webdriver_waituntil(sclnt, EC.alert_is_present())
-        sclnt.switch_to.alert.accept()
-        dt_wait_processing(sclnt, dt_id)
-        assert not model_class.query.all()
+    # or deleted
+    toolbar_elem.find_element(By.XPATH, './/a[text()="All"]').click()
+    toolbar_elem.find_element(By.XPATH, './/a[contains(@data-testid, "delete-row-btn")]').click()
+    webdriver_waituntil(sclnt, EC.alert_is_present())
+    sclnt.switch_to.alert.accept()
+    dt_elem = dt_wait_processing(sclnt, dt_id)
+
+    webdriver_waituntil(sclnt, lambda _: len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 1)
+
+    assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 1
+    assert dt_elem.find_element(By.XPATH, './/tbody/tr/td[text()="No data available in table"]')
 
 
 def _ux_freetag_action(sclnt, toolbar_elem, button_id, modal_title):
@@ -106,6 +109,7 @@ def _ux_freetag_action(sclnt, toolbar_elem, button_id, modal_title):
 
     sclnt.find_element(By.XPATH, '//input[@name="submit"]').click()
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@class="modal-backdrop"]')))
+    webdriver_waituntil(sclnt, JsNoAjaxPending())
 
 
 def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
@@ -147,6 +151,7 @@ def check_annotate(sclnt, annotate_id, test_model):
     sclnt.find_element(By.XPATH, '//textarea[@name="comment"]').send_keys('annotated comment')
     sclnt.find_element(By.XPATH, '//input[@name="submit"]').click()
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@data-testid="annotate-modal"]')))
+    webdriver_waituntil(sclnt, JsNoAjaxPending())
 
     db.session.refresh(test_model)
     assert 'annotated comment' in test_model.__class__.query.get(test_model.id).comment

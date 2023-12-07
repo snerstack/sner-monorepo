@@ -26,7 +26,7 @@ def webdriver_waituntil(sclnt, condition):
 def dt_wait_processing(sclnt, dt_id):
     """wait until all ajax finished and dt_id processing (hopefully) ended"""
 
-    # webdriver_waituntil(sclnt, JsNoAjaxPending())
+    webdriver_waituntil(sclnt, JsNoAjaxPending())
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.ID, f'{dt_id}_processing')))
     return sclnt.find_element(By.ID, dt_id)
 
