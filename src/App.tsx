@@ -1,4 +1,5 @@
 import { routes } from './routes'
+import jQuery from 'jquery'
 import { useEffect, useState } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
@@ -24,6 +25,9 @@ export default function App() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    window.jQuery = jQuery // helper for selenium tests
     authHandler()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
