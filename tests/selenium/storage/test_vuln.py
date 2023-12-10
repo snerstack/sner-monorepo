@@ -275,21 +275,19 @@ def test_vuln_edit_route_autocomplete(live_server, sl_operator, vuln, host_facto
     elem_hostid = sl_operator.find_element(By.XPATH, elem_hostid_xpath)
     elem_hostid.clear()
     elem_hostid.send_keys(host.address)
-    elem_xpath = '//ul[@data-testid="host-autocomplete-list"]/li'
+    elem_xpath = f'//ul[@data-testid="host-autocomplete-list"]/li[text()="{host.address} (hostname: {host.hostname} id:{host.id})"]'
     webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_xpath)))
     sl_operator.find_element(By.XPATH, elem_xpath).click()
-    webdriver_waituntil(sl_operator, EC.invisibility_of_element_located((By.XPATH, elem_xpath)))
 
     elem_serviceid_xpath = '//input[@name="service_id"]'
     webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_serviceid_xpath)))
     elem_serviceid = sl_operator.find_element(By.XPATH, elem_serviceid_xpath)
     elem_serviceid.clear()
     elem_serviceid.send_keys(str(service.port)[:2])
-
-    elem_xpath = '//ul[@data-testid="service-autocomplete-list"]/li'
+    elem_xpath = '//ul[@data-testid="service-autocomplete-list"]/li' \
+        f'[text()="{service.proto}/{service.port} {host.address} (hostname: {host.hostname} id:{host.id})"]'
     webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_xpath)))
     sl_operator.find_element(By.XPATH, elem_xpath).click()
-    webdriver_waituntil(sl_operator, EC.invisibility_of_element_located((By.XPATH, elem_xpath)))
 
     sl_operator.find_element(By.XPATH, '//form[@id="vuln_form"]//input[@type="submit"]').click()
 
