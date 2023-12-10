@@ -1,7 +1,5 @@
 import { Dispatch, SetStateAction, useState } from 'react'
-import { ModalBody, ModalTitle } from 'react-bootstrap'
-import Modal from 'react-bootstrap/Modal'
-import ModalHeader from 'react-bootstrap/esm/ModalHeader'
+import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 
 import { getTableApi } from '@/lib/DataTables'
@@ -45,9 +43,9 @@ const MultipleTagModal = ({
       size="lg"
       data-testid="multiple-tag-modal"
     >
-      <ModalHeader>
+      <Modal.Header placeholder={multipleTag.action == 'set' ? 'Tag multiple items' : 'Untag multiple items'}>
         <ModalTitle>{multipleTag.action === 'set' ? 'Tag multiple items' : 'Untag multiple items'}</ModalTitle>
-      </ModalHeader>
+      </Modal.Header>
       <ModalBody>
         <TagsField name="tags" label="Tags" placeholder="Tags" _state={tags} _setState={setTags} horizontal={false} />
 

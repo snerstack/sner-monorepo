@@ -1,6 +1,5 @@
 import { ModalBody, ModalTitle } from 'react-bootstrap'
 import Modal from 'react-bootstrap/Modal'
-import ModalHeader from 'react-bootstrap/esm/ModalHeader'
 import { useRecoilState } from 'recoil'
 
 import { apikeyModalState } from '@/atoms/apikeyModalAtom'
@@ -15,9 +14,9 @@ const ApikeyModal = () => {
       size="lg"
       data-testid="apikey-modal"
     >
-      <ModalHeader>
+      <Modal.Header placeholder="Apikey">
         <ModalTitle>Apikey</ModalTitle>
-      </ModalHeader>
+      </Modal.Header>
       <ModalBody>
         <p>API key: {apikeyModal.apikey}</p>
       </ModalBody>

@@ -1,8 +1,6 @@
 import { unique } from '@/utils'
 import { Dispatch, SetStateAction, useState } from 'react'
-import { ModalBody, ModalTitle } from 'react-bootstrap'
-import Modal from 'react-bootstrap/Modal'
-import ModalHeader from 'react-bootstrap/esm/ModalHeader'
+import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 
 import { getTableApi } from '@/lib/DataTables'
@@ -45,9 +43,9 @@ const AnnotateModal = ({
       size="lg"
       data-testid="annotate-modal"
     >
-      <ModalHeader>
+      <Modal.Header placeholder="Annotate">
         <ModalTitle>Annotate</ModalTitle>
-      </ModalHeader>
+      </Modal.Header>
       <ModalBody>
         <TagsField
           name="tags"
