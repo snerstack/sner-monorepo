@@ -12,4 +12,4 @@ RUN mkdir /var/lib/sner
 
 RUN cp -vn sner-docker-config.yaml /etc/sner.yaml
 
-CMD . venv/bin/activate && bin/server dbx remove && bin/server dbx init && bin/server dbx init-data && bin/server auth add-user testuser user@email.test --roles user,admin,operator,agent --password testpass && bin/server run
+CMD . venv/bin/activate && bin/server dbx remove && bin/server dbx init && bin/server dbx init-data && bin/server run
