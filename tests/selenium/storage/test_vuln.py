@@ -274,7 +274,7 @@ def test_vuln_edit_route_autocomplete(live_server, sl_operator, vuln, host_facto
     webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_hostid_xpath)))
     elem_hostid = sl_operator.find_element(By.XPATH, elem_hostid_xpath)
     elem_hostid.clear()
-    elem_hostid.send_keys(host.address)
+    elem_hostid.send_keys(host.address[0])
     elem_xpath = f'//ul[@data-testid="host-autocomplete-list"]/li[text()="{host.address} (hostname: {host.hostname} id:{host.id})"]'
     webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_xpath)))
     sl_operator.find_element(By.XPATH, elem_xpath).click()
