@@ -123,6 +123,10 @@ export const getVulnFilterName = (name: string): string => {
   return 'Vuln.name==' + encodeRFC3986URIComponent(JSON.stringify(name))
 }
 
+export const getNoteFilterXtype = (xtype: string): string => {
+  return 'Note.xtype==' + encodeRFC3986URIComponent(JSON.stringify(xtype))
+}
+
 export const getSelectedIdsFormData = (dt: Api<unknown>): { [key: string]: number } => {
   const data: { [key: string]: number } = {}
   let i = 0

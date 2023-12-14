@@ -1,3 +1,5 @@
+import VulnSearchListPage from './storage/vulnsearch/list'
+import VulnSearchViewPage from './storage/vulnsearch/view'
 import BaseLayout from '@/layouts/BaseLayout'
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import SwaggerPage from '@/routes/api/doc/swagger'
@@ -26,6 +28,7 @@ import HostListPage from '@/routes/storage/host/list'
 import HostViewPage from '@/routes/storage/host/view'
 import NoteAddPage from '@/routes/storage/note/add'
 import NoteEditPage from '@/routes/storage/note/edit'
+import NoteGroupedPage from '@/routes/storage/note/grouped'
 import NoteListPage from '@/routes/storage/note/list'
 import NoteViewPage from '@/routes/storage/note/view'
 import ServiceAddPage from '@/routes/storage/service/add'
@@ -201,6 +204,16 @@ export const routes = createRoutesFromElements(
             path="view/:id"
             element={<NoteViewPage />}
             loader={async ({ params: { id } }) => requestDataHandler(`/storage/note/view/${id}.json`)}
+          />
+          <Route path="grouped" element={<NoteGroupedPage />} />
+        </Route>
+
+        <Route path="vulnsearch">
+          <Route path="list" element={<VulnSearchListPage />} />
+          <Route
+            path="view/:id"
+            element={<VulnSearchViewPage />}
+            loader={async ({ params: { id } }) => requestDataHandler(`/storage/vulnsearch/view/${id}.json`)}
           />
         </Route>
       </Route>

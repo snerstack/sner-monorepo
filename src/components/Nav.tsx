@@ -82,6 +82,8 @@ const Nav = () => {
                   <NavLink title="Vulnerabilities" url="/storage/vuln/list" />
                   <NavLink title="Vulnerabilities grouped" url="/storage/vuln/grouped" />
                   <NavLink title="Notes" url="/storage/note/list" />
+                  <NavLink title="Notes grouped" url="/storage/note/grouped" />
+                  <NavLink title="Vulnsearch" url="/storage/vulnsearch/list" />
                 </>
               )}
               {pathname.split('/')[1] === 'visuals' && (
