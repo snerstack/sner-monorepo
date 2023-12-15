@@ -1,3 +1,4 @@
+import VersionInfosListPage from './storage/versioninfo/list'
 import VulnSearchListPage from './storage/vulnsearch/list'
 import VulnSearchViewPage from './storage/vulnsearch/view'
 import BaseLayout from '@/layouts/BaseLayout'
@@ -206,6 +207,10 @@ export const routes = createRoutesFromElements(
             loader={async ({ params: { id } }) => requestDataHandler(`/storage/note/view/${id}.json`)}
           />
           <Route path="grouped" element={<NoteGroupedPage />} />
+        </Route>
+
+        <Route path="versioninfo">
+          <Route path="list" element={<VersionInfosListPage />} />
         </Route>
 
         <Route path="vulnsearch">

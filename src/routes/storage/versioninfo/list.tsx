@@ -1,28 +1,25 @@
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
-import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, encodeRFC3986URIComponent, getColorForTag } from '@/lib/sner/storage'
+import { Column, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
+import { getColorForTag } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
-import ButtonGroup from '@/components/buttons/ButtonGroup'
-import DeleteButton from '@/components/buttons/DeleteButton'
-import DropdownButton from '@/components/buttons/DropdownButton'
-import EditButton from '@/components/buttons/EditButton'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
-import ViewButton from '@/components/buttons/ViewButton'
+import SubmitField from '@/components/fields/SubmitField'
+import TextField from '@/components/fields/TextField'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
-const NoteListPage = () => {
-  const [searchParams] = useSearchParams()
+const VersionInfosListPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
   const [annotate, setAnnotate] = useState<Annotate>({
@@ -39,6 +36,20 @@ const NoteListPage = () => {
     url: '',
   })
 
+  const [product, setProduct] = useState<string>('')
+  const [versionspec, setVersionspec] = useState<string>('')
+
+  const queryHandler = () => {
+    setSearchParams((params) => {
+      params.set('product', product)
+      params.set('versionspec', versionspec)
+      return params
+    })
+
+    const dt = getTableApi('versioninfo_list_table')
+    dt.ajax.reload()
+  }
+
   const toolboxesVisible = sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? true : false
   const viaTargetVisible = sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? true : false
 
@@ -47,7 +58,7 @@ const NoteListPage = () => {
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
-      createdCell: (cell, _data: string, row: NoteRow) =>
+      createdCell: (cell, _data: string, row: VersionInfoRow) =>
         renderElements(
           cell,
           <a
@@ -66,7 +77,7 @@ const NoteListPage = () => {
     Column('service_port', { visible: false }),
     Column('service', {
       className: 'service_endpoint_dropdown',
-      createdCell: (cell, _data: string, row: NoteRow) =>
+      createdCell: (cell, _data: string, row: VersionInfoRow) =>
         renderElements(
           cell,
           <ServiceEndpointDropdown
@@ -79,33 +90,24 @@ const NoteListPage = () => {
         ),
     }),
     Column('via_target', { visible: viaTargetVisible }),
-    Column('xtype'),
-    Column('data', {
-      className: 'forcewrap',
-      render: (data: string) => {
-        if (!data) return ''
-
-        if (data.length >= 4096) {
-          return data.substring(0, 4095) + '...'
-        }
-
-        return data
-      },
-    }),
+    Column('product'),
+    Column('version'),
+    Column('extra'),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, _data: string[], row: NoteRow) =>
+      createdCell: (cell, _data: string[], row: VersionInfoRow) =>
         renderElements(
           cell,
           <div
-            data-testid="note_tags_annotate"
+            className="position-absolute h-100 w-100"
+            data-testid="versioninfo_tags_annotate"
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
                 tags: row['tags'],
                 comment: row['comment'] || '',
-                tableId: 'note_list_table',
-                url: `/storage/note/annotate/${row['id']}`,
+                tableId: 'versioninfo_list_table',
+                url: `/storage/versioninfo/annotate/${row['id']}`,
               })
             }
           >
@@ -120,18 +122,19 @@ const NoteListPage = () => {
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, _data: string, row: NoteRow) =>
+      createdCell: (cell, _data: string, row: VersionInfoRow) =>
         renderElements(
           cell,
           <div
-            data-testid="note_comment_annotate"
+            className="position-absolute h-100 w-100"
+            data-testid="versioninfo_comment_annotate"
             onDoubleClick={() =>
               setAnnotate({
                 show: true,
                 tags: row['tags'],
                 comment: row['comment'] || '',
-                tableId: 'note_list_table',
-                url: `/storage/note/annotate/${row['id']}`,
+                tableId: 'versioninfo_list_table',
+                url: `/storage/versioninfo/annotate/${row['id']}`,
               })
             }
           >
@@ -139,42 +142,14 @@ const NoteListPage = () => {
           </div>,
         ),
     }),
-    ColumnButtons({
-      createdCell: (cell, _data: string, row: NoteRow) =>
-        renderElements(
-          cell,
-          <ButtonGroup>
-            <DropdownButton
-              title="More data"
-              options={[
-                {
-                  name: 'created',
-                  data: row['created'],
-                },
-                {
-                  name: 'modified',
-                  data: row['modified'],
-                },
-                {
-                  name: 'import_time',
-                  data: row['import_time'] || '',
-                },
-              ]}
-            />
-            <ViewButton url={`/storage/note/view/${row['id']}`} navigate={navigate} />
-            <EditButton url={`/storage/note/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/note/delete/${row['id']}`} tableId="note_list_table" />
-          </ButtonGroup>,
-        ),
-    }),
   ]
   return (
     <div>
       <Helmet>
-        <title>Notes / List - sner4</title>
+        <title>Versioninfos / List - sner4</title>
       </Helmet>
 
-      <Heading headings={['Notes']}>
+      <Heading headings={['Versioninfo (pre-computed)']}>
         <div className="breadcrumb-buttons pl-2">
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">
             <i className="fas fa-filter"></i>
@@ -182,19 +157,52 @@ const NoteListPage = () => {
         </div>
       </Heading>
 
-      <div id="note_list_table_toolbar" className="dt_toolbar">
-        <div id="note_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}>
+      <div className="container-fluid">
+        <form id="versioninfo_query_form">
+          <div className="row">
+            <div className="col">
+              <TextField
+                name="product"
+                label="Product"
+                description="SQL ilike query token"
+                placeholder="Product"
+                _state={product}
+                _setState={setProduct}
+              />
+            </div>
+            <div className="col">
+              <TextField
+                name="versionspec"
+                label="Versionspec"
+                description='version constraint specifier, eg. ">=4.0; ==2.0"'
+                placeholder="Versionspec"
+                _state={versionspec}
+                _setState={setVersionspec}
+              />
+            </div>
+            <div className="col">
+              <SubmitField name="Query" handler={queryHandler} />
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div id="versioninfo_list_table_toolbar" className="dt_toolbar">
+        <div
+          id="versioninfo_list_table_toolbox"
+          className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}
+        >
           <div className="btn-group">
             <a className="btn btn-outline-secondary disabled">
               <i className="fas fa-check-square"></i>
             </a>
             <a
               className="btn btn-outline-secondary"
-              data-testid="note_select_all"
+              data-testid="versioninfo_select_all"
               href="#"
               title="select all"
               onClick={() => {
-                const dt = getTableApi('note_list_table')
+                const dt = getTableApi('versioninfo_list_table')
                 dt.rows({ page: 'current' }).select()
               }}
             >
@@ -202,11 +210,11 @@ const NoteListPage = () => {
             </a>
             <a
               className="btn btn-outline-secondary"
-              data-testid="note_unselect_all"
+              data-testid="versioninfo_unselect_all"
               href="#"
               title="unselect all"
               onClick={() => {
-                const dt = getTableApi('note_list_table')
+                const dt = getTableApi('versioninfo_list_table')
                 dt.rows({ page: 'current' }).deselect()
               }}
             >
@@ -217,33 +225,33 @@ const NoteListPage = () => {
             <a
               className="btn btn-outline-secondary abutton_freetag_set_multiid"
               href="#"
-              data-testid="note_set_multiple_tag"
+              data-testid="versioninfo_set_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,
                   action: 'set',
-                  tableId: 'note_list_table',
-                  url: '/storage/note/tag_multiid',
+                  tableId: 'versioninfo_list_table',
+                  url: '/storage/versioninfo/tag_multiid',
                 })
               }
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_NOTE_TAGS.split(',').map((tag) => (
-              <TagButton tag={tag} key={tag} url="/storage/note/tag_multiid" tableId="note_list_table" />
+            {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
+              <TagButton tag={tag} key={tag} url="/storage/versioninfo/tag_multiid" tableId="versioninfo_list_table" />
             ))}
           </div>{' '}
           <div className="btn-group">
             <a
               className="btn btn-outline-secondary abutton_freetag_unset_multiid"
               href="#"
-              data-testid="note_unset_multiple_tag"
+              data-testid="versioninfo_unset_multiple_tag"
               onClick={() =>
                 setMultipleTag({
                   show: true,
                   action: 'unset',
-                  tableId: 'note_list_table',
-                  url: '/storage/note/tag_multiid',
+                  tableId: 'versioninfo_list_table',
+                  url: '/storage/versioninfo/tag_multiid',
                 })
               }
             >
@@ -259,50 +267,29 @@ const NoteListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={import.meta.env.VITE_NOTE_TAGS.split(',')}
-                url="/storage/note/tag_multiid"
-                tableId="note_list_table"
+                tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
+                url="/storage/versioninfo/tag_multiid"
+                tableId="versioninfo_list_table"
               />
             </div>
-            <a
-              data-testid="delete-row-btn"
-              className="btn btn-outline-secondary"
-              href="#"
-              onClick={() => deleteRow('note_list_table', '/storage/note/delete_multiid')}
-            >
-              <i className="fas fa-trash text-danger"></i>
-            </a>
-          </div>{' '}
-          <div className="btn-group">
-            <a className="btn btn-outline-secondary disabled">
-              <i className="fas fa-filter"></i>
-            </a>
-            <Link className="btn btn-outline-secondary" to='/storage/note/list?filter=Note.tags not_any "reviewed"'>
-              Exclude reviewed
-            </Link>
-            <Link className="btn btn-outline-secondary" to='/storage/note/list?filter=Note.tags any "todo"'>
-              Only Todo
-            </Link>
-            <Link className="btn btn-outline-secondary" to='/storage/note/list?filter=Note.xtype not_ilike "nessus%"'>
-              Not nessus
-            </Link>
           </div>
         </div>
-        <FilterForm url="/storage/note/list" />
+        <FilterForm url="/storage/versioninfo/list" />
       </div>
 
       <DataTable
-        id="note_list_table"
+        id="versioninfo_list_table"
         columns={columns}
         ajax={{
           url:
             import.meta.env.VITE_SERVER_URL +
-            '/storage/note/list.json' +
-            (searchParams.has('filter') ? `?filter=${encodeRFC3986URIComponent(searchParams.get('filter')!)}` : ''),
+            '/storage/versioninfo/list.json' +
+            (searchParams.toString() ? `?${searchParams.toString()}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
+        order={[[2, 'asc']]}
         select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
       />
 
@@ -311,4 +298,4 @@ const NoteListPage = () => {
     </div>
   )
 }
-export default NoteListPage
+export default VersionInfosListPage

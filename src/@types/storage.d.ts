@@ -185,6 +185,22 @@ interface NoteRow {
   import_time: string | null
 }
 
+interface VersionInfoRow {
+  id: string
+  host_id: number
+  host_address: string
+  host_hostname: string
+  service: string
+  service_proto: string
+  service_port: number
+  via_target: string | null
+  product: string
+  version: string
+  extra: string
+  tags: string[]
+  comment: string | null
+}
+
 interface VulnSearchRow {
   id: string
   host_id: number

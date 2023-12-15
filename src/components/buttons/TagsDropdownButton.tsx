@@ -19,6 +19,7 @@ const TagsDropdownButton = ({ tags, url, tableId }: { tags: string[]; url: strin
             const ids = getSelectedIdsFormData(getTableApi(tableId))
 
             await tagAction({ ids, tag, url, action: 'unset' })
+            getTableApi(tableId).ajax.reload()
           }}
         >
           {capitalize(tag)}

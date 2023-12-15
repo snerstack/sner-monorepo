@@ -83,6 +83,7 @@ const Nav = () => {
                   <NavLink title="Vulnerabilities grouped" url="/storage/vuln/grouped" />
                   <NavLink title="Notes" url="/storage/note/list" />
                   <NavLink title="Notes grouped" url="/storage/note/grouped" />
+                  <NavLink title="Versioninfos" url="/storage/versioninfo/list" />
                   <NavLink title="Vulnsearch" url="/storage/vulnsearch/list" />
                 </>
               )}

@@ -7,6 +7,7 @@ import { noteGroupedHandler } from './handlers/storage/note/grouped'
 import { noteListHandler } from './handlers/storage/note/list'
 import { serviceGroupedHandler } from './handlers/storage/service/grouped'
 import { serviceListHandler } from './handlers/storage/service/list'
+import { versioninfoListHandler } from './handlers/storage/versioninfo/list'
 import { vulnGroupedHandler } from './handlers/storage/vuln/grouped'
 import { vulnListHandler } from './handlers/storage/vuln/list'
 import { multicopyEndpointsHandler } from './handlers/storage/vuln/multicopy_endpoints'
@@ -26,6 +27,7 @@ export const handlers = [
   multicopyEndpointsHandler,
   noteListHandler,
   noteGroupedHandler,
+  versioninfoListHandler,
   vulnSearchListHandler,
   dnsTreeHandler,
 ]
