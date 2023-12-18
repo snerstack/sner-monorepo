@@ -127,50 +127,45 @@ const VulnListPage = () => {
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, _data: string[], row: VulnRow) =>
+      createdCell: (cell, _data: string[], row: VulnRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'vuln_list_table',
+            url: `/storage/vuln/annotate/${row['id']}`,
+          })
+        }
         renderElements(
           cell,
-          <div
-            data-testid="vuln_tags_annotate"
-            onDoubleClick={() =>
-              setAnnotate({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'vuln_list_table',
-                url: `/storage/vuln/annotate/${row['id']}`,
-              })
-            }
-          >
+          <div data-testid="vuln_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
                 <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
               </Fragment>
             ))}
           </div>,
-        ),
+        )
+      },
     }),
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, _data: string, row: VulnRow) =>
-        renderElements(
-          cell,
-          <div
-            data-testid="vuln_comment_annotate"
-            onDoubleClick={() =>
-              setAnnotate({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'vuln_list_table',
-                url: `/storage/vuln/annotate/${row['id']}`,
-              })
-            }
-          >
-            {row['comment']}
-          </div>,
-        ),
+      createdCell: (cell, _data: string, row: VulnRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'vuln_list_table',
+            url: `/storage/vuln/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="vuln_comment_annotate">{row['comment']}</div>)
+      },
     }),
     ColumnButtons({
       createdCell: (cell, _data: string, row: VulnRow) =>

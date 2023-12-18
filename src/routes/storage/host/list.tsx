@@ -65,50 +65,45 @@ const HostListPage = () => {
     Column('cnt_n'),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, data: string[], row: HostRow) =>
+      createdCell: (cell, data: string[], row: HostRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: data,
+            comment: row['comment'] || '',
+            tableId: 'host_list_table',
+            url: `/storage/host/annotate/${row['id']}`,
+          })
+        }
         renderElements(
           cell,
-          <div
-            data-testid="host_tags_annotate"
-            onDoubleClick={() => {
-              setAnnotate({
-                show: true,
-                tags: data,
-                comment: row['comment'] || '',
-                tableId: 'host_list_table',
-                url: `/storage/host/annotate/${row['id']}`,
-              })
-            }}
-          >
+          <div data-testid="host_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
                 <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
               </Fragment>
             ))}
           </div>,
-        ),
+        )
+      },
     }),
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, _data: string, row: HostRow) =>
-        renderElements(
-          cell,
-          <div
-            data-testid="host_comment_annotate"
-            onDoubleClick={() =>
-              setAnnotate({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'host_list_table',
-                url: `/storage/host/annotate/${row['id']}`,
-              })
-            }
-          >
-            {row['comment']}
-          </div>,
-        ),
+      createdCell: (cell, _data: string, row: HostRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_list_table',
+            url: `/storage/host/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="host_comment_annotate">{row['comment']}</div>)
+      },
     }),
     ColumnButtons({
       createdCell: (cell, _data: string, row: HostRow) =>

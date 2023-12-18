@@ -88,50 +88,45 @@ const HostViewPage = () => {
     Column('info'),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, _data: string, row: ServiceRow) =>
+      createdCell: (cell, _data: string, row: ServiceRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateService({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_service_table',
+            url: `/storage/service/annotate/${row['id']}`,
+          })
+        }
         renderElements(
           cell,
-          <div
-            data-testid="service_tags_annotate"
-            onDoubleClick={() =>
-              setAnnotateService({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'host_view_service_table',
-                url: `/storage/service/annotate/${row['id']}`,
-              })
-            }
-          >
+          <div data-testid="service_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
                 <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
               </Fragment>
             ))}
           </div>,
-        ),
+        )
+      },
     }),
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, _data: string, row: ServiceRow) =>
-        renderElements(
-          cell,
-          <div
-            data-testid="service_comment_annotate"
-            onDoubleClick={() =>
-              setAnnotateService({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'host_view_service_table',
-                url: `/storage/service/annotate/${row['id']}`,
-              })
-            }
-          >
-            {row['comment']}
-          </div>,
-        ),
+      createdCell: (cell, _data: string, row: ServiceRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateService({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_service_table',
+            url: `/storage/service/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="service_comment_annotate">{row['comment']}</div>)
+      },
     }),
     ColumnButtons({
       createdCell: (cell, _data: string, row: ServiceRow) =>
@@ -263,50 +258,45 @@ const HostViewPage = () => {
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, _data: string[], row: VulnRow) =>
+      createdCell: (cell, _data: string[], row: VulnRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateVuln({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_vuln_table',
+            url: `/storage/vuln/annotate/${row['id']}`,
+          })
+        }
         renderElements(
           cell,
-          <div
-            data-testid="vuln_tags_annotate"
-            onDoubleClick={() =>
-              setAnnotateVuln({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'host_view_vuln_table',
-                url: `/storage/vuln/annotate/${row['id']}`,
-              })
-            }
-          >
+          <div data-testid="vuln_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
                 <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
               </Fragment>
             ))}
           </div>,
-        ),
+        )
+      },
     }),
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, _data: string, row: VulnRow) =>
-        renderElements(
-          cell,
-          <div
-            data-testid="vuln_comment_annotate"
-            onDoubleClick={() =>
-              setAnnotateVuln({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'host_view_vuln_table',
-                url: `/storage/vuln/annotate/${row['id']}`,
-              })
-            }
-          >
-            {row['comment']}
-          </div>,
-        ),
+      createdCell: (cell, _data: string, row: VulnRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateVuln({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_vuln_table',
+            url: `/storage/vuln/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="vuln_comment_annotate">{row['comment']}</div>)
+      },
     }),
     ColumnButtons({
       createdCell: (cell, _data: string, row: VulnRow) =>
@@ -409,50 +399,45 @@ const HostViewPage = () => {
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, _data: string[], row: NoteRow) =>
+      createdCell: (cell, _data: string[], row: NoteRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateNote({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_note_table',
+            url: `/storage/note/annotate/${row['id']}`,
+          })
+        }
         renderElements(
           cell,
-          <div
-            data-testid="note_tags_annotate"
-            onDoubleClick={() =>
-              setAnnotateNote({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'host_view_note_table',
-                url: `/storage/note/annotate/${row['id']}`,
-              })
-            }
-          >
+          <div data-testid="note_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
                 <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
               </Fragment>
             ))}
           </div>,
-        ),
+        )
+      },
     }),
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, _data: string, row: NoteRow) =>
-        renderElements(
-          cell,
-          <div
-            data-testid="note_comment_annotate"
-            onDoubleClick={() =>
-              setAnnotateNote({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'host_view_note_table',
-                url: `/storage/note/annotate/${row['id']}`,
-              })
-            }
-          >
-            {row['comment']}
-          </div>,
-        ),
+      createdCell: (cell, _data: string, row: NoteRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateNote({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_note_table',
+            url: `/storage/note/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="note_comment_annotate">{row['comment']}</div>)
+      },
     }),
     ColumnButtons({
       createdCell: (cell, _data: string, row: NoteRow) =>

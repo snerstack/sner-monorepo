@@ -68,7 +68,7 @@ describe('Vuln view page', () => {
     })
   })
 
-  it('annotates note', async () => {
+  it('annotates vuln', async () => {
     renderWithProviders({
       element: <VulnViewPage />,
       path: '/storage/vuln/view/1',

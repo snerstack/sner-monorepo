@@ -1,7 +1,9 @@
 import HostViewPage from '@/routes/storage/host/view'
 import VersionInfosListPage from '@/routes/storage/versioninfo/list'
+import { testAnnotate } from '@/tests/helpers/testAnnotate'
+import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
@@ -90,22 +92,7 @@ describe('Versioninfo list page', () => {
     })
 
     await waitFor(() => {
-      const tagsCell = screen.getAllByTestId('versioninfo_tags_annotate')[0]
-      const tagsCellEmptyComment = screen.getAllByTestId('versioninfo_tags_annotate')[1]
-      const commentCell = screen.getAllByTestId('versioninfo_comment_annotate')[0]
-      const commentCellEmptyComment = screen.getAllByTestId('versioninfo_comment_annotate')[1]
-
-      fireEvent.doubleClick(tagsCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(tagsCellEmptyComment)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCellEmptyComment)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
+      testAnnotate({ tagsId: 'versioninfo_tags_annotate', commentId: 'versioninfo_comment_annotate' })
     })
   })
 
@@ -141,13 +128,7 @@ describe('Versioninfo list page', () => {
       path: '/storage/versioninfo/list',
     })
 
-    const tagMultipleButton = screen.getByTestId('versioninfo_set_multiple_tag')
-
-    fireEvent.click(tagMultipleButton)
-
-    await waitFor(() => {
-      expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
-    })
+    await testMultipleTags({ action: 'set', testId: 'versioninfo_set_multiple_tag' })
   })
 
   it('unsets multiple tags', async () => {
@@ -156,12 +137,6 @@ describe('Versioninfo list page', () => {
       path: '/storage/versioninfo/list',
     })
 
-    const tagMultipleButton = screen.getByTestId('versioninfo_unset_multiple_tag')
-
-    fireEvent.click(tagMultipleButton)
-
-    await waitFor(() => {
-      expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
-    })
+    await testMultipleTags({ action: 'unset', testId: 'versioninfo_unset_multiple_tag' })
   })
 })

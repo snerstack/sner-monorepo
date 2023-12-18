@@ -2,6 +2,8 @@ import HostViewPage from '@/routes/storage/host/view'
 import VulnListPage from '@/routes/storage/vuln/list'
 import VulnMulticopyPage from '@/routes/storage/vuln/multicopy'
 import VulnViewPage from '@/routes/storage/vuln/view'
+import { testAnnotate } from '@/tests/helpers/testAnnotate'
+import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -191,28 +193,7 @@ describe('Vuln list page', () => {
     })
 
     await waitFor(() => {
-      const tagsCell = screen.getAllByTestId('vuln_tags_annotate')[0]
-      const commentCell = screen.getAllByTestId('vuln_comment_annotate')[0]
-
-      fireEvent.doubleClick(tagsCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      vi.spyOn(httpClient, 'post').mockResolvedValue('')
-
-      const tagsField = screen.getByTestId('tags-field')
-      const tagsInput = tagsField.querySelector('input')!
-      const defaultTags = screen.getByTestId('default-tags')
-      const commentInput = screen.getByLabelText('Comment')
-      const saveButton = screen.getByRole('button', { name: 'Save' })
-
-      fireEvent.change(tagsInput, { target: { value: 'new_tag' } })
-      fireEvent.keyDown(tagsInput, { key: 'Enter', code: 13, charCode: 13 })
-      fireEvent.click(defaultTags.children[0])
-      fireEvent.change(commentInput, { target: { value: 'new_comment' } })
-      fireEvent.click(saveButton)
-
-      fireEvent.doubleClick(commentCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
+      testAnnotate({ tagsId: 'vuln_tags_annotate', commentId: 'vuln_comment_annotate' })
     })
   })
 
@@ -350,38 +331,7 @@ describe('Vuln list page', () => {
       path: '/storage/vuln/list',
     })
 
-    await waitFor(() => {
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[0])
-    })
-
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
-
-    const tagMultipleButton = screen.getByTestId('vuln_set_multiple_tag')
-
-    fireEvent.click(tagMultipleButton)
-
-    await waitFor(() => {
-      expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
-
-      const tagsField = screen.getByTestId('tags-field')
-      const tagsInput = tagsField.querySelector('input')!
-      const saveButton = screen.getByRole('button', { name: 'Save' })
-
-      fireEvent.change(tagsInput, { target: { value: 'new_tag' } })
-      fireEvent.keyDown(tagsInput, { key: 'Enter', code: 13, charCode: 13 })
-      fireEvent.click(saveButton)
-    })
-
-    fireEvent.click(tagMultipleButton)
-
-    await waitFor(() => {
-      expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
-
-      const modalBackground = screen.getByTestId('multiple-tag-modal').parentElement!
-      fireEvent.click(modalBackground)
-    })
+    await testMultipleTags({ action: 'set', testId: 'vuln_set_multiple_tag' })
   })
 
   it('unsets multiple tags', async () => {
@@ -390,12 +340,6 @@ describe('Vuln list page', () => {
       path: '/storage/vuln/list',
     })
 
-    const tagMultipleButton = screen.getByTestId('vuln_unset_multiple_tag')
-
-    fireEvent.click(tagMultipleButton)
-
-    await waitFor(() => {
-      expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
-    })
+    await testMultipleTags({ action: 'unset', testId: 'vuln_unset_multiple_tag' })
   })
 })

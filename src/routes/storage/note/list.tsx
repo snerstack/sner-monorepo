@@ -94,50 +94,45 @@ const NoteListPage = () => {
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, _data: string[], row: NoteRow) =>
+      createdCell: (cell, _data: string[], row: NoteRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'note_list_table',
+            url: `/storage/note/annotate/${row['id']}`,
+          })
+        }
         renderElements(
           cell,
-          <div
-            data-testid="note_tags_annotate"
-            onDoubleClick={() =>
-              setAnnotate({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'note_list_table',
-                url: `/storage/note/annotate/${row['id']}`,
-              })
-            }
-          >
+          <div data-testid="note_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
                 <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
               </Fragment>
             ))}
           </div>,
-        ),
+        )
+      },
     }),
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, _data: string, row: NoteRow) =>
-        renderElements(
-          cell,
-          <div
-            data-testid="note_comment_annotate"
-            onDoubleClick={() =>
-              setAnnotate({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'note_list_table',
-                url: `/storage/note/annotate/${row['id']}`,
-              })
-            }
-          >
-            {row['comment']}
-          </div>,
-        ),
+      createdCell: (cell, _data: string, row: NoteRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'note_list_table',
+            url: `/storage/note/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="note_comment_annotate">{row['comment']}</div>)
+      },
     }),
     ColumnButtons({
       createdCell: (cell, _data: string, row: NoteRow) =>

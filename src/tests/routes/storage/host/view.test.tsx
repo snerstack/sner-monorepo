@@ -1,5 +1,6 @@
 import HostViewPage from '@/routes/storage/host/view'
 import VulnViewPage from '@/routes/storage/vuln/view'
+import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -25,6 +26,7 @@ const loader = () =>
 
 describe('Host view page', () => {
   sessionStorage.setItem('dt_toolboxes_visible', 'false')
+  sessionStorage.setItem('dt_viatarget_column_visible', 'false')
 
   it('shows host', async () => {
     renderWithProviders({
@@ -172,22 +174,7 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
-      const tagsCell = screen.getAllByTestId('service_tags_annotate')[0]
-      const tagsCellEmptyComment = screen.getAllByTestId('service_tags_annotate')[1]
-      const commentCell = screen.getAllByTestId('service_comment_annotate')[0]
-      const commentCellEmptyComment = screen.getAllByTestId('service_comment_annotate')[1]
-
-      fireEvent.doubleClick(tagsCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(tagsCellEmptyComment)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCellEmptyComment)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
+      testAnnotate({ tagsId: 'service_tags_annotate', commentId: 'service_comment_annotate' })
     })
   })
 
@@ -199,14 +186,7 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
-      const tagsCell = screen.getAllByTestId('vuln_tags_annotate')[0]
-      const commentCell = screen.getAllByTestId('vuln_comment_annotate')[0]
-
-      fireEvent.doubleClick(tagsCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
+      testAnnotate({ tagsId: 'vuln_tags_annotate', commentId: 'vuln_comment_annotate' })
     })
   })
 
@@ -218,22 +198,7 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
-      const tagsCell = screen.getAllByTestId('note_tags_annotate')[0]
-      const tagsCellEmptyComment = screen.getAllByTestId('note_tags_annotate')[1]
-      const commentCell = screen.getAllByTestId('note_comment_annotate')[0]
-      const commentCellEmptyComment = screen.getAllByTestId('note_comment_annotate')[1]
-
-      fireEvent.doubleClick(tagsCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(tagsCellEmptyComment)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCellEmptyComment)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
+      testAnnotate({ tagsId: 'note_tags_annotate', commentId: 'note_comment_annotate' })
     })
   })
 

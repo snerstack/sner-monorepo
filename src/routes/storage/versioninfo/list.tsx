@@ -95,52 +95,45 @@ const VersionInfosListPage = () => {
     Column('extra'),
     Column('tags', {
       className: 'abutton_annotate_dt',
-      createdCell: (cell, _data: string[], row: VersionInfoRow) =>
+      createdCell: (cell, _data: string[], row: VersionInfoRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'versioninfo_list_table',
+            url: `/storage/versioninfo/annotate/${row['id']}`,
+          })
+        }
         renderElements(
           cell,
-          <div
-            className="position-absolute h-100 w-100"
-            data-testid="versioninfo_tags_annotate"
-            onDoubleClick={() =>
-              setAnnotate({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'versioninfo_list_table',
-                url: `/storage/versioninfo/annotate/${row['id']}`,
-              })
-            }
-          >
+          <div data-testid="versioninfo_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
                 <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
               </Fragment>
             ))}
           </div>,
-        ),
+        )
+      },
     }),
     Column('comment', {
       className: 'abutton_annotate_dt forcewrap',
       title: 'cmnt',
-      createdCell: (cell, _data: string, row: VersionInfoRow) =>
-        renderElements(
-          cell,
-          <div
-            className="position-absolute h-100 w-100"
-            data-testid="versioninfo_comment_annotate"
-            onDoubleClick={() =>
-              setAnnotate({
-                show: true,
-                tags: row['tags'],
-                comment: row['comment'] || '',
-                tableId: 'versioninfo_list_table',
-                url: `/storage/versioninfo/annotate/${row['id']}`,
-              })
-            }
-          >
-            {row['comment']}
-          </div>,
-        ),
+      createdCell: (cell, _data: string, row: VersionInfoRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'versioninfo_list_table',
+            url: `/storage/versioninfo/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="versioninfo_comment_annotate">{row['comment']}</div>)
+      },
     }),
   ]
   return (

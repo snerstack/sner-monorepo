@@ -1,5 +1,7 @@
 import HostListPage from '@/routes/storage/host/list'
 import HostViewPage from '@/routes/storage/host/view'
+import { testAnnotate } from '@/tests/helpers/testAnnotate'
+import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -130,31 +132,8 @@ describe('Host list page', () => {
       path: '/storage/host/list',
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValueOnce('')
-
     await waitFor(() => {
-      const tagsCell = screen.getAllByTestId('host_tags_annotate')[0]
-      const commentCell = screen.getAllByTestId('host_comment_annotate')[0]
-
-      fireEvent.doubleClick(tagsCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      const tagsInput = screen.getByTestId('tags-field').querySelector('input')!
-      const defaultTags = screen.getByTestId('default-tags')
-      const commentInput = screen.getByLabelText('Comment')
-      const saveButton = screen.getByRole('button', { name: 'Save' })
-
-      fireEvent.change(tagsInput, { target: { value: 'new_tag' } })
-      fireEvent.keyDown(tagsInput, { key: 'Enter', code: 13, charCode: 13 })
-      fireEvent.click(defaultTags.children[0])
-      fireEvent.change(commentInput, { target: { value: 'new_comment' } })
-      fireEvent.click(saveButton)
-
-      const modalBackground = screen.getByTestId('annotate-modal').parentElement!
-      fireEvent.click(modalBackground)
-
-      fireEvent.doubleClick(commentCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
+      testAnnotate({ tagsId: 'host_tags_annotate', commentId: 'host_comment_annotate' })
     })
   })
 
@@ -219,13 +198,7 @@ describe('Host list page', () => {
       path: '/storage/host/list',
     })
 
-    const tagMultipleButton = screen.getByTestId('host_set_multiple_tag')
-
-    fireEvent.click(tagMultipleButton)
-
-    await waitFor(() => {
-      expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
-    })
+    await testMultipleTags({ action: 'set', testId: 'host_set_multiple_tag' })
   })
 
   it('unsets multiple tags', async () => {
@@ -234,12 +207,6 @@ describe('Host list page', () => {
       path: '/storage/host/list',
     })
 
-    const tagMultipleButton = screen.getByTestId('host_unset_multiple_tag')
-
-    fireEvent.click(tagMultipleButton)
-
-    await waitFor(() => {
-      expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
-    })
+    await testMultipleTags({ action: 'unset', testId: 'host_unset_multiple_tag' })
   })
 })
