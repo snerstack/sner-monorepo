@@ -1,5 +1,6 @@
 import NoteGroupedPage from '@/routes/storage/note/grouped'
 import NoteListPage from '@/routes/storage/note/list'
+import { testFilter } from '@/tests/helpers/testFilter'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -26,12 +27,7 @@ describe('Note grouped page', () => {
       path: '/storage/note/grouped',
     })
 
-    const filterForm = screen.getByTestId('filter-form')
-    const filterInput = filterForm.querySelector('input')!
-    const filterButton = screen.getByTestId('filter-btn')
-
-    fireEvent.change(filterInput, { target: { value: 'Note.xtype=="cpe"' } })
-    fireEvent.click(filterButton)
+    testFilter({ query: 'Note.xtype=="cpe"' })
 
     await waitFor(() => {
       expect(screen.getByText('cpe')).toBeInTheDocument()

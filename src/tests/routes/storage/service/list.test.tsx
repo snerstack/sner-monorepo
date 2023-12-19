@@ -1,6 +1,8 @@
 import HostViewPage from '@/routes/storage/host/view'
 import ServiceListPage from '@/routes/storage/service/list'
 import { testAnnotate } from '@/tests/helpers/testAnnotate'
+import { testDeleteRow } from '@/tests/helpers/testDeleteRow'
+import { testFilter } from '@/tests/helpers/testFilter'
 import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
@@ -79,12 +81,7 @@ describe('Service list page', () => {
       path: '/storage/service/list',
     })
 
-    const filterForm = screen.getByTestId('filter-form')
-    const filterInput = filterForm.querySelector('input')!
-    const filterButton = screen.getByTestId('filter-btn')
-
-    fireEvent.change(filterInput, { target: { value: 'Host.address=="127.4.4.4"' } })
-    fireEvent.click(filterButton)
+    testFilter({ query: 'Host.address=="127.4.4.4"' })
 
     await waitFor(() => {
       expect(screen.getByText('127.4.4.4')).toBeInTheDocument()
@@ -99,18 +96,8 @@ describe('Service list page', () => {
       path: '/storage/service/list',
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
-
     await waitFor(() => {
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[0])
-
-      window.confirm = vi.fn(() => true)
-
-      const deleteRowButton = screen.getByTestId('delete-row-btn')
-
-      fireEvent.click(deleteRowButton)
+      testDeleteRow({ buttonId: 'delete-row-btn' })
     })
   })
 

@@ -3,6 +3,8 @@ import VulnListPage from '@/routes/storage/vuln/list'
 import VulnMulticopyPage from '@/routes/storage/vuln/multicopy'
 import VulnViewPage from '@/routes/storage/vuln/view'
 import { testAnnotate } from '@/tests/helpers/testAnnotate'
+import { testDeleteRow } from '@/tests/helpers/testDeleteRow'
+import { testFilter } from '@/tests/helpers/testFilter'
 import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
@@ -130,12 +132,7 @@ describe('Vuln list page', () => {
       path: '/storage/vuln/list',
     })
 
-    const filterForm = screen.getByTestId('filter-form')
-    const filterInput = filterForm.querySelector('input')!
-    const filterButton = screen.getByTestId('filter-btn')
-
-    fireEvent.change(filterInput, { target: { value: 'Vuln.name=="aggregable vuln"' } })
-    fireEvent.click(filterButton)
+    testFilter({ query: 'Vuln.name=="aggregable vuln"' })
 
     await waitFor(() => {
       expect(screen.getByText('aggregable vuln')).toBeInTheDocument()
@@ -229,18 +226,8 @@ describe('Vuln list page', () => {
       path: '/storage/vuln/list',
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
-
     await waitFor(() => {
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[0])
-
-      window.confirm = vi.fn(() => true)
-
-      const deleteRowButton = screen.getByTestId('delete-row-btn')
-
-      fireEvent.click(deleteRowButton)
+      testDeleteRow({ buttonId: 'delete-row-btn' })
     })
   })
 

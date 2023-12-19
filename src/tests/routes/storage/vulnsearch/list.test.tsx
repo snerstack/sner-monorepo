@@ -1,5 +1,6 @@
 import HostViewPage from '@/routes/storage/host/view'
 import VulnSearchListPage from '@/routes/storage/vulnsearch/list'
+import { testFilter } from '@/tests/helpers/testFilter'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -67,12 +68,7 @@ describe('Vulnsearch list page', () => {
       path: '/storage/note/list',
     })
 
-    const filterForm = screen.getByTestId('filter-form')
-    const filterInput = filterForm.querySelector('input')!
-    const filterButton = screen.getByTestId('filter-btn')
-
-    fireEvent.change(filterInput, { target: { value: 'Host.address=="127.5.5.5"' } })
-    fireEvent.click(filterButton)
+    testFilter({ query: 'Host.address=="127.5.5.5"' })
 
     await waitFor(() => {
       expect(screen.getByText('127.5.5.5')).toBeInTheDocument()

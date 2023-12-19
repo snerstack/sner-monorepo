@@ -1,6 +1,7 @@
 import HostViewPage from '@/routes/storage/host/view'
 import VulnViewPage from '@/routes/storage/vuln/view'
 import { testAnnotate } from '@/tests/helpers/testAnnotate'
+import { testDeleteRow } from '@/tests/helpers/testDeleteRow'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -395,21 +396,11 @@ describe('Host view page', () => {
       loader: loader,
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
-
     await waitFor(() => {
       const notesTab = screen.getByTestId('note_tab')
       fireEvent.click(notesTab)
 
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[0])
-
-      window.confirm = vi.fn(() => true)
-
-      const deleteRowButton = screen.getByTestId('service-delete-row-btn')
-
-      fireEvent.click(deleteRowButton)
+      testDeleteRow({ buttonId: 'service-delete-row-btn' })
     })
   })
 
@@ -420,21 +411,11 @@ describe('Host view page', () => {
       loader: loader,
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
-
     await waitFor(() => {
       const notesTab = screen.getByTestId('note_tab')
       fireEvent.click(notesTab)
 
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[1])
-
-      window.confirm = vi.fn(() => true)
-
-      const deleteRowButton = screen.getByTestId('vuln-delete-row-btn')
-
-      fireEvent.click(deleteRowButton)
+      testDeleteRow({ buttonId: 'vuln-delete-row-btn' })
     })
   })
   it('deletes note', async () => {
@@ -444,21 +425,11 @@ describe('Host view page', () => {
       loader: loader,
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
-
     await waitFor(() => {
       const notesTab = screen.getByTestId('note_tab')
       fireEvent.click(notesTab)
 
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[2])
-
-      window.confirm = vi.fn(() => true)
-
-      const deleteRowButton = screen.getByTestId('note-delete-row-btn')
-
-      fireEvent.click(deleteRowButton)
+      testDeleteRow({ buttonId: 'note-delete-row-btn' })
     })
   })
 })

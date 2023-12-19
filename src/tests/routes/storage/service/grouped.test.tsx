@@ -1,5 +1,6 @@
 import ServiceGroupedPage from '@/routes/storage/service/grouped'
 import ServiceListPage from '@/routes/storage/service/list'
+import { testFilter } from '@/tests/helpers/testFilter'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -26,12 +27,7 @@ describe('Service grouped page', () => {
       path: '/storage/service/grouped',
     })
 
-    const filterForm = screen.getByTestId('filter-form')
-    const filterInput = filterForm.querySelector('input')!
-    const filterButton = screen.getByTestId('filter-btn')
-
-    fireEvent.change(filterInput, { target: { value: 'Host.address=="127.4.4.4"' } })
-    fireEvent.click(filterButton)
+    testFilter({ query: 'Host.address=="127.4.4.4"' })
 
     await waitFor(() => {
       expect(screen.getByText('null')).toBeInTheDocument()

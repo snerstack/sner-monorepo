@@ -1,5 +1,6 @@
 import VulnGroupedPage from '@/routes/storage/vuln/grouped'
 import VulnListPage from '@/routes/storage/vuln/list'
+import { testFilter } from '@/tests/helpers/testFilter'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -26,12 +27,7 @@ describe('Vuln grouped page', () => {
       path: '/storage/vuln/grouped',
     })
 
-    const filterForm = screen.getByTestId('filter-form')
-    const filterInput = filterForm.querySelector('input')!
-    const filterButton = screen.getByTestId('filter-btn')
-
-    fireEvent.change(filterInput, { target: { value: 'Vuln.name=="aggregable vuln"' } })
-    fireEvent.click(filterButton)
+    testFilter({ query: 'Vuln.name=="aggregable vuln"' })
 
     await waitFor(() => {
       expect(screen.getByText('aggregable vuln')).toBeInTheDocument()
