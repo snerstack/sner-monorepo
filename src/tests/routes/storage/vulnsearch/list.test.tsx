@@ -1,5 +1,6 @@
 import HostViewPage from '@/routes/storage/host/view'
 import VulnSearchListPage from '@/routes/storage/vulnsearch/list'
+import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testFilter } from '@/tests/helpers/testFilter'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
@@ -25,7 +26,7 @@ describe('Vulnsearch list page', () => {
   it('views host', async () => {
     renderWithProviders({
       element: <VulnSearchListPage />,
-      path: '/storage/note/list',
+      path: '/storage/vulnsearch/list',
       routes: [
         {
           element: <HostViewPage />,
@@ -65,13 +66,24 @@ describe('Vulnsearch list page', () => {
   it('filters results', async () => {
     renderWithProviders({
       element: <VulnSearchListPage />,
-      path: '/storage/note/list',
+      path: '/storage/vulnsearch/list',
     })
 
     testFilter({ query: 'Host.address=="127.5.5.5"' })
 
     await waitFor(() => {
       expect(screen.getByText('127.5.5.5')).toBeInTheDocument()
+    })
+  })
+
+  it('annotates vulnsearch', async () => {
+    renderWithProviders({
+      element: <VulnSearchListPage />,
+      path: '/storage/vulnsearch/list',
+    })
+
+    await waitFor(() => {
+      testAnnotate({ tagsId: 'vulnsearch_tags_annotate', commentId: 'vulnsearch_comment_annotate' })
     })
   })
 })

@@ -5,9 +5,7 @@ import { testDeleteRow } from '@/tests/helpers/testDeleteRow'
 import { testFilter } from '@/tests/helpers/testFilter'
 import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
-
-import httpClient from '@/lib/httpClient'
+import { describe, expect, it } from 'vitest'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 

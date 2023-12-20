@@ -1,4 +1,3 @@
-import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -6,14 +5,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useCookie, useLocalStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import {
-  deleteRow,
-  getColorForSeverity,
-  getColorForTag,
-  getLinksForService,
-  getTextForRef,
-  getUrlForRef,
-} from '@/lib/sner/storage'
+import { deleteRow, getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
@@ -191,27 +183,13 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
-          <div className="dropdown d-flex">
-            <a className="flex-fill" data-toggle="dropdown">
-              {row['service']}
-            </a>
-            <div className="dropdown-menu">
-              <h6 className="dropdown-header">Service endpoint URIs</h6>
-              {getLinksForService(
-                row['host_address'],
-                row['host_hostname'],
-                row['service_proto'],
-                row['service_port'],
-              ).map((link) => (
-                <span className="dropdown-item" key={link}>
-                  <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
-                  <a rel="noreferrer" href={escapeHtml(link)}>
-                    {escapeHtml(link)}
-                  </a>
-                </span>
-              ))}
-            </div>
-          </div>,
+          <ServiceEndpointDropdown
+            service={row['service']}
+            address={row['host_address']}
+            hostname={row['host_hostname']}
+            proto={row['service_proto']}
+            port={row['service_port']}
+          />,
         ),
     }),
     Column('via_target', { visible: viaTargetVisible }),
@@ -360,27 +338,13 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string, row: NoteRow) =>
         renderElements(
           cell,
-          <div className="dropdown d-flex">
-            <a className="flex-fill" data-toggle="dropdown">
-              {row['service']}
-            </a>
-            <div className="dropdown-menu">
-              <h6 className="dropdown-header">Service endpoint URIs</h6>
-              {getLinksForService(
-                row['host_address'],
-                row['host_hostname'],
-                row['service_proto'],
-                row['service_port'],
-              ).map((link) => (
-                <span className="dropdown-item" key={link}>
-                  <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
-                  <a rel="noreferrer" href={escapeHtml(link)}>
-                    {escapeHtml(link)}
-                  </a>
-                </span>
-              ))}
-            </div>
-          </div>,
+          <ServiceEndpointDropdown
+            service={row['service']}
+            address={row['host_address']}
+            hostname={row['host_hostname']}
+            proto={row['service_proto']}
+            port={row['service_port']}
+          />,
         ),
     }),
     Column('via_target', { visible: viaTargetVisible }),
@@ -469,6 +433,197 @@ const HostViewPage = () => {
     }),
   ]
 
+  const [annotateVersioninfo, setAnnotateVersioninfo] = useState<Annotate>({
+    show: false,
+    tags: [],
+    comment: '',
+    tableId: '',
+    url: '',
+  })
+
+  const [multipleTagVersioninfo, setMultipleTagVersioninfo] = useState<MultipleTag>({
+    show: false,
+    action: 'set',
+    tableId: '',
+    url: '',
+  })
+
+  const versioninfoColumns = [
+    ColumnSelect({ visible: toolboxesVisible }),
+    Column('id', { visible: false }),
+    Column('host_id', { visible: false }),
+    Column('host_address', { visible: false }),
+    Column('host_hostname', { visible: false }),
+    Column('service_proto', { visible: false }),
+    Column('service_port', { visible: false }),
+    Column('service', {
+      className: 'service_endpoint_dropdown',
+      createdCell: (cell, _data: string, row: VersionInfoRow) =>
+        renderElements(
+          cell,
+          <ServiceEndpointDropdown
+            service={row['service']}
+            address={row['host_address']}
+            hostname={row['host_hostname']}
+            proto={row['service_proto']}
+            port={row['service_port']}
+          />,
+        ),
+    }),
+    Column('via_target', { visible: viaTargetVisible }),
+    Column('product'),
+    Column('version'),
+    Column('extra'),
+    Column('tags', {
+      className: 'abutton_annotate_dt',
+      createdCell: (cell, _data: string[], row: VersionInfoRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateVersioninfo({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_versioninfo_table',
+            url: `/storage/versioninfo/annotate/${row['id']}`,
+          })
+        }
+        renderElements(
+          cell,
+          <div data-testid="versioninfo_tags_annotate">
+            {row['tags'].map((tag: string) => (
+              <Fragment key={tag}>
+                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+              </Fragment>
+            ))}
+          </div>,
+        )
+      },
+    }),
+    Column('comment', {
+      className: 'abutton_annotate_dt forcewrap',
+      title: 'cmnt',
+      createdCell: (cell, _data: string, row: VersionInfoRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateVersioninfo({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_versioninfo_table',
+            url: `/storage/versioninfo/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="versioninfo_comment_annotate">{row['comment']}</div>)
+      },
+    }),
+  ]
+
+  const [annotateVulnsearch, setAnnotateVulnsearch] = useState<Annotate>({
+    show: false,
+    tags: [],
+    comment: '',
+    tableId: '',
+    url: '',
+  })
+
+  const [multipleTagVulnsearch, setMultipleTagVulnsearch] = useState<MultipleTag>({
+    show: false,
+    action: 'set',
+    tableId: '',
+    url: '',
+  })
+
+  const vulnsearchColumns = [
+    ColumnSelect({ visible: toolboxesVisible }),
+    Column('id', { visible: false }),
+    Column('host_address', {
+      visible: false,
+    }),
+    Column('host_hostname', {
+      visible: false,
+    }),
+    Column('service_proto', { visible: false }),
+    Column('service_port', { visible: false }),
+    Column('service', {
+      className: 'service_endpoint_dropdown',
+      createdCell: (cell, _data: string, row: VulnSearchRow) =>
+        renderElements(
+          cell,
+          <ServiceEndpointDropdown
+            service={`${row['service_port']}/${row['service_proto']}`}
+            address={row['host_address']}
+            hostname={row['host_hostname']}
+            proto={row['service_proto']}
+            port={row['service_port']}
+          />,
+        ),
+    }),
+    Column('via_target', {
+      visible: viaTargetVisible,
+    }),
+    Column('cveid', {
+      createdCell: (cell, data: string) => {
+        renderElements(cell, <a href={`https://cve.circl.lu/cve/${data}`}>{data}</a>)
+      },
+    }),
+    Column('cvss'),
+    Column('cvss3'),
+    Column('attack_vector'),
+    Column('cpe_full'),
+    Column('name'),
+    Column('tags', {
+      className: 'abutton_annotate_dt',
+      createdCell: (cell, _data: string[], row: VulnSearchRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateVulnsearch({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_vulnsearch_table',
+            url: `/storage/vulnsearch/annotate/${row['id']}`,
+          })
+        }
+        renderElements(
+          cell,
+          <div data-testid="vulnsearch_tags_annotate">
+            {row['tags'].map((tag: string) => (
+              <Fragment key={tag}>
+                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+              </Fragment>
+            ))}
+          </div>,
+        )
+      },
+    }),
+    Column('comment', {
+      className: 'abutton_annotate_dt forcewrap',
+      title: 'cmnt',
+      createdCell: (cell, _data: string, row: VulnSearchRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotateVulnsearch({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'host_view_vulnsearch_table',
+            url: `/storage/vulnsearch/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="vulnsearch_comment_annotate">{row['comment']}</div>)
+      },
+    }),
+    ColumnButtons({
+      createdCell: (cell, _data: string, row: VulnSearchRow) =>
+        renderElements(
+          cell,
+          <ButtonGroup>
+            <ViewButton url={`/storage/vulnsearch/view/${row['id']}`} navigate={navigate} />
+          </ButtonGroup>,
+        ),
+    }),
+  ]
+
   return (
     <div>
       <Helmet>
@@ -532,7 +687,7 @@ const HostViewPage = () => {
             />
             <Button title="Add service" name="+S" url={`/storage/service/add/${host.id}`} />
             <Button title="Add vuln" name="+V" url={`/storage/vuln/add/host/${host.id}`} />
-            <Button title="Add nite" name="+N" url={`/storage/note/add/host/${host.id}`} />
+            <Button title="Add note" name="+N" url={`/storage/note/add/host/${host.id}`} />
             <EditButton url={`/storage/host/edit/${host.id}`} />
           </div>{' '}
           <DeleteButton url={`/storage/host/delete/${host.id}`} />
@@ -601,6 +756,26 @@ const HostViewPage = () => {
             onClick={() => setActiveTab('note')}
           >
             Notes <span className="badge badge-pill badge-secondary">{host.notesCount}</span>
+          </a>
+        </li>
+        <li className="nav-item">
+          <a
+            className={clsx('nav-link', activeTab === 'versioninfo' && 'active')}
+            data-testid="versioninfo_tab"
+            href="#"
+            onClick={() => setActiveTab('versioninfo')}
+          >
+            Versioninfos <span className="badge badge-pill badge-secondary">?</span>
+          </a>
+        </li>
+        <li className="nav-item">
+          <a
+            className={clsx('nav-link', activeTab === 'vulnsearch' && 'active')}
+            data-testid="vulnsearch_tab"
+            href="#"
+            onClick={() => setActiveTab('vulnsearch')}
+          >
+            Vulnsearches <span className="badge badge-pill badge-secondary">?</span>
           </a>
         </li>
       </ul>
@@ -949,6 +1124,232 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateNote} setAnnotate={setAnnotateNote} />
             <MultipleTagModal multipleTag={multipleTagNote} setMultipleTag={setMultipleTagNote} />
+          </div>
+        </>
+        <>
+          <div id="host_view_versioninfo_tab" className={clsx('tab-pane', activeTab === 'versioninfo' && 'active')}>
+            <div id="host_view_versioninfo_table_toolbar" className="dt_toolbar">
+              <div
+                id="host_view_versioninfo_table_toolbox"
+                className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}
+              >
+                <div className="btn-group">
+                  <a className="btn btn-outline-secondary disabled">
+                    <i className="fas fa-check-square"></i>
+                  </a>
+                  <a
+                    className="btn btn-outline-secondary"
+                    href="#"
+                    data-testid="host_view_versioninfo_select_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_versioninfo_table')
+                      dt.rows({ page: 'current' }).select()
+                    }}
+                  >
+                    All
+                  </a>
+                  <a
+                    className="btn btn-outline-secondary abutton_selectnone"
+                    href="#"
+                    data-testid="host_view_versioninfo_unselect_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_versioninfo_table')
+                      dt.rows({ page: 'current' }).deselect()
+                    }}
+                  >
+                    None
+                  </a>
+                </div>{' '}
+                <div className="btn-group">
+                  <a
+                    className="btn btn-outline-secondary"
+                    href="#"
+                    data-testid="versioninfo_set_multiple_tag"
+                    onClick={() =>
+                      setMultipleTagVersioninfo({
+                        show: true,
+                        action: 'set',
+                        tableId: 'host_view_versioninfo_table',
+                        url: '/storage/versioninfo/tag_multiid',
+                      })
+                    }
+                  >
+                    <i className="fas fa-tag"></i>
+                  </a>
+                  {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
+                    <TagButton
+                      tag={tag}
+                      key={tag}
+                      url="/storage/versioninfo/tag_multiid"
+                      tableId="host_view_versioninfo_table"
+                    />
+                  ))}
+                </div>{' '}
+                <div className="btn-group">
+                  <a
+                    className="btn btn-outline-secondary"
+                    href="#"
+                    data-testid="versioninfo_unset_multiple_tag"
+                    onClick={() =>
+                      setMultipleTagVersioninfo({
+                        show: true,
+                        action: 'unset',
+                        tableId: 'host_view_versioninfo_table',
+                        url: '/storage/versioninfo/tag_multiid',
+                      })
+                    }
+                  >
+                    <i className="fas fa-eraser"></i>
+                  </a>
+                  <div className="btn-group">
+                    <a
+                      className="btn btn-outline-secondary dropdown-toggle"
+                      data-toggle="dropdown"
+                      href="#"
+                      title="remove tag dropdown"
+                    >
+                      <i className="fas fa-remove-format"></i>
+                    </a>
+                    <TagsDropdownButton
+                      tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
+                      url="/storage/versioninfo/tag_multiid"
+                      tableId="host_view_versioninfo_table"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <DataTable
+              id="host_view_versioninfo_table"
+              columns={versioninfoColumns}
+              ajax={{
+                url:
+                  import.meta.env.VITE_SERVER_URL +
+                  `/storage/versioninfo/list.json?filter=Versioninfo.host_id=="${host.id}"`,
+                type: 'POST',
+                xhrFields: { withCredentials: true },
+                beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
+              }}
+              order={[1, 'asc']}
+              select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+            />
+
+            <AnnotateModal annotate={annotateVersioninfo} setAnnotate={setAnnotateVersioninfo} />
+            <MultipleTagModal multipleTag={multipleTagVersioninfo} setMultipleTag={setMultipleTagVersioninfo} />
+          </div>
+        </>
+        <>
+          <div id="host_view_vulnsearch_tab" className={clsx('tab-pane', activeTab === 'vulnsearch' && 'active')}>
+            <div id="host_view_vulnsearch_table_toolbar" className="dt_toolbar">
+              <div
+                id="host_view_vulnsearch_table_toolbox"
+                className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}
+              >
+                <div className="btn-group">
+                  <a className="btn btn-outline-secondary disabled">
+                    <i className="fas fa-check-square"></i>
+                  </a>
+                  <a
+                    className="btn btn-outline-secondary"
+                    href="#"
+                    data-testid="host_view_vulnsearch_select_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_vulnsearch_table')
+                      dt.rows({ page: 'current' }).select()
+                    }}
+                  >
+                    All
+                  </a>
+                  <a
+                    className="btn btn-outline-secondary abutton_selectnone"
+                    href="#"
+                    data-testid="host_view_vulnsearch_unselect_all"
+                    onClick={() => {
+                      const dt = getTableApi('host_view_vulnsearch_table')
+                      dt.rows({ page: 'current' }).deselect()
+                    }}
+                  >
+                    None
+                  </a>
+                </div>{' '}
+                <div className="btn-group">
+                  <a
+                    className="btn btn-outline-secondary"
+                    href="#"
+                    data-testid="vulnsearch_set_multiple_tag"
+                    onClick={() =>
+                      setMultipleTagVulnsearch({
+                        show: true,
+                        action: 'set',
+                        tableId: 'host_view_vulnsearch_table',
+                        url: '/storage/vulnsearch/tag_multiid',
+                      })
+                    }
+                  >
+                    <i className="fas fa-tag"></i>
+                  </a>
+                  {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
+                    <TagButton
+                      tag={tag}
+                      key={tag}
+                      url="/storage/vulnsearch/tag_multiid"
+                      tableId="host_view_vulnsearch_table"
+                    />
+                  ))}
+                </div>{' '}
+                <div className="btn-group">
+                  <a
+                    className="btn btn-outline-secondary"
+                    href="#"
+                    data-testid="vulnsearch_unset_multiple_tag"
+                    onClick={() =>
+                      setMultipleTagVulnsearch({
+                        show: true,
+                        action: 'unset',
+                        tableId: 'host_view_vulnsearch_table',
+                        url: '/storage/vulnsearch/tag_multiid',
+                      })
+                    }
+                  >
+                    <i className="fas fa-eraser"></i>
+                  </a>
+                  <div className="btn-group">
+                    <a
+                      className="btn btn-outline-secondary dropdown-toggle"
+                      data-toggle="dropdown"
+                      href="#"
+                      title="remove tag dropdown"
+                    >
+                      <i className="fas fa-remove-format"></i>
+                    </a>
+                    <TagsDropdownButton
+                      tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
+                      url="/storage/vulnsearch/tag_multiid"
+                      tableId="host_view_vulnsearch_table"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <DataTable
+              id="host_view_vulnsearch_table"
+              columns={vulnsearchColumns}
+              ajax={{
+                url:
+                  import.meta.env.VITE_SERVER_URL +
+                  `/storage/vulnsearch/list.json?filter=Vulnsearch.host_id=="${host.id}"`,
+                type: 'POST',
+                xhrFields: { withCredentials: true },
+                beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
+              }}
+              order={[1, 'asc']}
+              select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+            />
+
+            <AnnotateModal annotate={annotateVulnsearch} setAnnotate={setAnnotateVulnsearch} />
+            <MultipleTagModal multipleTag={multipleTagVulnsearch} setMultipleTag={setMultipleTagVulnsearch} />
           </div>
         </>
       </div>

@@ -8,6 +8,8 @@ interface PortDetails {
 }
 
 interface Internals {
+  heatmap_check: boolean
+  metrics: string
   exclusions: string
   planner: string
 }

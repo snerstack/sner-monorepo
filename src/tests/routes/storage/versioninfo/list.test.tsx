@@ -3,7 +3,7 @@ import VersionInfosListPage from '@/routes/storage/versioninfo/list'
 import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 

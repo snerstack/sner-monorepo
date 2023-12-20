@@ -187,6 +187,9 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
+      const vulnsTab = screen.getByTestId('vuln_tab')
+      fireEvent.click(vulnsTab)
+
       testAnnotate({ tagsId: 'vuln_tags_annotate', commentId: 'vuln_comment_annotate' })
     })
   })
@@ -199,7 +202,40 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
+      const notesTab = screen.getByTestId('note_tab')
+      fireEvent.click(notesTab)
+
       testAnnotate({ tagsId: 'note_tags_annotate', commentId: 'note_comment_annotate' })
+    })
+  })
+
+  it('annotates versioninfo', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const versioninfosTab = screen.getByTestId('versioninfo_tab')
+      fireEvent.click(versioninfosTab)
+
+      testAnnotate({ tagsId: 'versioninfo_tags_annotate', commentId: 'versioninfo_comment_annotate' })
+    })
+  })
+
+  it('annotates vulnsearch', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const vulnsearchesTab = screen.getByTestId('vulnsearch_tab')
+      fireEvent.click(vulnsearchesTab)
+
+      testAnnotate({ tagsId: 'vulnsearch_tags_annotate', commentId: 'vulnsearch_comment_annotate' })
     })
   })
 
@@ -311,6 +347,78 @@ describe('Host view page', () => {
     })
   })
 
+  it('sets multiple versioninfo tags', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const versioninfosTab = screen.getByTestId('versioninfo_tab')
+      const tagMultipleButton = screen.getByTestId('versioninfo_set_multiple_tag')
+
+      fireEvent.click(versioninfosTab)
+      fireEvent.click(tagMultipleButton)
+
+      expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
+    })
+  })
+
+  it('unsets multiple note tags', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const versioninfosTab = screen.getByTestId('versioninfo_tab')
+      const tagMultipleButton = screen.getByTestId('versioninfo_unset_multiple_tag')
+
+      fireEvent.click(versioninfosTab)
+      fireEvent.click(tagMultipleButton)
+
+      expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
+    })
+  })
+
+  it('sets multiple vulnsearch tags', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const vulnsearchesTab = screen.getByTestId('vulnsearch_tab')
+      const tagMultipleButton = screen.getByTestId('vulnsearch_set_multiple_tag')
+
+      fireEvent.click(vulnsearchesTab)
+      fireEvent.click(tagMultipleButton)
+
+      expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
+    })
+  })
+
+  it('unsets multiple note tags', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const vulnsearchesTab = screen.getByTestId('vulnsearch_tab')
+      const tagMultipleButton = screen.getByTestId('vulnsearch_unset_multiple_tag')
+
+      fireEvent.click(vulnsearchesTab)
+      fireEvent.click(tagMultipleButton)
+
+      expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
+    })
+  })
+
   it('selects and unselects all service rows', async () => {
     renderWithProviders({
       element: <HostViewPage />,
@@ -319,11 +427,11 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
-      const serviceTab = screen.getByTestId('service_tab')
+      const servicesTab = screen.getByTestId('service_tab')
       const selectAllButton = screen.getByTestId('host_view_service_select_all')
       const unselectAllButton = screen.getByTestId('host_view_service_unselect_all')
 
-      fireEvent.click(serviceTab)
+      fireEvent.click(servicesTab)
       fireEvent.click(selectAllButton)
       fireEvent.click(unselectAllButton)
     })
@@ -337,11 +445,11 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
-      const vulnTab = screen.getByTestId('vuln_tab')
+      const vulnsTab = screen.getByTestId('vuln_tab')
       const selectAllButton = screen.getByTestId('host_view_vuln_select_all')
       const unselectAllButton = screen.getByTestId('host_view_vuln_unselect_all')
 
-      fireEvent.click(vulnTab)
+      fireEvent.click(vulnsTab)
       fireEvent.click(selectAllButton)
       fireEvent.click(unselectAllButton)
     })
@@ -355,11 +463,47 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
-      const noteTab = screen.getByTestId('note_tab')
+      const notesTab = screen.getByTestId('note_tab')
       const selectAllButton = screen.getByTestId('host_view_note_select_all')
       const unselectAllButton = screen.getByTestId('host_view_note_unselect_all')
 
-      fireEvent.click(noteTab)
+      fireEvent.click(notesTab)
+      fireEvent.click(selectAllButton)
+      fireEvent.click(unselectAllButton)
+    })
+  })
+
+  it('selects and unselects all versioninfo rows', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const versioninfosTab = screen.getByTestId('versioninfo_tab')
+      const selectAllButton = screen.getByTestId('host_view_versioninfo_select_all')
+      const unselectAllButton = screen.getByTestId('host_view_versioninfo_unselect_all')
+
+      fireEvent.click(versioninfosTab)
+      fireEvent.click(selectAllButton)
+      fireEvent.click(unselectAllButton)
+    })
+  })
+
+  it('selects and unselects all vulnsearch rows', async () => {
+    renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: loader,
+    })
+
+    await waitFor(() => {
+      const vulnsearchesTab = screen.getByTestId('vulnsearch_tab')
+      const selectAllButton = screen.getByTestId('host_view_vulnsearch_select_all')
+      const unselectAllButton = screen.getByTestId('host_view_vulnsearch_unselect_all')
+
+      fireEvent.click(vulnsearchesTab)
       fireEvent.click(selectAllButton)
       fireEvent.click(unselectAllButton)
     })

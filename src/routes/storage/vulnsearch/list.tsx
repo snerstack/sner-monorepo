@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import clsx from 'clsx'
+import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
-import { encodeRFC3986URIComponent } from '@/lib/sner/storage'
+import { encodeRFC3986URIComponent, getColorForTag } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -84,8 +85,50 @@ const VulnSearchListPage = () => {
     Column('attack_vector'),
     Column('cpe_full'),
     Column('name'),
+    Column('tags', {
+      className: 'abutton_annotate_dt',
+      createdCell: (cell, _data: string[], row: VulnSearchRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'vulnsearch_list_table',
+            url: `/storage/vulnsearch/annotate/${row['id']}`,
+          })
+        }
+        renderElements(
+          cell,
+          <div data-testid="vulnsearch_tags_annotate">
+            {row['tags'].map((tag: string) => (
+              <Fragment key={tag}>
+                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+              </Fragment>
+            ))}
+          </div>,
+        )
+      },
+    }),
+    Column('comment', {
+      className: 'abutton_annotate_dt forcewrap',
+      title: 'cmnt',
+      createdCell: (cell, _data: string, row: VulnSearchRow) => {
+        const element = cell as HTMLTableCellElement
+        element.ondblclick = () => {
+          setAnnotate({
+            show: true,
+            tags: row['tags'],
+            comment: row['comment'] || '',
+            tableId: 'vulnsearch_list_table',
+            url: `/storage/vulnsearch/annotate/${row['id']}`,
+          })
+        }
+        renderElements(cell, <div data-testid="vulnsearch_comment_annotate">{row['comment']}</div>)
+      },
+    }),
     ColumnButtons({
-      createdCell: (cell, _data: string, row: NoteRow) =>
+      createdCell: (cell, _data: string, row: VulnSearchRow) =>
         renderElements(
           cell,
           <ButtonGroup>
