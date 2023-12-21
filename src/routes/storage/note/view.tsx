@@ -143,7 +143,7 @@ const NoteViewPage = () => {
                 })
               }
             >
-              {note.comment}
+              {note.comment || 'None'}
             </td>
           </tr>
         </tbody>

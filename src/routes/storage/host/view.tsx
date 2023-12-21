@@ -1,3 +1,4 @@
+import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -27,6 +28,8 @@ const HostViewPage = () => {
   const [activeTab, setActiveTab] = useLocalStorage('host_view_tabs_active')
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
+  const [versionInfosCount, setVersionInfosCount] = useState<string>('?')
+  const [vulnSearchesCount, setVulnSearchesCount] = useState<string>('?')
 
   const [annotateHost, setAnnotateHost] = useState<Annotate>({
     show: false,
@@ -358,7 +361,7 @@ const HostViewPage = () => {
           return data.substring(0, 4095) + '...'
         }
 
-        return data
+        return escapeHtml(data)
       },
     }),
     Column('tags', {
@@ -698,7 +701,7 @@ const HostViewPage = () => {
         <tbody>
           <tr>
             <th>os</th>
-            <td>{host.os}</td>
+            <td>{host.os || 'None'}</td>
           </tr>
           <tr>
             <th>tags</th>
@@ -721,7 +724,7 @@ const HostViewPage = () => {
               data-testid="host_comment_annotate"
               onDoubleClick={() => setAnnotateHost({ ...annotateHost, show: true })}
             >
-              {host.comment}
+              {host.comment || 'None'}
             </td>
           </tr>
         </tbody>
@@ -765,7 +768,7 @@ const HostViewPage = () => {
             href="#"
             onClick={() => setActiveTab('versioninfo')}
           >
-            Versioninfos <span className="badge badge-pill badge-secondary">?</span>
+            Versioninfos <span className="badge badge-pill badge-secondary">{versionInfosCount}</span>
           </a>
         </li>
         <li className="nav-item">
@@ -775,7 +778,7 @@ const HostViewPage = () => {
             href="#"
             onClick={() => setActiveTab('vulnsearch')}
           >
-            Vulnsearches <span className="badge badge-pill badge-secondary">?</span>
+            Vulnsearches <span className="badge badge-pill badge-secondary">{vulnSearchesCount}</span>
           </a>
         </li>
       </ul>
@@ -1233,6 +1236,9 @@ const HostViewPage = () => {
               }}
               order={[1, 'asc']}
               select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+              drawCallback={(settings) => {
+                setVersionInfosCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
+              }}
             />
 
             <AnnotateModal annotate={annotateVersioninfo} setAnnotate={setAnnotateVersioninfo} />
@@ -1346,6 +1352,9 @@ const HostViewPage = () => {
               }}
               order={[1, 'asc']}
               select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+              drawCallback={(settings) => {
+                setVulnSearchesCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
+              }}
             />
 
             <AnnotateModal annotate={annotateVulnsearch} setAnnotate={setAnnotateVulnsearch} />

@@ -2,6 +2,7 @@ import HostViewPage from '@/routes/storage/host/view'
 import VulnSearchListPage from '@/routes/storage/vulnsearch/list'
 import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testFilter } from '@/tests/helpers/testFilter'
+import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -85,5 +86,49 @@ describe('Vulnsearch list page', () => {
     await waitFor(() => {
       testAnnotate({ tagsId: 'vulnsearch_tags_annotate', commentId: 'vulnsearch_comment_annotate' })
     })
+  })
+
+  it('selects all vulnsearch', async () => {
+    renderWithProviders({
+      element: <VulnSearchListPage />,
+      path: '/storage/vulnsearch/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('vulnsearch_select_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
+  it('unselects all vulnsearch', async () => {
+    renderWithProviders({
+      element: <VulnSearchListPage />,
+      path: '/storage/vulnsearch/list',
+    })
+
+    await waitFor(() => {
+      const selectAllButton = screen.getByTestId('vulnsearch_unselect_all')
+
+      fireEvent.click(selectAllButton)
+    })
+  })
+
+  it('sets multiple tags', async () => {
+    renderWithProviders({
+      element: <VulnSearchListPage />,
+      path: '/storage/vulnsearch/list',
+    })
+
+    await testMultipleTags({ action: 'set', testId: 'vulnsearch_set_multiple_tag' })
+  })
+
+  it('unsets multiple tags', async () => {
+    renderWithProviders({
+      element: <VulnSearchListPage />,
+      path: '/storage/vulnsearch/list',
+    })
+
+    await testMultipleTags({ action: 'unset', testId: 'vulnsearch_unset_multiple_tag' })
   })
 })

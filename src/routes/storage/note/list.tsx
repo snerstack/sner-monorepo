@@ -1,3 +1,4 @@
+import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -89,7 +90,7 @@ const NoteListPage = () => {
           return data.substring(0, 4095) + '...'
         }
 
-        return data
+        return escapeHtml(data)
       },
     }),
     Column('tags', {
