@@ -3,6 +3,8 @@ import VulnSearchListPage from '@/routes/storage/vulnsearch/list'
 import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testFilter } from '@/tests/helpers/testFilter'
 import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
+import { testSelectAllRows } from '@/tests/helpers/testSelectAllRows'
+import { testSelectNoneRows } from '@/tests/helpers/testSelectNoneRows'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -88,29 +90,15 @@ describe('Vulnsearch list page', () => {
     })
   })
 
-  it('selects all vulnsearch', async () => {
+  it('selects and unselects all vulnsearch', async () => {
     renderWithProviders({
       element: <VulnSearchListPage />,
       path: '/storage/vulnsearch/list',
     })
 
     await waitFor(() => {
-      const selectAllButton = screen.getByTestId('vulnsearch_select_all')
-
-      fireEvent.click(selectAllButton)
-    })
-  })
-
-  it('unselects all vulnsearch', async () => {
-    renderWithProviders({
-      element: <VulnSearchListPage />,
-      path: '/storage/vulnsearch/list',
-    })
-
-    await waitFor(() => {
-      const selectAllButton = screen.getByTestId('vulnsearch_unselect_all')
-
-      fireEvent.click(selectAllButton)
+      testSelectAllRows({ buttonId: 'vulnsearch_select_all' })
+      testSelectNoneRows({ buttonId: 'vulnsearch_unselect_all' })
     })
   })
 

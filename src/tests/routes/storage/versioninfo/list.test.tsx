@@ -2,6 +2,8 @@ import HostViewPage from '@/routes/storage/host/view'
 import VersionInfosListPage from '@/routes/storage/versioninfo/list'
 import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
+import { testSelectAllRows } from '@/tests/helpers/testSelectAllRows'
+import { testSelectNoneRows } from '@/tests/helpers/testSelectNoneRows'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -96,29 +98,15 @@ describe('Versioninfo list page', () => {
     })
   })
 
-  it('selects all versioninfos', async () => {
+  it('selects and unselects all versioninfos', async () => {
     renderWithProviders({
       element: <VersionInfosListPage />,
       path: '/storage/versioninfo/list',
     })
 
     await waitFor(() => {
-      const selectAllButton = screen.getByTestId('versioninfo_select_all')
-
-      fireEvent.click(selectAllButton)
-    })
-  })
-
-  it('unselects all versioninfos', async () => {
-    renderWithProviders({
-      element: <VersionInfosListPage />,
-      path: '/storage/versioninfo/list',
-    })
-
-    await waitFor(() => {
-      const selectAllButton = screen.getByTestId('versioninfo_unselect_all')
-
-      fireEvent.click(selectAllButton)
+      testSelectAllRows({ buttonId: 'versioninfo_select_all' })
+      testSelectNoneRows({ buttonId: 'versioninfo_unselect_all' })
     })
   })
 

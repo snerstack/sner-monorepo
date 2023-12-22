@@ -6,6 +6,8 @@ import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testDeleteRow } from '@/tests/helpers/testDeleteRow'
 import { testFilter } from '@/tests/helpers/testFilter'
 import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
+import { testSelectAllRows } from '@/tests/helpers/testSelectAllRows'
+import { testSelectNoneRows } from '@/tests/helpers/testSelectNoneRows'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -194,29 +196,15 @@ describe('Vuln list page', () => {
     })
   })
 
-  it('selects all vulns', async () => {
+  it('selects and unselects all vulns', async () => {
     renderWithProviders({
       element: <VulnListPage />,
       path: '/storage/vuln/list',
     })
 
     await waitFor(() => {
-      const selectAllButton = screen.getByTestId('vuln_select_all')
-
-      fireEvent.click(selectAllButton)
-    })
-  })
-
-  it('unselects all vulns', async () => {
-    renderWithProviders({
-      element: <VulnListPage />,
-      path: '/storage/vuln/list',
-    })
-
-    await waitFor(() => {
-      const selectAllButton = screen.getByTestId('vuln_unselect_all')
-
-      fireEvent.click(selectAllButton)
+      testSelectAllRows({ buttonId: 'vuln_select_all' })
+      testSelectNoneRows({ buttonId: 'vuln_unselect_all' })
     })
   })
 

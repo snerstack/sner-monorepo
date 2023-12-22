@@ -4,6 +4,8 @@ import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testDeleteRow } from '@/tests/helpers/testDeleteRow'
 import { testFilter } from '@/tests/helpers/testFilter'
 import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
+import { testSelectAllRows } from '@/tests/helpers/testSelectAllRows'
+import { testSelectNoneRows } from '@/tests/helpers/testSelectNoneRows'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -88,6 +90,21 @@ describe('Service list page', () => {
     })
   })
 
+  it('shows service dropdown', async () => {
+    renderWithProviders({
+      element: <ServiceListPage />,
+      path: '/storage/service/list',
+    })
+
+    await waitFor(() => {
+      const port = screen.getByText('443')
+      fireEvent.click(port)
+
+      const copyBtn = screen.getAllByTestId('copy-to-clipboard-btn')[0]
+      fireEvent.click(copyBtn)
+    })
+  })
+
   it('deletes host', async () => {
     renderWithProviders({
       element: <ServiceListPage />,
@@ -110,29 +127,15 @@ describe('Service list page', () => {
     })
   })
 
-  it('selects all services', async () => {
+  it('selects and unselect all services', async () => {
     renderWithProviders({
       element: <ServiceListPage />,
       path: '/storage/service/list',
     })
 
     await waitFor(() => {
-      const selectAllButton = screen.getByTestId('service_select_all')
-
-      fireEvent.click(selectAllButton)
-    })
-  })
-
-  it('unselects all services', async () => {
-    renderWithProviders({
-      element: <ServiceListPage />,
-      path: '/storage/service/list',
-    })
-
-    await waitFor(() => {
-      const selectAllButton = screen.getByTestId('service_unselect_all')
-
-      fireEvent.click(selectAllButton)
+      testSelectAllRows({ buttonId: 'service_select_all' })
+      testSelectNoneRows({ buttonId: 'service_unselect_all' })
     })
   })
 

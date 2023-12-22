@@ -24,7 +24,14 @@ const ServiceEndpointDropdown = ({
         <h6 className="dropdown-header">Service endpoint URIs</h6>
         {getLinksForService(address, hostname, proto, port).map((link) => (
           <span className="dropdown-item" key={link}>
-            <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
+            <i
+              className="far fa-clipboard"
+              data-testid="copy-to-clipboard-btn"
+              title="Copy to clipboard"
+              onClick={() => {
+                void navigator.clipboard.writeText(link)
+              }}
+            ></i>{' '}
             <a rel="noreferrer" href={escapeHtml(link)}>
               {escapeHtml(link)}
             </a>

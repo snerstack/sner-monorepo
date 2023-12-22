@@ -2,6 +2,8 @@ import HostViewPage from '@/routes/storage/host/view'
 import VulnViewPage from '@/routes/storage/vuln/view'
 import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testDeleteRow } from '@/tests/helpers/testDeleteRow'
+import { testSelectAllRows } from '@/tests/helpers/testSelectAllRows'
+import { testSelectNoneRows } from '@/tests/helpers/testSelectNoneRows'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -428,12 +430,10 @@ describe('Host view page', () => {
 
     await waitFor(() => {
       const servicesTab = screen.getByTestId('service_tab')
-      const selectAllButton = screen.getByTestId('host_view_service_select_all')
-      const unselectAllButton = screen.getByTestId('host_view_service_unselect_all')
-
       fireEvent.click(servicesTab)
-      fireEvent.click(selectAllButton)
-      fireEvent.click(unselectAllButton)
+
+      testSelectAllRows({ buttonId: 'host_view_service_select_all' })
+      testSelectNoneRows({ buttonId: 'host_view_service_unselect_all' })
     })
   })
 
@@ -446,12 +446,10 @@ describe('Host view page', () => {
 
     await waitFor(() => {
       const vulnsTab = screen.getByTestId('vuln_tab')
-      const selectAllButton = screen.getByTestId('host_view_vuln_select_all')
-      const unselectAllButton = screen.getByTestId('host_view_vuln_unselect_all')
-
       fireEvent.click(vulnsTab)
-      fireEvent.click(selectAllButton)
-      fireEvent.click(unselectAllButton)
+
+      testSelectAllRows({ buttonId: 'host_view_vuln_select_all' })
+      testSelectNoneRows({ buttonId: 'host_view_vuln_unselect_all' })
     })
   })
 
@@ -464,12 +462,10 @@ describe('Host view page', () => {
 
     await waitFor(() => {
       const notesTab = screen.getByTestId('note_tab')
-      const selectAllButton = screen.getByTestId('host_view_note_select_all')
-      const unselectAllButton = screen.getByTestId('host_view_note_unselect_all')
-
       fireEvent.click(notesTab)
-      fireEvent.click(selectAllButton)
-      fireEvent.click(unselectAllButton)
+
+      testSelectAllRows({ buttonId: 'host_view_note_select_all' })
+      testSelectNoneRows({ buttonId: 'host_view_note_unselect_all' })
     })
   })
 
@@ -482,12 +478,10 @@ describe('Host view page', () => {
 
     await waitFor(() => {
       const versioninfosTab = screen.getByTestId('versioninfo_tab')
-      const selectAllButton = screen.getByTestId('host_view_versioninfo_select_all')
-      const unselectAllButton = screen.getByTestId('host_view_versioninfo_unselect_all')
-
       fireEvent.click(versioninfosTab)
-      fireEvent.click(selectAllButton)
-      fireEvent.click(unselectAllButton)
+
+      testSelectAllRows({ buttonId: 'host_view_versioninfo_select_all' })
+      testSelectNoneRows({ buttonId: 'host_view_versioninfo_unselect_all' })
     })
   })
 
@@ -500,12 +494,11 @@ describe('Host view page', () => {
 
     await waitFor(() => {
       const vulnsearchesTab = screen.getByTestId('vulnsearch_tab')
-      const selectAllButton = screen.getByTestId('host_view_vulnsearch_select_all')
-      const unselectAllButton = screen.getByTestId('host_view_vulnsearch_unselect_all')
 
       fireEvent.click(vulnsearchesTab)
-      fireEvent.click(selectAllButton)
-      fireEvent.click(unselectAllButton)
+
+      testSelectAllRows({ buttonId: 'host_view_vulnsearch_select_all' })
+      testSelectNoneRows({ buttonId: 'host_view_vulnsearch_unselect_all' })
     })
   })
 

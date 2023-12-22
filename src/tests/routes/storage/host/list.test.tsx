@@ -4,6 +4,8 @@ import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testDeleteRow } from '@/tests/helpers/testDeleteRow'
 import { testFilter } from '@/tests/helpers/testFilter'
 import { testMultipleTags } from '@/tests/helpers/testMultipleTags'
+import { testSelectAllRows } from '@/tests/helpers/testSelectAllRows'
+import { testSelectNoneRows } from '@/tests/helpers/testSelectNoneRows'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -153,29 +155,15 @@ describe('Host list page', () => {
     })
   })
 
-  it('selects all hosts', async () => {
+  it('selects and unselects all hosts', async () => {
     renderWithProviders({
       element: <HostListPage />,
       path: '/storage/host/list',
     })
 
     await waitFor(() => {
-      const selectAllButton = screen.getByTestId('host_select_all')
-
-      fireEvent.click(selectAllButton)
-    })
-  })
-
-  it('unselects all hosts', async () => {
-    renderWithProviders({
-      element: <HostListPage />,
-      path: '/storage/host/list',
-    })
-
-    await waitFor(() => {
-      const selectAllButton = screen.getByTestId('host_unselect_all')
-
-      fireEvent.click(selectAllButton)
+      testSelectAllRows({ buttonId: 'host_select_all' })
+      testSelectNoneRows({ buttonId: 'host_unselect_all' })
     })
   })
 
