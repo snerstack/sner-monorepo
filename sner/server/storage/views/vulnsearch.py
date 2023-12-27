@@ -7,7 +7,7 @@ from http import HTTPStatus
 
 import json
 from datatables import ColumnDT, DataTables
-from flask import jsonify, render_template, request, Response
+from flask import jsonify, request, Response
 from sqlalchemy import func, inspect, literal_column
 
 from sner.server.auth.core import session_required
@@ -17,14 +17,6 @@ from sner.server.storage.forms import TagMultiidStringyForm
 from sner.server.storage.models import Vulnsearch
 from sner.server.storage.views import blueprint
 from sner.server.utils import filter_query, SnerJSONEncoder
-
-
-@blueprint.route('/vulnsearch/list')
-@session_required('operator')
-def vulnsearch_list_route():
-    """list vulnsearch"""
-
-    return render_template('storage/vulnsearch/list.html')
 
 
 @blueprint.route('/vulnsearch/list.json', methods=['GET', 'POST'])

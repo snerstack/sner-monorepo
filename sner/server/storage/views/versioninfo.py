@@ -7,28 +7,17 @@ from http import HTTPStatus
 
 import json
 from datatables import ColumnDT, DataTables
-from flask import jsonify, render_template, request, Response
+from flask import jsonify, request, Response
 from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_tag_multiid
-from sner.server.storage.forms import TagMultiidStringyForm, VersioninfoQueryForm
+from sner.server.storage.forms import TagMultiidStringyForm
 from sner.server.storage.models import Versioninfo
 from sner.server.storage.version_parser import is_in_version_range, parse as versionspec_parse
 from sner.server.storage.views import blueprint
 from sner.server.utils import filter_query, SnerJSONEncoder
-
-
-@blueprint.route('/versioninfo/list')
-@session_required('operator')
-def versioninfo_list_route():
-    """list versioninfos"""
-
-    return render_template(
-        'storage/versioninfo/list.html',
-        form=VersioninfoQueryForm(request.values)
-    )
 
 
 @blueprint.route('/versioninfo/list.json', methods=['GET', 'POST'])
