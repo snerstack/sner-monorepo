@@ -33,7 +33,7 @@ const TagButton = ({
           const ids = getSelectedIdsFormData(getTableApi(tableId))
 
           await tagAction({ ids, tag, url, action: 'set' })
-          getTableApi(tableId).ajax.reload()
+          getTableApi(tableId).draw()
         }
 
         if (reloadPage) {

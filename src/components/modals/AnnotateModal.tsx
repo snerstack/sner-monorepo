@@ -43,7 +43,7 @@ const AnnotateModal = ({
       size="lg"
       data-testid="annotate-modal"
     >
-      <Modal.Header placeholder="Annotate">
+      <Modal.Header>
         <ModalTitle>Annotate</ModalTitle>
       </Modal.Header>
       <ModalBody>
