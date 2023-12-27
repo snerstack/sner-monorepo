@@ -62,9 +62,9 @@ def vulnsearch_list_json_route():
     return Response(json.dumps(vulnsearches, cls=SnerJSONEncoder), mimetype='application/json')
 
 
-@blueprint.route('/vulnsearch/view/<vulnsearch_id>')
+@blueprint.route('/vulnsearch/view/<vulnsearch_id>.json')
 @session_required('operator')
-def vulnsearch_view_route(vulnsearch_id):
+def vulnsearch_view_json_route(vulnsearch_id):
     """view vulnsearch"""
 
     vulnsearch = Vulnsearch.query.get(vulnsearch_id)
@@ -72,7 +72,7 @@ def vulnsearch_view_route(vulnsearch_id):
     vsearch = {c.key: getattr(vulnsearch, c.key) for c in column_attrs}
     cve_data = vsearch.pop('data')
 
-    return render_template('storage/vulnsearch/view.html', vsearch=vsearch, cve_data=cve_data)
+    return Response(json.dumps({'vsearch': vsearch, 'cve_data': cve_data}))
 
 
 @blueprint.route('/vulnsearch/tag_multiid', methods=['POST'])

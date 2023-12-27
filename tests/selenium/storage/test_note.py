@@ -155,7 +155,7 @@ def test_note_grouped_route_filter_specialchars(live_server, sl_operator, note_f
 
     note_factory.create(xtype=string.printable)
 
-    sl_operator.get(url_for('storage.note_grouped_route', _external=True))
+    sl_operator.get(frontend_url('/storage/note/grouped'))
     elem_xpath = f"//a[contains(text(), '{string.digits}')]"
     webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_xpath)))
 

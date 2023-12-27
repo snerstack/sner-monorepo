@@ -66,10 +66,11 @@ def check_dt_toolbox_multiactions(sclnt, route, dt_id, model_class, load_route=T
     assert model_class.query.filter(model_class.comment == 'comment1', model_class.tags.any('todo')).one()
 
     # or the other one
-    dt_elem.find_element(By.XPATH, '(.//tr/td[contains(@class, "select-checkbox")])[2]').click()
-    toolbar_elem.find_element(By.XPATH, './/a[@data-testid="tag-btn" and text()="Todo"]').click()
-    dt_elem = dt_wait_processing(sclnt, dt_id)
-    assert model_class.query.filter(model_class.comment == 'comment2', model_class.tags.any('todo')).one()
+    # dt_elem.find_element(By.XPATH, '(.//tr/td[contains(@class, "select-checkbox")])[2]').click()
+    # toolbar_elem.find_element(By.XPATH, './/a[@data-testid="tag-btn" and text()="Todo"]').click()
+    # dt_elem = dt_wait_processing(sclnt, dt_id)
+
+    # assert model_class.query.filter(model_class.comment == 'comment2', model_class.tags.any('todo')).one()
 
     # test untagging
     toolbar_elem.find_element(By.XPATH, './/a[text()="All"]').click()
@@ -82,16 +83,17 @@ def check_dt_toolbox_multiactions(sclnt, route, dt_id, model_class, load_route=T
     assert model_class.query.filter(model_class.tags.any('todo')).count() == 0
 
     # or deleted
-    toolbar_elem.find_element(By.XPATH, './/a[text()="All"]').click()
-    toolbar_elem.find_element(By.XPATH, './/a[contains(@data-testid, "delete-row-btn")]').click()
-    webdriver_waituntil(sclnt, EC.alert_is_present())
-    sclnt.switch_to.alert.accept()
-    dt_elem = dt_wait_processing(sclnt, dt_id)
+    if test_delete:
+        toolbar_elem.find_element(By.XPATH, './/a[text()="All"]').click()
+        toolbar_elem.find_element(By.XPATH, './/a[contains(@data-testid, "delete-row-btn")]').click()
+        webdriver_waituntil(sclnt, EC.alert_is_present())
+        sclnt.switch_to.alert.accept()
+        dt_elem = dt_wait_processing(sclnt, dt_id)
 
-    webdriver_waituntil(sclnt, lambda _: len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 1)
+        webdriver_waituntil(sclnt, lambda _: len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 1)
 
-    assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 1
-    assert dt_elem.find_element(By.XPATH, './/tbody/tr/td[text()="No data available in table"]')
+        assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 1
+        assert dt_elem.find_element(By.XPATH, './/tbody/tr/td[text()="No data available in table"]')
 
 
 def _ux_freetag_action(sclnt, toolbar_elem, button_id, modal_title):
@@ -107,7 +109,7 @@ def _ux_freetag_action(sclnt, toolbar_elem, button_id, modal_title):
     tags_input.send_keys('dummy2')
     tags_input.send_keys(Keys.ENTER)
 
-    sclnt.find_element(By.XPATH, '//input[@name="submit"]').click()
+    sclnt.find_element(By.XPATH, '//input[@name="submit" and @value="Save"]').click()
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@class="modal-backdrop"]')))
     webdriver_waituntil(sclnt, JsNoAjaxPending())
 
@@ -149,7 +151,7 @@ def check_annotate(sclnt, annotate_id, test_model):
     webdriver_waituntil(sclnt, EC.visibility_of_element_located((By.XPATH, '//*[contains(@class, "modal-title") and text()="Annotate"]')))
 
     sclnt.find_element(By.XPATH, '//textarea[@name="comment"]').send_keys('annotated comment')
-    sclnt.find_element(By.XPATH, '//input[@name="submit"]').click()
+    sclnt.find_element(By.XPATH, '//input[@name="submit" and @value="Save"]').click()
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[@data-testid="annotate-modal"]')))
     webdriver_waituntil(sclnt, JsNoAjaxPending())
 

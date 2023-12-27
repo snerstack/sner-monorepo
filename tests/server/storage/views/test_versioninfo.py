@@ -11,13 +11,6 @@ from flask import url_for
 from tests.server.storage.views import check_annotate, check_tag_multiid
 
 
-def test_versioninfo_list_route(cl_operator):
-    """versioninfo list route test"""
-
-    response = cl_operator.get(url_for('storage.versioninfo_list_route'))
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_versioninfo_list_json_route(cl_operator, versioninfo):
     """versioninfo list_json route test"""
 

@@ -121,20 +121,6 @@ def test_note_delete_multiid_route(cl_operator, note):
     check_delete_multiid(cl_operator, 'storage.note_delete_multiid_route', note)
 
 
-def test_note_view_route(cl_operator, note):
-    """note view route test"""
-
-    response = cl_operator.get(url_for('storage.note_view_route', note_id=note.id))
-    assert response.status_code == HTTPStatus.OK
-
-
-def test_note_grouped_route(cl_operator):
-    """note grouped route test"""
-
-    response = cl_operator.get(url_for('storage.note_grouped_route'))
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_note_grouped_json_route(cl_operator, note):
     """note grouped json route test"""
 
