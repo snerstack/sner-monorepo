@@ -8,6 +8,7 @@ import { getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import DeleteButton from '@/components/buttons/DeleteButton'
+import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
 import MultiCopyButton from '@/components/buttons/MultiCopyButton'
 import TagButton from '@/components/buttons/TagButton'
@@ -44,26 +45,41 @@ const VulnViewPage = () => {
               <i className="fas fa-tag text-primary"></i>
             </a>
             {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
-              <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" id={vuln.id} reloadPage={true} />
+              <TagButton
+                tag={tag}
+                key={tag}
+                url="/storage/vuln/tag_multiid"
+                id={vuln.id}
+                reloadPage={true}
+                className="btn text-primary btn-outline-primary"
+              />
             ))}
           </div>{' '}
           <div className="btn-group">
             <div className="btn-group dropdown dropleft">
-              <a
-                className="btn btn-outline-primary font-weight-bold"
-                data-toggle="dropdown"
-                href="#"
-                title="Show more data"
-              >
-                <i className="fa fa-binoculars"></i>
-              </a>
-              <div className="dropdown-menu">
-                <h6 className="dropdown-header">More data</h6>
-                <a className="dropdown-item disabled">created: {vuln.created}</a>
-                <a className="dropdown-item disabled">modified: {vuln.modified}</a>
-                <a className="dropdown-item disabled">rescan_time: {vuln.rescan_time}</a>
-                <a className="dropdown-item disabled">import_time: {vuln.import_time}</a>
-              </div>
+              <DropdownButton
+                title="More data"
+                options={[
+                  {
+                    name: 'created',
+                    data: vuln.created,
+                  },
+                  {
+                    name: 'modified',
+                    data: vuln.modified,
+                  },
+                  {
+                    name: 'rescan_time',
+                    data: vuln.rescan_time,
+                  },
+
+                  {
+                    name: 'import_time',
+                    data: vuln.import_time,
+                  },
+                ]}
+                small={false}
+              />
             </div>
             <a
               className="btn btn-outline-primary"
@@ -72,10 +88,10 @@ const VulnViewPage = () => {
             >
               <i className="fas fa-list"></i>
             </a>
-            <EditButton url={`/storage/vuln/edit/${vuln.id}`} />
-            <MultiCopyButton url={`/storage/vuln/multicopy/${vuln.id}`} />
+            <EditButton url={`/storage/vuln/edit/${vuln.id}`} className="btn btn-outline-primary" />
+            <MultiCopyButton url={`/storage/vuln/multicopy/${vuln.id}`} className="btn btn-outline-primary" />
           </div>{' '}
-          <DeleteButton url={`/storage/vuln/delete/${1}`} />
+          <DeleteButton url={`/storage/vuln/delete/${vuln.id}`} className="btn btn-outline-primary" />
         </div>
       </Heading>
 

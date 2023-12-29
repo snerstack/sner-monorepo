@@ -186,7 +186,7 @@ const VersionInfosListPage = () => {
           className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}
         >
           <div className="btn-group">
-            <a className="btn btn-outline-secondary disabled">
+            <a className="btn btn-outline-secondary">
               <i className="fas fa-check-square"></i>
             </a>
             <a

@@ -4,14 +4,16 @@ const EditButton = ({
   url,
   // eslint-disable-next-line react-hooks/rules-of-hooks
   navigate = useNavigate(),
+  className,
 }: {
   url: string
   navigate?: NavigateFunction
+  className?: string
 }) => {
   return (
     <a
       data-testid="edit-btn"
-      className="btn btn-outline-secondary"
+      className={className ? className : 'btn btn-outline-secondary'}
       href={url}
       onClick={(e) => {
         e.preventDefault()

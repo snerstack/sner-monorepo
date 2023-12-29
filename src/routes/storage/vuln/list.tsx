@@ -5,14 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import {
-  deleteRow,
-  encodeRFC3986URIComponent,
-  getColorForSeverity,
-  getColorForTag,
-  getTextForRef,
-  getUrlForRef,
-} from '@/lib/sner/storage'
+import { deleteRow, getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -225,7 +218,7 @@ const VulnListPage = () => {
       <div id="vuln_list_table_toolbar" className="dt_toolbar">
         <div id="vuln_list_table_toolbox" className="dt_toolbar_toolbox_alwaysvisible">
           <div className="btn-group">
-            <a className="btn btn-outline-secondary disabled">
+            <a className="btn btn-outline-secondary">
               <i className="fas fa-check-square"></i>
             </a>
             <a
@@ -346,7 +339,7 @@ const VulnListPage = () => {
           url:
             import.meta.env.VITE_SERVER_URL +
             '/storage/vuln/list.json' +
-            (searchParams.has('filter') ? `?filter=${encodeRFC3986URIComponent(searchParams.get('filter')!)}` : ''),
+            (searchParams.toString() ? `?${searchParams.toString()}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

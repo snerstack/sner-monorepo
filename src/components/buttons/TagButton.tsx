@@ -9,17 +9,19 @@ const TagButton = ({
   tableId,
   id,
   reloadPage,
+  className,
 }: {
   tag: string
   url: string
   tableId?: string
   id?: number
   reloadPage?: boolean
+  className?: string
 }) => {
   return (
     <a
       data-testid="tag-btn"
-      className="btn btn-outline-secondary abutton_tag_multiid"
+      className={className ? className : 'btn btn-outline-secondary'}
       href="#"
       title={`add tag ${tag}`}
       // eslint-disable-next-line @typescript-eslint/no-misused-promises

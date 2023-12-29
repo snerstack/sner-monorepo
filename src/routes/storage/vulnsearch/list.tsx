@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { encodeRFC3986URIComponent, getColorForTag } from '@/lib/sner/storage'
+import { getColorForTag } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -157,7 +157,7 @@ const VulnSearchListPage = () => {
       <div id="vulnsearch_list_table_toolbar" className="dt_toolbar">
         <div id="vulnsearch_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}>
           <div className="btn-group">
-            <a className="btn btn-outline-secondary disabled">
+            <a className="btn btn-outline-secondary">
               <i className="fas fa-check-square"></i>
             </a>
             <a
@@ -260,7 +260,7 @@ const VulnSearchListPage = () => {
           url:
             import.meta.env.VITE_SERVER_URL +
             '/storage/vulnsearch/list.json' +
-            (searchParams.has('filter') ? `?filter=${encodeRFC3986URIComponent(searchParams.get('filter')!)}` : ''),
+            (searchParams.toString() ? `?${searchParams.toString()}` : ''),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

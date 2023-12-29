@@ -1,4 +1,5 @@
 import { escapeHtml } from '@/utils'
+import { toast } from 'react-toastify'
 
 import { getLinksForService } from '@/lib/sner/storage'
 
@@ -30,6 +31,7 @@ const ServiceEndpointDropdown = ({
               title="Copy to clipboard"
               onClick={() => {
                 void navigator.clipboard.writeText(link)
+                toast.info('Copied to clipboard')
               }}
             ></i>{' '}
             <a rel="noreferrer" href={escapeHtml(link)}>

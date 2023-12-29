@@ -8,6 +8,8 @@ import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
 
 import Heading from '@/components/Heading'
 import DeleteButton from '@/components/buttons/DeleteButton'
+import DropdownButton from '@/components/buttons/DropdownButton'
+import EditButton from '@/components/buttons/EditButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 
 type ScreenshotWeb = {
@@ -49,25 +51,26 @@ const NoteViewPage = () => {
       <Heading headings={['Note', `${note.address}${note.hostname ? ' ' + note.hostname : ''}`, note.xtype]}>
         <div className="breadcrumb-buttons pl-2">
           <div className="btn-group">
-            <div className="btn-group dropdown dropleft">
-              <a
-                className="btn btn-outline-primary font-weight-bold"
-                data-toggle="dropdown"
-                href="#"
-                title="Show more data"
-              >
-                <i className="fa fa-binoculars"></i>
-              </a>
-              <div className="dropdown-menu">
-                <h6 className="dropdown-header">More data</h6>
-                <a className="dropdown-item disabled">created: {note.created}</a>
-                <a className="dropdown-item disabled">modified: {note.modified}</a>
-                <a className="dropdown-item disabled">import_time: {note.import_time || ''}</a>
-              </div>
-            </div>
-            <a className="btn btn-outline-primary" href={`/storage/note/edit/${note.id}`} title="Edit">
-              <i className="fas fa-edit"></i>
-            </a>
+            <DropdownButton
+              title="More data"
+              options={[
+                {
+                  name: 'created',
+                  data: note.created,
+                },
+                {
+                  name: 'modified',
+                  data: note.modified,
+                },
+
+                {
+                  name: 'import_time',
+                  data: note.import_time || '',
+                },
+              ]}
+              small={false}
+            />
+            <EditButton url={`/storage/note/edit/${note.id}`} className="btn btn-outline-primary" />
           </div>{' '}
           <DeleteButton url={`/storage/note/delete/${note.id}`} />
         </div>
