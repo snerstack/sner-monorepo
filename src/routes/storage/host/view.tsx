@@ -768,6 +768,7 @@ const HostViewPage = () => {
             href="#"
             onClick={() => setActiveTab('versioninfo')}
           >
+            <i className="far fa-clock text-secondary" title="pre-computed data, host links might be dangling"></i>{' '}
             Versioninfos <span className="badge badge-pill badge-secondary">{versionInfosCount}</span>
           </a>
         </li>
@@ -778,6 +779,7 @@ const HostViewPage = () => {
             href="#"
             onClick={() => setActiveTab('vulnsearch')}
           >
+            <i className="far fa-clock text-secondary" title="pre-computed data, host links might be dangling"></i>{' '}
             Vulnsearches <span className="badge badge-pill badge-secondary">{vulnSearchesCount}</span>
           </a>
         </li>
@@ -1234,7 +1236,7 @@ const HostViewPage = () => {
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
-              order={[1, 'asc']}
+              order={[6, 'asc']}
               select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
               drawCallback={(settings) => {
                 setVersionInfosCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)

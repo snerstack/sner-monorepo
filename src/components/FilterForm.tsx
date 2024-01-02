@@ -23,25 +23,29 @@ const FilterForm = ({ url }: { url: string }) => {
           <a className="btn btn-outline-secondary disabled">
             <i className="fas fa-filter"></i>
           </a>
-          <Link
-            data-testid="unfilter-btn"
-            className="btn btn-info"
-            to={url}
-            onClick={() =>
-              setSearchParams((params) => {
-                params.set('filter', '')
-                return params
-              })
-            }
-          >
-            Unfilter
-          </Link>
+          {searchParams.has('filter') && (
+            <Link
+              data-testid="unfilter-btn"
+              className="btn btn-info"
+              to={url}
+              onClick={() => {
+                setFilter('')
+                setSearchParams((params) => {
+                  params.set('filter', '')
+                  return params
+                })
+              }}
+            >
+              Unfilter
+            </Link>
+          )}
         </div>
         <input
           className="form-control"
           type="text"
           name="filter"
           placeholder="Filter"
+          title="Filter string, check the syntax in sner.server.sqlafilter for reference."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         />

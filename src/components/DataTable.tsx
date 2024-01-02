@@ -19,7 +19,7 @@ const DataTable = ({ id, ...props }: TableConfig) => {
     info: true,
     paging: true,
     pageLength: 200,
-    lengthMenu: [10, 50, 100, 200, 500, 1000],
+    lengthMenu: [10, 50, 100, 200, 500, 1000, 5000],
     stateSave: true,
     columnDefs: [{ targets: 'no-sort', orderable: false }],
     order: [0, 'asc'],
