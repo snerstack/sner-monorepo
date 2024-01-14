@@ -3,9 +3,16 @@ services:
   frontend:
     build:
       context: .
+      target: testing
     image: frontend
     ports:
       - '18080:18080'
+    environment:
+      - PREVIEW_HOST=127.0.0.1
+    volumes:
+      - type: bind
+        source: ./
+        target: /opt/sner-frontend
     depends_on:
       - backend
 
