@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:bookworm as base
 
 RUN apt-get update && apt-get install -y git sudo make gcc libpq-dev python3-dev python3-venv unzip libmagic-dev postgresql-client
 

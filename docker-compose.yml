@@ -3,8 +3,11 @@ services:
   frontend:
     build:
       context: https://github.com/Filiq/sner-frontend.git#main
+      target: testing
     ports:
       - "18080:18080"
+    environment:
+      - PREVIEW_HOST=0.0.0.0
     depends_on:
       - backend
 
