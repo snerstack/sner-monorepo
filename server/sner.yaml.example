@@ -1,0 +1,80 @@
+#server:
+#  secret_key: 'changeit'
+#  application_root: '/sner'
+#  xflask_proxyfix: true,
+#  sqlalchemy_database_uri: 'postgresql://user:password@localhost/sner'
+#  sner_var: '/var/lib/sner'
+#  sner_session_idletime: 3600
+#  sner_tags_host:
+#    - reviewed
+#  sner_tags_vuln:
+#    - info
+#    - report
+#    - todo
+#    - falsepositive
+#  sner_tags_annotate:
+#    - sslhell
+#  sner_trim_report_cells: 65000
+#  sner_vulnsearch:
+#    cvesearch: 'https://hostname:18200/cvesearch/cvesearch'
+#    esd: 'https://hostname:18200/esd'
+#    tlsauth_key: 'filename'
+#    tlsauth_cert: 'filename'
+#  sner_vulnsearch_list_filters:
+#    has_exploit: 'Vulnsearch.data astext_ilike "%exploit-db%"'
+#  sner_heatmap_hot_level: 10
+#  sner_exclusions:
+#    - [regex, '^tcp://.*:22$']
+#    - [network, '127.66.66.0/26']
+#
+#  oidc_name: 'OIDC_DEFAULT'
+#  oidc_default_metadata: 'https://URL/.well-known/openid-configuration'
+#  oidc_default_client_id: 'dummy'
+#  oidc_default_client_secret: 'dummy'
+#  oidc_default_redirect_uri: 'https://external_hostname/path/auth/login_oidc_callback'
+#
+#
+#agent:
+#  server: 'http://localhost:18000'
+#  apikey: 'generateit'
+#  queue: 'a_queue_name'
+#  caps:
+#    - capability1
+#    - capability2
+#  backoff_time: 5.0
+#  net_timeout: 300
+#  oneshot: False
+#
+#
+#planner:
+#  home_netranges_ipv4: []
+#  home_netranges_ipv6: ['::1/128']
+#
+#  stage:
+#    service_scan:
+#      queues:
+#        - 'sner nmap serviceversion'
+#
+#    service_disco:
+#      queue: 'sner nmap servicedisco'
+#
+#    six_dns_disco:
+#      queue: 'sner six_dns_discover'
+#
+#    six_enum_disco:
+#      queue: 'sner six_enum_discover'
+#
+#    netlist_enum:
+#      schedule: 120days
+#
+#    storage_six_enum:
+#      schedule: 90days
+#
+#    storage_rescan:
+#      schedule: 1hour
+#      host_interval: 60days
+#      service_interval: 20days
+#
+#    load_standalone:
+#      queues:
+#        - dummy1

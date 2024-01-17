@@ -1,0 +1,14 @@
+server:
+  secret_key: 'changeit'
+  application_root: '/'
+  xflask_proxyfix: true
+  sqlalchemy_database_uri: 'postgresql:///sner_test'
+  sner_var: '/tmp/sner_test_var'
+  sner_trim_report_cells: 1000
+
+  oidc_name: 'OIDC_DEFAULT'
+  oidc_default_metadata: 'https://URL/.well-known/openid-configuration'
+  oidc_default_client_id: 'dummy'
+  oidc_default_client_secret: 'dummy'
+
+planner: {}

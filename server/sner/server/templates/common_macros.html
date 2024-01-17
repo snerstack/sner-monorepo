@@ -1,0 +1,74 @@
+{%- macro heading(path) -%}
+<div class="d-flex align-items-center mb-2">
+	<ol class="breadcrumb flex-grow-1 py-2 mb-0">
+		{%- for item in path[:-1] -%}
+		<li class="breadcrumb-item">{{ item }}</li>
+		{%- endfor -%}
+		<li class="breadcrumb-item font-weight-bold">{{ path[-1] }}</li>
+	</ol>
+	{{ caller() }}
+</div>
+{%- endmacro -%}
+
+{%- macro addtag_buttons() -%}
+<div class="form-group row">
+	<div class="col-sm-10 offset-sm-2">
+	{% for tag in (config['SNER_TAGS_HOST'] + config['SNER_TAGS_VULN'] + config['SNER_TAGS_ANNOTATE'])|unique|sort %}
+		<a class="btn btn-outline-secondary btn-sm abutton_addtag">{{ tag|capitalize }}</a>
+	{% endfor %}
+	</div>
+</div>
+<script type="text/javascript">
+	$('.abutton_addtag').on('click', function(event) {
+		$('textarea[name="tags"]').tagEditor('addTag', event.target.text, true);
+	});
+</script>
+{%- endmacro -%}
+
+{%- macro filter_form() -%}
+{% set show_form = 'filter' in request.values %}
+<form id="filter_form" class="form filter_bar collapse {% if show_form %}show{% endif %}">
+	<div class="input-group flex-fill">
+		<div class="input-group-prepend">
+			<a class="btn btn-outline-secondary disabled"><i class="fas fa-filter"></i></a>
+			{% if show_form %}<a class="btn btn-info" href="{{ url_for(request.endpoint) }}">Unfilter</a>{% endif %}
+		</div>
+		<input class="form-control" type="text" name="filter" value="{{ request.values.filter }}" placeholder="Filter" title="Filter string, check the syntax in sner.server.sqlafilter for reference.">
+		<div class="input-group-append">
+			<button type="submit" class="btn btn-outline-secondary"><i class="fa fa-search"></i></button>
+		</div>
+	</div>
+	{% for k, v in request.values.items() if k != "filter" %}
+		<input type="hidden" name="{{ k }}" value="{{ v }}">
+	{% endfor %}
+</form>
+{%- endmacro -%}
+
+{%- macro main_menu_link(title, route) -%}
+<li class="nav-item{% if request.endpoint == route %} active{% endif %}"><a class="nav-link" href="{{ url_for(route, **kwargs) }}">{{ title }}</a></li>
+{%- endmacro -%}
+
+{%- macro view_tag_abuttons(tags, route, model_id) -%}
+{% for tag in tags %}
+	<a
+		class="btn btn-outline-primary abutton_tag_view"
+		href="#"
+		title="{{ tag }}"
+		data-tag_route="{{ route }}"
+		data-tag_data='{{ {'action': 'set', 'tag': tag, 'ids-0': model_id}|tojson }}'>{{ tag|capitalize|truncate(6, True) }}</a>
+{% endfor %}
+{%- endmacro -%}
+
+{%- macro multiid_tagging_abuttons(tags, elem_class) -%}
+{% for tag in tags %}
+	<a class="{{ elem_class }}" href="#" title="add tag {{ tag }}" data-tag="{{ tag }}">{{ tag|capitalize|truncate(6, True) }}</a>
+{% endfor %}
+{%- endmacro -%}
+
+{%- macro multiid_tagging_abuttons_dropdown(tags, elem_class) -%}
+<div class="dropdown-menu">
+{% for tag in tags %}
+	<a class="dropdown-item {{ elem_class }}" href="#" title="remove tag {{ tag }}" data-tag="{{ tag }}">{{ tag|capitalize|truncate(6, True) }}</a>
+{% endfor %}
+</div>
+{%- endmacro -%}

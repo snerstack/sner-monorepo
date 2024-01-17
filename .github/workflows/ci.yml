@@ -1,0 +1,34 @@
+name: General CI
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - run: sudo apt-get update
+      - run: sudo sh bin/install.sh
+      - run: . venv/bin/activate && make lint
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - run: sudo apt-get update
+      - run: sudo make install
+      - run: sudo make install-extra
+      - run: |
+          sudo apt-get -y install postgresql postgresql-contrib
+          sudo systemctl start postgresql
+          sudo -u postgres psql -c "CREATE DATABASE sner_test"
+          sudo -u postgres psql -c "CREATE USER ${USER}"
+          mkdir -p /tmp/sner_test_var
+      - run: . venv/bin/activate && make coverage
+      - run: sudo docker-compose -f "docker-compose.yml" up -d --build
+      - run: . venv/bin/activate && pytest -vv -x --live-server-port 18001 tests/selenium
