@@ -1,0 +1,13 @@
+{
+  "trailingComma": "all",
+  "tabWidth": 2,
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 120,
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "plugins": ["@trivago/prettier-plugin-sort-imports"],
+  "importOrder": ["<THIRD_PARTY_MODULES>", "atoms/", "lib/", "utils/", "components/", "^../(.*)$"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
+}
