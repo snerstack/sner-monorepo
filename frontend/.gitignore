@@ -13,12 +13,6 @@ dist-ssr
 *.local
 coverage
 
-venv/
-__pycache__/
-*.swp
-.coverage
-.sner-infra.*
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

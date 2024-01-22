@@ -1,26 +1,31 @@
-version: '3'
+version: "3.7"
 services:
   frontend:
     build:
-      context: .
-      target: testing
+      context: ./frontend
+      target: dev
     image: frontend
     ports:
-      - '18080:18080'
+      - "18080:18080"
     environment:
-      - PREVIEW_HOST=127.0.0.1
+      - PREVIEW_HOST=0.0.0.0
     volumes:
       - type: bind
-        source: ./
-        target: /opt/sner-frontend
+        source: ./frontend
+        target: /opt/sner/frontend
     depends_on:
-      - backend
+      - server
 
-  backend:
+  server:
     build:
-      context: https://github.com/Filiq/sner4.git#routes-for-frontend
+      context: ./server
+      target: dev
     ports:
-      - '18000:18000'
+      - "18000:18000"
+    volumes:
+      - type: bind
+        source: ./server
+        target: /opt/sner/server
     depends_on:
       - postgres
 
@@ -30,7 +35,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql
     expose:
-      - '5432'
+      - "5432"
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres

@@ -1,6 +1,6 @@
 FROM node:21-bookworm AS base
 
-WORKDIR /opt/sner-frontend
+WORKDIR /opt/sner/frontend
 
 COPY package.json .
 
@@ -17,4 +17,11 @@ FROM base AS testing
 RUN npm run build -- --mode testing
 
 CMD npm run preview
+
+FROM base AS prod
+
+RUN npm run build
+
+CMD npm run preview
+
 

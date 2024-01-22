@@ -1,8 +1,14 @@
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+name: Frontend nodejs CI
 
-name: Node.js CI
-
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-nodejs.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-nodejs.yml"
 
 jobs:
   build:
@@ -17,7 +23,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: "npm"
+      - working-directory: frontend
       - run: npm install
       - run: npm run build --if-present
       - run: npm run lint

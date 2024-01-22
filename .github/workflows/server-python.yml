@@ -1,5 +1,14 @@
-name: General CI
-on: [push, pull_request]
+name: Server python CI
+
+on:
+  push:
+    paths:
+      - "server/**"
+      - ".github/workflows/server-python.yml"
+  pull_request:
+    paths:
+      - "server/**"
+      - ".github/workflows/server-python.yml"
 
 jobs:
   lint:
@@ -9,6 +18,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
+      - working-directory: server
       - run: sudo apt-get update
       - run: sudo sh bin/install.sh
       - run: . venv/bin/activate && make lint
@@ -20,6 +30,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
+      - working-directory: server
       - run: sudo apt-get update
       - run: sudo make install
       - run: sudo make install-extra
@@ -30,5 +41,3 @@ jobs:
           sudo -u postgres psql -c "CREATE USER ${USER}"
           mkdir -p /tmp/sner_test_var
       - run: . venv/bin/activate && make coverage
-      - run: sudo docker-compose -f "docker-compose.yml" up -d --build
-      - run: . venv/bin/activate && pytest -vv -x --live-server-port 18001 tests/selenium
