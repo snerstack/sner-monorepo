@@ -3,6 +3,8 @@
 selenium ui tests module
 """
 
+import os
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -81,4 +83,4 @@ def toggle_dt_toolboxes(sclnt):
 def frontend_url(url):
     """create url for frontend"""
 
-    return 'http://localhost:18080' + url
+    return os.environ.get("FRONTEND_TEST_URL") + url

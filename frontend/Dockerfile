@@ -12,12 +12,6 @@ FROM base AS dev
 
 CMD npm run dev -- --host
 
-FROM base AS testing
-
-RUN npm run build -- --mode testing
-
-CMD npm run preview
-
 FROM base AS prod
 
 RUN npm run build

@@ -10,6 +10,10 @@ on:
       - "frontend/**"
       - ".github/workflows/frontend-nodejs.yml"
 
+defaults:
+  run:
+    working-directory: frontend
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,7 +28,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-      - working-directory: frontend
+          cache-dependency-path: "frontend"
       - run: npm install
       - run: npm run build --if-present
       - run: npm run lint

@@ -10,6 +10,10 @@ on:
       - "server/**"
       - ".github/workflows/server-python.yml"
 
+defaults:
+  run:
+    working-directory: server
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -18,7 +22,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - working-directory: server
       - run: sudo apt-get update
       - run: sudo sh bin/install.sh
       - run: . venv/bin/activate && make lint
@@ -30,7 +33,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - working-directory: server
       - run: sudo apt-get update
       - run: sudo make install
       - run: sudo make install-extra
