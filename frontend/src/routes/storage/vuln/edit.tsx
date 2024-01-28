@@ -55,7 +55,7 @@ const VulnEditPage = () => {
         formData,
       )
 
-      navigate('/storage/vuln/list')
+      navigate(`/storage/vuln/view/${vuln.id}`)
 
       toast.success(resp.data.message)
     } catch (err) {

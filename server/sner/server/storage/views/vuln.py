@@ -110,7 +110,7 @@ def vuln_add_route(model_name, model_id):
         form.populate_obj(vuln)
         db.session.add(vuln)
         db.session.commit()
-        return jsonify({'host_id': host.id})
+        return jsonify({'vuln_id': vuln.id})
 
     return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
