@@ -1,5 +1,6 @@
 import VulnEditPage from '@/routes/storage/vuln/edit'
 import VulnListPage from '@/routes/storage/vuln/list'
+import VulnViewPage from '@/routes/storage/vuln/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -61,7 +62,10 @@ describe('Vuln edit page', () => {
       element: <VulnEditPage />,
       path: '/storage/vuln/edit/1',
       loader: loader,
-      routes: [{ element: <VulnListPage />, path: '/storage/vuln/list' }],
+      routes: [
+        { element: <VulnListPage />, path: '/storage/vuln/list' },
+        { element: <VulnViewPage />, loader: loader, path: '/storage/vuln/view/1' },
+      ],
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
@@ -80,7 +84,9 @@ describe('Vuln edit page', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Vuln has been successfully edited.')).toBeInTheDocument()
-      expect(screen.getByRole('list')).toHaveTextContent('Vulns')
+      const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
+      expect(listItems.includes('Vuln')).toBeTruthy()
+      expect(listItems.includes('aggregable vuln (x.agg)')).toBeTruthy()
     })
   })
 
@@ -111,7 +117,10 @@ describe('Vuln edit page', () => {
           via_target: null,
           xtype: null,
         }),
-      routes: [{ element: <VulnListPage />, path: '/storage/vuln/list' }],
+      routes: [
+        { element: <VulnListPage />, path: '/storage/vuln/list' },
+        { element: <VulnViewPage />, loader: loader, path: '/storage/vuln/view/1' },
+      ],
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
@@ -130,7 +139,9 @@ describe('Vuln edit page', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Vuln has been successfully edited.')).toBeInTheDocument()
-      expect(screen.getByRole('list')).toHaveTextContent('Vulns')
+      const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
+      expect(listItems.includes('Vuln')).toBeTruthy()
+      expect(listItems.includes('aggregable vuln (x.agg)')).toBeTruthy()
     })
   })
 

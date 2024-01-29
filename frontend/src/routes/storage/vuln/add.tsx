@@ -70,19 +70,12 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
     formData.append('comment', comment)
 
     try {
-      if (type === 'host') {
-        const resp = await httpClient.post<{ host_id: number }>(
-          import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/host/${hostId}`,
-          formData,
-        )
-        navigate(`/storage/host/view/${resp.data.host_id}`)
-      } else {
-        const resp = await httpClient.post<{ host_id: number }>(
-          import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/service/${serviceId}`,
-          formData,
-        )
-        navigate(`/storage/host/view/${resp.data.host_id}`)
-      }
+      const resp = await httpClient.post<{ vuln_id: number }>(
+        import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/${type}/${hostId}`,
+        formData,
+      )
+
+      navigate(`/storage/vuln/view/${resp.data.vuln_id}`)
 
       toast.success('Vuln has been successfully added.')
     } catch (err) {
@@ -146,7 +139,7 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
           defaultTags={unique([
             ...import.meta.env.VITE_HOST_TAGS.split(','),
             ...import.meta.env.VITE_VULN_TAGS.split(','),
-            ...import.meta.env.VITE_ANNOTATE_TAGS.split(''),
+            ...import.meta.env.VITE_ANNOTATE_TAGS.split(','),
           ]).sort()}
           _state={tags}
           _setState={setTags}
