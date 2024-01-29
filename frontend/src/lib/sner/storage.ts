@@ -87,6 +87,12 @@ export const getLinksForService = (
 ): string[] => {
   const urls = []
 
+  const isIpv6 = hostAddress.includes(':')
+
+  if (isIpv6) {
+    hostAddress = '[' + hostAddress + ']'
+  }
+
   if (serviceProto !== null && servicePort !== null) {
     urls.push(serviceProto + '://' + hostAddress + ':' + servicePort)
     if (hostHostname !== null) {
