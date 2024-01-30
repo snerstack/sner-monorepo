@@ -90,6 +90,17 @@ describe('Host list page', () => {
     })
   })
 
+  it('deletes host (unconfirmed)', async () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    await waitFor(() => {
+      testDeleteRow({ buttonId: 'delete-row-btn', confirm: false })
+    })
+  })
+
   it('filters results', async () => {
     renderWithProviders({
       element: <HostListPage />,

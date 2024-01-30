@@ -11,9 +11,13 @@ const DeleteButton = ({ url, tableId, className }: { url: string; tableId?: stri
       href={url}
       onClick={(e) => {
         e.preventDefault()
+
+        if (!confirm('Really delete?')) return
+
         httpClient
           .post(import.meta.env.VITE_SERVER_URL + url)
           .then(() => {
+            /* c8 ignore next 2 */
             if (tableId) {
               getTableApi(tableId).draw()
             } else {
