@@ -35,7 +35,7 @@ const PortinfosPage = () => {
     // generate graph layout
     d3.json(
       import.meta.env.VITE_SERVER_URL +
-        `/visuals/portinfos.json?${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
+        `/visuals/portinfos.json${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
       { credentials: 'include' },
     )
       .then((data) => {

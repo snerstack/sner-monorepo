@@ -59,7 +59,7 @@ const DnsTreePage = () => {
       .force('charge', d3.forceManyBody())
       .force('center', d3.forceCenter(width / 2, height / 2))
 
-    /* c8 ignore next 20 */
+    /* c8 ignore next 24 */
     const dragDrop = d3
       .drag<SVGCircleElement, D3Node>()
       .on('start', (event: d3.D3DragEvent<SVGCircleElement, D3Node, D3Node>) => {
@@ -82,7 +82,7 @@ const DnsTreePage = () => {
 
     d3.json(
       import.meta.env.VITE_SERVER_URL +
-        `/visuals/dnstree.json?${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
+        `/visuals/dnstree.json${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
       { credentials: 'include' },
     )
       .then((data) => {

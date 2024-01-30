@@ -1,6 +1,6 @@
 import DnsTreePage from '@/routes/visuals/dnstree'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
