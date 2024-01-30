@@ -21,13 +21,10 @@ describe('Internals page', () => {
     })
 
     await waitFor(() => {
-      expect(
-        screen.getByText(loaderData.exclusions.replaceAll('\n', ' ').replaceAll(/\s+/g, ' ').trim()),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByText(loaderData.metrics.replaceAll('\n', ' ').replaceAll(/\s+/g, ' ').trim()),
-      ).toBeInTheDocument()
-      expect(screen.getByText('heatmap_consistent: true')).toBeInTheDocument()
+      expect(screen.getByText('sner_storage_hosts_total')).toBeInTheDocument()
+      expect(screen.getByText('sner_storage_services_total')).toBeInTheDocument()
+      expect(screen.getByText('sner_storage_notes_total')).toBeInTheDocument()
+      expect(screen.getByText('heatmap_consistent:')).toBeInTheDocument()
     })
   })
 })

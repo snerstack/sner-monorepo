@@ -35,20 +35,6 @@ const DnsTreePage = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
-    if (!searchParams.has('distance')) {
-      setSearchParams((params) => {
-        params.set('distance', '100')
-        return params
-      })
-    }
-
-    if (!searchParams.has('crop')) {
-      setSearchParams((params) => {
-        params.set('crop', '1')
-        return params
-      })
-    }
-
     const colors = d3.scaleOrdinal(d3.schemeCategory10)
     const radius = 5
 
@@ -64,7 +50,7 @@ const DnsTreePage = () => {
     const linkForce = d3
       .forceLink<D3Node, FLink>()
       .id((link) => link.id)
-      .distance(parseInt(searchParams.get('distance')!))
+      .distance(parseInt(searchParams.get('distance') ?? '100'))
       .strength(1)
 
     const simulation = d3
@@ -96,7 +82,7 @@ const DnsTreePage = () => {
 
     d3.json(
       import.meta.env.VITE_SERVER_URL +
-        `/visuals/dnstree.json?crop=${searchParams.get('crop')}&distance=${searchParams.get('distance')}`,
+        `/visuals/dnstree.json?${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
       { credentials: 'include' },
     )
       .then((data) => {
@@ -193,7 +179,7 @@ const DnsTreePage = () => {
       d3.select('svg').selectAll('*').remove()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+  }, [])
 
   return (
     <div>
@@ -217,7 +203,11 @@ const DnsTreePage = () => {
           <a className="btn btn-outline-secondary disabled">crop:</a>
           {['0', '1', '2'].map((crop) => (
             <a
-              className={clsx('btn btn-outline-secondary', searchParams.get('crop') === crop && 'active')}
+              className={clsx(
+                'btn btn-outline-secondary',
+                (searchParams.get('crop') === crop && 'active') ||
+                  (!searchParams.has('crop') && crop === '1' && 'active'),
+              )}
               data-testid="dnstree-crop-link"
               onClick={(e) => {
                 e.preventDefault()
@@ -236,7 +226,11 @@ const DnsTreePage = () => {
           <a className="btn btn-outline-secondary disabled">distance:</a>
           {['100', '200'].map((distance) => (
             <a
-              className={clsx('btn btn-outline-secondary', searchParams.get('distance') === distance && 'active')}
+              className={clsx(
+                'btn btn-outline-secondary',
+                (searchParams.get('distance') === distance && 'active') ||
+                  (!searchParams.has('distance') && distance === '100' && 'active'),
+              )}
               data-testid="dnstree-distance-link"
               onClick={(e) => {
                 e.preventDefault()
