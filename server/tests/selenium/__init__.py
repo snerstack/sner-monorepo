@@ -48,7 +48,7 @@ def dt_inrow_delete(sclnt, dt_id, index=0):
     sclnt.find_element(By.ID, dt_id).find_elements(By.XPATH, '//a[@data-testid="delete-btn"]')[index].click()
     webdriver_waituntil(sclnt, EC.alert_is_present())
     sclnt.switch_to.alert.accept()
-    time.sleep(0.25) # timing issue fix
+    time.sleep(0.25)  # timing issue fix
     dt_wait_processing(sclnt, dt_id)
 
 
