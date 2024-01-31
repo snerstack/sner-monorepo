@@ -6,6 +6,7 @@ import { useCookie } from 'react-use'
 import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 
+import CodeBlock from '@/components/CodeBlock'
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
 import Button from '@/components/buttons/Button'
@@ -21,13 +22,7 @@ const QueueListPage = () => {
     Column('id'),
     Column('name'),
     Column('config', {
-      createdCell: (cell, data: string) =>
-        renderElements(
-          cell,
-          <pre>
-            <code>{data}</code>
-          </pre>,
-        ),
+      createdCell: (cell, data: string) => renderElements(cell, <CodeBlock language="language-yaml" data={data} />),
     }),
     Column('group_size'),
     Column('priority'),

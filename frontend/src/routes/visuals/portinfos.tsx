@@ -14,27 +14,6 @@ const PortinfosPage = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
-    if (!searchParams.has('limit')) {
-      setSearchParams((params) => {
-        params.set('limit', '50')
-        return params
-      })
-    }
-
-    if (!searchParams.has('crop')) {
-      setSearchParams((params) => {
-        params.set('crop', '3')
-        return params
-      })
-    }
-
-    if (!searchParams.has('view')) {
-      setSearchParams((params) => {
-        params.set('view', 'normal')
-        return params
-      })
-    }
-
     // graph
     const colors = d3.scaleOrdinal(d3.schemeCategory10)
     const width = containerRef.current!.clientWidth
@@ -56,7 +35,7 @@ const PortinfosPage = () => {
     // generate graph layout
     d3.json(
       import.meta.env.VITE_SERVER_URL +
-        `/visuals/portinfos.json?crop=${searchParams.get('crop')}&limit=${searchParams.get('limit')}`,
+        `/visuals/portinfos.json${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
       { credentials: 'include' },
     )
       .then((data) => {
@@ -101,7 +80,7 @@ const PortinfosPage = () => {
       d3.select('svg').selectAll('*').remove()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+  }, [])
   return (
     <div>
       <Helmet>
@@ -139,13 +118,14 @@ const PortinfosPage = () => {
         <div className="btn-group">
           <a className="btn btn-outline-secondary disabled">crop:</a>
           <>
-            {['2', '3', '4', '5', 'no crop'].map((crop) => (
+            {['2', '3', '4', '5'].map((crop) => (
               <a
                 className={clsx('btn btn-outline-secondary', searchParams.get('crop') === crop && 'active')}
                 onClick={(e) => {
                   e.preventDefault()
                   setSearchParams((params) => {
                     params.set('crop', crop)
+
                     return params
                   })
                 }}
@@ -154,12 +134,26 @@ const PortinfosPage = () => {
                 {crop}
               </a>
             ))}
+
+            <a
+              className={clsx('btn btn-outline-secondary', !searchParams.has('crop') && 'active')}
+              onClick={(e) => {
+                e.preventDefault()
+                setSearchParams((params) => {
+                  params.delete('crop')
+
+                  return params
+                })
+              }}
+            >
+              no crop
+            </a>
           </>
         </div>{' '}
         <div className="btn-group">
           <a className="btn btn-outline-secondary disabled">limit:</a>
           <>
-            {['10', '30', '40', '50', '100', '200', 'no limit'].map((limit) => (
+            {['10', '30', '40', '50', '100', '200'].map((limit) => (
               <a
                 className={clsx('btn btn-outline-secondary', searchParams.get('limit') === limit && 'active')}
                 onClick={(e) => {
@@ -174,6 +168,18 @@ const PortinfosPage = () => {
                 {limit}
               </a>
             ))}
+            <a
+              className={clsx('btn btn-outline-secondary', !searchParams.has('limit') && 'active')}
+              onClick={(e) => {
+                e.preventDefault()
+                setSearchParams((params) => {
+                  params.delete('limit')
+                  return params
+                })
+              }}
+            >
+              no limit
+            </a>
           </>
         </div>
         <FilterForm url="/visuals/portinfos" />
