@@ -178,8 +178,7 @@ const DnsTreePage = () => {
     return () => {
       d3.select('svg').selectAll('*').remove()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [searchParams])
 
   return (
     <div>
