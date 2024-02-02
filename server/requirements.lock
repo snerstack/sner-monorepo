@@ -77,7 +77,7 @@ pytest-selenium==3.0.0
 pytest-variables==1.9.0
 python-box==6.0.2
 python-dateutil==2.8.2
-python-libnmap @ git+https://github.com/bodik/python-libnmap@9a40fe62bd27ebcad8e7bf7d88a4a65b3d7d20ee
+python-libnmap @ git+https://github.com/snerstack/python-libnmap@9a40fe62bd27ebcad8e7bf7d88a4a65b3d7d20ee
 pytimeparse==1.1.8
 PyYAML==6.0
 requests==2.28.1
@@ -90,7 +90,7 @@ soft-webauthn==0.1.4
 soupsieve==2.3.2.post1
 SQLAlchemy==1.4.39
 sqlalchemy-datatables==2.0.1
-sqlalchemy-filters @ git+https://github.com/bodik/sqlalchemy-filters@3c7a1c502fda4de82848daa77cce81ca5af0c64d
+sqlalchemy-filters @ git+https://github.com/snerstack/sqlalchemy-filters@3c7a1c502fda4de82848daa77cce81ca5af0c64d
 tenacity==6.3.1
 toml==0.10.2
 tomli==2.0.1
