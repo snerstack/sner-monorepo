@@ -200,13 +200,16 @@ const VulnListPage = () => {
       </Helmet>
       <Heading headings={['Vulns']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-primary" href="/storage/vuln/report">
+          <a className="btn btn-outline-primary" href={import.meta.env.VITE_SERVER_URL + '/storage/vuln/report'}>
             Report
           </a>{' '}
-          <a className="btn btn-outline-primary" href="/storage/vuln/report?group_by_host=True">
+          <a
+            className="btn btn-outline-primary"
+            href={import.meta.env.VITE_SERVER_URL + '/storage/vuln/report?group_by_host=True'}
+          >
             Report by host
           </a>{' '}
-          <a className="btn btn-outline-primary" href="/storage/vuln/export">
+          <a className="btn btn-outline-primary" href={import.meta.env.VITE_SERVER_URL + '/storage/vuln/export'}>
             Export
           </a>{' '}
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">
