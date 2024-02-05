@@ -19,7 +19,7 @@ describe('Queue edit page', () => {
           config: 'module: nmap\nargs: -sS --top-ports 10000 -Pn --scanflags ECESYN',
           group_size: 2,
           id: 1,
-          name: 'sner nmap servicedisco',
+          name: 'sner.nmap.servicedisco',
           priority: 10,
           reqs: [],
         }),
@@ -29,7 +29,7 @@ describe('Queue edit page', () => {
       const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
       expect(listItems.includes('Queues')).toBeTruthy()
       expect(listItems.includes('Edit')).toBeTruthy()
-      expect(screen.getByLabelText('Name')).toHaveValue('sner nmap servicedisco')
+      expect(screen.getByLabelText('Name')).toHaveValue('sner.nmap.servicedisco')
       expect(screen.getByLabelText('Config')).toHaveValue(
         'module: nmap\nargs: -sS --top-ports 10000 -Pn --scanflags ECESYN',
       )
@@ -48,7 +48,7 @@ describe('Queue edit page', () => {
           config: 'module: nmap\nargs: -sS --top-ports 10000 -Pn --scanflags ECESYN',
           group_size: 2,
           id: 1,
-          name: 'sner nmap servicedisco',
+          name: 'sner.nmap.servicedisco',
           priority: 10,
           reqs: [],
         }),
@@ -85,7 +85,7 @@ describe('Queue edit page', () => {
           config: 'module: nmap\nargs: -sS --top-ports 10000 -Pn --scanflags ECESYN',
           group_size: 2,
           id: 1,
-          name: 'sner nmap servicedisco',
+          name: 'sner.nmap.servicedisco',
           priority: 10,
           reqs: [],
         }),
@@ -131,7 +131,7 @@ describe('Queue edit page', () => {
           config: 'module: nmap\nargs: -sS --top-ports 10000 -Pn --scanflags ECESYN',
           group_size: 2,
           id: 1,
-          name: 'sner nmap servicedisco',
+          name: 'sner.nmap.servicedisco',
           priority: 10,
           reqs: [],
         }),

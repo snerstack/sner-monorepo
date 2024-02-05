@@ -174,10 +174,10 @@ def test_storagecleanup(app, host_factory, service_factory):  # pylint: disable=
 def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     """try somewhat default config"""
 
-    queue_factory.create(name='sner nmap serviceversion')
-    queue_factory.create(name='sner nmap servicedisco')
-    queue_factory.create(name='sner six_dns_discover')
-    queue_factory.create(name='sner six_enum_discover')
+    queue_factory.create(name='sner.nmap.serviceversion')
+    queue_factory.create(name='sner.nmap.servicedisco')
+    queue_factory.create(name='sner.six_dns_discover')
+    queue_factory.create(name='sner.six_enum_discover')
     queue_factory.create(name='standalone')
 
     config = yaml.safe_load("""
@@ -187,16 +187,16 @@ home_netranges_ipv6: ['::1/128']
 stage:
   service_scan:
     queues:
-      - 'sner nmap serviceversion'
+      - 'sner.nmap.serviceversion'
 
   service_disco:
-    queue: 'sner nmap servicedisco'
+    queue: 'sner.nmap.servicedisco'
 
   six_dns_disco:
-    queue: 'sner six_dns_discover'
+    queue: 'sner.six_dns_discover'
 
   six_enum_disco:
-    queue: 'sner six_enum_discover'
+    queue: 'sner.six_enum_discover'
 
   netlist_enum:
     schedule: 120days

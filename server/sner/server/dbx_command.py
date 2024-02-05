@@ -43,35 +43,35 @@ def initdata_sner():
     """initialize sner queues"""
 
     db.session.add(Queue(
-        name='sner six_dns_discover',
+        name='sner.six_dns_discover',
         config=yaml_dump({'module': 'six_dns_discover', 'delay': 1}),
         group_size=1000,
         priority=10,
     ))
 
     db.session.add(Queue(
-        name='sner six_enum_discover',
+        name='sner.six_enum_discover',
         config=yaml_dump({'module': 'six_enum_discover', 'rate': 100}),
         group_size=5,
         priority=10,
     ))
 
     db.session.add(Queue(
-        name='sner nmap servicedisco',
+        name='sner.nmap.servicedisco',
         config=yaml_dump({'module': 'nmap', 'args': '-sS --top-ports 10000 -Pn --scanflags ECESYN', 'timing_perhost': 2}),
         group_size=1000,
         priority=10,
     ))
 
     db.session.add(Queue(
-        name='sner nmap serviceversion',
+        name='sner.nmap.serviceversion',
         config=yaml_dump({'module': 'manymap', 'args': '-sV --version-intensity 4 -Pn', 'delay': 1}),
         group_size=50,
         priority=15,
     ))
 
     db.session.add(Queue(
-        name='sner nmap script',
+        name='sner.nmap.script',
         config=yaml_dump({
             'module': 'manymap',
             'args': '-sS --script default,http-headers,ldap-rootdse,ssl-enum-ciphers,ssh-auth-methods --script-timeout 10m -Pn',
@@ -82,21 +82,21 @@ def initdata_sner():
     ))
 
     db.session.add(Queue(
-        name='sner jarm',
+        name='sner.jarm',
         config=yaml_dump({'module': 'jarm', 'delay': 1}),
         group_size=50,
         priority=15,
     ))
 
     db.session.add(Queue(
-        name='sner testssl',
+        name='sner.testssl',
         config=yaml_dump({'module': 'testssl', 'delay': 1}),
         group_size=10,
         priority=15,
     ))
 
     db.session.add(Queue(
-        name='sner nuclei',
+        name='sner.nuclei',
         config=yaml_dump({'module': 'nuclei', 'args': '-rate-limit 15'}),
         group_size=5,
         priority=15,
@@ -107,7 +107,7 @@ def initdata_pentest():
     """initialize pentest data"""
 
     db.session.add(Queue(
-        name='pentest nmap fullsynscan',
+        name='pentest.nmap.fullsynscan',
         config=yaml_dump({
             'module': 'nmap',
             'args': '-sS -A -p1-65535 -Pn  --max-retries 3 --script-timeout 10m --min-hostgroup 20 --min-rate 900 --max-rate 1500'
@@ -121,7 +121,7 @@ def initdata_dev():
     """initialize development data"""
 
     queue = Queue(
-        name='dev dummy',
+        name='dev.dummy',
         config=yaml_dump({'module': 'dummy', 'args': '--dummyparam 1'}),
         group_size=2,
         priority=10,

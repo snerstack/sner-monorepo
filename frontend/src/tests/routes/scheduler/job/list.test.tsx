@@ -12,9 +12,9 @@ describe('Job list page', () => {
     expect(screen.getByRole('list')).toHaveTextContent('Jobs')
 
     await waitFor(() => {
-      expect(screen.getByText('sner nmap servicedisco')).toBeInTheDocument()
-      expect(screen.getByText('nuclei test')).toBeInTheDocument()
-      expect(screen.getByText('sner jarm')).toBeInTheDocument()
+      expect(screen.getByText('sner.nmap.servicedisco')).toBeInTheDocument()
+      expect(screen.getByText('nuclei.test')).toBeInTheDocument()
+      expect(screen.getByText('sner.jarm')).toBeInTheDocument()
     })
   })
 

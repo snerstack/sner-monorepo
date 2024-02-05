@@ -13,9 +13,9 @@ describe('Queue list page', () => {
     expect(screen.getByRole('list')).toHaveTextContent('Queues')
 
     await waitFor(() => {
-      expect(screen.getByText('sner six_dns_discover')).toBeInTheDocument()
-      expect(screen.getByText('sner jarm')).toBeInTheDocument()
-      expect(screen.getByText('pentest nmap fullsynscan')).toBeInTheDocument()
+      expect(screen.getByText('sner.six_dns_discover')).toBeInTheDocument()
+      expect(screen.getByText('sner.jarm')).toBeInTheDocument()
+      expect(screen.getByText('pentest.nmap.fullsynscan')).toBeInTheDocument()
     })
   })
 
