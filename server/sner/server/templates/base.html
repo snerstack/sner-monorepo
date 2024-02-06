@@ -1,6 +1,5 @@
 {#- This file is part of sner4 project governed by MIT license, see the
-LICENSE.txt file. -#} {% import "bootstrap_wtf.html" as bwtf %} {% import
-"common_macros.html" as cm %}
+LICENSE.txt file. -#}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -152,172 +151,13 @@ LICENSE.txt file. -#} {% import "bootstrap_wtf.html" as bwtf %} {% import
   </head>
   <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top py-0">
-      <a class="navbar-brand" href="{{ url_for('index_route') }}"
+      <a class="navbar-brand py-1" href="{{ url_for('index_route') }}"
         ><img src="{{ url_for('static', filename='logo.png') }}"
       /></a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbar_main"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div id="navbar_main" class="collapse navbar-collapse">
-        <ul class="navbar-nav mr-auto">
-          {% if current_user.is_authenticated %} {%- set active_subsystem =
-          request.endpoint.split('.')[0] -%} {% if current_user.has_role('user')
-          %}
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{{ url_for('api-docs.openapi_swagger_ui') }}"
-              title="API"
-              ><i class="fas fa-paper-plane"></i
-            ></a>
-          </li>
-          {% endif %} {% if current_user.has_role('operator') %} {%- for
-          subsystem, route, icon in [ ('scheduler',
-          'scheduler.queue_list_route', 'fa-tasks'), ('storage',
-          'storage.host_list_route', 'fa-database'), ('visuals',
-          'visuals.index_route', 'fa-image') ] -%}
-          <li class="nav-item">
-            <a
-              class="nav-link{% if subsystem == active_subsystem %} active{% endif %}"
-              href="{{ url_for(route) }}"
-              title="{{ subsystem|capitalize }}"
-              ><i class="fas {{ icon }}"></i
-            ></a>
-          </li>
-          {%- endfor -%} {%- if active_subsystem == 'scheduler' -%} {{
-          cm.main_menu_link('Queues', 'scheduler.queue_list_route') }} {{
-          cm.main_menu_link('Jobs', 'scheduler.job_list_route') }} {%- elif
-          active_subsystem == 'storage' -%} {{ cm.main_menu_link('Hosts',
-          'storage.host_list_route') }} {{ cm.main_menu_link('Services',
-          'storage.service_list_route') }} {{ cm.main_menu_link('Services
-          grouped', 'storage.service_grouped_route', crop=3) }} {{
-          cm.main_menu_link('Vulnerabilities', 'storage.vuln_list_route') }} {{
-          cm.main_menu_link('Vulnerabilities grouped',
-          'storage.vuln_grouped_route') }} {{ cm.main_menu_link('Notes',
-          'storage.note_list_route') }} {%- elif active_subsystem == 'visuals'
-          -%} {{ cm.main_menu_link('Internals', 'visuals.internals_route') }} {{
-          cm.main_menu_link('DNS Tree', 'visuals.dnstree_route', crop=1) }} {{
-          cm.main_menu_link('Portmap', 'visuals.portmap_route') }} {{
-          cm.main_menu_link('Port infos', 'visuals.portinfos_route', crop=3,
-          limit=50) }} {%- endif -%} {% endif %} {% endif %}
-        </ul>
-
-        {% if current_user.is_authenticated and
-        current_user.has_role('operator') %}
-        <form
-          id="storage_quickjump_form"
-          class="form-inline"
-          style="display: inline"
-          method="post"
-        >
-          <input
-            class="form-control form-control-sm"
-            type="text"
-            name="quickjump"
-            placeholder="Quick jump"
-            title="Quick jump with address, hostname or port"
-          />
-        </form>
-        {% endif %}
-
-        <ul class="navbar-nav">
-          {% if config['DEBUG'] %}
-          <li><span class="nav-link text-warning">debug</span></li>
-          {% endif %} {% if config['SNER_MAINTENANCE'] %}
-          <li><span class="nav-link text-warning">maintenance</span></li>
-          {% endif %} {% if not current_user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.login_route') }}"
-              >Login</a
-            >
-          </li>
-          {% else %}
-          <li class="nav-item dropdown">
-            <a
-              id="dropdownUser"
-              class="nav-link dropdown-toggle"
-              href="#"
-              data-toggle="dropdown"
-              >{{ current_user.username }}</a
-            >
-            <div class="dropdown-menu dropdown-menu-right">
-              {% if current_user.has_role('admin') %}
-              <a
-                class="dropdown-item"
-                href="{{ url_for('auth.user_list_route') }}"
-                >Manage users</a
-              >
-              {% endif %}
-              <a
-                class="dropdown-item"
-                href="#"
-                onclick="javascript:Sner.dt.toggle_viatarget_column_visibility();"
-                >Toggle via_target (<span
-                  id="menu_dt_viatarget_column_visible_value"
-                ></span
-                >)</a
-              >
-              <a
-                class="dropdown-item"
-                href="#"
-                onclick="javascript:Sner.dt.toggle_dt_toolboxes_visibility();"
-                >Toggle DT toolboxes (<span
-                  id="menu_dt_toolboxes_visible_value"
-                ></span
-                >)</a
-              >
-              <a
-                class="dropdown-item"
-                href="{{ url_for('auth.profile_route') }}"
-                >Profile</a
-              >
-              <a class="dropdown-item" href="{{ url_for('auth.logout_route') }}"
-                >Logout</a
-              >
-            </div>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
     </nav>
 
     <main role="main" class="container-fluid">
       {% block content %} {% endblock %}
     </main>
-    <!-- /.container -->
-
-    <script type="text/javascript">
-      toastr.options = {
-      	'positionClass': 'toast-top-right',
-      	'progressBar': true,
-      };
-      {% for category, message in get_flashed_messages(with_categories=true) %}
-      toastr['{{ category }}']('{{ message }}');
-      {% endfor %}
-
-      $('#menu_dt_viatarget_column_visible_value').text(sessionStorage.getItem('dt_viatarget_column_visible'));
-      $('#menu_dt_toolboxes_visible_value').text(sessionStorage.getItem('dt_toolboxes_visible'));
-      $('.dt_toolbar_toolbox')[JSON.parse(sessionStorage.getItem('dt_toolboxes_visible')) ? 'removeClass' : 'addClass']('collapse');
-    </script>
-
-    <div id="modal-global" class="modal fade" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title"></h4>
-            <button type="button" class="close" data-dismiss="modal">
-              <span>&times;</span>
-            </button>
-          </div>
-          <div class="modal-body"></div>
-        </div>
-      </div>
-    </div>
   </body>
 </html>
