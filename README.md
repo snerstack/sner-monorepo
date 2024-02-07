@@ -5,7 +5,7 @@
 ### Development enviroment
 
 ```
-apt-get -y install git sudo make docker-compose
+apt-get -y install git sudo make docker-compose nodejs npm
 git clone https://github.com/snerstack/sner-monorepo.git /opt/sner
 cd /opt/sner
 ```
