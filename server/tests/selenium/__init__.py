@@ -4,7 +4,6 @@ selenium ui tests module
 """
 
 import os
-import time
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -45,10 +44,11 @@ def dt_inrow_delete(sclnt, dt_id, index=0):
     """test delete row/item rendered in _buttons by default ajaxed datatables"""
 
     dt_wait_processing(sclnt, dt_id)
-    sclnt.find_element(By.ID, dt_id).find_elements(By.XPATH, '//a[@data-testid="delete-btn"]')[index].click()
+    delete_btn = sclnt.find_element(By.ID, dt_id).find_elements(By.XPATH, '//a[@data-testid="delete-btn"]')[index]
+    delete_btn.click()
     webdriver_waituntil(sclnt, EC.alert_is_present())
     sclnt.switch_to.alert.accept()
-    time.sleep(0.25)  # timing issue fix
+    webdriver_waituntil(sclnt, EC.invisibility_of_element_located(delete_btn))
     dt_wait_processing(sclnt, dt_id)
 
 
