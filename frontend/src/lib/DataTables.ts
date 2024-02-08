@@ -1,6 +1,6 @@
 import DataTable, { ConfigColumns } from 'datatables.net-bs4'
 import { ReactElement } from 'react'
-import { createRoot } from 'react-dom/client'
+import { Root, createRoot } from 'react-dom/client'
 
 export const getTableApi = (id: string) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -9,10 +9,29 @@ export const getTableApi = (id: string) => {
   return new DataTable.Api(filteredTables[0] as Node)
 }
 
+const roots: { root: Root; element: Element }[] = []
+
 export const renderElements = (parent: Node | Element, elements: ReactElement | ReactElement[]) => {
   const root = createRoot(parent as Element)
-
   root.render(elements)
+
+  roots.push({ root: root, element: parent as Element })
+}
+
+export const observeElements = () => {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(() => {
+      roots.forEach(({ root, element }, index) => {
+        // if the element is not in DOM, unmount the root from virtual DOM
+        if (!document.contains(element)) {
+          root.unmount()
+          roots.splice(index, 1)
+        }
+      })
+    })
+  })
+
+  observer.observe(document.body, { subtree: true, childList: true })
 }
 
 export const Column = (name: string, extra?: ConfigColumns) => {

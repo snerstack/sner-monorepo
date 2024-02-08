@@ -3,6 +3,8 @@ import 'datatables.net-select-bs4'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
+import { observeElements } from '@/lib/DataTables'
+
 interface TableConfig extends Config {
   id: string
 }
@@ -69,6 +71,8 @@ const DataTable = ({ id, ...props }: TableConfig) => {
       ...DEFAULT_CONFIG,
       ...props,
     })
+
+    observeElements()
 
     return () => {
       dt.destroy()
