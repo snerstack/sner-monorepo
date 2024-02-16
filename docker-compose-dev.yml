@@ -8,7 +8,7 @@ services:
     ports:
       - "18080:18080"
     environment:
-      - PREVIEW_HOST=0.0.0.0
+      - DEV_HOST=0.0.0.0
     volumes:
       - type: bind
         source: ./frontend

@@ -5,10 +5,10 @@ dev:
 		cd frontend && npm install; \
 	fi
 
-	docker-compose -f docker-compose-dev.yml up --build
+	docker compose -f docker-compose-dev.yml up --build
 
 prod:
-	docker-compose -f docker-compose-prod.yml up --build
+	docker compose -f docker-compose-prod.yml up --build
 
 test-semgrep:
 	@if ! command -v semgrep > /dev/null; then \
