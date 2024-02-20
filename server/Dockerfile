@@ -18,6 +18,10 @@ CMD bin/server dbx remove && bin/server dbx init && bin/server dbx init-data && 
 
 FROM base AS prod
 
-COPY /etc/sner.yaml /etc/sner.yaml
+COPY sner.yaml /etc/sner.yaml
 
-CMD bin/server run --host 0.0.0.0
+RUN pip install gunicorn
+
+ENV SCRIPT_NAME=/server
+
+CMD ["/bin/bash", "-c", "gunicorn --bind '0.0.0.0:18000' --timeout 120 --access-logfile - --access-logformat 'gunicorn.access_log %({x-forwarded-for}i)s %(h)s %(u)s %(t)s \"%(r)s\" %(s)s %(b)s \"%(f)s\" \"%(a)s\"' 'sner.server.app:create_app()'"]
