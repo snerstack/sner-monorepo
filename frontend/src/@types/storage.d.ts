@@ -222,3 +222,8 @@ interface VulnSearchRow {
   tags: string[]
   comment: string | null
 }
+
+interface QuickJumpSuggestions {
+  hosts: { label: string; host_id: number }[]
+  services: { label: string; port: number }[]
+}

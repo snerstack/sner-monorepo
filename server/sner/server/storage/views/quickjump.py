@@ -3,44 +3,13 @@
 storage jumper
 """
 
-from http import HTTPStatus
-from ipaddress import ip_address
-
 from flask import current_app, jsonify, request
 from sqlalchemy import cast, or_
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
-from sner.server.storage.forms import QuickjumpForm
-from sner.server.storage.models import Host
+from sner.server.storage.models import Host, Service
 from sner.server.storage.views import blueprint
-from sner.server.utils import error_response
-
-
-@blueprint.route('/quickjump', methods=['POST'])
-@session_required('operator')
-def quickjump_route():
-    """
-    returns url for quick jump via simple query-string
-    """
-
-    form = QuickjumpForm()
-
-    if form.validate_on_submit():
-        try:
-            address = str(ip_address(form.quickjump.data))
-        except ValueError:
-            address = None
-        host = Host.query.filter(or_(Host.address == address, Host.hostname.ilike(f"{form.quickjump.data}%"))).first()
-        if host:
-            return jsonify({'message': 'success', 'url':  f'/storage/host/view/{host.id}'})
-
-        if form.quickjump.data.isnumeric():
-            return jsonify({'message': 'success', 'url': f'/storage/service/list?filter=Service.port==\"{form.quickjump.data}\"'})
-
-        return error_response(message='Not found.', code=HTTPStatus.NOT_FOUND)
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
 @blueprint.route('/quickjump_autocomplete')
@@ -48,18 +17,41 @@ def quickjump_route():
 def quickjump_autocomplete_route():
     """quickjump autocomplete suggestions"""
 
-    term = request.args.get('term', '')
-    if not term:
-        return jsonify([])
+    ip_address, port, term = request.args.get('ip'), request.args.get('port'), request.args.get('term')
 
-    data = []
-    hosts = Host.query.filter(
-        or_(cast(Host.address, db.String).ilike(f"%{term}%"), Host.hostname.ilike(f"%{term}%"))
-    ).limit(current_app.config['SNER_AUTOCOMPLETE_LIMIT']).all()
-    for host in hosts:
-        if term in host.address:
-            data.append(host.address)
-        if host.hostname and (term in host.hostname):
-            data.append(host.hostname)
+    if not ip_address and not port and not term:
+        return jsonify({'hosts': [], 'services': []})
 
-    return jsonify(data)
+    data = {
+        'hosts': [],
+        'services': [],
+    }
+
+    if ip_address:
+        hosts = Host.query.filter(cast(Host.address, db.String).ilike(f"%{ip_address}%")).limit(current_app.config['SNER_AUTOCOMPLETE_LIMIT']).all()
+        for host in hosts:
+            label = host.address
+            if host.hostname:
+                label += f" ({host.hostname})"
+
+            data['hosts'].append({'label': label, 'host_id': host.id})
+
+    if port:
+        services = Service.query.filter(cast(Service.port, db.String).ilike(f"%{port}%")).limit(current_app.config['SNER_AUTOCOMPLETE_LIMIT']).all()
+        services = list({service.port: service for service in services}.values())
+
+        for service in services:
+            data['services'].append({'label': str(service.port), 'port': service.port})
+
+    if term:
+        hosts = Host.query.filter(
+            or_(cast(Host.address, db.String).ilike(f"%{term}%"), Host.hostname.ilike(f"%{term}%"))
+        ).limit(current_app.config['SNER_AUTOCOMPLETE_LIMIT']).all()
+        for host in hosts:
+            label = host.address
+            if host.hostname:
+                label += f" ({host.hostname})"
+
+            data['hosts'].append({'label': label, 'host_id': host.id})
+
+    return jsonify({'hosts': data['hosts'], 'services': data['services']})
