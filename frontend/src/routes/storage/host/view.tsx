@@ -6,7 +6,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useCookie, useLocalStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { deleteRow, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
@@ -17,11 +17,13 @@ import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
 import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import ViewButton from '@/components/buttons/ViewButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import TagConfigModal from '@/components/modals/TagConfigModal'
 
 const HostViewPage = () => {
   const host = useLoaderData() as Host
@@ -99,7 +101,7 @@ const HostViewPage = () => {
           <div data-testid="service_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -255,7 +257,7 @@ const HostViewPage = () => {
           <div data-testid="vuln_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -382,7 +384,7 @@ const HostViewPage = () => {
           <div data-testid="note_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -495,7 +497,7 @@ const HostViewPage = () => {
           <div data-testid="versioninfo_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -592,7 +594,7 @@ const HostViewPage = () => {
           <div data-testid="vulnsearch_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -712,7 +714,7 @@ const HostViewPage = () => {
             >
               {host.tags.map((tag) => (
                 <Fragment key={tag}>
-                  <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                  <Tag tag={tag} />{' '}
                 </Fragment>
               ))}
             </td>
@@ -903,6 +905,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateService} setAnnotate={setAnnotateService} />
             <MultipleTagModal multipleTag={multipleTagService} setMultipleTag={setMultipleTagService} />
+            <TagConfigModal tableId="host_view_service_table" />
           </div>
         </>
 
@@ -1015,6 +1018,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateVuln} setAnnotate={setAnnotateVuln} />
             <MultipleTagModal multipleTag={multipleTagVuln} setMultipleTag={setMultipleTagVuln} />
+            <TagConfigModal tableId="host_view_vuln_table" />
           </div>
         </>
         <>
@@ -1129,6 +1133,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateNote} setAnnotate={setAnnotateNote} />
             <MultipleTagModal multipleTag={multipleTagNote} setMultipleTag={setMultipleTagNote} />
+            <TagConfigModal tableId="host_view_note_table" />
           </div>
         </>
         <>
@@ -1245,6 +1250,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateVersioninfo} setAnnotate={setAnnotateVersioninfo} />
             <MultipleTagModal multipleTag={multipleTagVersioninfo} setMultipleTag={setMultipleTagVersioninfo} />
+            <TagConfigModal tableId="host_view_versioninfo_table" />
           </div>
         </>
         <>
@@ -1361,6 +1367,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateVulnsearch} setAnnotate={setAnnotateVulnsearch} />
             <MultipleTagModal multipleTag={multipleTagVulnsearch} setMultipleTag={setMultipleTagVulnsearch} />
+            <TagConfigModal tableId="host_view_vulnsearch_table" />
           </div>
         </>
       </div>

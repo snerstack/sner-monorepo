@@ -66,17 +66,24 @@ export const getTextForRef = (ref: string): string => {
 }
 
 export const getColorForTag = (tag: string): string => {
-  switch (tag) {
-    case 'todo':
-      return 'badge-warning'
-    case 'report':
-      return 'badge-danger'
-    case 'report:data':
-      return 'badge-danger'
-
-    default:
-      return 'badge-secondary'
+  const defaultColors: { [key: string]: string } = {
+    todo: '#ffc107',
+    report: '#dc3545',
+    'report:data': '#dc3545',
   }
+
+  const tags = localStorage.getItem('tags')
+
+  if (!tags) {
+    localStorage.setItem('tags', JSON.stringify(defaultColors))
+
+    return tag in defaultColors ? defaultColors[tag] : '#6c757d'
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const parsedTags: { [key: string]: string } = JSON.parse(tags)
+
+  return parsedTags[tag] || '#6c757d'
 }
 
 export const getLinksForService = (

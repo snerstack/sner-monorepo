@@ -3,7 +3,7 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
-import { getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
@@ -11,6 +11,7 @@ import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
 import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 
@@ -154,7 +155,7 @@ const VulnViewPage = () => {
             >
               {vuln.tags.map((tag) => (
                 <Fragment key={tag}>
-                  <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                  <Tag tag={tag} />{' '}
                 </Fragment>
               ))}
             </td>

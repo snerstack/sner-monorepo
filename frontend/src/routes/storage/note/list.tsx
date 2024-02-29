@@ -6,7 +6,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForTag } from '@/lib/sner/storage'
+import { deleteRow } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -16,11 +16,13 @@ import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import ViewButton from '@/components/buttons/ViewButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import TagConfigModal from '@/components/modals/TagConfigModal'
 
 const NoteListPage = () => {
   const [searchParams] = useSearchParams()
@@ -111,7 +113,7 @@ const NoteListPage = () => {
           <div data-testid="note_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -304,6 +306,7 @@ const NoteListPage = () => {
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
       <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
+      <TagConfigModal tableId="note_list_table" />
     </div>
   )
 }

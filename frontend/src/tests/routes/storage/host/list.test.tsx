@@ -195,4 +195,28 @@ describe('Host list page', () => {
 
     await testMultipleTags({ action: 'unset', testId: 'host_unset_multiple_tag' })
   })
+
+  it('changes color of tag', async () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    await waitFor(() => {
+      const tag = screen.getAllByTestId('tag').filter((tag) => tag.textContent === 'todo')[0]
+
+      expect(tag).toBeInTheDocument()
+
+      fireEvent.click(tag)
+
+      expect(screen.getByText('Tags Configuration')).toBeInTheDocument()
+
+      const colorInput = screen.getByTestId('tag-color-input')
+      fireEvent.change(colorInput, { target: { value: '#ffffff' } })
+      fireEvent.change(colorInput, { target: { value: '#000' } })
+
+      const changeButton = screen.getByRole('button', { name: 'Change' })
+      fireEvent.click(changeButton)
+    })
+  })
 })

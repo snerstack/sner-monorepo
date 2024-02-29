@@ -105,6 +105,12 @@ interface MultipleTag {
   url: string
 }
 
+interface TagConfig {
+  show: boolean
+  tag: string
+  color: string
+}
+
 interface HostRow {
   id: number
   address: string

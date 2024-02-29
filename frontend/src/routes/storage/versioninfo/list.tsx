@@ -5,18 +5,19 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { getColorForTag } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import SubmitField from '@/components/fields/SubmitField'
 import TextField from '@/components/fields/TextField'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import TagConfigModal from '@/components/modals/TagConfigModal'
 
 const VersionInfosListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -111,7 +112,7 @@ const VersionInfosListPage = () => {
           <div data-testid="versioninfo_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -288,6 +289,7 @@ const VersionInfosListPage = () => {
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
       <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
+      <TagConfigModal tableId="versioninfo_list_table" />
     </div>
   )
 }

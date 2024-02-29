@@ -5,11 +5,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, renderElements } from '@/lib/DataTables'
-import { encodeRFC3986URIComponent, getColorForSeverity, getColorForTag, getVulnFilterName } from '@/lib/sner/storage'
+import { encodeRFC3986URIComponent, getColorForSeverity, getVulnFilterName } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
+import Tag from '@/components/buttons/Tag'
+import TagConfigModal from '@/components/modals/TagConfigModal'
 
 const VulnGroupedPage = () => {
   const [searchParams] = useSearchParams()
@@ -46,7 +48,7 @@ const VulnGroupedPage = () => {
           <>
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </>,
@@ -110,6 +112,8 @@ const VulnGroupedPage = () => {
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
       />
+
+      <TagConfigModal tableId="vuln_grouped_table" />
     </div>
   )
 }
