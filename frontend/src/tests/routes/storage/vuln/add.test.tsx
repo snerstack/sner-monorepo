@@ -1,5 +1,6 @@
 import HostViewPage from '@/routes/storage/host/view'
 import VulnAddPage from '@/routes/storage/vuln/add'
+import VulnViewPage from '@/routes/storage/vuln/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -37,6 +38,30 @@ const serviceLoader = () =>
     proto: 'tcp',
     state: 'open:nessus',
     tags: [],
+  })
+
+const vulnLoader = () =>
+  Promise.resolve({
+    address: '127.4.4.4',
+    comment: null,
+    created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+    data: 'agg vuln data',
+    descr: 'aggregable vuln description',
+    host_id: 1,
+    hostname: 'testhost.testdomain.test<script>alert(1);</script>',
+    id: 1,
+    import_time: null,
+    modified: 'Tue, 29 Aug 2023 14:08:10 GMT',
+    name: 'aggregable vuln',
+    refs: [],
+    rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
+    service_id: null,
+    service_port: null,
+    service_proto: null,
+    severity: 'high',
+    tags: ['reportdata'],
+    via_target: null,
+    xtype: 'x.agg',
   })
 
 describe('Vuln add page', () => {
@@ -164,12 +189,15 @@ describe('Vuln add page', () => {
       element: <VulnAddPage type="host" />,
       path: '/storage/vuln/add/host/1',
       loader: hostLoader,
-      routes: [{ element: <HostViewPage />, path: '/storage/host/view/1', loader: hostLoader }],
+      routes: [
+        { element: <HostViewPage />, path: '/storage/host/view/1', loader: hostLoader },
+        { element: <VulnViewPage />, path: '/storage/vuln/view/1', loader: vulnLoader },
+      ],
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
       data: {
-        host_id: 1,
+        vuln_id: 1,
       },
     })
 
@@ -192,12 +220,15 @@ describe('Vuln add page', () => {
       element: <VulnAddPage type="service" />,
       path: '/storage/vuln/add/service/52',
       loader: serviceLoader,
-      routes: [{ element: <HostViewPage />, path: '/storage/host/view/37', loader: hostLoader }],
+      routes: [
+        { element: <HostViewPage />, path: '/storage/host/view/37', loader: hostLoader },
+        { element: <VulnViewPage />, path: '/storage/vuln/view/1', loader: vulnLoader },
+      ],
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
       data: {
-        host_id: 37,
+        vuln_id: 1,
       },
     })
 

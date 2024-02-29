@@ -5,19 +5,22 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { getColorForTag } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import SubmitField from '@/components/fields/SubmitField'
 import TextField from '@/components/fields/TextField'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import TagConfigModal from '@/components/modals/TagConfigModal'
+
+import config from '../../../../config.ts'
 
 const VersionInfosListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -112,7 +115,7 @@ const VersionInfosListPage = () => {
           <div data-testid="versioninfo_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -231,7 +234,7 @@ const VersionInfosListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
+            {config.tags.versioninfo.map((tag) => (
               <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/versioninfo/tag_multiid")} tableId="versioninfo_list_table" />
             ))}
           </div>{' '}
@@ -261,7 +264,7 @@ const VersionInfosListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
+                tags={config.tags.versioninfo}
                 url={urlFor("/backend/storage/versioninfo/tag_multiid")}
                 tableId="versioninfo_list_table"
               />
@@ -289,6 +292,7 @@ const VersionInfosListPage = () => {
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
       <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
+      <TagConfigModal tableId="versioninfo_list_table" />
     </div>
   )
 }

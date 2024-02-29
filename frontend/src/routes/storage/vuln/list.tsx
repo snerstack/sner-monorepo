@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { deleteRow, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -17,10 +17,14 @@ import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
 import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import TagConfigModal from '@/components/modals/TagConfigModal'
+
+import config from '../../../../config.ts'
 
 const VulnListPage = () => {
   const [searchParams] = useSearchParams()
@@ -137,7 +141,7 @@ const VulnListPage = () => {
           <div data-testid="vuln_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -266,7 +270,7 @@ const VulnListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
+            {config.tags.vuln.map((tag) => (
               <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/vuln/tag_multiid")} tableId="vuln_list_table" />
             ))}
           </div>{' '}
@@ -295,11 +299,7 @@ const VulnListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton
-                tags={import.meta.env.VITE_VULN_TAGS.split(',')}
-                url={urlFor("/backend/storage/vuln/tag_multiid")}
-                tableId="vuln_list_table"
-              />
+              <TagsDropdownButton tags={config.tags.vuln} url={urlFor("/backend/storage/vuln/tag_multiid")} tableId="vuln_list_table" />
             </div>
             <a
               data-testid="delete-row-btn"
@@ -354,6 +354,7 @@ const VulnListPage = () => {
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
       <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
+      <TagConfigModal tableId="vuln_list_table" />
     </div>
   )
 }

@@ -14,6 +14,8 @@ import TagsField from '@/components/fields/TagsField'
 import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
+import config from '../../../../config.ts'
+
 const ServiceAddPage = () => {
   const host = useLoaderData() as Host
 
@@ -92,9 +94,10 @@ const ServiceAddPage = () => {
           label="Tags"
           placeholder="Tags"
           defaultTags={unique([
-            ...import.meta.env.VITE_HOST_TAGS.split(','),
-            ...import.meta.env.VITE_VULN_TAGS.split(','),
-            ...import.meta.env.VITE_ANNOTATE_TAGS.split(','),
+            ...config.tags.host,
+            ...config.tags.service,
+            ...config.tags.vuln,
+            ...config.tags.annotate,
           ]).sort()}
           _state={tags}
           _setState={setTags}

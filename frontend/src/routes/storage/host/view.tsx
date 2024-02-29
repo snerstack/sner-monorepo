@@ -6,7 +6,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useCookie, useLocalStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { deleteRow, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -18,11 +18,15 @@ import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
 import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import ViewButton from '@/components/buttons/ViewButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import TagConfigModal from '@/components/modals/TagConfigModal'
+
+import config from '../../../../config.ts'
 
 const HostViewPage = () => {
   const host = useLoaderData() as Host
@@ -100,7 +104,7 @@ const HostViewPage = () => {
           <div data-testid="service_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -256,7 +260,7 @@ const HostViewPage = () => {
           <div data-testid="vuln_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -383,7 +387,7 @@ const HostViewPage = () => {
           <div data-testid="note_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -496,7 +500,7 @@ const HostViewPage = () => {
           <div data-testid="versioninfo_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -593,7 +597,7 @@ const HostViewPage = () => {
           <div data-testid="vulnsearch_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -674,8 +678,8 @@ const HostViewPage = () => {
               <i className="fas fa-tag text-primary"></i>
             </a>
             <>
-              {import.meta.env.VITE_HOST_TAGS.split(',').map((tag) => (
-                <TagButton tag={tag} key={tag} url={urlFor('/backend/storage/host/tag_multiid')} id={host.id} />
+              {config.tags.host.map((tag) => (
+                <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/host/tag_multiid")} id={host.id} />
               ))}
             </>
           </div>{' '}
@@ -713,7 +717,7 @@ const HostViewPage = () => {
             >
               {host.tags.map((tag) => (
                 <Fragment key={tag}>
-                  <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                  <Tag tag={tag} />{' '}
                 </Fragment>
               ))}
             </td>
@@ -837,7 +841,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_SERVICE_TAGS.split(',').map((tag) => (
+                  {config.tags.service.map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -872,7 +876,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_SERVICE_TAGS.split(',')}
+                      tags={config.tags.service}
                       url={urlFor("/backend/storage/service/tag_multiid")}
                       tableId="host_view_service_table"
                     />
@@ -904,6 +908,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateService} setAnnotate={setAnnotateService} />
             <MultipleTagModal multipleTag={multipleTagService} setMultipleTag={setMultipleTagService} />
+            <TagConfigModal tableId="host_view_service_table" />
           </div>
         </>
 
@@ -954,7 +959,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
+                  {config.tags.vuln.map((tag) => (
                     <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/vuln/tag_multiid")} tableId="host_view_vuln_table" />
                   ))}
                 </div>{' '}
@@ -984,7 +989,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_VULN_TAGS.split(',')}
+                      tags={config.tags.vuln}
                       url={urlFor("/backend/storage/vuln/tag_multiid")}
                       tableId="host_view_vuln_table"
                     />
@@ -1016,6 +1021,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateVuln} setAnnotate={setAnnotateVuln} />
             <MultipleTagModal multipleTag={multipleTagVuln} setMultipleTag={setMultipleTagVuln} />
+            <TagConfigModal tableId="host_view_vuln_table" />
           </div>
         </>
         <>
@@ -1068,7 +1074,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_NOTE_TAGS.split(',').map((tag) => (
+                  {config.tags.note.map((tag) => (
                     <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/note/tag_multiid")} tableId="host_view_note_table" />
                   ))}
                 </div>{' '}
@@ -1098,7 +1104,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_NOTE_TAGS.split(',')}
+                      tags={config.tags.note}
                       url={urlFor("/backend/storage/note/tag_multiid")}
                       tableId="host_view_note_table"
                     />
@@ -1130,6 +1136,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateNote} setAnnotate={setAnnotateNote} />
             <MultipleTagModal multipleTag={multipleTagNote} setMultipleTag={setMultipleTagNote} />
+            <TagConfigModal tableId="host_view_note_table" />
           </div>
         </>
         <>
@@ -1182,7 +1189,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
+                  {config.tags.versioninfo.map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -1217,7 +1224,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
+                      tags={config.tags.versioninfo}
                       url={urlFor("/backend/storage/versioninfo/tag_multiid")}
                       tableId="host_view_versioninfo_table"
                     />
@@ -1244,6 +1251,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateVersioninfo} setAnnotate={setAnnotateVersioninfo} />
             <MultipleTagModal multipleTag={multipleTagVersioninfo} setMultipleTag={setMultipleTagVersioninfo} />
+            <TagConfigModal tableId="host_view_versioninfo_table" />
           </div>
         </>
         <>
@@ -1296,7 +1304,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
+                  {config.tags.versioninfo.map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -1331,7 +1339,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
+                      tags={config.tags.versioninfo}
                       url={urlFor("/backend/storage/vulnsearch/tag_multiid")}
                       tableId="host_view_vulnsearch_table"
                     />
@@ -1358,6 +1366,7 @@ const HostViewPage = () => {
 
             <AnnotateModal annotate={annotateVulnsearch} setAnnotate={setAnnotateVulnsearch} />
             <MultipleTagModal multipleTag={multipleTagVulnsearch} setMultipleTag={setMultipleTagVulnsearch} />
+            <TagConfigModal tableId="host_view_vulnsearch_table" />
           </div>
         </>
       </div>

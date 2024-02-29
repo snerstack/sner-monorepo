@@ -5,7 +5,6 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { getColorForTag } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -13,11 +12,15 @@ import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import ViewButton from '@/components/buttons/ViewButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import TagConfigModal from '@/components/modals/TagConfigModal'
+
+import config from '../../../../config.ts'
 
 const VulnSearchListPage = () => {
   const [searchParams] = useSearchParams()
@@ -106,7 +109,7 @@ const VulnSearchListPage = () => {
           <div data-testid="vulnsearch_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -202,7 +205,7 @@ const VulnSearchListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_VULNSEARCH_TAGS.split(',').map((tag) => (
+            {config.tags.vulnsearch.map((tag) => (
               <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/vulnsearch/tag_multiid")} tableId="vulnsearch_list_table" />
             ))}
           </div>{' '}
@@ -232,7 +235,7 @@ const VulnSearchListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={import.meta.env.VITE_VULNSEARCH_TAGS.split(',')}
+                tags={config.tags.vulnsearch}
                 url={urlFor("/backend/storage/vulnsearch/tag_multiid")}
                 tableId="vulnsearch_list_table"
               />
@@ -271,6 +274,7 @@ const VulnSearchListPage = () => {
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
       <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
+      <TagConfigModal tableId="vulnsearch_list_table" />
     </div>
   )
 }

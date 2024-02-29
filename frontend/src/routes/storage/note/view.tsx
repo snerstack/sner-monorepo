@@ -1,9 +1,7 @@
-import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
-import { getColorForTag } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -11,6 +9,7 @@ import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
+import Tag from '@/components/buttons/Tag'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 
 type ScreenshotWeb = {
@@ -114,7 +113,7 @@ const NoteViewPage = () => {
             >
               {note.tags.map((tag) => (
                 <Fragment key={tag}>
-                  <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                  <Tag tag={tag} />{' '}
                 </Fragment>
               ))}
             </td>

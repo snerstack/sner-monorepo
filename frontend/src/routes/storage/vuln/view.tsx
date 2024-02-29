@@ -3,7 +3,7 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
-import { getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -12,8 +12,11 @@ import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
 import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
+
+import config from '../../../../config.ts'
 
 const VulnViewPage = () => {
   const vuln = useLoaderData() as Vuln
@@ -45,7 +48,7 @@ const VulnViewPage = () => {
             <a className="btn btn-outline-primary disabled">
               <i className="fas fa-tag text-primary"></i>
             </a>
-            {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
+            {config.tags.vuln.map((tag) => (
               <TagButton
                 tag={tag}
                 key={tag}
@@ -155,7 +158,7 @@ const VulnViewPage = () => {
             >
               {vuln.tags.map((tag) => (
                 <Fragment key={tag}>
-                  <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                  <Tag tag={tag} />{' '}
                 </Fragment>
               ))}
             </td>

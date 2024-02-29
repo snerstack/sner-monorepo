@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForTag } from '@/lib/sner/storage'
+import { deleteRow } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -17,10 +17,14 @@ import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
+import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import TagConfigModal from '@/components/modals/TagConfigModal'
+
+import config from '../../../../config.ts'
 
 const ServiceListPage = () => {
   const [searchParams] = useSearchParams()
@@ -98,7 +102,7 @@ const ServiceListPage = () => {
           <div data-testid="service_tags_annotate">
             {row['tags'].map((tag: string) => (
               <Fragment key={tag}>
-                <span className={clsx('badge tag-badge', getColorForTag(tag))}>{tag}</span>{' '}
+                <Tag tag={tag} />{' '}
               </Fragment>
             ))}
           </div>,
@@ -217,7 +221,7 @@ const ServiceListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_SERVICE_TAGS.split(',').map((tag) => (
+            {config.tags.service.map((tag) => (
               <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/service/tag_multiid")} tableId="service_list_table" />
             ))}
           </div>{' '}
@@ -247,7 +251,7 @@ const ServiceListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={import.meta.env.VITE_SERVICE_TAGS.split(',')}
+                tags={config.tags.service}
                 url={urlFor("/backend/storage/service/tag_multiid")}
                 tableId="service_list_table"
               />
@@ -297,6 +301,7 @@ const ServiceListPage = () => {
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
       <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
+      <TagConfigModal tableId="service_list_table" />
     </div>
   )
 }
