@@ -19,11 +19,11 @@ const TagConfigModal = ({ tableId }: { tableId: string }) => {
   }, [tagConfig.show])
 
   const tagConfigHandler = () => {
-    // eslint-disable-next-line  @typescript-eslint/no-unsafe-assignment
-    const tags = JSON.parse(localStorage.getItem('tags') || '{}')
-    // eslint-disable-next-line  @typescript-eslint/no-unsafe-member-access
-    tags[tagConfig.tag] = color
-    localStorage.setItem('tags', JSON.stringify(tags))
+    const tags: string = localStorage.getItem('tags')!
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const parsedTags: { [key: string]: string } = JSON.parse(tags)
+    parsedTags[tagConfig.tag] = color
+    localStorage.setItem('tags', JSON.stringify(parsedTags))
 
     getTableApi(tableId).draw()
     setTagConfig({ ...tagConfig, show: false })
@@ -34,7 +34,7 @@ const TagConfigModal = ({ tableId }: { tableId: string }) => {
       show={tagConfig.show}
       onHide={() => setTagConfig({ ...tagConfig, show: false })}
       size="sm"
-      data-testid="tags-config-modal"
+      data-testid="tag-config-modal"
     >
       <Modal.Header>
         <ModalTitle>Tags Configuration</ModalTitle>
@@ -47,7 +47,7 @@ const TagConfigModal = ({ tableId }: { tableId: string }) => {
           </span>
         </div>{' '}
         <div className="mt-2 mb-4">
-          <HexColorPicker color={color} onChange={(c) => setColor(c)} className="mb-2" />
+          <HexColorPicker data-testid="tag-color-picker" color={color} onChange={(c) => setColor(c)} className="mb-2" />
           <HexColorInput
             data-testid="tag-color-input"
             prefixed={true}

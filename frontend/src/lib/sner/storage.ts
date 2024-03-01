@@ -77,6 +77,7 @@ export const getColorForTag = (tag: string): string => {
   if (!tags) {
     localStorage.setItem('tags', JSON.stringify(defaultColors))
 
+    /* c8 ignore next 1 */
     return tag in defaultColors ? defaultColors[tag] : '#6c757d'
   }
 

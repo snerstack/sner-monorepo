@@ -212,11 +212,35 @@ describe('Host list page', () => {
       expect(screen.getByText('Tags Configuration')).toBeInTheDocument()
 
       const colorInput = screen.getByTestId('tag-color-input')
-      fireEvent.change(colorInput, { target: { value: '#ffffff' } })
-      fireEvent.change(colorInput, { target: { value: '#000' } })
+      fireEvent.change(colorInput, { target: { value: '#28cd60' } })
+      fireEvent.change(colorInput, { target: { value: '#fff' } })
+
+      const colorPicker = screen.getByTestId('tag-color-picker').querySelectorAll('[role=slider]')[1]!
+      fireEvent.mouseEnter(colorPicker)
+      fireEvent.mouseDown(colorPicker)
+      fireEvent.mouseMove(colorPicker, { clientX: 100 })
+      fireEvent.mouseUp(colorPicker)
 
       const changeButton = screen.getByRole('button', { name: 'Change' })
       fireEvent.click(changeButton)
+    })
+  })
+
+  it('changes color of tag (close without changing)', async () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    await waitFor(() => {
+      const tag = screen.getAllByTestId('tag').filter((tag) => tag.textContent === 'todo')[0]
+
+      expect(tag).toBeInTheDocument()
+
+      fireEvent.click(tag)
+
+      const modalBackground = screen.getByTestId('tag-config-modal').parentElement!
+      fireEvent.click(modalBackground)
     })
   })
 })
