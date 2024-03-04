@@ -7,11 +7,13 @@ import { HexColorInput, HexColorPicker } from 'react-colorful'
 
 import { getTableApi } from '@/lib/DataTables'
 
+import { Config } from '../../../config.ts'
 import SubmitField from '../fields/SubmitField'
 
 const TagConfigModal = ({ tableId }: { tableId: string }) => {
   const { tagConfig, setTagConfig } = useTagConfig()
   const [color, setColor] = useState<string>(tagConfig.color)
+  const prefix = tagConfig.tag.split(':').length > 1 ? tagConfig.tag.split(':')[0] : ''
 
   useEffect(() => {
     setColor(tagConfig.color)
@@ -19,11 +21,15 @@ const TagConfigModal = ({ tableId }: { tableId: string }) => {
   }, [tagConfig.show])
 
   const tagConfigHandler = () => {
-    const tags: string = localStorage.getItem('tags')!
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const parsedTags: { [key: string]: string } = JSON.parse(tags)
-    parsedTags[tagConfig.tag] = color
-    localStorage.setItem('tags', JSON.stringify(parsedTags))
+    const tags = JSON.parse(localStorage.getItem('tags')!) as Config['tags']['colors']
+
+    if (prefix) {
+      tags.prefixes[prefix] = color
+    } else {
+      tags.tags[tagConfig.tag] = color
+    }
+
+    localStorage.setItem('tags', JSON.stringify(tags))
 
     getTableApi(tableId).draw()
     setTagConfig({ ...tagConfig, show: false })
@@ -41,7 +47,7 @@ const TagConfigModal = ({ tableId }: { tableId: string }) => {
       </Modal.Header>
       <ModalBody className="d-flex flex-column align-items-center">
         <div>
-          <label>Change color of tag</label>{' '}
+          <label>Change color of {prefix ? 'prefix' : 'tag'}</label>{' '}
           <span style={{ background: color, color: invertColor(color) }} className="badge tag-badge">
             {tagConfig.tag}
           </span>

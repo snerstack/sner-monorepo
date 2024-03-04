@@ -226,6 +226,30 @@ describe('Host list page', () => {
     })
   })
 
+  it('changes color of prefix', async () => {
+    renderWithProviders({
+      element: <HostListPage />,
+      path: '/storage/host/list',
+    })
+
+    await waitFor(() => {
+      const tag = screen.getAllByTestId('tag').filter((tag) => tag.textContent === 'report:tag')[0]
+
+      expect(tag).toBeInTheDocument()
+
+      fireEvent.click(tag)
+
+      expect(screen.getByText('Tags Configuration')).toBeInTheDocument()
+
+      const colorInput = screen.getByTestId('tag-color-input')
+      fireEvent.change(colorInput, { target: { value: '#28cd60' } })
+      fireEvent.change(colorInput, { target: { value: '#fff' } })
+
+      const changeButton = screen.getByRole('button', { name: 'Change' })
+      fireEvent.click(changeButton)
+    })
+  })
+
   it('changes color of tag (close without changing)', async () => {
     renderWithProviders({
       element: <HostListPage />,
@@ -233,7 +257,7 @@ describe('Host list page', () => {
     })
 
     await waitFor(() => {
-      const tag = screen.getAllByTestId('tag').filter((tag) => tag.textContent === 'todo')[0]
+      const tag = screen.getAllByTestId('tag').filter((tag) => tag.textContent === 'unknown:tag')[0]
 
       expect(tag).toBeInTheDocument()
 

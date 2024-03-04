@@ -19,6 +19,8 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import TagConfigModal from '@/components/modals/TagConfigModal'
 
+import config from '../../../../config.ts'
+
 const VulnSearchListPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -202,7 +204,7 @@ const VulnSearchListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_VULNSEARCH_TAGS.split(',').map((tag) => (
+            {config.tags.vulnsearch.map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/vulnsearch/tag_multiid" tableId="vulnsearch_list_table" />
             ))}
           </div>{' '}
@@ -232,7 +234,7 @@ const VulnSearchListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={import.meta.env.VITE_VULNSEARCH_TAGS.split(',')}
+                tags={config.tags.vulnsearch}
                 url="/storage/vulnsearch/tag_multiid"
                 tableId="vulnsearch_list_table"
               />

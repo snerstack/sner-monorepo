@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import { getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 
+import config from '../../../config.ts'
 import SubmitField from '../fields/SubmitField'
 import TagsField from '../fields/TagsField'
 import TextAreaField from '../fields/TextAreaField'
@@ -53,11 +54,7 @@ const AnnotateModal = ({
           placeholder="Tags"
           _state={tags.length === 0 ? annotate.tags : tags}
           _setState={setTags}
-          defaultTags={unique([
-            ...import.meta.env.VITE_HOST_TAGS.split(','),
-            ...import.meta.env.VITE_VULN_TAGS.split(','),
-            ...import.meta.env.VITE_ANNOTATE_TAGS.split(','),
-          ]).sort()}
+          defaultTags={unique([...config.tags.host, ...config.tags.vuln, ...config.tags.annotate]).sort()}
         />{' '}
         <TextAreaField
           name="comment"

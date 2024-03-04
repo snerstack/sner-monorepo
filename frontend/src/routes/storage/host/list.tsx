@@ -22,6 +22,8 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import TagConfigModal from '@/components/modals/TagConfigModal'
 
+import config from '../../../../config.ts'
+
 const HostListPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -203,7 +205,7 @@ const HostListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_HOST_TAGS.split(',').map((tag) => (
+            {config.tags.host.map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/host/tag_multiid" tableId="host_list_table" />
             ))}
           </div>{' '}
@@ -231,11 +233,7 @@ const HostListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton
-                tags={import.meta.env.VITE_HOST_TAGS.split(',')}
-                url="/storage/host/tag_multiid"
-                tableId="host_list_table"
-              />
+              <TagsDropdownButton tags={config.tags.host} url="/storage/host/tag_multiid" tableId="host_list_table" />
             </div>
             <a
               data-testid="delete-row-btn"

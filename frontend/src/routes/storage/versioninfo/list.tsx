@@ -19,6 +19,8 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import TagConfigModal from '@/components/modals/TagConfigModal'
 
+import config from '../../../../config.ts'
+
 const VersionInfosListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -231,7 +233,7 @@ const VersionInfosListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
+            {config.tags.versioninfo.map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/versioninfo/tag_multiid" tableId="versioninfo_list_table" />
             ))}
           </div>{' '}
@@ -261,7 +263,7 @@ const VersionInfosListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
+                tags={config.tags.versioninfo}
                 url="/storage/versioninfo/tag_multiid"
                 tableId="versioninfo_list_table"
               />

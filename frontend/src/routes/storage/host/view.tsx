@@ -25,6 +25,8 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import TagConfigModal from '@/components/modals/TagConfigModal'
 
+import config from '../../../../config.ts'
+
 const HostViewPage = () => {
   const host = useLoaderData() as Host
   const [activeTab, setActiveTab] = useLocalStorage('host_view_tabs_active')
@@ -675,7 +677,7 @@ const HostViewPage = () => {
               <i className="fas fa-tag text-primary"></i>
             </a>
             <>
-              {import.meta.env.VITE_HOST_TAGS.split(',').map((tag) => (
+              {config.tags.host.map((tag) => (
                 <TagButton tag={tag} key={tag} url="/storage/host/tag_multiid" id={host.id} />
               ))}
             </>
@@ -838,7 +840,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_SERVICE_TAGS.split(',').map((tag) => (
+                  {config.tags.service.map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -873,7 +875,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_SERVICE_TAGS.split(',')}
+                      tags={config.tags.service}
                       url="/storage/service/tag_multiid"
                       tableId="host_view_service_table"
                     />
@@ -956,7 +958,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
+                  {config.tags.vuln.map((tag) => (
                     <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" tableId="host_view_vuln_table" />
                   ))}
                 </div>{' '}
@@ -986,7 +988,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_VULN_TAGS.split(',')}
+                      tags={config.tags.vuln}
                       url="/storage/vuln/tag_multiid"
                       tableId="host_view_vuln_table"
                     />
@@ -1071,7 +1073,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_NOTE_TAGS.split(',').map((tag) => (
+                  {config.tags.note.map((tag) => (
                     <TagButton tag={tag} key={tag} url="/storage/note/tag_multiid" tableId="host_view_note_table" />
                   ))}
                 </div>{' '}
@@ -1101,7 +1103,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_NOTE_TAGS.split(',')}
+                      tags={config.tags.note}
                       url="/storage/note/tag_multiid"
                       tableId="host_view_note_table"
                     />
@@ -1186,7 +1188,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
+                  {config.tags.versioninfo.map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -1221,7 +1223,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
+                      tags={config.tags.versioninfo}
                       url="/storage/versioninfo/tag_multiid"
                       tableId="host_view_versioninfo_table"
                     />
@@ -1303,7 +1305,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
+                  {config.tags.versioninfo.map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -1338,7 +1340,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
+                      tags={config.tags.versioninfo}
                       url="/storage/vulnsearch/tag_multiid"
                       tableId="host_view_vulnsearch_table"
                     />

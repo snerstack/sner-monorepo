@@ -15,6 +15,8 @@ import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 
+import config from '../../../../config.ts'
+
 const VulnViewPage = () => {
   const vuln = useLoaderData() as Vuln
   const [annotate, setAnnotate] = useState<Annotate>({
@@ -45,7 +47,7 @@ const VulnViewPage = () => {
             <a className="btn btn-outline-primary disabled">
               <i className="fas fa-tag text-primary"></i>
             </a>
-            {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
+            {config.tags.vuln.map((tag) => (
               <TagButton
                 tag={tag}
                 key={tag}

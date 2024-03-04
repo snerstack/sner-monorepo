@@ -23,6 +23,8 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import TagConfigModal from '@/components/modals/TagConfigModal'
 
+import config from '../../../../config.ts'
+
 const VulnListPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -267,7 +269,7 @@ const VulnListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
+            {config.tags.vuln.map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" tableId="vuln_list_table" />
             ))}
           </div>{' '}
@@ -296,11 +298,7 @@ const VulnListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton
-                tags={import.meta.env.VITE_VULN_TAGS.split(',')}
-                url="/storage/vuln/tag_multiid"
-                tableId="vuln_list_table"
-              />
+              <TagsDropdownButton tags={config.tags.vuln} url="/storage/vuln/tag_multiid" tableId="vuln_list_table" />
             </div>
             <a
               data-testid="delete-row-btn"

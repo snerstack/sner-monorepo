@@ -23,6 +23,8 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import TagConfigModal from '@/components/modals/TagConfigModal'
 
+import config from '../../../../config.ts'
+
 const ServiceListPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -218,7 +220,7 @@ const ServiceListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_SERVICE_TAGS.split(',').map((tag) => (
+            {config.tags.service.map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/service/tag_multiid" tableId="service_list_table" />
             ))}
           </div>{' '}
@@ -248,7 +250,7 @@ const ServiceListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={import.meta.env.VITE_SERVICE_TAGS.split(',')}
+                tags={config.tags.service}
                 url="/storage/service/tag_multiid"
                 tableId="service_list_table"
               />

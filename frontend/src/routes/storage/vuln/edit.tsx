@@ -15,6 +15,8 @@ import TagsField from '@/components/fields/TagsField'
 import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
+import config from '../../../../config.ts'
+
 const VulnEditPage = () => {
   const vuln = useLoaderData() as Vuln
 
@@ -117,11 +119,7 @@ const VulnEditPage = () => {
           name="tags"
           label="Tags"
           placeholder="Tags"
-          defaultTags={unique([
-            ...import.meta.env.VITE_HOST_TAGS.split(','),
-            ...import.meta.env.VITE_VULN_TAGS.split(','),
-            ...import.meta.env.VITE_ANNOTATE_TAGS.split(','),
-          ]).sort()}
+          defaultTags={unique([...config.tags.host, ...config.tags.vuln, ...config.tags.annotate]).sort()}
           _state={tags}
           _setState={setTags}
         />

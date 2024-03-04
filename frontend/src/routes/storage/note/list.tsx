@@ -24,6 +24,8 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import TagConfigModal from '@/components/modals/TagConfigModal'
 
+import config from '../../../../config.ts'
+
 const NoteListPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -227,7 +229,7 @@ const NoteListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {import.meta.env.VITE_NOTE_TAGS.split(',').map((tag) => (
+            {config.tags.note.map((tag) => (
               <TagButton tag={tag} key={tag} url="/storage/note/tag_multiid" tableId="note_list_table" />
             ))}
           </div>{' '}
@@ -256,11 +258,7 @@ const NoteListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton
-                tags={import.meta.env.VITE_NOTE_TAGS.split(',')}
-                url="/storage/note/tag_multiid"
-                tableId="note_list_table"
-              />
+              <TagsDropdownButton tags={config.tags.note} url="/storage/note/tag_multiid" tableId="note_list_table" />
             </div>
             <a
               data-testid="delete-row-btn"
