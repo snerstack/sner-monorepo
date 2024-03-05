@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -13,8 +13,28 @@ const QuickJump = () => {
     services: [],
   })
 
+  const [resultsIndex, setResultsIndex] = useState<number>(-1)
+
+  useEffect(() => {
+    const items = document.getElementById('quickjump-form')!.querySelectorAll('li')
+
+    items.forEach((item, index) => {
+      if (index === resultsIndex) {
+        item.style.background = '#007fff'
+        item.style.color = '#fff'
+      } else {
+        item.style.background = '#fff'
+        item.style.color = '#000'
+      }
+    })
+  }, [resultsIndex])
+
   const autocompleteHandler = async (searchTerm: string) => {
-    const prefixes: string[] = ['ip:', 'port:']
+    /*
+      h, host, ip represents ip address
+      p, port represents port number
+    */
+    const prefixes: string[] = ['h', 'host', 'ip', 'p', 'port']
 
     const extractedValues: { ip: string; port: string } = {
       ip: '',
@@ -22,11 +42,17 @@ const QuickJump = () => {
     }
 
     searchTerm.split(/\s+(?=\S*:)/).forEach((str) => {
-      const prefix = prefixes.find((p) => str.startsWith(p))
+      const prefix = prefixes.find((p) => str.startsWith(p) && str.charAt(p.length) === ':')
 
       if (prefix) {
-        const key = prefix.substring(0, prefix.length - 1) as 'ip' | 'port'
-        extractedValues[key] = str.replace(prefix, '').trim().split(' ')[0]
+        const value = str
+          .replace(prefix + ':', '')
+          .trim()
+          .split(' ')[0]
+
+        const key = ['h', 'host', 'ip'].includes(prefix) ? 'ip' : 'port'
+
+        extractedValues[key] = value
       }
     })
 
@@ -64,8 +90,39 @@ const QuickJump = () => {
       <form
         data-testid="quickjump-form"
         className="form-inline position-relative"
+        id="quickjump-form"
         style={{ display: 'block' }}
-        method="post"
+        onKeyDown={(e) => {
+          const items = document.getElementById('quickjump-form')!.querySelectorAll('li')
+
+          if (items.length === 0) {
+            setResultsIndex(-1)
+            return
+          }
+
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            if (resultsIndex === -1) return
+
+            quickJumpHandler(items[resultsIndex].dataset.type!, items[resultsIndex].dataset.value!)
+          }
+
+          if (e.key === 'ArrowUp') {
+            setResultsIndex((prev) => {
+              if (prev === -1 || prev === 0) return items.length - 1
+
+              return prev - 1
+            })
+          }
+
+          if (e.key === 'ArrowDown') {
+            setResultsIndex((prev) => {
+              if (prev === -1 || prev === items.length - 1) return 0
+
+              return prev + 1
+            })
+          }
+        }}
       >
         <input
           className="form-control form-control-sm w-100"
@@ -105,6 +162,8 @@ const QuickJump = () => {
                       onClick={() => {
                         void quickJumpHandler('host', suggestion.host_id.toString())
                       }}
+                      data-type="host"
+                      data-value={suggestion.host_id.toString()}
                     >
                       {suggestion.label}
                     </li>
@@ -135,6 +194,8 @@ const QuickJump = () => {
                       onClick={() => {
                         void quickJumpHandler('port', suggestion.port.toString())
                       }}
+                      data-type="port"
+                      data-value={suggestion.port.toString()}
                     >
                       {suggestion.label}
                     </li>
