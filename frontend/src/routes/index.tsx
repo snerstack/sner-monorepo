@@ -1,3 +1,7 @@
+import HostRangePage from './external/host/range'
+import HostSinglePage from './external/host/single'
+import ServiceFilterPage from './external/service'
+import ProductsPage from './external/versioninfo/products'
 import VersionInfosListPage from './storage/versioninfo/list'
 import VulnSearchListPage from './storage/vulnsearch/list'
 import VulnSearchViewPage from './storage/vulnsearch/view'
@@ -69,6 +73,17 @@ export const routes = createRoutesFromElements(
     <Route path="api">
       <Route path="doc">
         <Route path="swagger" element={<SwaggerPage />} />
+      </Route>
+    </Route>
+
+    <Route path="external">
+      <Route path="host">
+        <Route path="single" element={<HostSinglePage />} />
+        <Route path="range" element={<HostRangePage />} />
+      </Route>
+      <Route path="service" element={<ServiceFilterPage />} />
+      <Route path="versioninfo">
+        <Route path="products" element={<ProductsPage />} />
       </Route>
     </Route>
 
