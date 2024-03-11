@@ -61,7 +61,7 @@ const ServiceFilterPage = () => {
       <div>
         {result.length > 0 && (
           <div>
-            <h2>Services</h2>
+            <h2 className="font-weight-bolder">Services</h2>
             {result.map((service, i) => (
               <div key={i} className="border d-flex flex-column m-1 py-3 px-2">
                 <h3>

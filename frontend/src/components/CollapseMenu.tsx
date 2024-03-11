@@ -11,7 +11,9 @@ const CollapseMenu = ({ label, children }: { label: string; children: ReactEleme
   return (
     <div className="w-100">
       <div className="btn d-flex justify-content-between" onClick={handleToggle}>
-        <label>{label}</label>
+        <label className="font-weight-bolder" role="button">
+          {label}
+        </label>
         <i className={clsx('fas d-flex align-items-center', isOpen ? 'fa-chevron-down' : 'fa-chevron-up')}></i>
       </div>
       {isOpen && <>{children}</>}

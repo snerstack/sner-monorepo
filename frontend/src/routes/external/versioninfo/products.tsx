@@ -26,12 +26,13 @@ const ProductsPage = () => {
   const apikey = useRecoilValue(apikeyState)
   const [filter, setFilter] = useState<string>('')
   const [product, setProduct] = useState<string>('')
+  const [versionspec, setVersionspec] = useState<string>('')
   const [result, setResult] = useState<Result[]>([])
 
   const productsHandler = async () => {
     const res = await httpClient.post<Result[]>(
       import.meta.env.VITE_SERVER_URL + '/api/v2/public/storage/versioninfo',
-      { filter, product },
+      { filter, product, versionspec },
       {
         headers: {
           'X-API-KEY': apikey,
@@ -54,12 +55,19 @@ const ProductsPage = () => {
       <div>
         <TextField _state={filter} _setState={setFilter} name="filter" label="Filter" placeholder="Filter" />
         <TextField _state={product} _setState={setProduct} name="product" label="Product" placeholder="Product" />
+        <TextField
+          _state={versionspec}
+          _setState={setVersionspec}
+          name="version-spec"
+          label="Version spec"
+          placeholder=">=2"
+        />
         <SubmitField handler={productsHandler} name="Get products" />
       </div>
       <div>
         {result.length > 0 && (
           <div>
-            <h2>Exposed products</h2>
+            <h2 className="font-weight-bolder">Exposed products</h2>
             {result.map((product, i) => (
               <div key={i} className="border d-flex flex-column m-1 py-3 px-2">
                 <h3>
@@ -73,7 +81,7 @@ const ProductsPage = () => {
                   <p>
                     {product.service_port}/{product.service_proto}
                   </p>
-                  {product.extra && (
+                  {product.extra && Object.keys(product.extra).length !== 0 && (
                     <CodeBlock language="language-json" data={JSON.stringify(product.extra, null, 2)} />
                   )}
                 </div>

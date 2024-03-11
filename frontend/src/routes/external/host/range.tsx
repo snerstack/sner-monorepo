@@ -69,7 +69,7 @@ const HostRangePage = () => {
       <div>
         {result.length > 0 && (
           <div>
-            <h2>Hosts</h2>
+            <h2 className="font-weight-bolder">Hosts</h2>
             {result.map((host) => (
               <div key={host.address} className="border d-flex flex-column m-1 py-3 px-2">
                 <h3>
@@ -79,7 +79,7 @@ const HostRangePage = () => {
                 <div>
                   {host.services && (
                     <>
-                      <h3>Services</h3>
+                      <h3 className="font-weight-bolder">Services</h3>
                       <div className="d-flex flex-column">
                         {host.services.map((service) => (
                           <div key={service.port} className="border d-flex flex-column m-1 py-3 px-2">

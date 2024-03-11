@@ -86,7 +86,7 @@ const HostSinglePage = () => {
             <div>
               {result.services && (
                 <>
-                  <h3>Services</h3>
+                  <h3 className="font-weight-bolder">Services</h3>
                   <div className="d-flex flex-column">
                     {result.services.map((service) => (
                       <div key={service.port} className="border d-flex flex-column m-1 py-3 px-2">
@@ -99,7 +99,7 @@ const HostSinglePage = () => {
                           <CollapseMenu label="Notes">
                             <>
                               {service.notes.map((note) => (
-                                <div key={note.data} className="border mb-1 d-flex flex-column">
+                                <div key={note.data} className="border mb-1 d-flex flex-column p-2">
                                   <p>{note.xtype}</p>
                                   <small>{note.data}</small>
                                 </div>
