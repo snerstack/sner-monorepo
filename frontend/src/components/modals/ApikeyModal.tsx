@@ -14,7 +14,7 @@ const ApikeyModal = () => {
       size="lg"
       data-testid="apikey-modal"
     >
-      <Modal.Header>
+      <Modal.Header placeholder="Apikey">
         <ModalTitle>Apikey</ModalTitle>
       </Modal.Header>
       <ModalBody>

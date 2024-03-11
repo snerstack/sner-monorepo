@@ -1,6 +1,7 @@
 import HostRangePage from './external/host/range'
 import HostSinglePage from './external/host/single'
 import ServiceFilterPage from './external/service'
+import SetApiKeyPage from './external/setapikey'
 import ProductsPage from './external/versioninfo/products'
 import VersionInfosListPage from './storage/versioninfo/list'
 import VulnSearchListPage from './storage/vulnsearch/list'
@@ -84,6 +85,7 @@ export const routes = createRoutesFromElements(
       <Route path="versioninfo">
         <Route path="products" element={<ProductsPage />} />
       </Route>
+      <Route path="setapikey" element={<SetApiKeyPage />} />
     </Route>
 
     <Route path="auth">

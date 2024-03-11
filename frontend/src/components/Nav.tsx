@@ -21,6 +21,14 @@ const Nav = () => {
     { title: 'Visuals', url: '/visuals', icon: 'fa-image' },
   ]
 
+  const userLinks = [
+    { title: 'Single Host', url: '/external/host/single' },
+    { title: 'Range Hosts', url: '/external/host/range' },
+    { title: 'Service', url: '/external/service' },
+    { title: 'Products', url: '/external/versioninfo/products' },
+    { title: 'Set API key', url: '/external/setapikey' },
+  ]
+
   const logoutHandler = async () => {
     try {
       await httpClient.get(import.meta.env.VITE_SERVER_URL + '/auth/logout')
@@ -47,11 +55,15 @@ const Nav = () => {
           {currentUser.isAuthenticated && (
             <>
               {currentUser.roles.includes('user') && (
-                <li className="nav-item">
-                  <a className="nav-link" href="/api/doc/swagger" title="API">
-                    <i className="fas fa-paper-plane"></i>
-                  </a>
-                </li>
+                <>
+                  <li className="nav-item">
+                    <a className="nav-link" href="/api/doc/swagger" title="API">
+                      <i className="fas fa-paper-plane"></i>
+                    </a>
+                  </li>
+                  {currentUser.roles.length === 1 &&
+                    userLinks.map(({ title, url }) => <NavLink title={title} url={url} key={title} />)}
+                </>
               )}
               {currentUser.roles.includes('operator') && (
                 <>
