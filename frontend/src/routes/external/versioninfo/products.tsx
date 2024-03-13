@@ -1,8 +1,5 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { useRecoilValue } from 'recoil'
-
-import { apikeyState } from '@/atoms/apikeyAtom'
 
 import httpClient from '@/lib/httpClient'
 
@@ -23,23 +20,17 @@ type Result = {
 }
 
 const ProductsPage = () => {
-  const apikey = useRecoilValue(apikeyState)
   const [filter, setFilter] = useState<string>('')
   const [product, setProduct] = useState<string>('')
   const [versionspec, setVersionspec] = useState<string>('')
   const [result, setResult] = useState<Result[]>([])
 
   const productsHandler = async () => {
-    const res = await httpClient.post<Result[]>(
-      import.meta.env.VITE_SERVER_URL + '/api/v2/public/storage/versioninfo',
-      { filter, product, versionspec },
-      {
-        headers: {
-          'X-API-KEY': apikey,
-        },
-        withCredentials: false,
-      },
-    )
+    const res = await httpClient.post<Result[]>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/versioninfo', {
+      filter,
+      product,
+      versionspec,
+    })
 
     setResult(res.data)
   }

@@ -1,9 +1,6 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { toast } from 'react-toastify'
-import { useRecoilValue } from 'recoil'
-
-import { apikeyState } from '@/atoms/apikeyAtom'
 
 import httpClient from '@/lib/httpClient'
 
@@ -34,22 +31,12 @@ type Result = {
 }
 
 const HostSinglePage = () => {
-  const apikey = useRecoilValue(apikeyState)
   const [address, setAddress] = useState<string>('')
   const [result, setResult] = useState<Result>({ address: '', hostname: '' })
 
   const hostHandler = async () => {
     try {
-      const res = await httpClient.post<Result>(
-        import.meta.env.VITE_SERVER_URL + '/api/v2/public/storage/host',
-        { address },
-        {
-          headers: {
-            'X-API-KEY': apikey,
-          },
-          withCredentials: false,
-        },
-      )
+      const res = await httpClient.post<Result>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/host', { address })
 
       setResult(res.data)
     } catch (error) {

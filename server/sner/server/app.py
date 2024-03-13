@@ -32,6 +32,7 @@ from sner.server.auth.views import blueprint as auth_blueprint
 from sner.server.scheduler.views import blueprint as scheduler_blueprint
 from sner.server.storage.views import blueprint as storage_blueprint
 from sner.server.visuals.views import blueprint as visuals_blueprint
+from sner.server.pubux.views import blueprint as pubux_blueprint
 
 from sner.server.auth.commands import command as auth_command
 from sner.server.dbx_command import command as dbx_command
@@ -236,6 +237,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app.register_blueprint(scheduler_blueprint, url_prefix='/scheduler')
     app.register_blueprint(storage_blueprint, url_prefix='/storage')
     app.register_blueprint(visuals_blueprint, url_prefix='/visuals')
+    app.register_blueprint(pubux_blueprint, url_prefix='/pubux')
 
     app.cli.add_command(auth_command)
     app.cli.add_command(dbx_command)

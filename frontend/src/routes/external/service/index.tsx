@@ -1,8 +1,5 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { useRecoilValue } from 'recoil'
-
-import { apikeyState } from '@/atoms/apikeyAtom'
 
 import httpClient from '@/lib/httpClient'
 
@@ -20,21 +17,13 @@ type Result = {
 }
 
 const ServiceFilterPage = () => {
-  const apikey = useRecoilValue(apikeyState)
   const [filter, setFilter] = useState<string>('')
   const [result, setResult] = useState<Result[]>([])
 
   const serviceFilterHandler = async () => {
-    const res = await httpClient.post<Result[]>(
-      import.meta.env.VITE_SERVER_URL + '/api/v2/public/storage/servicelist',
-      { filter },
-      {
-        headers: {
-          'X-API-KEY': apikey,
-        },
-        withCredentials: false,
-      },
-    )
+    const res = await httpClient.post<Result[]>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/service/list', {
+      filter,
+    })
 
     setResult(res.data)
   }
