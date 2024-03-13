@@ -27,7 +27,6 @@ const Nav = () => {
     { title: 'Range Hosts', url: '/external/host/range' },
     { title: 'Service', url: '/external/service' },
     { title: 'Products', url: '/external/versioninfo/products' },
-    { title: 'Set API key', url: '/external/setapikey' },
   ]
 
   const logoutHandler = async () => {
@@ -58,12 +57,15 @@ const Nav = () => {
               {currentUser.roles.includes('user') && (
                 <>
                   <li className="nav-item">
-                    <a className="nav-link" href="/api/doc/swagger" title="API">
+                    <Link className="nav-link" to="/api/doc/swagger" title="API">
                       <i className="fas fa-paper-plane"></i>
-                    </a>
+                    </Link>
                   </li>
-                  {currentUser.roles.length === 1 &&
-                    userLinks.map(({ title, url }) => <NavLink title={title} url={url} key={title} />)}
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/external/host/single" title="External">
+                      <i className="fas fa-user"></i>
+                    </Link>
+                  </li>
                 </>
               )}
               {currentUser.roles.includes('operator') && (
@@ -106,6 +108,12 @@ const Nav = () => {
                   <NavLink title="DNS Tree" url="/visuals/dnstree?crop=1" />
                   <NavLink title="Portmap" url="/visuals/portmap" />
                   <NavLink title="Port infos" url="/visuals/portinfos?crop=3&limit=50" />
+                </>
+              )}
+              {pathname.split('/')[1] === 'external' && (
+                <>
+                  {currentUser.roles.length > 1 &&
+                    userLinks.map(({ title, url }) => <NavLink title={title} url={url} key={title} />)}
                 </>
               )}
             </>

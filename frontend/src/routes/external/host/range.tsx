@@ -1,9 +1,6 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { toast } from 'react-toastify'
-import { useRecoilValue } from 'recoil'
-
-import { apikeyState } from '@/atoms/apikeyAtom'
 
 import httpClient from '@/lib/httpClient'
 
@@ -24,22 +21,14 @@ type Result = {
 }
 
 const HostRangePage = () => {
-  const apikey = useRecoilValue(apikeyState)
   const [addressRange, setAddressRange] = useState<string>('')
   const [result, setResult] = useState<Result[]>([])
 
   const hostsHandler = async () => {
     try {
-      const res = await httpClient.post<Result[]>(
-        import.meta.env.VITE_SERVER_URL + '/api/v2/public/storage/range',
-        { cidr: addressRange },
-        {
-          headers: {
-            'X-API-KEY': apikey,
-          },
-          withCredentials: false,
-        },
-      )
+      const res = await httpClient.post<Result[]>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/range', {
+        cidr: addressRange,
+      })
 
       setResult(res.data)
     } catch (error) {
