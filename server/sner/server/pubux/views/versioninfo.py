@@ -20,8 +20,8 @@ from sner.server.utils import error_response, filter_query
 @blueprint.arguments(api_schema.PublicVersioninfoArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.PublicVersioninfoSchema(many=True))
 @session_required('user')
-def service_list_route(args):
-    """service list endpoint"""
+def versioninfo_route(args):
+    """versioninfo endpoint"""
 
     if not current_user.api_networks:
         return error_response('No networks', code=HTTPStatus.FORBIDDEN)
