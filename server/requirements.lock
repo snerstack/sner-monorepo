@@ -91,6 +91,7 @@ soupsieve==2.3.2.post1
 SQLAlchemy==1.4.39
 sqlalchemy-datatables==2.0.1
 sqlalchemy-filters @ git+https://github.com/snerstack/sqlalchemy-filters@3c7a1c502fda4de82848daa77cce81ca5af0c64d
+ssh-audit==3.1.0
 tenacity==6.3.1
 toml==0.10.2
 tomli==2.0.1

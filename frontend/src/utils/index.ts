@@ -22,3 +22,15 @@ export const base64ToArrayBuffer = (base64String: string): Uint8Array => {
 export const arrayBufferToBase64 = (buffer: Uint8Array) => {
   return btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''))
 }
+
+export const isJson = (data: string): boolean => {
+  let value = typeof data !== 'string' ? JSON.stringify(data) : data
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    value = JSON.parse(value)
+  } catch (e) {
+    return false
+  }
+
+  return typeof value === 'object' && value !== null
+}

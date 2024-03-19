@@ -1,3 +1,4 @@
+import { isJson } from '@/utils'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -5,6 +6,7 @@ import { Link, useLoaderData } from 'react-router-dom'
 
 import { getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 
+import CodeBlock from '@/components/CodeBlock'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import DeleteButton from '@/components/buttons/DeleteButton'
@@ -195,7 +197,19 @@ const VulnViewPage = () => {
       </div>
 
       <h2>Data</h2>
-      <div>{vuln.xtype && vuln.xtype.startsWith('nuclei.') ? <pre>{vuln.data}</pre> : <pre>{vuln.data}</pre>}</div>
+      <div>
+        {vuln.xtype && vuln.xtype.startsWith('nuclei.') ? (
+          <pre>{vuln.data}</pre>
+        ) : (
+          <>
+            {isJson(vuln.data) ? (
+              <CodeBlock language="language-json" data={JSON.stringify(vuln.data, null, '')} />
+            ) : (
+              <pre>{vuln.data}</pre>
+            )}
+          </>
+        )}
+      </div>
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
     </div>
   )
