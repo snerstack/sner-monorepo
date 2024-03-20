@@ -1,4 +1,3 @@
-import HostViewPage from '@/routes/storage/host/view'
 import VulnAddPage from '@/routes/storage/vuln/add'
 import VulnViewPage from '@/routes/storage/vuln/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
