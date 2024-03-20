@@ -96,7 +96,7 @@ describe('Vuln view page', () => {
           address: '127.4.4.4',
           comment: null,
           created: 'Mon, 17 Jul 2023 20:01:09 GMT',
-          data: 'agg vuln data',
+          data: '{"info":"agg vuln data"}',
           descr: 'aggregable vuln description',
           host_id: 1,
           hostname: null,
@@ -133,7 +133,7 @@ describe('Vuln view page', () => {
           address: '127.128.129.130',
           comment: null,
           created: 'Thu, 03 Aug 2023 13:14:01 GMT',
-          data: '',
+          data: null,
           descr:
             '## Synopsis\n\nThe version of PHP running on the remote web server is affected by multiple vulnerabilities.\n\n## Description\n\nAccording to its banner, the version of PHP running on the remote web server is 5.6.x prior to 5.6.32. It is, therefore, affected by multiple vulnerabilities.\n\n## Solution\n\nUpgrade to PHP version 5.6.32 or later.',
           host_id: 37,

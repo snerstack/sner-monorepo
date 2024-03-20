@@ -1,4 +1,3 @@
-import HostViewPage from '@/routes/storage/host/view'
 import VulnAddPage from '@/routes/storage/vuln/add'
 import VulnViewPage from '@/routes/storage/vuln/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
@@ -189,10 +188,7 @@ describe('Vuln add page', () => {
       element: <VulnAddPage type="host" />,
       path: '/storage/vuln/add/host/1',
       loader: hostLoader,
-      routes: [
-        { element: <HostViewPage />, path: '/storage/host/view/1', loader: hostLoader },
-        { element: <VulnViewPage />, path: '/storage/vuln/view/1', loader: vulnLoader },
-      ],
+      routes: [{ element: <VulnViewPage />, path: '/storage/vuln/view/1', loader: vulnLoader }],
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
@@ -220,10 +216,7 @@ describe('Vuln add page', () => {
       element: <VulnAddPage type="service" />,
       path: '/storage/vuln/add/service/52',
       loader: serviceLoader,
-      routes: [
-        { element: <HostViewPage />, path: '/storage/host/view/37', loader: hostLoader },
-        { element: <VulnViewPage />, path: '/storage/vuln/view/1', loader: vulnLoader },
-      ],
+      routes: [{ element: <VulnViewPage />, path: '/storage/vuln/view/1', loader: vulnLoader }],
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
