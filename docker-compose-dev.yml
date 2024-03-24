@@ -29,6 +29,13 @@ services:
     depends_on:
       - postgres
 
+  planner:
+    build:
+      context: ./server
+      target: dev_planner
+    depends_on:
+      - server
+
   postgres:
     restart: always
     image: postgres:latest
