@@ -1,2 +1,30 @@
 server:
   sqlalchemy_database_uri: "postgresql://postgres:postgres@postgres:5432/sner"
+planner:
+  home_netranges_ipv4: ["127.0.0.0/24"]
+  home_netranges_ipv6: []
+
+  stage:
+    service_scan:
+      queues:
+        - "sner.nmap.serviceversion"
+
+    service_disco:
+      queue: "sner.nmap.servicedisco"
+
+    six_dns_disco:
+      queue: "sner.six_dns_discover"
+
+    six_enum_disco:
+      queue: "sner.six_enum_discover"
+
+    netlist_enum:
+      schedule: 120days
+
+    storage_six_enum:
+      schedule: 90days
+
+    storage_rescan:
+      schedule: 1hour
+      host_interval: 60days
+      service_interval: 20days
