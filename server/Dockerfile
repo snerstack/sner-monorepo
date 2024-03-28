@@ -6,6 +6,8 @@ WORKDIR /opt/sner/server
 
 COPY . .
 
+RUN sh bin/install_jarm.sh && sh bin/install_nmap.sh && sh bin/install_nuclei.sh && sh bin/install_quicmap.sh && sh bin/install_selenium.sh && sh bin/install_testssl.sh
+
 RUN pip install -U pip && pip install -r requirements.lock
 
 RUN mkdir /var/lib/sner
