@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
 
@@ -26,13 +27,17 @@ const ProductsPage = () => {
   const [result, setResult] = useState<Result[]>([])
 
   const productsHandler = async () => {
-    const res = await httpClient.post<Result[]>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/versioninfo', {
-      filter,
-      product,
-      versionspec,
-    })
+    try {
+      const res = await httpClient.post<Result[]>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/versioninfo', {
+        filter,
+        product,
+        versionspec,
+      })
 
-    setResult(res.data)
+      setResult(res.data)
+    } catch (error) {
+      toast.error("Couldn't get products.")
+    }
   }
 
   return (

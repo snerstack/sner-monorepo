@@ -43,9 +43,9 @@ const AnnotateModal = ({
       size="lg"
       data-testid="annotate-modal"
     >
-      <Modal.Header placeholder="Annotate">
+      <div className="modal-header">
         <ModalTitle>Annotate</ModalTitle>
-      </Modal.Header>
+      </div>
       <ModalBody>
         <TagsField
           name="tags"
