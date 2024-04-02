@@ -43,9 +43,9 @@ const MultipleTagModal = ({
       size="lg"
       data-testid="multiple-tag-modal"
     >
-      <Modal.Header placeholder={multipleTag.action === 'set' ? 'Tag multiple items' : 'Untag multiple items'}>
+      <div className="modal-header">
         <ModalTitle>{multipleTag.action === 'set' ? 'Tag multiple items' : 'Untag multiple items'}</ModalTitle>
-      </Modal.Header>
+      </div>
       <ModalBody>
         <TagsField name="tags" label="Tags" placeholder="Tags" _state={tags} _setState={setTags} horizontal={false} />
 

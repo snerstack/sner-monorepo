@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
 
@@ -21,11 +22,15 @@ const ServiceFilterPage = () => {
   const [result, setResult] = useState<Result[]>([])
 
   const serviceFilterHandler = async () => {
-    const res = await httpClient.post<Result[]>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/service/list', {
-      filter,
-    })
+    try {
+      const res = await httpClient.post<Result[]>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/service/list', {
+        filter,
+      })
 
-    setResult(res.data)
+      setResult(res.data)
+    } catch (error) {
+      toast.error("Couldn't get services.")
+    }
   }
 
   return (
