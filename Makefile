@@ -9,3 +9,6 @@ dev:
 
 prod:
 	docker-compose -f docker-compose-prod.yml up --build
+
+semgrep:
+	docker run --rm -v "$(shell pwd):/src" semgrep/semgrep semgrep -- scan --config auto --error --exclude=venv/ /src
