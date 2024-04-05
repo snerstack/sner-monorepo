@@ -12,3 +12,6 @@ prod:
 
 semgrep:
 	docker run --rm -v "$(shell pwd):/src" semgrep/semgrep semgrep -- scan --config auto --error --exclude=venv/ /src
+
+githook:
+	ln -sf ../../server/extra/git_hookprecommit.sh .git/hooks/pre-commit

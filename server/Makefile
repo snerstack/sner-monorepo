@@ -5,9 +5,6 @@ all: lint coverage
 freeze:
 	@pip freeze | grep -v '^pkg[-_]resources='
 
-githook:
-	ln -sf ../../extra/git_hookprecommit.sh .git/hooks/pre-commit
-
 install:
 	sh bin/install.sh
 	sh bin/install_nmap.sh
