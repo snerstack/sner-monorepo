@@ -1,4 +1,4 @@
-.PHONY: all freeze githook install install-db db lint test coverage install-extra test-extra
+.PHONY: all freeze install install-dev install-db db lint test test-selenium coverage coverage-server coverage-server coverage-server-storage
 
 all: lint coverage
 
@@ -13,6 +13,9 @@ install:
 	sh bin/install_firefox.sh
 	sh bin/install_testssl.sh
 	sh bin/install_nuclei.sh
+
+install-dev:
+	sh bin/install_selenium.sh
 
 install-db:
 	sh bin/install_db.sh
@@ -29,6 +32,9 @@ lint:
 test:
 	pytest -v tests/agent tests/plugin tests/server
 
+test-selenium:
+	pytest -x -vv tests/selenium
+
 coverage:
 	coverage run --source sner -m pytest tests/agent tests/plugin tests/server -x -vv
 	coverage report --show-missing --fail-under 100
@@ -44,9 +50,3 @@ coverage-server-storage:
 coverage-plugin:
 	coverage run --source sner/plugin -m pytest tests/plugin -x -vv
 	coverage report --show-missing --fail-under 100
-
-install-extra:
-	sh bin/install_selenium.sh
-
-test-extra:
-	pytest -x -vv tests/selenium

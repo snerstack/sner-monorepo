@@ -35,7 +35,6 @@ jobs:
           python-version: "3.11"
       - run: sudo apt-get update
       - run: sudo make install
-      - run: sudo make install-extra
       - run: |
           sudo apt-get -y install postgresql postgresql-contrib
           sudo systemctl start postgresql

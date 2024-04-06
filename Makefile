@@ -1,4 +1,4 @@
-.PHONY: dev install
+.PHONY: dev prod semgrep githook devservers
 
 dev:
 	@if [ ! -d "frontend/node_modules" ]; then \

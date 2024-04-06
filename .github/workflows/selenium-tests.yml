@@ -28,7 +28,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo make install
-          sudo make install-extra
+          sudo make install-dev
         working-directory: server
 
       - name: Setup PostgreSQL
