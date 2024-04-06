@@ -35,15 +35,15 @@ make db
 make lint coverage test-extra
 deactivate
 
-screen -dm /opt/sner/server/venv/bin/python3 /opt/sner/server/bin/server run
-
 # frontend
 cd /opt/sner/frontend
 npm install
 npm run linst
 npm run test
 
-screen -dm npm run dev
+# run devservers
+cd /opt/sner
+make devservers
 ```
 
 ### Docker

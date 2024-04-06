@@ -316,5 +316,4 @@ def cli():
         sys.argv.remove('--debug')
     os.environ['FLASK_APP'] = 'sner.server.app'
     os.environ['FLASK_RUN_PORT'] = '18000'
-    os.environ['FLASK_RUN_HOST'] = '0.0.0.0'
     return flask.cli.main()
