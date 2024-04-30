@@ -41,7 +41,7 @@ export default ({ mode }) => {
       exclude: [...configDefaults.exclude, 'src/tests/mocks', 'src/tests/utils'],
       testTimeout: 15000,
       threads: false,
-      retry: 3,
+      retry: 0,
       reporters: ['hanging-process', 'verbose'],
       coverage: {
         provider: 'v8',
