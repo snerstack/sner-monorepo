@@ -6,6 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { getColorForTag } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -97,7 +98,7 @@ const VulnSearchListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'vulnsearch_list_table',
-            url: `/storage/vulnsearch/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/vulnsearch/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -123,7 +124,7 @@ const VulnSearchListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'vulnsearch_list_table',
-            url: `/storage/vulnsearch/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/vulnsearch/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="vulnsearch_comment_annotate">{row['comment']}</div>)
@@ -195,14 +196,14 @@ const VulnSearchListPage = () => {
                   show: true,
                   action: 'set',
                   tableId: 'vulnsearch_list_table',
-                  url: '/storage/vulnsearch/tag_multiid',
+                  url: urlFor('/backend/storage/vulnsearch/tag_multiid'),
                 })
               }
             >
               <i className="fas fa-tag"></i>
             </a>
             {import.meta.env.VITE_VULNSEARCH_TAGS.split(',').map((tag) => (
-              <TagButton tag={tag} key={tag} url="/storage/vulnsearch/tag_multiid" tableId="vulnsearch_list_table" />
+              <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/vulnsearch/tag_multiid")} tableId="vulnsearch_list_table" />
             ))}
           </div>{' '}
           <div className="btn-group">
@@ -215,7 +216,7 @@ const VulnSearchListPage = () => {
                   show: true,
                   action: 'unset',
                   tableId: 'vulnsearch_list_table',
-                  url: '/storage/vulnsearch/tag_multiid',
+                  url: urlFor('/backend/storage/vulnsearch/tag_multiid'),
                 })
               }
             >
@@ -232,7 +233,7 @@ const VulnSearchListPage = () => {
               </a>
               <TagsDropdownButton
                 tags={import.meta.env.VITE_VULNSEARCH_TAGS.split(',')}
-                url="/storage/vulnsearch/tag_multiid"
+                url={urlFor("/backend/storage/vulnsearch/tag_multiid")}
                 tableId="vulnsearch_list_table"
               />
             </div>
@@ -257,10 +258,10 @@ const VulnSearchListPage = () => {
         id="vulnsearch_list_table"
         columns={columns}
         ajax={{
-          url:
-            import.meta.env.VITE_SERVER_URL +
-            '/storage/vulnsearch/list.json' +
+          url: urlFor(
+            '/backend/storage/vulnsearch/list.json' +
             (searchParams.toString() ? `?${searchParams.toString()}` : ''),
+          ),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

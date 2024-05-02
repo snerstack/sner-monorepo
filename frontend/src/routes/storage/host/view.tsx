@@ -7,6 +7,7 @@ import { useCookie, useLocalStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { deleteRow, getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
@@ -36,7 +37,7 @@ const HostViewPage = () => {
     tags: host.tags,
     comment: host.comment,
     tableId: '',
-    url: `/storage/host/annotate/${host.id}`,
+    url: urlFor(`/backend/storage/host/annotate/${host.id}`),
   })
 
   const [annotateService, setAnnotateService] = useState<Annotate>({
@@ -91,7 +92,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_service_table',
-            url: `/storage/service/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/service/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -117,7 +118,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_service_table',
-            url: `/storage/service/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/service/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="service_comment_annotate">{row['comment']}</div>)
@@ -152,7 +153,7 @@ const HostViewPage = () => {
             <Button name="+V" title="Add vuln" url={`/storage/service/add/${row['id']}`} navigate={navigate} />
             <Button name="+N" title="Add note" url={`/storage/vuln/add/host/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/service/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/service/delete/${row['id']}`} tableId="host_view_service_table" />
+            <DeleteButton url={urlFor(`/backend/storage/service/delete/${row['id']}`)} tableId="host_view_service_table" />
           </ButtonGroup>,
         ),
     }),
@@ -247,7 +248,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_vuln_table',
-            url: `/storage/vuln/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/vuln/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -273,7 +274,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_vuln_table',
-            url: `/storage/vuln/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/vuln/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="vuln_comment_annotate">{row['comment']}</div>)
@@ -307,7 +308,7 @@ const HostViewPage = () => {
             />
             <EditButton url={`/storage/vuln/edit/${row['id']}`} navigate={navigate} />
             <MultiCopyButton url={`/storage/vuln/multicopy/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/vuln/delete/${row['id']}`} tableId="host_view_vuln_table" />
+            <DeleteButton url={urlFor(`/backend/storage/vuln/delete/${row['id']}`)} tableId="host_view_vuln_table" />
           </ButtonGroup>,
         ),
     }),
@@ -374,7 +375,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_note_table',
-            url: `/storage/note/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/note/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -400,7 +401,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_note_table',
-            url: `/storage/note/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/note/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="note_comment_annotate">{row['comment']}</div>)
@@ -430,7 +431,7 @@ const HostViewPage = () => {
             />
             <ViewButton url={`/storage/note/view/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/note/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/note/delete/${row['id']}`} tableId="host_view_note_table" />
+            <DeleteButton url={urlFor(`/backend/storage/note/delete/${row['id']}`)} tableId="host_view_note_table" />
           </ButtonGroup>,
         ),
     }),
@@ -487,7 +488,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_versioninfo_table',
-            url: `/storage/versioninfo/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/versioninfo/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -513,7 +514,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_versioninfo_table',
-            url: `/storage/versioninfo/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/versioninfo/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="versioninfo_comment_annotate">{row['comment']}</div>)
@@ -584,7 +585,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_vulnsearch_table',
-            url: `/storage/vulnsearch/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/vulnsearch/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -610,7 +611,7 @@ const HostViewPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_view_vulnsearch_table',
-            url: `/storage/vulnsearch/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/vulnsearch/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="vulnsearch_comment_annotate">{row['comment']}</div>)
@@ -674,7 +675,7 @@ const HostViewPage = () => {
             </a>
             <>
               {import.meta.env.VITE_HOST_TAGS.split(',').map((tag) => (
-                <TagButton tag={tag} key={tag} url="/storage/host/tag_multiid" id={host.id} />
+                <TagButton tag={tag} key={tag} url={urlFor('/backend/storage/host/tag_multiid')} id={host.id} />
               ))}
             </>
           </div>{' '}
@@ -693,7 +694,7 @@ const HostViewPage = () => {
             <Button title="Add note" name="+N" url={`/storage/note/add/host/${host.id}`} />
             <EditButton url={`/storage/host/edit/${host.id}`} />
           </div>{' '}
-          <DeleteButton url={`/storage/host/delete/${host.id}`} />
+          <DeleteButton url={urlFor(`/backend/storage/host/delete/${host.id}`)} />
         </div>
       </Heading>
 
@@ -830,7 +831,7 @@ const HostViewPage = () => {
                         show: true,
                         action: 'set',
                         tableId: 'host_view_service_table',
-                        url: '/storage/service/tag_multiid',
+                        url: urlFor('/backend/storage/service/tag_multiid'),
                       })
                     }
                   >
@@ -840,7 +841,7 @@ const HostViewPage = () => {
                     <TagButton
                       tag={tag}
                       key={tag}
-                      url="/storage/service/tag_multiid"
+                      url={urlFor("/backend/storage/service/tag_multiid")}
                       tableId="host_view_service_table"
                     />
                   ))}
@@ -855,7 +856,7 @@ const HostViewPage = () => {
                         show: true,
                         action: 'unset',
                         tableId: 'host_view_service_table',
-                        url: '/storage/service/tag_multiid',
+                        url: urlFor('/backend/storage/service/tag_multiid'),
                       })
                     }
                   >
@@ -872,7 +873,7 @@ const HostViewPage = () => {
                     </a>
                     <TagsDropdownButton
                       tags={import.meta.env.VITE_SERVICE_TAGS.split(',')}
-                      url="/storage/service/tag_multiid"
+                      url={urlFor("/backend/storage/service/tag_multiid")}
                       tableId="host_view_service_table"
                     />
                   </div>
@@ -880,7 +881,7 @@ const HostViewPage = () => {
                     data-testid="service-delete-row-btn"
                     className="btn btn-outline-secondary"
                     href="#"
-                    onClick={() => deleteRow('host_view_service_table', '/storage/service/delete_multiid')}
+                    onClick={() => deleteRow('host_view_service_table', urlFor('/backend/storage/service/delete_multiid'))}
                   >
                     <i className="fas fa-trash text-danger"></i>
                   </a>
@@ -892,7 +893,7 @@ const HostViewPage = () => {
               id="host_view_service_table"
               columns={serviceColumns}
               ajax={{
-                url: import.meta.env.VITE_SERVER_URL + `/storage/service/list.json?filter=Host.id=="${host.id}"`,
+                url: urlFor(`/backend/storage/service/list.json?filter=Host.id=="${host.id}"`),
                 type: 'POST',
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
@@ -947,14 +948,14 @@ const HostViewPage = () => {
                         show: true,
                         action: 'set',
                         tableId: 'host_view_vuln_table',
-                        url: '/storage/vuln/tag_multiid',
+                        url: urlFor('/backend/storage/vuln/tag_multiid'),
                       })
                     }
                   >
                     <i className="fas fa-tag"></i>
                   </a>
                   {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
-                    <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" tableId="host_view_vuln_table" />
+                    <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/vuln/tag_multiid")} tableId="host_view_vuln_table" />
                   ))}
                 </div>{' '}
                 <div className="btn-group">
@@ -967,7 +968,7 @@ const HostViewPage = () => {
                         show: true,
                         action: 'unset',
                         tableId: 'host_view_vuln_table',
-                        url: '/storage/vuln/tag_multiid',
+                        url: urlFor('/backend/storage/vuln/tag_multiid'),
                       })
                     }
                   >
@@ -984,7 +985,7 @@ const HostViewPage = () => {
                     </a>
                     <TagsDropdownButton
                       tags={import.meta.env.VITE_VULN_TAGS.split(',')}
-                      url="/storage/vuln/tag_multiid"
+                      url={urlFor("/backend/storage/vuln/tag_multiid")}
                       tableId="host_view_vuln_table"
                     />
                   </div>
@@ -992,7 +993,7 @@ const HostViewPage = () => {
                     data-testid="vuln-delete-row-btn"
                     className="btn btn-outline-secondary abutton_delete_multiid"
                     href="#"
-                    onClick={() => deleteRow('host_view_vuln_table', '/storage/vuln/delete_multiid')}
+                    onClick={() => deleteRow('host_view_vuln_table', urlFor('/backend/storage/vuln/delete_multiid'))}
                   >
                     <i className="fas fa-trash text-danger"></i>
                   </a>
@@ -1004,7 +1005,7 @@ const HostViewPage = () => {
               id="host_view_vuln_table"
               columns={vulnColumns}
               ajax={{
-                url: import.meta.env.VITE_SERVER_URL + `/storage/vuln/list.json?filter=Host.id=="${host.id}"`,
+                url: urlFor(`/backend/storage/vuln/list.json?filter=Host.id=="${host.id}"`),
                 type: 'POST',
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
@@ -1061,14 +1062,14 @@ const HostViewPage = () => {
                         show: true,
                         action: 'set',
                         tableId: 'host_view_note_table',
-                        url: '/storage/note/tag_multiid',
+                        url: urlFor('/backend/storage/note/tag_multiid'),
                       })
                     }
                   >
                     <i className="fas fa-tag"></i>
                   </a>
                   {import.meta.env.VITE_NOTE_TAGS.split(',').map((tag) => (
-                    <TagButton tag={tag} key={tag} url="/storage/note/tag_multiid" tableId="host_view_note_table" />
+                    <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/note/tag_multiid")} tableId="host_view_note_table" />
                   ))}
                 </div>{' '}
                 <div className="btn-group">
@@ -1081,7 +1082,7 @@ const HostViewPage = () => {
                         show: true,
                         action: 'unset',
                         tableId: 'host_view_note_table',
-                        url: '/storage/note/tag_multiid',
+                        url: urlFor('/backend/storage/note/tag_multiid'),
                       })
                     }
                   >
@@ -1098,7 +1099,7 @@ const HostViewPage = () => {
                     </a>
                     <TagsDropdownButton
                       tags={import.meta.env.VITE_NOTE_TAGS.split(',')}
-                      url="/storage/note/tag_multiid"
+                      url={urlFor("/backend/storage/note/tag_multiid")}
                       tableId="host_view_note_table"
                     />
                   </div>
@@ -1106,7 +1107,7 @@ const HostViewPage = () => {
                     data-testid="note-delete-row-btn"
                     className="btn btn-outline-secondary abutton_delete_multiid"
                     href="#"
-                    onClick={() => deleteRow('host_view_note_table', '/storage/note/delete_multiid')}
+                    onClick={() => deleteRow('host_view_note_table', urlFor('/backend/storage/note/delete_multiid'))}
                   >
                     <i className="fas fa-trash text-danger"></i>
                   </a>
@@ -1118,7 +1119,7 @@ const HostViewPage = () => {
               id="host_view_note_table"
               columns={noteColumns}
               ajax={{
-                url: import.meta.env.VITE_SERVER_URL + `/storage/note/list.json?filter=Host.id=="${host.id}"`,
+                url: urlFor(`/backend/storage/note/list.json?filter=Host.id=="${host.id}"`),
                 type: 'POST',
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
@@ -1175,7 +1176,7 @@ const HostViewPage = () => {
                         show: true,
                         action: 'set',
                         tableId: 'host_view_versioninfo_table',
-                        url: '/storage/versioninfo/tag_multiid',
+                        url: urlFor('/backend/storage/versioninfo/tag_multiid'),
                       })
                     }
                   >
@@ -1185,7 +1186,7 @@ const HostViewPage = () => {
                     <TagButton
                       tag={tag}
                       key={tag}
-                      url="/storage/versioninfo/tag_multiid"
+                      url={urlFor("/backend/storage/versioninfo/tag_multiid")}
                       tableId="host_view_versioninfo_table"
                     />
                   ))}
@@ -1200,7 +1201,7 @@ const HostViewPage = () => {
                         show: true,
                         action: 'unset',
                         tableId: 'host_view_versioninfo_table',
-                        url: '/storage/versioninfo/tag_multiid',
+                        url: urlFor('/backend/storage/versioninfo/tag_multiid'),
                       })
                     }
                   >
@@ -1217,7 +1218,7 @@ const HostViewPage = () => {
                     </a>
                     <TagsDropdownButton
                       tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
-                      url="/storage/versioninfo/tag_multiid"
+                      url={urlFor("/backend/storage/versioninfo/tag_multiid")}
                       tableId="host_view_versioninfo_table"
                     />
                   </div>
@@ -1229,9 +1230,7 @@ const HostViewPage = () => {
               id="host_view_versioninfo_table"
               columns={versioninfoColumns}
               ajax={{
-                url:
-                  import.meta.env.VITE_SERVER_URL +
-                  `/storage/versioninfo/list.json?filter=Versioninfo.host_id=="${host.id}"`,
+                url: urlFor(`/backend/storage/versioninfo/list.json?filter=Versioninfo.host_id=="${host.id}"`),
                 type: 'POST',
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
@@ -1291,7 +1290,7 @@ const HostViewPage = () => {
                         show: true,
                         action: 'set',
                         tableId: 'host_view_vulnsearch_table',
-                        url: '/storage/vulnsearch/tag_multiid',
+                        url: urlFor('/backend/storage/vulnsearch/tag_multiid'),
                       })
                     }
                   >
@@ -1301,7 +1300,7 @@ const HostViewPage = () => {
                     <TagButton
                       tag={tag}
                       key={tag}
-                      url="/storage/vulnsearch/tag_multiid"
+                      url={urlFor("/backend/storage/vulnsearch/tag_multiid")}
                       tableId="host_view_vulnsearch_table"
                     />
                   ))}
@@ -1316,7 +1315,7 @@ const HostViewPage = () => {
                         show: true,
                         action: 'unset',
                         tableId: 'host_view_vulnsearch_table',
-                        url: '/storage/vulnsearch/tag_multiid',
+                        url: urlFor('/backend/storage/vulnsearch/tag_multiid'),
                       })
                     }
                   >
@@ -1333,7 +1332,7 @@ const HostViewPage = () => {
                     </a>
                     <TagsDropdownButton
                       tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
-                      url="/storage/vulnsearch/tag_multiid"
+                      url={urlFor("/backend/storage/vulnsearch/tag_multiid")}
                       tableId="host_view_vulnsearch_table"
                     />
                   </div>
@@ -1345,9 +1344,7 @@ const HostViewPage = () => {
               id="host_view_vulnsearch_table"
               columns={vulnsearchColumns}
               ajax={{
-                url:
-                  import.meta.env.VITE_SERVER_URL +
-                  `/storage/vulnsearch/list.json?filter=Vulnsearch.host_id=="${host.id}"`,
+                url: urlFor(`/backend/storage/vulnsearch/list.json?filter=Vulnsearch.host_id=="${host.id}"`),
                 type: 'POST',
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

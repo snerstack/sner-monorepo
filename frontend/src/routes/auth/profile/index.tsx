@@ -6,6 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
@@ -83,7 +84,7 @@ const ProfilePage = () => {
               <DataTable
                 id="profile_webauthn_table"
                 ajax={{
-                  url: import.meta.env.VITE_SERVER_URL + '/auth/profile/webauthn/list.json',
+                  url: urlFor('/backend/auth/profile/webauthn/list.json'),
                   type: 'POST',
                   xhrFields: { withCredentials: true },
                   beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
@@ -107,7 +108,7 @@ const ProfilePage = () => {
                   onClick={(e) => {
                     e.preventDefault()
                     httpClient
-                      .post<{ apikey: string }>(import.meta.env.VITE_SERVER_URL + '/auth/profile/apikey/generate')
+                      .post<{ apikey: string }>(urlFor('/backend/auth/profile/apikey/generate'))
                       .then((resp) => {
                         setNewApikey(resp.data.apikey)
                         setHasApikey(true)
@@ -128,7 +129,7 @@ const ProfilePage = () => {
                       onClick={(e) => {
                         e.preventDefault()
                         httpClient
-                          .post<{ message: string }>(import.meta.env.VITE_SERVER_URL + '/auth/profile/apikey/revoke')
+                          .post<{ message: string }>(urlFor('/backend/auth/profile/apikey/revoke'))
                           .then((resp) => {
                             setNewApikey('')
                             setHasApikey(false)

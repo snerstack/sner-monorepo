@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 const QuickJump = () => {
   const navigate = useNavigate()
@@ -58,7 +59,7 @@ const QuickJump = () => {
 
     try {
       const resp = await httpClient.get<QuickJumpSuggestions>(
-        import.meta.env.VITE_SERVER_URL + '/storage/quickjump_autocomplete',
+        urlFor('/backend/storage/quickjump_autocomplete'),
         {
           params: {
             ip: extractedValues.ip === '' ? null : extractedValues.ip,

@@ -5,6 +5,7 @@ import { useCookie } from 'react-use'
 
 import { Column, renderElements } from '@/lib/DataTables'
 import { encodeRFC3986URIComponent, getServiceFilterInfo } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -84,10 +85,10 @@ const ServiceGroupedPage = () => {
         id="service_grouped_table"
         columns={columns}
         ajax={{
-          url:
-            import.meta.env.VITE_SERVER_URL +
-            '/storage/service/grouped.json' +
+          url: urlFor(
+            '/backend/storage/service/grouped.json' +
             (searchParams.has('filter') ? `?filter=${encodeRFC3986URIComponent(searchParams.get('filter')!)}` : ''),
+          ),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

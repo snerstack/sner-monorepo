@@ -10,6 +10,7 @@ import { useRecoilState } from 'recoil'
 import { userState } from '@/atoms/userAtom'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 
@@ -52,7 +53,7 @@ const WebAuthnLoginPage = () => {
     formData.append('assertion', assertion)
 
     try {
-      const resp = await httpClient.post<User>(import.meta.env.VITE_SERVER_URL + '/auth/login_webauthn', formData)
+      const resp = await httpClient.post<User>(urlFor('/backend/auth/login_webauthn'), formData)
 
       setUser({ ...resp.data, isAuthenticated: true })
 
@@ -98,7 +99,7 @@ const WebAuthnLoginPage = () => {
 export default WebAuthnLoginPage
 
 const getPublicKeyCredentialRequestOptions = async (): Promise<CredentialCreationOptions> => {
-  const resp = await httpClient.post<string>(import.meta.env.VITE_SERVER_URL + '/auth/login_webauthn_pkcro')
+  const resp = await httpClient.post<string>(urlFor('/backend/auth/login_webauthn_pkcro'))
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore

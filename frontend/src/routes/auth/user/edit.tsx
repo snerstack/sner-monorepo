@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
+import { urlFor } from '@/lib/urlHelper'
 import httpClient from '@/lib/httpClient'
 
 import Heading from '@/components/Heading'
@@ -47,7 +48,7 @@ const UserEditPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        import.meta.env.VITE_SERVER_URL + `/auth/user/edit/${user.id}`,
+        urlFor(`/backend/auth/user/edit/${user.id}`),
         formData,
       )
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -36,9 +37,9 @@ const JobListPage = () => {
         renderElements(
           cell,
           <ButtonGroup>
-            <RepeatButton url={`/scheduler/job/repeat/${row['id']}`} tableId="job_list_table" />
-            <ReconcileButton url={`/scheduler/job/reconcile/${row['id']}`} tableId="job_list_table" />
-            <DeleteButton url={`/scheduler/job/delete/${row['id']}`} tableId="job_list_table" />
+            <RepeatButton url={urlFor(`/backend/scheduler/job/repeat/${row['id']}`)} tableId="job_list_table" />
+            <ReconcileButton url={urlFor(`/backend/scheduler/job/reconcile/${row['id']}`)} tableId="job_list_table" />
+            <DeleteButton url={urlFor(`/backend/scheduler/job/delete/${row['id']}`)} tableId="job_list_table" />
           </ButtonGroup>,
         ),
     }),
@@ -68,7 +69,7 @@ const JobListPage = () => {
         id="job_list_table"
         columns={columns}
         ajax={{
-          url: import.meta.env.VITE_SERVER_URL + '/scheduler/job/list.json',
+          url: urlFor('/backend/scheduler/job/list.json'),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

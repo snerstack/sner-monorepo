@@ -15,7 +15,7 @@ const DeleteButton = ({ url, tableId, className }: { url: string; tableId?: stri
         if (!confirm('Really delete?')) return
 
         httpClient
-          .post(import.meta.env.VITE_SERVER_URL + url)
+          .post(url)
           .then(() => {
             /* c8 ignore next 2 */
             if (tableId) {

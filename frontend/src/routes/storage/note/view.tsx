@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
 import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import DeleteButton from '@/components/buttons/DeleteButton'
@@ -37,7 +38,7 @@ const NoteViewPage = () => {
     show: false,
     tags: note.tags,
     comment: note.comment,
-    url: `/storage/note/annotate/${note.id}`,
+    url: urlFor(`/backend/storage/note/annotate/${note.id}`),
   })
 
   return (
@@ -72,7 +73,7 @@ const NoteViewPage = () => {
             />
             <EditButton url={`/storage/note/edit/${note.id}`} className="btn btn-outline-primary" />
           </div>{' '}
-          <DeleteButton url={`/storage/note/delete/${note.id}`} />
+          <DeleteButton url={urlFor(`/storage/note/delete/${note.id}`)} />
         </div>
       </Heading>
 

@@ -5,6 +5,8 @@ import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
+import { urlFor } from '@/lib/urlHelper'
+
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 
@@ -81,8 +83,7 @@ const DnsTreePage = () => {
       })
 
     d3.json(
-      import.meta.env.VITE_SERVER_URL +
-        `/visuals/dnstree.json${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
+      urlFor(`/backend/visuals/dnstree.json` + (searchParams.toString() ? `?${searchParams.toString()}` : '')),
       { credentials: 'include' },
     )
       .then((data) => {

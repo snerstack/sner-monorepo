@@ -5,6 +5,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import NumberField from '@/components/fields/NumberField'
@@ -40,7 +41,7 @@ const ServiceEditPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        import.meta.env.VITE_SERVER_URL + `/storage/service/edit/${service.id}`,
+        urlFor(`/backend/storage/service/edit/${service.id}`),
         formData,
       )
 

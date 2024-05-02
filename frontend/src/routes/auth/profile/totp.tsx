@@ -6,6 +6,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import SubmitField from '@/components/fields/SubmitField'
@@ -37,7 +38,7 @@ const TOTPPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        import.meta.env.VITE_SERVER_URL + '/auth/profile/totp',
+        urlFor('/backend/auth/profile/totp'),
         formData,
       )
 

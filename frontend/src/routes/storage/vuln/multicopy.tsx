@@ -7,6 +7,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnSelect, getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
@@ -48,7 +49,7 @@ const VulnMulticopyPage = () => {
 
     try {
       const resp = await httpClient.post<{ new_vulns: string }>(
-        import.meta.env.VITE_SERVER_URL + `/storage/vuln/multicopy/${vuln.id}.json`,
+        urlFor(`/backend/storage/vuln/multicopy/${vuln.id}.json`),
         formData,
       )
 
@@ -79,7 +80,7 @@ const VulnMulticopyPage = () => {
         id="vuln_multicopy_endpoints_table"
         columns={columns}
         ajax={{
-          url: import.meta.env.VITE_SERVER_URL + '/storage/vuln/multicopy_endpoints.json',
+          url: urlFor('/backend/storage/vuln/multicopy_endpoints.json'),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

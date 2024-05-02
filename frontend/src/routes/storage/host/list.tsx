@@ -6,6 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { deleteRow, getColorForTag } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -73,7 +74,7 @@ const HostListPage = () => {
             tags: data,
             comment: row['comment'] || '',
             tableId: 'host_list_table',
-            url: `/storage/host/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/host/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -99,7 +100,7 @@ const HostListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'host_list_table',
-            url: `/storage/host/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/host/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="host_comment_annotate">{row['comment']}</div>)
@@ -131,7 +132,7 @@ const HostListPage = () => {
             <Button name="+V" title="Add vuln" url={`/storage/vuln/add/host/${row['id']}`} navigate={navigate} />
             <Button name="+N" title="Add note" url={`/storage/note/add/host/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/host/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/host/delete/${row['id']}`} tableId="host_list_table" />
+            <DeleteButton url={urlFor(`/backend/storage/host/delete/${row['id']}`)} tableId="host_list_table" />
           </ButtonGroup>,
         ),
     }),
@@ -195,14 +196,14 @@ const HostListPage = () => {
                   show: true,
                   action: 'set',
                   tableId: 'host_list_table',
-                  url: '/storage/host/tag_multiid',
+                  url: urlFor('/backend/storage/host/tag_multiid'),
                 })
               }
             >
               <i className="fas fa-tag"></i>
             </a>
             {import.meta.env.VITE_HOST_TAGS.split(',').map((tag) => (
-              <TagButton tag={tag} key={tag} url="/storage/host/tag_multiid" tableId="host_list_table" />
+              <TagButton tag={tag} key={tag} url={urlFor('/backend/storage/host/tag_multiid')} tableId="host_list_table" />
             ))}
           </div>{' '}
           <div className="btn-group">
@@ -214,7 +215,7 @@ const HostListPage = () => {
                   show: true,
                   action: 'unset',
                   tableId: 'host_list_table',
-                  url: '/storage/host/tag_multiid',
+                  url: urlFor('/backend/storage/host/tag_multiid'),
                 })
               }
             >
@@ -231,7 +232,7 @@ const HostListPage = () => {
               </a>
               <TagsDropdownButton
                 tags={import.meta.env.VITE_HOST_TAGS.split(',')}
-                url="/storage/host/tag_multiid"
+                url={urlFor('/backend/storage/host/tag_multiid')}
                 tableId="host_list_table"
               />
             </div>
@@ -239,7 +240,7 @@ const HostListPage = () => {
               data-testid="delete-row-btn"
               className="btn btn-outline-secondary"
               href="#"
-              onClick={() => deleteRow('host_list_table', '/storage/host/delete_multiid')}
+              onClick={() => deleteRow('host_list_table', urlFor('/backend/storage/host/delete_multiid'))}
             >
               <i className="fas fa-trash text-danger"></i>
             </a>
@@ -263,10 +264,10 @@ const HostListPage = () => {
         id="host_list_table"
         columns={columns}
         ajax={{
-          url:
-            import.meta.env.VITE_SERVER_URL +
-            '/storage/host/list.json' +
+          url: urlFor(
+            '/backend/storage/host/list.json' +
             (searchParams.toString() ? `?${searchParams.toString()}` : ''),
+          ),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

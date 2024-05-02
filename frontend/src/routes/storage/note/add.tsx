@@ -5,6 +5,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import NumberField from '@/components/fields/NumberField'
@@ -59,13 +60,13 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
     try {
       if (type === 'host') {
         const resp = await httpClient.post<{ host_id: number }>(
-          import.meta.env.VITE_SERVER_URL + `/storage/note/add/host/${hostId}`,
+          urlFor(`/backend/storage/note/add/host/${hostId}`),
           formData,
         )
         navigate(`/storage/host/view/${resp.data.host_id}`)
       } else {
         const resp = await httpClient.post<{ host_id: number }>(
-          import.meta.env.VITE_SERVER_URL + `/storage/note/add/service/${serviceId}`,
+          urlFor(`/backend/storage/note/add/service/${serviceId}`),
           formData,
         )
         navigate(`/storage/host/view/${resp.data.host_id}`)

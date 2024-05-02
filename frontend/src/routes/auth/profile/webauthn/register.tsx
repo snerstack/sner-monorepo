@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
+import { urlFor } from '@/lib/urlHelper'
 import httpClient from '@/lib/httpClient'
 
 import Heading from '@/components/Heading'
@@ -54,7 +55,7 @@ const WebAuthnRegisterPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        import.meta.env.VITE_SERVER_URL + '/auth/profile/webauthn/register',
+        urlFor('/backend/auth/profile/webauthn/register'),
         formData,
       )
 
@@ -117,7 +118,7 @@ const WebAuthnRegisterPage = () => {
 export default WebAuthnRegisterPage
 
 const getPublicKeyCredentialRequestOptions = async (): Promise<CredentialCreationOptions> => {
-  const resp = await httpClient.post<string>(import.meta.env.VITE_SERVER_URL + '/auth/profile/webauthn/pkcco')
+  const resp = await httpClient.post<string>(urlFor('/backend/auth/profile/webauthn/pkcco'))
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore

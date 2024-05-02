@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useCookie } from 'react-use'
 
+import { urlFor } from '@/lib/urlHelper'
 import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 
@@ -50,7 +51,7 @@ const QueueListPage = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   httpClient
-                    .post(import.meta.env.VITE_SERVER_URL + `/scheduler/queue/flush/${row['id']}`)
+                    .post(urlFor(`/backend/scheduler/queue/flush/${row['id']}`))
                     .then(() => getTableApi('queue_list_table').draw())
                     .catch(() => toast.error('Error while flusing the queue.'))
                 }}
@@ -65,7 +66,7 @@ const QueueListPage = () => {
                 onClick={(e) => {
                   e.preventDefault()
                   httpClient
-                    .post(import.meta.env.VITE_SERVER_URL + `/scheduler/queue/prune/${row['id']}`)
+                    .post(urlFor(`/backend/scheduler/queue/prune/${row['id']}`))
                     .then(() => getTableApi('queue_list_table').draw())
                     .catch(() => toast.error('Error while pruning the queue.'))
                 }}
@@ -74,8 +75,8 @@ const QueueListPage = () => {
               </a>
             </ButtonGroup>{' '}
             <ButtonGroup>
-              <EditButton url={`/scheduler/queue/edit/${row['id']}`} navigate={navigate} />
-              <DeleteButton url={`/scheduler/queue/delete/${row['id']}`} tableId="queue_list_table" />
+              <EditButton url={urlFor(`/scheduler/queue/edit/${row['id']}`)} navigate={navigate} />
+              <DeleteButton url={urlFor(`/backend/scheduler/queue/delete/${row['id']}`)} tableId="queue_list_table" />
             </ButtonGroup>
           </>,
         ),
@@ -100,7 +101,7 @@ const QueueListPage = () => {
         id="queue_list_table"
         columns={columns}
         ajax={{
-          url: import.meta.env.VITE_SERVER_URL + '/scheduler/queue/list.json',
+          url: urlFor('/backend/scheduler/queue/list.json'),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

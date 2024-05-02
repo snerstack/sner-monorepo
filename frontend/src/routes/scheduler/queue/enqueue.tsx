@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import SubmitField from '@/components/fields/SubmitField'
@@ -19,7 +20,7 @@ const QueueEnqueuePage = () => {
     formData.append('targets', targets)
 
     httpClient
-      .post(import.meta.env.VITE_SERVER_URL + `/scheduler/queue/enqueue/${id}`, formData)
+      .post(urlFor(`/backend/scheduler/queue/enqueue/${id}`), formData)
       .then(() => navigate('/scheduler/queue/list'))
       .catch(() => toast.error('Error while enqueuing'))
   }

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import PasswordField from '@/components/fields/PasswordField'
@@ -29,7 +30,7 @@ const ChangePasswordPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        import.meta.env.VITE_SERVER_URL + '/auth/profile/changepassword',
+        urlFor('/backend/auth/profile/changepassword'),
         formData,
       )
 

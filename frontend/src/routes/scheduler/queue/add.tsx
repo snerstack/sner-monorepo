@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import BooleanField from '@/components/fields/BooleanField'
@@ -45,7 +46,7 @@ const QueueAddPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        import.meta.env.VITE_SERVER_URL + '/scheduler/queue/add',
+        urlFor('/backend/scheduler/queue/add'),
         formData,
       )
 

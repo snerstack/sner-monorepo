@@ -6,6 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { deleteRow, getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -128,7 +129,7 @@ const VulnListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'vuln_list_table',
-            url: `/storage/vuln/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/vuln/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -154,7 +155,7 @@ const VulnListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'vuln_list_table',
-            url: `/storage/vuln/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/vuln/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="vuln_comment_annotate">{row['comment']}</div>)
@@ -188,7 +189,7 @@ const VulnListPage = () => {
             />
             <EditButton url={`/storage/vuln/edit/${row['id']}`} navigate={navigate} />
             <MultiCopyButton url={`/storage/vuln/multicopy/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/vuln/delete/${row['id']}`} tableId="vuln_list_table" />
+            <DeleteButton url={urlFor(`/backend/storage/vuln/delete/${row['id']}`)} tableId="vuln_list_table" />
           </ButtonGroup>,
         ),
     }),
@@ -200,16 +201,16 @@ const VulnListPage = () => {
       </Helmet>
       <Heading headings={['Vulns']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-primary" href={import.meta.env.VITE_SERVER_URL + '/storage/vuln/report'}>
+          <a className="btn btn-outline-primary" href={urlFor('/backend/storage/vuln/report')}>
             Report
           </a>{' '}
           <a
             className="btn btn-outline-primary"
-            href={import.meta.env.VITE_SERVER_URL + '/storage/vuln/report?group_by_host=True'}
+            href={urlFor('/backend/storage/vuln/report?group_by_host=True')}
           >
             Report by host
           </a>{' '}
-          <a className="btn btn-outline-primary" href={import.meta.env.VITE_SERVER_URL + '/storage/vuln/export'}>
+          <a className="btn btn-outline-primary" href={urlFor('/backend/storage/vuln/export')}>
             Export
           </a>{' '}
           <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">
@@ -259,14 +260,14 @@ const VulnListPage = () => {
                   show: true,
                   action: 'set',
                   tableId: 'vuln_list_table',
-                  url: '/storage/vuln/tag_multiid',
+                  url: urlFor('/backend/storage/vuln/tag_multiid'),
                 })
               }
             >
               <i className="fas fa-tag"></i>
             </a>
             {import.meta.env.VITE_VULN_TAGS.split(',').map((tag) => (
-              <TagButton tag={tag} key={tag} url="/storage/vuln/tag_multiid" tableId="vuln_list_table" />
+              <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/vuln/tag_multiid")} tableId="vuln_list_table" />
             ))}
           </div>{' '}
           <div className="btn-group">
@@ -279,7 +280,7 @@ const VulnListPage = () => {
                   show: true,
                   action: 'unset',
                   tableId: 'vuln_list_table',
-                  url: '/storage/vuln/tag_multiid',
+                  url: urlFor('/backend/storage/vuln/tag_multiid'),
                 })
               }
             >
@@ -296,7 +297,7 @@ const VulnListPage = () => {
               </a>
               <TagsDropdownButton
                 tags={import.meta.env.VITE_VULN_TAGS.split(',')}
-                url="/storage/vuln/tag_multiid"
+                url={urlFor("/backend/storage/vuln/tag_multiid")}
                 tableId="vuln_list_table"
               />
             </div>
@@ -304,7 +305,7 @@ const VulnListPage = () => {
               data-testid="delete-row-btn"
               className="btn btn-outline-secondary"
               href="#"
-              onClick={() => deleteRow('vuln_list_table', '/storage/vuln/delete_multiid')}
+              onClick={() => deleteRow('vuln_list_table', urlFor('/backend/storage/vuln/delete_multiid'))}
             >
               <i className="fas fa-trash text-danger"></i>
             </a>
@@ -339,10 +340,10 @@ const VulnListPage = () => {
         id="vuln_list_table"
         columns={columns}
         ajax={{
-          url:
-            import.meta.env.VITE_SERVER_URL +
-            '/storage/vuln/list.json' +
+          url: urlFor(
+            '/backend/storage/vuln/list.json' +
             (searchParams.toString() ? `?${searchParams.toString()}` : ''),
+          ),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

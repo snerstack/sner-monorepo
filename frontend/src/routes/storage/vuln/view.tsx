@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
 import { getColorForSeverity, getColorForTag, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
@@ -20,7 +21,7 @@ const VulnViewPage = () => {
     show: false,
     tags: vuln.tags,
     comment: vuln.comment,
-    url: `/storage/vuln/annotate/${vuln.id}`,
+    url: urlFor(`/backend/storage/vuln/annotate/${vuln.id}`),
   })
   return (
     <div>
@@ -48,7 +49,7 @@ const VulnViewPage = () => {
               <TagButton
                 tag={tag}
                 key={tag}
-                url="/storage/vuln/tag_multiid"
+                url={urlFor("/backend/storage/vuln/tag_multiid")}
                 id={vuln.id}
                 reloadPage={true}
                 className="btn text-primary btn-outline-primary"
@@ -91,7 +92,7 @@ const VulnViewPage = () => {
             <EditButton url={`/storage/vuln/edit/${vuln.id}`} className="btn btn-outline-primary" />
             <MultiCopyButton url={`/storage/vuln/multicopy/${vuln.id}`} className="btn btn-outline-primary" />
           </div>{' '}
-          <DeleteButton url={`/storage/vuln/delete/${vuln.id}`} className="btn btn-outline-primary" />
+          <DeleteButton url={urlFor(`/backend/storage/vuln/delete/${vuln.id}`)} className="btn btn-outline-primary" />
         </div>
       </Heading>
 

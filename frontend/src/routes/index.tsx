@@ -50,10 +50,11 @@ import PortmapPage from '@/routes/visuals/portmap'
 import { Route, createRoutesFromElements, redirect } from 'react-router-dom'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 const requestDataHandler = async (url: string) => {
   try {
-    const resp = await httpClient.get<unknown>(import.meta.env.VITE_SERVER_URL + url)
+    const resp = await httpClient.get<unknown>(urlFor(url))
 
     return resp.data
   } catch {
@@ -77,15 +78,15 @@ export const routes = createRoutesFromElements(
       <Route path="login_webauthn" element={<WebAuthnLoginPage />} />
       <Route element={<ProtectedRoute requiredRole="user" />}>
         <Route path="profile">
-          <Route index element={<ProfilePage />} loader={async () => requestDataHandler(`/auth/profile.json`)} />
+          <Route index element={<ProfilePage />} loader={async () => requestDataHandler(`/backend/auth/profile.json`)} />
           <Route path="changepassword" element={<ChangePasswordPage />} />
-          <Route path="totp" element={<TOTPPage />} loader={async () => requestDataHandler(`/auth/profile/totp`)} />
+          <Route path="totp" element={<TOTPPage />} loader={async () => requestDataHandler(`/backend/auth/profile/totp`)} />
           <Route path="webauthn">
             <Route path="register" element={<WebAuthnRegisterPage />} />
             <Route
               path="edit/:id"
               element={<WebAuthnEditPage />}
-              loader={async ({ params: { id } }) => requestDataHandler(`/auth/profile/webauthn/${id}.json`)}
+              loader={async ({ params: { id } }) => requestDataHandler(`/backend/auth/profile/webauthn/${id}.json`)}
             />
           </Route>
         </Route>
@@ -97,7 +98,7 @@ export const routes = createRoutesFromElements(
           <Route
             path="edit/:id"
             element={<UserEditPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/auth/user/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/auth/user/${id}.json`)}
           />
         </Route>
       </Route>
@@ -111,7 +112,7 @@ export const routes = createRoutesFromElements(
           <Route
             path="edit/:id"
             element={<QueueEditPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/scheduler/queue/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/scheduler/queue/${id}.json`)}
           />
           <Route path="enqueue/:id" element={<QueueEnqueuePage />} />
         </Route>
@@ -129,12 +130,12 @@ export const routes = createRoutesFromElements(
           <Route
             path="edit/:id"
             element={<HostEditPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/host/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/host/view/${id}.json`)}
           />
           <Route
             path="view/:id"
             element={<HostViewPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/host/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/host/view/${id}.json`)}
           />
         </Route>
         <Route path="service">
@@ -142,12 +143,12 @@ export const routes = createRoutesFromElements(
           <Route
             path="add/:id"
             element={<ServiceAddPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/host/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/host/view/${id}.json`)}
           />
           <Route
             path="edit/:id"
             element={<ServiceEditPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/service/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/service/view/${id}.json`)}
           />
           <Route path="grouped" element={<ServiceGroupedPage />} />
         </Route>
@@ -157,28 +158,28 @@ export const routes = createRoutesFromElements(
             <Route
               path="host/:id"
               element={<VulnAddPage type="host" />}
-              loader={async ({ params: { id } }) => requestDataHandler(`/storage/host/view/${id}.json`)}
+              loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/host/view/${id}.json`)}
             />
             <Route
               path="service/:id"
               element={<VulnAddPage type="service" />}
-              loader={async ({ params: { id } }) => requestDataHandler(`/storage/service/view/${id}.json`)}
+              loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/service/view/${id}.json`)}
             />
           </Route>
           <Route
             path="edit/:id"
             element={<VulnEditPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/vuln/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/vuln/view/${id}.json`)}
           />
           <Route
             path="multicopy/:id"
             element={<VulnMulticopyPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/vuln/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/vuln/view/${id}.json`)}
           />
           <Route
             path="view/:id"
             element={<VulnViewPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/vuln/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/vuln/view/${id}.json`)}
           />
           <Route path="grouped" element={<VulnGroupedPage />} />
         </Route>
@@ -188,23 +189,23 @@ export const routes = createRoutesFromElements(
             <Route
               path="host/:id"
               element={<NoteAddPage type="host" />}
-              loader={async ({ params: { id } }) => requestDataHandler(`/storage/host/view/${id}.json`)}
+              loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/host/view/${id}.json`)}
             />
             <Route
               path="service/:id"
               element={<NoteAddPage type="service" />}
-              loader={async ({ params: { id } }) => requestDataHandler(`/storage/service/view/${id}.json`)}
+              loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/service/view/${id}.json`)}
             />
           </Route>
           <Route
             path="edit/:id"
             element={<NoteEditPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/note/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/note/view/${id}.json`)}
           />
           <Route
             path="view/:id"
             element={<NoteViewPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/note/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/note/view/${id}.json`)}
           />
           <Route path="grouped" element={<NoteGroupedPage />} />
         </Route>
@@ -218,7 +219,7 @@ export const routes = createRoutesFromElements(
           <Route
             path="view/:id"
             element={<VulnSearchViewPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/storage/vulnsearch/view/${id}.json`)}
+            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/vulnsearch/view/${id}.json`)}
           />
         </Route>
       </Route>
@@ -231,7 +232,7 @@ export const routes = createRoutesFromElements(
         <Route
           path="internals"
           element={<InternalsPage />}
-          loader={async () => requestDataHandler(`/visuals/internals.json`)}
+          loader={async () => requestDataHandler(`/backend/visuals/internals.json`)}
         />
       </Route>
       <Route element={<ProtectedRoute requiredRole="operator" />}>
@@ -239,7 +240,7 @@ export const routes = createRoutesFromElements(
         <Route
           path="portmap"
           element={<PortmapPage />}
-          loader={async () => requestDataHandler(`/visuals/portmap.json`)}
+          loader={async () => requestDataHandler(`/backend/visuals/portmap.json`)}
         />
         <Route path="portinfos" element={<PortinfosPage />} />
       </Route>

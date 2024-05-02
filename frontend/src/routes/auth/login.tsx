@@ -7,6 +7,7 @@ import { useRecoilState } from 'recoil'
 import { userState } from '@/atoms/userAtom'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import PasswordField from '@/components/fields/PasswordField'
@@ -27,7 +28,7 @@ const LoginPage = () => {
 
     try {
       const resp = await httpClient.post<User | { totp_login_required: boolean } | { webauthn_login: boolean }>(
-        import.meta.env.VITE_SERVER_URL + '/auth/login',
+        urlFor('/backend/auth/login'),
         formData,
       )
 

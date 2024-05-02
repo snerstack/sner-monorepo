@@ -7,6 +7,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { deleteRow, getColorForTag } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -103,7 +104,7 @@ const NoteListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'note_list_table',
-            url: `/storage/note/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/note/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -129,7 +130,7 @@ const NoteListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'note_list_table',
-            url: `/storage/note/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/note/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="note_comment_annotate">{row['comment']}</div>)
@@ -159,7 +160,7 @@ const NoteListPage = () => {
             />
             <ViewButton url={`/storage/note/view/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/note/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/note/delete/${row['id']}`} tableId="note_list_table" />
+            <DeleteButton url={urlFor(`/backend/storage/note/delete/${row['id']}`)} tableId="note_list_table" />
           </ButtonGroup>,
         ),
     }),
@@ -219,14 +220,14 @@ const NoteListPage = () => {
                   show: true,
                   action: 'set',
                   tableId: 'note_list_table',
-                  url: '/storage/note/tag_multiid',
+                  url: urlFor('/backend/storage/note/tag_multiid'),
                 })
               }
             >
               <i className="fas fa-tag"></i>
             </a>
             {import.meta.env.VITE_NOTE_TAGS.split(',').map((tag) => (
-              <TagButton tag={tag} key={tag} url="/storage/note/tag_multiid" tableId="note_list_table" />
+              <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/note/tag_multiid")} tableId="note_list_table" />
             ))}
           </div>{' '}
           <div className="btn-group">
@@ -239,7 +240,7 @@ const NoteListPage = () => {
                   show: true,
                   action: 'unset',
                   tableId: 'note_list_table',
-                  url: '/storage/note/tag_multiid',
+                  url: urlFor('/backend/storage/note/tag_multiid'),
                 })
               }
             >
@@ -256,7 +257,7 @@ const NoteListPage = () => {
               </a>
               <TagsDropdownButton
                 tags={import.meta.env.VITE_NOTE_TAGS.split(',')}
-                url="/storage/note/tag_multiid"
+                url={urlFor("/backend/storage/note/tag_multiid")}
                 tableId="note_list_table"
               />
             </div>
@@ -264,7 +265,7 @@ const NoteListPage = () => {
               data-testid="delete-row-btn"
               className="btn btn-outline-secondary"
               href="#"
-              onClick={() => deleteRow('note_list_table', '/storage/note/delete_multiid')}
+              onClick={() => deleteRow('note_list_table', urlFor('/backend/storage/note/delete_multiid'))}
             >
               <i className="fas fa-trash text-danger"></i>
             </a>
@@ -291,10 +292,10 @@ const NoteListPage = () => {
         id="note_list_table"
         columns={columns}
         ajax={{
-          url:
-            import.meta.env.VITE_SERVER_URL +
-            '/storage/note/list.json' +
+          url: urlFor(
+            '/backend/storage/note/list.json' +
             (searchParams.toString() ? `?${searchParams.toString()}` : ''),
+          ),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

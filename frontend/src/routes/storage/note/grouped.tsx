@@ -4,6 +4,7 @@ import { useCookie } from 'react-use'
 
 import { Column, renderElements } from '@/lib/DataTables'
 import { encodeRFC3986URIComponent, getNoteFilterXtype } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -56,10 +57,10 @@ const NoteGroupedPage = () => {
         id="note_grouped_table"
         columns={columns}
         ajax={{
-          url:
-            import.meta.env.VITE_SERVER_URL +
-            '/storage/note/grouped.json' +
+          url: urlFor(
+            '/backend/storage/note/grouped.json' +
             (searchParams.has('filter') ? `?filter=${encodeRFC3986URIComponent(searchParams.get('filter')!)}` : ''),
+          ),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

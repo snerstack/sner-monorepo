@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import SubmitField from '@/components/fields/SubmitField'
@@ -31,7 +32,7 @@ const HostAddPage = () => {
 
     try {
       const resp = await httpClient.post<{ host_id: number }>(
-        import.meta.env.VITE_SERVER_URL + `/storage/host/add`,
+        urlFor(`/backend/storage/host/add`),
         formData,
       )
 

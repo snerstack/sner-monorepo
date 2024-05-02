@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
+import { urlFor } from '@/lib/urlHelper'
 import httpClient from '@/lib/httpClient'
 
 import Heading from '@/components/Heading'
@@ -20,7 +21,7 @@ const WebAuthnEditPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        import.meta.env.VITE_SERVER_URL + `/auth/profile/webauthn/edit/${cred.id}`,
+        urlFor(`/backend/auth/profile/webauthn/edit/${cred.id}`),
         formData,
       )
 

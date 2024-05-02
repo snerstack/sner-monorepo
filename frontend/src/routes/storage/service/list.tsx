@@ -6,6 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { deleteRow, getColorForTag } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -89,7 +90,7 @@ const ServiceListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'service_list_table',
-            url: `/storage/service/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/service/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -115,7 +116,7 @@ const ServiceListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'service_list_table',
-            url: `/storage/service/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/service/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="service_comment_annotate">{row['comment']}</div>)
@@ -150,7 +151,7 @@ const ServiceListPage = () => {
             <Button name="+V" title="Add vuln" url={`/storage/vuln/add/service/${row['id']}`} navigate={navigate} />
             <Button name="+N" title="Add note" url={`/storage/note/add/service/${row['id']}`} navigate={navigate} />
             <EditButton url={`/storage/service/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/storage/service/delete/${row['id']}`} tableId="service_list_table" />
+            <DeleteButton url={urlFor(`/backend/storage/service/delete/${row['id']}`)} tableId="service_list_table" />
           </ButtonGroup>,
         ),
     }),
@@ -210,14 +211,14 @@ const ServiceListPage = () => {
                   show: true,
                   action: 'set',
                   tableId: 'service_list_table',
-                  url: '/storage/service/tag_multiid',
+                  url: urlFor('/backend/storage/service/tag_multiid'),
                 })
               }
             >
               <i className="fas fa-tag"></i>
             </a>
             {import.meta.env.VITE_SERVICE_TAGS.split(',').map((tag) => (
-              <TagButton tag={tag} key={tag} url="/storage/service/tag_multiid" tableId="service_list_table" />
+              <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/service/tag_multiid")} tableId="service_list_table" />
             ))}
           </div>{' '}
           <div className="btn-group">
@@ -230,7 +231,7 @@ const ServiceListPage = () => {
                   show: true,
                   action: 'unset',
                   tableId: 'service_list_table',
-                  url: '/storage/service/tag_multiid',
+                  url: urlFor('/backend/storage/service/tag_multiid'),
                 })
               }
             >
@@ -247,7 +248,7 @@ const ServiceListPage = () => {
               </a>
               <TagsDropdownButton
                 tags={import.meta.env.VITE_SERVICE_TAGS.split(',')}
-                url="/storage/service/tag_multiid"
+                url={urlFor("/backend/storage/service/tag_multiid")}
                 tableId="service_list_table"
               />
             </div>
@@ -255,7 +256,7 @@ const ServiceListPage = () => {
               data-testid="delete-row-btn"
               className="btn btn-outline-secondary"
               href="#"
-              onClick={() => deleteRow('service_list_table', '/storage/service/delete_multiid')}
+              onClick={() => deleteRow('service_list_table', urlFor('/backend/storage/service/delete_multiid'))}
             >
               <i className="fas fa-trash text-danger"></i>
             </a>
@@ -282,10 +283,10 @@ const ServiceListPage = () => {
         id="service_list_table"
         columns={columns}
         ajax={{
-          url:
-            import.meta.env.VITE_SERVER_URL +
-            '/storage/service/list.json' +
+          url: urlFor(
+            '/backend/storage/service/list.json' +
             (searchParams.toString() ? `?${searchParams.toString()}` : ''),
+          ),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

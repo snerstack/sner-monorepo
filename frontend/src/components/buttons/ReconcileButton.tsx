@@ -12,7 +12,7 @@ const ReconcileButton = ({ url, tableId }: { url: string; tableId: string }) => 
       onClick={(e) => {
         e.preventDefault()
         httpClient
-          .post<{ message: string }>(import.meta.env.VITE_SERVER_URL + url)
+          .post<{ message: string }>(url)
           .then((data) => {
             toast.success(data.data.message)
             getTableApi(tableId).draw()

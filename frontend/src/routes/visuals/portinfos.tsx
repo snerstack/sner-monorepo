@@ -6,6 +6,8 @@ import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
+import { urlFor } from '@/lib/urlHelper'
+
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 
@@ -34,8 +36,7 @@ const PortinfosPage = () => {
 
     // generate graph layout
     d3.json(
-      import.meta.env.VITE_SERVER_URL +
-        `/visuals/portinfos.json${searchParams.toString() ? `?${searchParams.toString()}` : ''}`,
+      urlFor(`/backend/visuals/portinfos.json${searchParams.toString() ? `?${searchParams.toString()}` : ''}`),
       { credentials: 'include' },
     )
       .then((data) => {

@@ -5,7 +5,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
-
+import { urlFor } from '@/lib/urlHelper'
 import httpClient from '@/lib/httpClient'
 
 export default function App() {
@@ -14,7 +14,7 @@ export default function App() {
 
   const authHandler = () => {
     httpClient
-      .get<User>(import.meta.env.VITE_SERVER_URL + '/auth/user/@me')
+      .get<User>(urlFor('/backend/auth/user/@me'))
       .then((resp) => {
         setUser({ ...resp.data, isAuthenticated: true })
         setIsChecking(false)

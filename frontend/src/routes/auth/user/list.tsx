@@ -8,6 +8,7 @@ import { apikeyModalState } from '@/atoms/apikeyModalAtom'
 
 import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
@@ -38,9 +39,7 @@ const UserListPage = () => {
                 e.preventDefault()
                 httpClient
                   .post<{ apikey?: string; message?: string }>(
-                    `${import.meta.env.VITE_SERVER_URL}/auth/user/apikey/${row['id']}/${
-                      row['apikey'] ? 'revoke' : 'generate'
-                    }`,
+                    urlFor(`/backend/auth/user/apikey/${row['id']}/${row['apikey'] ? 'revoke' : 'generate'}`),
                   )
                   .then((res) => {
                     if (res.data.apikey) {
@@ -70,7 +69,7 @@ const UserListPage = () => {
           cell,
           <ButtonGroup>
             <EditButton url={`/auth/user/edit/${row['id']}`} navigate={navigate} />
-            <DeleteButton url={`/auth/user/delete/${row['id']}`} tableId="user_list_table" />
+            <DeleteButton url={`/backend/auth/user/delete/${row['id']}`} tableId="user_list_table" />
           </ButtonGroup>,
         ),
     }),
@@ -93,7 +92,7 @@ const UserListPage = () => {
         id="user_list_table"
         columns={columns}
         ajax={{
-          url: import.meta.env.VITE_SERVER_URL + '/auth/user/list.json',
+          url: urlFor('/backend/auth/user/list.json'),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

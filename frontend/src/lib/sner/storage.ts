@@ -172,7 +172,7 @@ export const tagAction = async ({
   }
 
   await httpClient
-    .post(import.meta.env.VITE_SERVER_URL + url, formData)
+    .post(url, formData)
     .catch(() => toast.error('Error while adding a tag'))
 }
 
@@ -195,7 +195,7 @@ export const deleteRow = (tableId: string, url: string) => {
   }
 
   httpClient
-    .post(import.meta.env.VITE_SERVER_URL + url, formData)
+    .post(url, formData)
     .then(() => api.draw())
     .catch(() => toast.error('Error while deleting a row'))
 }

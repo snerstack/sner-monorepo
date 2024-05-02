@@ -8,6 +8,7 @@ import { useRecoilState } from 'recoil'
 import { userState } from '@/atoms/userAtom'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import SubmitField from '@/components/fields/SubmitField'
@@ -23,7 +24,7 @@ const TOTPLoginPage = () => {
     formData.append('code', code)
 
     try {
-      const resp = await httpClient.post<User>(import.meta.env.VITE_SERVER_URL + '/auth/login_totp', formData)
+      const resp = await httpClient.post<User>(urlFor('/backend/auth/login_totp'), formData)
 
       setUser({ ...resp.data, isAuthenticated: true })
 

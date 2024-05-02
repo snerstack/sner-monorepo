@@ -4,6 +4,7 @@ import { Link, useLoaderData } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
@@ -85,7 +86,7 @@ const PortmapPage = () => {
                 to={`/storage/service/list?filter=Service.port=="${port}"`}
                 onMouseEnter={() => {
                   httpClient
-                    .get<PortDetails>(import.meta.env.VITE_SERVER_URL + `/visuals/portmap_portstat/${port}.json`)
+                    .get<PortDetails>(urlFor(`/backend/visuals/portmap_portstat/${port}.json`))
                     .then((resp) => setPortDetails(resp.data))
                     .catch(() => toast.error('Error while fetching data.'))
                 }}

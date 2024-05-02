@@ -28,7 +28,7 @@ const MultipleTagModal = ({
     }
 
     httpClient
-      .post(import.meta.env.VITE_SERVER_URL + multipleTag.url, formData)
+      .post(multipleTag.url, formData)
       .then(() => {
         setMultipleTag({ ...multipleTag, show: false })
         getTableApi(multipleTag.tableId).draw()

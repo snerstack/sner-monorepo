@@ -5,6 +5,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import HostAutocompleteField from '@/components/fields/HostAutocompleteField'
@@ -71,7 +72,7 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
 
     try {
       const resp = await httpClient.post<{ vuln_id: number }>(
-        import.meta.env.VITE_SERVER_URL + `/storage/vuln/add/${type}/${hostId}`,
+        urlFor(`/backend/storage/vuln/add/${type}/${hostId}`),
         formData,
       )
 

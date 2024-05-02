@@ -26,7 +26,7 @@ const AnnotateModal = ({
     formData.append('comment', comment)
 
     httpClient
-      .post(import.meta.env.VITE_SERVER_URL + annotate.url, formData)
+      .post(annotate.url, formData)
       .then(() => {
         setAnnotate({ ...annotate, show: false })
         if (annotate.tableId) {

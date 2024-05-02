@@ -8,6 +8,7 @@ import { useRecoilState } from 'recoil'
 import { userState } from '@/atoms/userAtom'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 const Nav = () => {
   const [currentUser, setCurrentUser] = useRecoilState(userState)
@@ -23,7 +24,7 @@ const Nav = () => {
 
   const logoutHandler = async () => {
     try {
-      await httpClient.get(import.meta.env.VITE_SERVER_URL + '/auth/logout')
+      await httpClient.get(urlFor('/backend/auth/logout'))
 
       setCurrentUser({ id: 0, username: '', email: '', roles: [], isAuthenticated: false })
 

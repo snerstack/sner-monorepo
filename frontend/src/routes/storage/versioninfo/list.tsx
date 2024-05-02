@@ -6,6 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { getColorForTag } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -103,7 +104,7 @@ const VersionInfosListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'versioninfo_list_table',
-            url: `/storage/versioninfo/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/versioninfo/annotate/${row['id']}`),
           })
         }
         renderElements(
@@ -129,7 +130,7 @@ const VersionInfosListPage = () => {
             tags: row['tags'],
             comment: row['comment'] || '',
             tableId: 'versioninfo_list_table',
-            url: `/storage/versioninfo/annotate/${row['id']}`,
+            url: urlFor(`/backend/storage/versioninfo/annotate/${row['id']}`),
           })
         }
         renderElements(cell, <div data-testid="versioninfo_comment_annotate">{row['comment']}</div>)
@@ -224,14 +225,14 @@ const VersionInfosListPage = () => {
                   show: true,
                   action: 'set',
                   tableId: 'versioninfo_list_table',
-                  url: '/storage/versioninfo/tag_multiid',
+                  url: urlFor('/backend/storage/versioninfo/tag_multiid'),
                 })
               }
             >
               <i className="fas fa-tag"></i>
             </a>
             {import.meta.env.VITE_VERSIONINFO_TAGS.split(',').map((tag) => (
-              <TagButton tag={tag} key={tag} url="/storage/versioninfo/tag_multiid" tableId="versioninfo_list_table" />
+              <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/versioninfo/tag_multiid")} tableId="versioninfo_list_table" />
             ))}
           </div>{' '}
           <div className="btn-group">
@@ -244,7 +245,7 @@ const VersionInfosListPage = () => {
                   show: true,
                   action: 'unset',
                   tableId: 'versioninfo_list_table',
-                  url: '/storage/versioninfo/tag_multiid',
+                  url: urlFor('/backend/storage/versioninfo/tag_multiid'),
                 })
               }
             >
@@ -261,7 +262,7 @@ const VersionInfosListPage = () => {
               </a>
               <TagsDropdownButton
                 tags={import.meta.env.VITE_VERSIONINFO_TAGS.split(',')}
-                url="/storage/versioninfo/tag_multiid"
+                url={urlFor("/backend/storage/versioninfo/tag_multiid")}
                 tableId="versioninfo_list_table"
               />
             </div>
@@ -274,10 +275,10 @@ const VersionInfosListPage = () => {
         id="versioninfo_list_table"
         columns={columns}
         ajax={{
-          url:
-            import.meta.env.VITE_SERVER_URL +
-            '/storage/versioninfo/list.json' +
+          url: urlFor(
+            '/backend/storage/versioninfo/list.json' +
             (searchParams.toString() ? `?${searchParams.toString()}` : ''),
+          ),
           type: 'POST',
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),

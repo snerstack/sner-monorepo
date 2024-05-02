@@ -3,6 +3,7 @@ import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 const ServiceAutocompleteField = ({
   hostId,
@@ -35,8 +36,7 @@ const ServiceAutocompleteField = ({
   const autocompleteHandler = async (searchTerm: string) => {
     try {
       const resp = await httpClient.get<{ label: string; value: number }[]>(
-        import.meta.env.VITE_SERVER_URL +
-          `/storage/vuln_addedit_service_autocomplete?host_id=${hostId}&service_term=${searchTerm}`,
+        urlFor(`/backend/storage/vuln_addedit_service_autocomplete?host_id=${hostId}&service_term=${searchTerm}`)
       )
 
       setSuggestions(resp.data)
