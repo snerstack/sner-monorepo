@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
+import  httpClient from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import FilterForm from '@/components/FilterForm'
@@ -28,6 +29,11 @@ interface D3Node extends d3.SimulationNodeDatum {
   vy: number
   x: number
   y: number
+}
+
+interface ResponseData {
+  nodes: D3Node[];
+  links: D3Link[];
 }
 
 interface FLink extends d3.SimulationLinkDatum<D3Node> {}
@@ -82,19 +88,18 @@ const DnsTreePage = () => {
         event.subject.fy = null
       })
 
-    d3.json(
+    httpClient.get<ResponseData>(
       urlFor(`/backend/visuals/dnstree.json` + (searchParams.toString() ? `?${searchParams.toString()}` : '')),
-      { credentials: 'include' },
     )
-      .then((data) => {
-        const { nodes, links } = data as {
-          nodes: D3Node[]
-          links: D3Link[]
-        }
-
-        update(nodes, links)
-      })
-      .catch(() => toast.error('Error while fetching node and link data'))
+    .then((response) => {
+      const { nodes, links } = response.data;
+      update(nodes, links);
+    })
+    .catch((error) => {
+      /* c8 ignore next 3 */
+      console.error(error)
+      toast.error('Error while fetching node and link data');
+    });
 
     function update(nodes: D3Node[], links: D3Link[]) {
       linkElements = svg
