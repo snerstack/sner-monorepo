@@ -10,7 +10,7 @@ import os
 import sys
 
 import flask.cli
-from flask import Flask, has_request_context, request, render_template
+from flask import Flask, has_request_context, request
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf, CSRFProtect, CSRFError
 from flask_cors import CORS
@@ -29,6 +29,7 @@ from sner.version import __version__
 # blueprints and commands
 from sner.server.api.views import blueprint as api_blueprint
 from sner.server.auth.views import blueprint as auth_blueprint
+from sner.server.frontend.views import blueprint as frontend_blueprint, pagenotfound_route
 from sner.server.scheduler.views import blueprint as scheduler_blueprint
 from sner.server.storage.views import blueprint as storage_blueprint
 from sner.server.visuals.views import blueprint as visuals_blueprint
@@ -232,10 +233,13 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     api.init_app(app)
     api.register_blueprint(api_blueprint, url_prefix='/api')
 
-    app.register_blueprint(auth_blueprint, url_prefix='/auth')
-    app.register_blueprint(scheduler_blueprint, url_prefix='/scheduler')
-    app.register_blueprint(storage_blueprint, url_prefix='/storage')
-    app.register_blueprint(visuals_blueprint, url_prefix='/visuals')
+    app.register_blueprint(frontend_blueprint, url_prefix='/')
+    app.register_error_handler(404, pagenotfound_route)
+
+    app.register_blueprint(auth_blueprint, url_prefix='/backend/auth')
+    app.register_blueprint(scheduler_blueprint, url_prefix='/backend/scheduler')
+    app.register_blueprint(storage_blueprint, url_prefix='/backend/storage')
+    app.register_blueprint(visuals_blueprint, url_prefix='/backend/visuals')
 
     app.cli.add_command(auth_command)
     app.cli.add_command(dbx_command)
@@ -298,10 +302,6 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     @app.errorhandler(CSRFError)
     def handle_csrf_error(err):
         return error_response(message=err.description, code=400)
-
-    @app.route('/')
-    def index_route():
-        return render_template('index.html')
 
     return app
 

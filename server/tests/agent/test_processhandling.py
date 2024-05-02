@@ -42,7 +42,7 @@ def test_terminate_with_liveserver(tmpworkdir, live_server, apikey_agent, cleanu
     proc_agent = multiprocessing.Process(
         target=agent_main,
         args=([
-            '--server', url_for('index_route', _external=True),
+            '--server', url_for('frontend.index_route', _external=True),
             '--apikey', apikey_agent,
             '--queue', Queue.query.get(longrun_target.queue_id).name,
             '--oneshot',

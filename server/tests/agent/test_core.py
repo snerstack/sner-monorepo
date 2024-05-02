@@ -45,7 +45,7 @@ def test_run_with_liveserver(tmpworkdir, live_server, apikey_agent, dummy_target
     """test basic agent's networking codepath; fetch, execute, pack and upload assignment"""
 
     result = agent_main([
-        '--server', url_for('index_route', _external=True),
+        '--server', url_for('frontend.index_route', _external=True),
         '--apikey', apikey_agent,
         '--queue', Queue.query.get(dummy_target.queue_id).name,
         '--caps', 'cap1', 'cap2',
