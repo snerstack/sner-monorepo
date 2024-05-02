@@ -51,3 +51,11 @@ make devservers
 ```
 make dev
 ```
+
+### Ports
+
+* 18000 - flask dev server
+* 18080 - vite dev server
+* 18001 - gunicorn/flask prod server
+* 18002 - flask test server
+* 18082 - vite test server
