@@ -3,19 +3,9 @@
 misc server components tests
 """
 
-from flask import url_for
-
 from sner.server.extensions import db
 from sner.server.storage.models import Host
-from sner.server.utils import valid_next_url, windowed_query
-
-
-def test_valid_next_url(app):  # pylint: disable=unused-argument
-    """test next= and return_url= validator"""
-
-    assert valid_next_url(url_for('index_route'))
-    assert not valid_next_url('http://invalid_route')
-    assert not valid_next_url('invalid_route')
+from sner.server.utils import windowed_query
 
 
 def test_windowed_query(app, host):  # pylint: disable=unused-argument

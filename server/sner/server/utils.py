@@ -5,14 +5,12 @@ misc utils used in server
 
 import datetime
 import json
-from urllib.parse import urlparse
 from http import HTTPStatus
 
 import yaml
 from flask import current_app, jsonify
 from lark.exceptions import LarkError
 from sqlalchemy_filters import apply_filters
-from werkzeug.exceptions import HTTPException
 
 from sner.server.scheduler.core import ExclFamily
 from sner.server.sqlafilter import FILTER_PARSER
@@ -30,27 +28,6 @@ class SnerJSONEncoder(json.JSONEncoder):
             return o.strftime('%Y-%m-%dT%H:%M:%S')
 
         return super().default(o)  # pragma: no cover  ; no such elements
-
-
-def valid_next_url(nexturl):
-    """validates next= and return_url= urls"""
-
-    url = urlparse(nexturl)
-
-    # accept only relative URLs
-    if url.scheme or url.netloc:
-        return False
-
-    # validate for current application, cope with application_root, but only path not the query params
-    path = url.path
-    if current_app.config['APPLICATION_ROOT'] != '/':  # pragma: no cover  ; unable to test
-        path = path.replace(current_app.config['APPLICATION_ROOT'], '', 1)
-    try:
-        current_app.url_map.bind('').match(path)
-    except HTTPException:
-        return False
-
-    return True
 
 
 def yaml_dump(data):
