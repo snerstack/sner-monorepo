@@ -19,7 +19,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from sner.agent.modules import load_agent_plugins
 from sner.lib import load_yaml
-from sner.server.extensions import api, db, jsglue, migrate, login_manager, oauth, webauthn
+from sner.server.extensions import api, db, migrate, login_manager, oauth, webauthn
 from sner.server.parser import load_parser_plugins
 from sner.server.scheduler.core import ExclMatcher
 from sner.server.sessions import FilesystemSessionInterface
@@ -203,7 +203,6 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     csrf.exempt(api_blueprint)
 
     db.init_app(app)
-    jsglue.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login_route'
     login_manager.login_message = 'Not logged in'
