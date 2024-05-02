@@ -45,6 +45,6 @@ const data = {
   recordsTotal: '3',
 }
 
-export const queueListHandler = rest.post('http://localhost:18000/scheduler/queue/list.json', (_, res, ctx) => {
+export const queueListHandler = rest.post('/backend/scheduler/queue/list.json', (_, res, ctx) => {
   return res(ctx.json(data))
 })

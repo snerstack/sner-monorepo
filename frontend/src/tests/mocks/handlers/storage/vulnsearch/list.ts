@@ -49,7 +49,7 @@ const data = {
 }
 
 export const vulnSearchListHandler = rest.post(
-  'http://localhost:18000/storage/vulnsearch/list.json',
+  '/backend/storage/vulnsearch/list.json',
   (req, res, ctx) => {
     if (req.url.searchParams.get('filter') === 'Host.address=="127.5.5.5"') {
       return res(ctx.json({ draw: '1', recordsTotal: '1', recordsFiltered: '1', data: [data.data[0]] }))

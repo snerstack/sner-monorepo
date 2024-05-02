@@ -35,6 +35,6 @@ const data = {
   recordsTotal: '3',
 }
 
-export const userListHandler = rest.post('http://localhost:18000/auth/user/list.json', (_, res, ctx) => {
+export const userListHandler = rest.post('/backend/auth/user/list.json', (_, res, ctx) => {
   return res(ctx.json(data))
 })

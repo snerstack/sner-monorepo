@@ -14,7 +14,7 @@ const data = {
   ],
 }
 export const webauthnListHandler = rest.post(
-  'http://localhost:18000/auth/profile/webauthn/list.json',
+  '/backend/auth/profile/webauthn/list.json',
   (_, res, ctx) => {
     return res(ctx.json(data))
   },

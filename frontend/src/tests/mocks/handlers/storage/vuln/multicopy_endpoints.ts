@@ -190,7 +190,7 @@ const data = {
 }
 
 export const multicopyEndpointsHandler = rest.post(
-  'http://localhost:18000/storage/vuln/multicopy_endpoints.json',
+  '/backend/storage/vuln/multicopy_endpoints.json',
   (_, res, ctx) => {
     return res(ctx.json(data))
   },

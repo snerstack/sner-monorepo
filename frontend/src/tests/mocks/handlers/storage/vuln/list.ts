@@ -156,7 +156,7 @@ const data = {
   ],
 }
 
-export const vulnListHandler = rest.post('http://localhost:18000/storage/vuln/list.json', (req, res, ctx) => {
+export const vulnListHandler = rest.post('/backend/storage/vuln/list.json', (req, res, ctx) => {
   if (req.url.searchParams.get('filter') === 'Vuln.name=="aggregable vuln"') {
     return res(ctx.json({ draw: '1', recordsTotal: '1', recordsFiltered: '1', data: [data.data[0]] }))
   }

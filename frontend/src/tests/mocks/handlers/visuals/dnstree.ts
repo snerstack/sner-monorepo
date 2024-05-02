@@ -52,6 +52,6 @@ const data = {
   ],
 }
 
-export const dnsTreeHandler = rest.get('http://localhost:18000/visuals/dnstree.json', (_, res, ctx) => {
+export const dnsTreeHandler = rest.get('/backend/visuals/dnstree.json', (_, res, ctx) => {
   return res(ctx.json(data))
 })

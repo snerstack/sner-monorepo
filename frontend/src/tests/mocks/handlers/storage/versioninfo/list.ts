@@ -73,7 +73,7 @@ const data = {
 }
 
 export const versioninfoListHandler = rest.post(
-  'http://localhost:18000/storage/versioninfo/list.json',
+  '/backend/storage/versioninfo/list.json',
   (req, res, ctx) => {
     if (req.url.searchParams.get('product') === 'apache' && req.url.searchParams.get('versionspec') === '<=2.0') {
       return res(ctx.json({ draw: '1', recordsTotal: '4', recordsFiltered: '1', data: [data.data[0]] }))

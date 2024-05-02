@@ -80,7 +80,7 @@ const data = {
   ],
 }
 
-export const noteListHandler = rest.post('http://localhost:18000/storage/note/list.json', (req, res, ctx) => {
+export const noteListHandler = rest.post('/backend/storage/note/list.json', (req, res, ctx) => {
   if (req.url.searchParams.get('filter') === 'Host.address=="127.4.4.4"') {
     return res(ctx.json({ draw: '1', recordsTotal: '1', recordsFiltered: '1', data: [data.data[0]] }))
   }

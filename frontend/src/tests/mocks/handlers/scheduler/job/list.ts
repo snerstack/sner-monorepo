@@ -40,6 +40,6 @@ const data = {
   ],
 }
 
-export const jobListHandler = rest.post('http://localhost:18000/scheduler/job/list.json', (_, res, ctx) => {
+export const jobListHandler = rest.post('/backend/scheduler/job/list.json', (_, res, ctx) => {
   return res(ctx.json(data))
 })
