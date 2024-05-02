@@ -40,7 +40,9 @@ export default ({ mode }) => {
       setupFiles: ['./src/tests/setup.ts'],
       exclude: [...configDefaults.exclude, 'src/tests/mocks', 'src/tests/utils'],
       testTimeout: 15000,
-      threads: false,
+      threads: true,
+      minThreads: 2,
+      maxThreads: 2,
       retry: 0,
       reporters: ['hanging-process', 'verbose'],
       coverage: {
