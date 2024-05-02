@@ -3,10 +3,8 @@
 selenium ui tests for storage.service component
 """
 
-import os
 import string
 
-import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -23,7 +21,7 @@ from tests.selenium.storage import (
 )
 
 
-def test_service_list_route(live_server, sl_operator, service):  # pylint: disable=unused-argument
+def test_service_list_route(frontend_server, sl_operator, service):  # pylint: disable=unused-argument
     """simple test ajaxed datatable rendering"""
 
     sl_operator.get(frontend_url('/storage/service/list'))
@@ -31,7 +29,7 @@ def test_service_list_route(live_server, sl_operator, service):  # pylint: disab
     dt_rendered(sl_operator, 'service_list_table', service.comment)
 
 
-def test_service_list_route_inrow_delete(live_server, sl_operator, service):  # pylint: disable=unused-argument
+def test_service_list_route_inrow_delete(frontend_server, sl_operator, service):  # pylint: disable=unused-argument
     """delete service inrow button"""
 
     service_id = service.id
@@ -44,7 +42,7 @@ def test_service_list_route_inrow_delete(live_server, sl_operator, service):  # 
     assert not Service.query.get(service_id)
 
 
-def test_service_list_route_annotate(live_server, sl_operator, service):  # pylint: disable=unused-argument
+def test_service_list_route_annotate(frontend_server, sl_operator, service):  # pylint: disable=unused-argument
     """test annotation from list route"""
 
     sl_operator.get(frontend_url('/storage/service/list'))
@@ -53,7 +51,7 @@ def test_service_list_route_annotate(live_server, sl_operator, service):  # pyli
     check_annotate(sl_operator, 'service_comment_annotate', service)
 
 
-def test_service_list_route_service_endpoint_dropdown(live_server, sl_operator, service):  # pylint: disable=unused-argument
+def test_service_list_route_service_endpoint_dropdown(frontend_server, sl_operator, service):  # pylint: disable=unused-argument
     """service endpoint uris dropdown test"""
 
     sl_operator.get(frontend_url('/storage/service/list'))
@@ -62,7 +60,7 @@ def test_service_list_route_service_endpoint_dropdown(live_server, sl_operator, 
     check_service_endpoint_dropdown(sl_operator, sl_operator.find_element(By.ID, 'service_list_table'), service.port)
 
 
-def test_service_list_route_moredata_dropdown(live_server, sl_operator, service):  # pylint: disable=unused-argument
+def test_service_list_route_moredata_dropdown(frontend_server, sl_operator, service):  # pylint: disable=unused-argument
     """test moredata dropdown"""
 
     sl_operator.get(frontend_url('/storage/service/list'))
@@ -78,35 +76,31 @@ def test_service_list_route_moredata_dropdown(live_server, sl_operator, service)
     )))
 
 
-@pytest.mark.skipif('PYTEST_SLOW' not in os.environ, reason='ux tested by host_list')
-def test_service_list_route_selectrows(live_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
+def test_service_list_route_selectrows(frontend_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
     """test dt selection and selection buttons"""
 
     check_dt_toolbox_select_rows(sl_operator, frontend_url('/storage/service/list'), 'service_list_table')
 
 
-@pytest.mark.skipif('PYTEST_SLOW' not in os.environ, reason='ux tested by host_list')
-def test_service_list_route_dt_toolbox_visibility_toggle(live_server, sl_operator, service_factory):  # pylint: disable=unused-argument
+def test_service_list_route_dt_toolbox_visibility_toggle(frontend_server, sl_operator, service_factory):  # pylint: disable=unused-argument
     """test dt selection and selection buttons"""
 
     check_dt_toolbox_visibility_toggle(sl_operator, frontend_url('/storage/service/list'), 'service_list_table', service_factory)
 
 
-@pytest.mark.skipif('PYTEST_SLOW' not in os.environ, reason='ux tested by host_list')
-def test_service_list_route_dt_toolbox_multiactions(live_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
+def test_service_list_route_dt_toolbox_multiactions(frontend_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
     """test dt selection and selection buttons"""
 
     check_dt_toolbox_multiactions(sl_operator, frontend_url('/storage/service/list'), 'service_list_table', Service)
 
 
-@pytest.mark.skipif('PYTEST_SLOW' not in os.environ, reason='ux tested by host_list')
-def test_service_list_route_dt_toolbox_freetag(live_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
+def test_service_list_route_dt_toolbox_freetag(frontend_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
     """test dt freetag buttons"""
 
     check_dt_toolbox_freetag(sl_operator, frontend_url('/storage/service/list'), 'service_list_table', Service)
 
 
-def test_service_grouped_route_filter_specialchars(live_server, sl_operator, service_factory):  # pylint: disable=unused-argument
+def test_service_grouped_route_filter_specialchars(frontend_server, sl_operator, service_factory):  # pylint: disable=unused-argument
     """test grouped service info view and filtering features with specialchars"""
 
     service_factory.create(info=string.printable)

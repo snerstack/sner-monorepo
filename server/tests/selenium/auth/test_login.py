@@ -6,7 +6,6 @@ auth.views.login selenium tests
 from base64 import b64decode, b64encode
 
 from fido2 import cbor
-from flask import url_for
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -17,7 +16,7 @@ from tests.selenium import webdriver_waituntil, frontend_url, wait_for_js
 from tests.selenium.auth import js_variable_ready
 
 
-def test_login_webauthn(live_server, selenium, webauthn_credential_factory):  # pylint: disable=unused-argument
+def test_login_webauthn(frontend_server, selenium, webauthn_credential_factory):  # pylint: disable=unused-argument
     """test login by webauthn"""
 
     device = SoftWebauthnDevice()
@@ -27,7 +26,7 @@ def test_login_webauthn(live_server, selenium, webauthn_credential_factory):  # 
     # accessing from different process such as real browser
     db.session.commit()
 
-    selenium.get(frontend_url(url_for('auth.login_route')))
+    selenium.get(frontend_url('/auth/login'))
     wait_for_js(selenium)
     selenium.find_element(By.XPATH, '//form//input[@name="username"]').send_keys(wncred.user.username)
     selenium.find_element(By.XPATH, '//form//input[@type="submit"]').click()

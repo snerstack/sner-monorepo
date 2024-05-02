@@ -8,7 +8,6 @@ import signal
 import subprocess
 
 import pytest
-from flask import url_for
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -34,7 +33,7 @@ def selenium_in_roles(sclnt, roles):
     db.session.add(tmp_user)
     db.session.commit()
 
-    sclnt.get(frontend_url(url_for('auth.login_route')))
+    sclnt.get(frontend_url("/auth/login"))
     wait_for_js(sclnt)
     sclnt.find_element(By.XPATH, '//form//input[@name="username"]').send_keys(tmp_user.username)
     sclnt.find_element(By.XPATH, '//form//input[@name="password"]').send_keys(tmp_password)

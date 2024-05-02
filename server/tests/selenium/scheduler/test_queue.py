@@ -10,7 +10,7 @@ from sner.server.scheduler.models import Queue
 from tests.selenium import dt_inrow_delete, dt_rendered, dt_wait_processing, frontend_url, wait_for_js
 
 
-def test_queue_list_route(live_server, sl_operator, queue):  # pylint: disable=unused-argument
+def test_queue_list_route(frontend_server, sl_operator, queue):  # pylint: disable=unused-argument
     """simple test ajaxed datatable rendering"""
 
     sl_operator.get(frontend_url('/scheduler/queue/list'))
@@ -18,7 +18,7 @@ def test_queue_list_route(live_server, sl_operator, queue):  # pylint: disable=u
     dt_rendered(sl_operator, 'queue_list_table', queue.name)
 
 
-def test_queue_list_route_inrow_delete(live_server, sl_operator, queue):  # pylint: disable=unused-argument
+def test_queue_list_route_inrow_delete(frontend_server, sl_operator, queue):  # pylint: disable=unused-argument
     """delete queue inrow button"""
 
     queue_id = queue.id
@@ -30,7 +30,7 @@ def test_queue_list_route_inrow_delete(live_server, sl_operator, queue):  # pyli
     assert not Queue.query.get(queue_id)
 
 
-def test_queue_list_route_inrow_flush(live_server, sl_operator, target):  # pylint: disable=unused-argument
+def test_queue_list_route_inrow_flush(frontend_server, sl_operator, target):  # pylint: disable=unused-argument
     """flush queue inrow button"""
 
     tqueue_id = target.queue_id

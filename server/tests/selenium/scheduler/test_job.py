@@ -12,7 +12,7 @@ from sner.server.scheduler.models import Heatmap, Job, Target
 from tests.selenium import dt_inrow_delete, dt_rendered, dt_wait_processing, frontend_url, wait_for_js
 
 
-def test_job_list_route(live_server, sl_operator, job):  # pylint: disable=unused-argument
+def test_job_list_route(frontend_server, sl_operator, job):  # pylint: disable=unused-argument
     """simple test ajaxed datatable rendering"""
 
     sl_operator.get(frontend_url('/scheduler/job/list'))
@@ -20,7 +20,7 @@ def test_job_list_route(live_server, sl_operator, job):  # pylint: disable=unuse
     dt_rendered(sl_operator, 'job_list_table', job.id)
 
 
-def test_job_list_route_inrow_delete(live_server, sl_operator, job_completed):  # pylint: disable=unused-argument
+def test_job_list_route_inrow_delete(frontend_server, sl_operator, job_completed):  # pylint: disable=unused-argument
     """delete job inrow button"""
 
     job_id = job_completed.id
@@ -32,7 +32,7 @@ def test_job_list_route_inrow_delete(live_server, sl_operator, job_completed):  
     assert not Job.query.get(job_id)
 
 
-def test_job_list_route_inrow_reconcile(live_server, sl_operator, job):  # pylint: disable=unused-argument
+def test_job_list_route_inrow_reconcile(frontend_server, sl_operator, job):  # pylint: disable=unused-argument
     """job list inrow reconcile button"""
 
     assert Heatmap.query.filter(Heatmap.count > 0).count() == 2
@@ -48,7 +48,7 @@ def test_job_list_route_inrow_reconcile(live_server, sl_operator, job):  # pylin
     assert Heatmap.query.filter(Heatmap.count > 0).count() == 0
 
 
-def test_job_list_route_inrow_repeat(live_server, sl_operator, job):  # pylint: disable=unused-argument
+def test_job_list_route_inrow_repeat(frontend_server, sl_operator, job):  # pylint: disable=unused-argument
     """job list inrow repeat button"""
 
     dt_id = 'job_list_table'

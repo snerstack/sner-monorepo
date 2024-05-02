@@ -3,10 +3,8 @@
 selenium ui tests for storage.note component
 """
 
-import os
 import string
 
-import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -24,7 +22,7 @@ from tests.selenium.storage import (
 )
 
 
-def test_note_list_route(live_server, sl_operator, note):  # pylint: disable=unused-argument
+def test_note_list_route(frontend_server, sl_operator, note):  # pylint: disable=unused-argument
     """simple test ajaxed datatable rendering"""
 
     sl_operator.get(frontend_url('/storage/note/list'))
@@ -32,7 +30,7 @@ def test_note_list_route(live_server, sl_operator, note):  # pylint: disable=unu
     dt_rendered(sl_operator, 'note_list_table', note.comment)
 
 
-def test_note_list_route_inrow_delete(live_server, sl_operator, note):  # pylint: disable=unused-argument
+def test_note_list_route_inrow_delete(frontend_server, sl_operator, note):  # pylint: disable=unused-argument
     """delete note inrow button"""
 
     note_id = note.id
@@ -45,7 +43,7 @@ def test_note_list_route_inrow_delete(live_server, sl_operator, note):  # pylint
     assert not Note.query.get(note_id)
 
 
-def test_note_list_route_annotate(live_server, sl_operator, note):  # pylint: disable=unused-argument
+def test_note_list_route_annotate(frontend_server, sl_operator, note):  # pylint: disable=unused-argument
     """test annotation from list route"""
 
     sl_operator.get(frontend_url('/storage/note/list'))
@@ -54,7 +52,7 @@ def test_note_list_route_annotate(live_server, sl_operator, note):  # pylint: di
     check_annotate(sl_operator, 'note_comment_annotate', note)
 
 
-def test_note_list_route_service_endpoint_dropdown(live_server, sl_operator, note_factory, service):  # pylint: disable=unused-argument
+def test_note_list_route_service_endpoint_dropdown(frontend_server, sl_operator, note_factory, service):  # pylint: disable=unused-argument
     """service endpoint uris dropdown test"""
 
     test_note = note_factory.create(service=service)
@@ -69,7 +67,7 @@ def test_note_list_route_service_endpoint_dropdown(live_server, sl_operator, not
     )
 
 
-def test_note_list_route_moredata_dropdown(live_server, sl_operator, note):  # pylint: disable=unused-argument
+def test_note_list_route_moredata_dropdown(frontend_server, sl_operator, note):  # pylint: disable=unused-argument
     """moredata dropdown test"""
 
     sl_operator.get(frontend_url('/storage/note/list'))
@@ -85,35 +83,31 @@ def test_note_list_route_moredata_dropdown(live_server, sl_operator, note):  # p
     )))
 
 
-@pytest.mark.skipif('PYTEST_SLOW' not in os.environ, reason='ux tested by host_list')
-def test_note_list_route_selectrows(live_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
+def test_note_list_route_selectrows(frontend_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
     """test dt selection and selection buttons"""
 
     check_dt_toolbox_select_rows(sl_operator, frontend_url('/storage/note/list'), 'note_list_table')
 
 
-@pytest.mark.skipif('PYTEST_SLOW' not in os.environ, reason='ux tested by host_list')
-def test_note_list_route_dt_toolbox_multiactions(live_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
+def test_note_list_route_dt_toolbox_multiactions(frontend_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
     """test dt selection and selection buttons"""
 
     check_dt_toolbox_multiactions(sl_operator, frontend_url('/storage/note/list'), 'note_list_table', Note)
 
 
-@pytest.mark.skipif('PYTEST_SLOW' not in os.environ, reason='ux tested by host_list')
-def test_note_list_route_dt_toolbox_freetag(live_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
+def test_note_list_route_dt_toolbox_freetag(frontend_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
     """test dt freetag buttons"""
 
     check_dt_toolbox_freetag(sl_operator, frontend_url('/storage/note/list'), 'note_list_table', Note)
 
 
-@pytest.mark.skipif('PYTEST_SLOW' not in os.environ, reason='ux tested by host_list')
-def test_note_list_route_dt_toolbox_visibility_toggle(live_server, sl_operator, note_factory):  # pylint: disable=unused-argument
+def test_note_list_route_dt_toolbox_visibility_toggle(frontend_server, sl_operator, note_factory):  # pylint: disable=unused-argument
     """test dt selection and selection buttons"""
 
     check_dt_toolbox_visibility_toggle(sl_operator, frontend_url('/storage/note/list'), 'note_list_table', note_factory)
 
 
-def test_note_view_route_annotate(live_server, sl_operator, note):  # pylint: disable=unused-argument
+def test_note_view_route_annotate(frontend_server, sl_operator, note):  # pylint: disable=unused-argument
     """test note annotation from view route"""
 
     sl_operator.get(frontend_url(f'/storage/note/view/{note.id}'))
@@ -121,7 +115,7 @@ def test_note_view_route_annotate(live_server, sl_operator, note):  # pylint: di
     check_annotate(sl_operator, 'note_comment_annotate', note)
 
 
-def test_note_view_route_service_endpoint_dropdown(live_server, sl_operator, note_factory, service):  # pylint: disable=unused-argument
+def test_note_view_route_service_endpoint_dropdown(frontend_server, sl_operator, note_factory, service):  # pylint: disable=unused-argument
     """test note annotation from view route"""
 
     test_note = note_factory.create(service=service)
@@ -135,7 +129,7 @@ def test_note_view_route_service_endpoint_dropdown(live_server, sl_operator, not
     )
 
 
-def test_note_view_route_moredata_dropdown(live_server, sl_operator, note):  # pylint: disable=unused-argument
+def test_note_view_route_moredata_dropdown(frontend_server, sl_operator, note):  # pylint: disable=unused-argument
     """test note view breadcrumb ribbon moredata dropdown"""
 
     sl_operator.get(frontend_url(f'/storage/note/view/{note.id}'))
@@ -150,7 +144,7 @@ def test_note_view_route_moredata_dropdown(live_server, sl_operator, note):  # p
     )))
 
 
-def test_note_grouped_route_filter_specialchars(live_server, sl_operator, note_factory):  # pylint: disable=unused-argument
+def test_note_grouped_route_filter_specialchars(frontend_server, sl_operator, note_factory):  # pylint: disable=unused-argument
     """test grouped note info view and filtering features with specialchars"""
 
     note_factory.create(xtype=string.printable)

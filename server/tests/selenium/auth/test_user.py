@@ -11,7 +11,7 @@ from sner.server.extensions import db
 from tests.selenium import dt_inrow_delete, dt_rendered, webdriver_waituntil, frontend_url, wait_for_js
 
 
-def test_user_list_route(live_server, sl_admin, user):  # pylint: disable=unused-argument
+def test_user_list_route(frontend_server, sl_admin, user):  # pylint: disable=unused-argument
     """simple test ajaxed datatable rendering"""
 
     sl_admin.get(frontend_url('/auth/user/list'))
@@ -19,7 +19,7 @@ def test_user_list_route(live_server, sl_admin, user):  # pylint: disable=unused
     dt_rendered(sl_admin, 'user_list_table', user.username)
 
 
-def test_user_list_route_inrow_delete(live_server, sl_admin, user):  # pylint: disable=unused-argument
+def test_user_list_route_inrow_delete(frontend_server, sl_admin, user):  # pylint: disable=unused-argument
     """delete user inrow button"""
 
     user_id = user.id
@@ -32,7 +32,7 @@ def test_user_list_route_inrow_delete(live_server, sl_admin, user):  # pylint: d
     assert not User.query.get(user_id)
 
 
-def test_user_apikey_route(live_server, sl_admin, user):  # pylint: disable=unused-argument
+def test_user_apikey_route(frontend_server, sl_admin, user):  # pylint: disable=unused-argument
     """apikey generation/revoking feature tests"""
 
     sl_admin.get(frontend_url('/auth/user/list'))

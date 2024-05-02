@@ -4,7 +4,6 @@ auth.views.profile selenium tests
 """
 
 from base64 import b64decode, b64encode
-from flask import url_for
 
 from fido2 import cbor
 from selenium.webdriver.common.by import By
@@ -17,7 +16,7 @@ from tests.selenium import webdriver_waituntil, frontend_url, wait_for_js
 from tests.selenium.auth import js_variable_ready
 
 
-def test_profile_route(live_server, sl_user, webauthn_credential_factory):  # pylint: disable=unused-argument
+def test_profile_route(frontend_server, sl_user, webauthn_credential_factory):  # pylint: disable=unused-argument
     """check profile page rendering"""
 
     wac = webauthn_credential_factory.create(user=User.query.filter_by(username='pytest_user').one())
@@ -27,12 +26,12 @@ def test_profile_route(live_server, sl_user, webauthn_credential_factory):  # py
     webdriver_waituntil(sl_user, EC.visibility_of_element_located((By.XPATH, f'//td[contains(text(), "{wac.name}")]')))
 
 
-def test_profile_webauthn_register_route(live_server, sl_user):  # pylint: disable=unused-argument
+def test_profile_webauthn_register_route(frontend_server, sl_user):  # pylint: disable=unused-argument
     """register new credential for user"""
 
     device = SoftWebauthnDevice()
 
-    sl_user.get(frontend_url(url_for('auth.profile_webauthn_register_route')))
+    sl_user.get(frontend_url('/auth/profile/webauthn/register'))
     wait_for_js(sl_user)
     # some javascript code must be emulated
     webdriver_waituntil(sl_user, js_variable_ready('window.pkcco_raw'))

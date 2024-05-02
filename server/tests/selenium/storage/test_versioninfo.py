@@ -15,7 +15,7 @@ from tests.selenium.storage import (
 )
 
 
-def test_versioninfo_list_route(live_server, sl_operator, versioninfo):  # pylint: disable=unused-argument
+def test_versioninfo_list_route(frontend_server, sl_operator, versioninfo):  # pylint: disable=unused-argument
     """simple test ajaxed datatable rendering"""
 
     sl_operator.get(frontend_url('/storage/versioninfo/list'))
@@ -23,7 +23,7 @@ def test_versioninfo_list_route(live_server, sl_operator, versioninfo):  # pylin
     dt_rendered(sl_operator, 'versioninfo_list_table', versioninfo.product)
 
 
-def test_versioninfo_list_route_query_form(live_server, sl_operator, service, versioninfo_factory):  # pylint: disable=unused-argument
+def test_versioninfo_list_route_query_form(frontend_server, sl_operator, service, versioninfo_factory):  # pylint: disable=unused-argument
     """simple test query form"""
 
     versioninfo_factory.create(
@@ -50,7 +50,7 @@ def test_versioninfo_list_route_query_form(live_server, sl_operator, service, ve
     assert dt_count_rows(sl_operator, "versioninfo_list_table") == 1
 
 
-def test_versioninfo_list_route_annotate(live_server, sl_operator, versioninfo):  # pylint: disable=unused-argument
+def test_versioninfo_list_route_annotate(frontend_server, sl_operator, versioninfo):  # pylint: disable=unused-argument
     """test annotation from list route"""
 
     sl_operator.get(frontend_url('/storage/versioninfo/list'))
@@ -59,19 +59,19 @@ def test_versioninfo_list_route_annotate(live_server, sl_operator, versioninfo):
     check_annotate(sl_operator, 'versioninfo_comment_annotate', versioninfo)
 
 
-def test_versioninfo_list_route_selectrows(live_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
+def test_versioninfo_list_route_selectrows(frontend_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
     """test dt selection and selection buttons"""
 
     check_dt_toolbox_select_rows(sl_operator, frontend_url('/storage/versioninfo/list'), 'versioninfo_list_table')
 
 
-def test_versioninfo_list_route_dt_toolbox_multiactions(live_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
+def test_versioninfo_list_route_dt_toolbox_multiactions(frontend_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
     """test versioninfos multiactions"""
 
     check_dt_toolbox_multiactions(sl_operator, frontend_url('/storage/versioninfo/list'), 'versioninfo_list_table', Versioninfo, test_delete=False)
 
 
-def test_versioninfo_list_route_dt_toolbox_freetag(live_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
+def test_versioninfo_list_route_dt_toolbox_freetag(frontend_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
     """test dt freetag buttons"""
 
     check_dt_toolbox_freetag(sl_operator, frontend_url('/storage/versioninfo/list'), 'versioninfo_list_table', Versioninfo)

@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from tests.selenium import webdriver_waituntil, frontend_url, wait_for_js
 
 
-def test_quickjump_route_autocomplete(live_server, sl_operator, host):  # pylint: disable=unused-argument
+def test_quickjump_route_autocomplete(frontend_server, sl_operator, host):  # pylint: disable=unused-argument
     """quickjump test"""
 
     sl_operator.get(frontend_url('/'))
