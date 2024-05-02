@@ -11,6 +11,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 WEBDRIVER_WAIT = 10
+FRONTEND_TESTSERVER_DEFAULT = "http://localhost:18002"
+FRONTEND_TESTSERVER_DEV = "http://localhost:18082"
 
 
 class JsNoAjaxPending():  # pylint: disable=too-few-public-methods
@@ -84,7 +86,8 @@ def toggle_dt_toolboxes(sclnt):
     sclnt.find_element(By.XPATH, '//a[contains(text(), "Toggle DT toolboxes")]').click()
 
 
-def frontend_url(url):
+def frontend_url(route_path):
     """create url for frontend"""
 
-    return os.environ.get("FRONTEND_TEST_URL") + url
+    base = FRONTEND_TESTSERVER_DEV if os.environ.get("PYTEST_FRONTEND") == "dev" else FRONTEND_TESTSERVER_DEFAULT
+    return base + route_path
