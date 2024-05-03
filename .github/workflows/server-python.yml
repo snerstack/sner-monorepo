@@ -15,22 +15,11 @@ defaults:
     working-directory: server
 
 jobs:
-  lint:
+  code_quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-      - run: sudo apt-get update
-      - run: sudo sh bin/install.sh
-      - run: . venv/bin/activate && make lint
-
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: sudo apt-get update
@@ -42,3 +31,4 @@ jobs:
           sudo -u postgres psql -c "CREATE USER ${USER}"
           mkdir -p /tmp/sner_test_var
       - run: . venv/bin/activate && make coverage
+      - run: . venv/bin/activate && make lint
