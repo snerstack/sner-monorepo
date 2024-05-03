@@ -7,32 +7,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Node.js 18.x
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18.x
           cache: "npm"
           cache-dependency-path: "frontend"
-      - name: Build and preview frontend
+
+      - name: Build frontend assets
         run: |
           npm install
-          npm run build --if-present -- --mode test
-          npm run preview &
+          npm run build
         working-directory: frontend
 
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - name: Install server dependencies
-        run: |
+      - run: |
           sudo apt-get update
           sudo make install
           sudo make install-dev
         working-directory: server
-
-      - name: Setup PostgreSQL
-        run: |
+      - run: |
           sudo apt-get -y install postgresql postgresql-contrib
           sudo systemctl start postgresql
           sudo -u postgres psql -c "CREATE DATABASE sner_test"
@@ -40,10 +36,6 @@ jobs:
           mkdir -p /tmp/sner_test_var
         working-directory: server
 
-      - name: Run selenium tests
-        env:
-          FRONTEND_TEST_URL: http://localhost:18080
-        run: |
-          . venv/bin/activate
-          pytest -vv -x --live-server-port 18000 tests/selenium
+      - name: Run selenium tests with pre-built assets
+        run: . venv/bin/activate && PYTEST_FRONTEND=nobuild make test-selenium
         working-directory: server
