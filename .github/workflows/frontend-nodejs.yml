@@ -31,5 +31,5 @@ jobs:
           cache-dependency-path: "frontend"
       - run: npm install
       - run: npm run build
-      - run: npm run test
+      - run: npm run test 2>/dev/null
       - run: npm run lint
