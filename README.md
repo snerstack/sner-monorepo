@@ -25,6 +25,12 @@ cd /opt/sner
 git checkout devel
 git remote set-url origin git@github.com:snerstack/sner-monorepo.git
 
+# frontend
+cd /opt/sner/frontend
+npm install
+npm run test
+npm run lint
+
 # server
 cd /opt/sner/server
 make install
@@ -32,15 +38,9 @@ make install-dev
 make install-db
 . venv/bin/activate
 make db
-make lint coverage
+make coverage lint
 make test-selenium
 deactivate
-
-# frontend
-cd /opt/sner/frontend
-npm install
-npm run lint
-npm run test
 
 # run devservers
 cd /opt/sner

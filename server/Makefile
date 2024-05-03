@@ -1,6 +1,6 @@
 .PHONY: all freeze install install-dev install-db db lint test test-selenium coverage coverage-server coverage-server coverage-server-storage
 
-all: lint coverage
+all: coverage lint
 
 freeze:
 	@pip freeze | grep -v '^pkg[-_]resources='
