@@ -131,7 +131,7 @@ def test_vuln_list_route_service_endpoint_dropdown(frontend_server, sl_operator,
         f'{test_vuln.service.port}/{test_vuln.service.proto}'
     )
 
-    sl_operator.find_element(By.XPATH, '//i[@title="Copy to clipboard"]').click()
+    sl_operator.find_element(By.XPATH, '//i[@title="Copy link"]').click()
     # readText is not supported in firefox
     # clipboard_text = sl_operator.execute_script('return navigator.clipboard.readText()')
 

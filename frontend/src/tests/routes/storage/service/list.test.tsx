@@ -100,8 +100,14 @@ describe('Service list page', () => {
       const port = screen.getByText('443')
       fireEvent.click(port)
 
-      const copyBtn = screen.getAllByTestId('copy-to-clipboard-btn')[0]
-      fireEvent.click(copyBtn)
+      const copyLinkBtn = screen.getAllByTestId('copy-link-to-clipboard-btn')[0]
+      fireEvent.click(copyLinkBtn)
+
+      const copyTelnetBtn = screen.getAllByTestId('copy-telnet-to-clipboard-btn')[0]
+      fireEvent.click(copyTelnetBtn)
+
+      const copyCurlBtn = screen.getAllByTestId('copy-curl-to-clipboard-btn')[0]
+      fireEvent.click(copyCurlBtn)
     })
   })
 

@@ -84,32 +84,54 @@ export const getLinksForService = (
   hostHostname: string | null,
   serviceProto: string | null,
   servicePort: string | number | null,
-): string[] => {
-  const urls = []
+): { raw: string; curl: string; telnet: string }[] => {
+  const links = []
 
   const isIpv6 = hostAddress.includes(':')
-
-  if (isIpv6) {
-    hostAddress = '[' + hostAddress + ']'
-  }
+  const formattedHostAddress = isIpv6 ? '[' + hostAddress + ']' : hostAddress
 
   if (serviceProto !== null && servicePort !== null) {
-    urls.push(serviceProto + '://' + hostAddress + ':' + servicePort)
+    links.push({
+      raw: serviceProto + '://' + formattedHostAddress + ':' + servicePort,
+      curl: 'curl ' + serviceProto + '://' + formattedHostAddress + ':' + servicePort,
+      telnet: 'telnet ' + hostAddress + ' ' + servicePort,
+    })
     if (hostHostname !== null) {
-      urls.push(serviceProto + '://' + hostHostname + ':' + servicePort)
+      links.push({
+        raw: serviceProto + '://' + hostHostname + ':' + servicePort,
+        curl: 'curl ' + serviceProto + '://' + hostHostname + ':' + servicePort,
+        telnet: 'telnet ' + hostHostname + ' ' + servicePort,
+      })
     }
 
     if (serviceProto === 'tcp') {
-      urls.push('http://' + hostAddress + ':' + servicePort)
-      urls.push('https://' + hostAddress + ':' + servicePort)
+      links.push({
+        raw: 'http://' + formattedHostAddress + ':' + servicePort,
+        curl: 'curl http://' + formattedHostAddress + ':' + servicePort,
+        telnet: 'telnet ' + hostAddress + ' ' + servicePort,
+      })
+      links.push({
+        raw: 'https://' + formattedHostAddress + ':' + servicePort,
+        curl: 'curl https://' + formattedHostAddress + ':' + servicePort,
+        telnet: 'telnet ' + hostAddress + ' ' + servicePort,
+      })
+
       if (hostHostname !== null) {
-        urls.push('http://' + hostHostname + ':' + servicePort)
-        urls.push('https://' + hostHostname + ':' + servicePort)
+        links.push({
+          raw: 'http://' + hostHostname + ':' + servicePort,
+          curl: 'curl http://' + hostHostname + ':' + servicePort,
+          telnet: 'telnet ' + hostHostname + ' ' + servicePort,
+        })
+        links.push({
+          raw: 'https://' + hostHostname + ':' + servicePort,
+          curl: 'curl https://' + hostHostname + ':' + servicePort,
+          telnet: 'telnet ' + hostHostname + ' ' + servicePort,
+        })
       }
     }
   }
 
-  return urls
+  return links
 }
 
 export const encodeRFC3986URIComponent = (str: string): string => {

@@ -1,4 +1,3 @@
-import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -8,6 +7,7 @@ import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
+import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
@@ -86,28 +86,13 @@ const NoteViewPage = () => {
             </td>
             <th>service</th>
             <td className="service_endpoint_dropdown">
-              <div className="dropdown d-flex">
-                {note.service_id ? (
-                  <a className="flex-fill" data-toggle="dropdown">
-                    {`<Service ${note.service_id}: ${note.address} ${note.service_proto}.${note.service_port}>`}
-                  </a>
-                ) : (
-                  'No service'
-                )}
-                <div className="dropdown-menu">
-                  <h6 className="dropdown-header">Service endpoint URIs</h6>
-                  {getLinksForService(note.address, note.hostname, note.service_proto, note.service_port).map(
-                    (link) => (
-                      <span className="dropdown-item" key={link}>
-                        <i className="far fa-clipboard" title="Copy to clipboard"></i>{' '}
-                        <a rel="noreferrer" href={escapeHtml(link)}>
-                          {escapeHtml(link)}
-                        </a>
-                      </span>
-                    ),
-                  )}
-                </div>
-              </div>
+              <ServiceEndpointDropdown
+                service={`<Service ${note.service_id}: ${note.address} ${note.service_proto}.${note.service_port}>`}
+                address={note.address}
+                hostname={note.hostname}
+                proto={note.service_proto}
+                port={note.service_port}
+              />
             </td>
             <th>via_target</th>
             <td>{note.via_target ? note.via_target : 'None'}</td>
