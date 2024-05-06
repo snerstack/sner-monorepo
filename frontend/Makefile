@@ -12,4 +12,4 @@ test:
 	npx vitest --run
 
 coverage:
-	npx vitest --coverage --run
+	DEBUG_PRINT_LIMIT=0 npx vitest --coverage --reporter=basic --reporter=hanging-process --run 2>/dev/null

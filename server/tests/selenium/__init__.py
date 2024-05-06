@@ -89,5 +89,9 @@ def toggle_dt_toolboxes(sclnt):
 def frontend_url(route_path):
     """create url for frontend"""
 
-    base = FRONTEND_TESTSERVER_DEV if os.environ.get("PYTEST_FRONTEND") == "dev" else FRONTEND_TESTSERVER_DEFAULT
+    base = (
+        FRONTEND_TESTSERVER_DEV
+        if os.environ.get("PYTEST_FRONTEND", "dev") == "dev"
+        else FRONTEND_TESTSERVER_DEFAULT
+    )
     return base + route_path

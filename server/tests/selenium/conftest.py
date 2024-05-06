@@ -87,7 +87,7 @@ def frontend_server(built_frontend, live_server):  # pylint: disable=redefined-o
 
     if os.environ.get("PYTEST_FRONTEND", "dev") == "dev":
         proc = subprocess.Popen(  # pylint: disable=consider-using-with
-            ["npm", "run", "dev", "--", "--port", FRONTEND_TESTSERVER_DEV.split(":", maxsplit=1)[-1], "--strictPort"],
+            ["npm", "run", "dev", "--", "--port", FRONTEND_TESTSERVER_DEV.rsplit(":", maxsplit=1)[-1], "--strictPort"],
             env={
                 "PATH": os.environ["PATH"],
                 "SNER_BACKEND_URL": f"http://localhost:{live_server.port}",
