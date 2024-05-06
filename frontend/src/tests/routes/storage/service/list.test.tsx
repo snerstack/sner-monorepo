@@ -84,7 +84,7 @@ describe('Service list page', () => {
     testFilter({ query: 'Host.address=="127.4.4.4"' })
 
     await waitFor(() => {
-      expect(screen.getByText('127.4.4.4')).toBeInTheDocument()
+      expect(screen.getByRole('link', {'name': '127.4.4.4'})).toBeInTheDocument()
       expect(screen.queryByText('127.3.3.3')).toBeNull()
       expect(screen.queryByText('127.128.129.130')).toBeNull()
     })
@@ -100,8 +100,8 @@ describe('Service list page', () => {
       const port = screen.getByText('443')
       fireEvent.click(port)
 
-      const copyLinkBtn = screen.getAllByTestId('copy-link-to-clipboard-btn')[0]
-      fireEvent.click(copyLinkBtn)
+      const copyHttpBtn = screen.getAllByTestId('copy-http-to-clipboard-btn')[0]
+      fireEvent.click(copyHttpBtn)
 
       const copyTelnetBtn = screen.getAllByTestId('copy-telnet-to-clipboard-btn')[0]
       fireEvent.click(copyTelnetBtn)

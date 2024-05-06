@@ -3,7 +3,7 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
-import { getColorForTag, getLinksForService } from '@/lib/sner/storage'
+import { getColorForTag } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'

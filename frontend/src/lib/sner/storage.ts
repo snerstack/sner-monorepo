@@ -79,57 +79,38 @@ export const getColorForTag = (tag: string): string => {
   }
 }
 
+export interface linkForService {
+  name: string;
+  value: string;
+}
+
 export const getLinksForService = (
-  hostAddress: string,
-  hostHostname: string | null,
+  hostIdent: string,
   serviceProto: string | null,
   servicePort: string | number | null,
-): { raw: string; curl: string; telnet: string }[] => {
-  const links = []
-
-  const isIpv6 = hostAddress.includes(':')
-  const formattedHostAddress = isIpv6 ? '[' + hostAddress + ']' : hostAddress
-
-  if (serviceProto !== null && servicePort !== null) {
-    links.push({
-      raw: serviceProto + '://' + formattedHostAddress + ':' + servicePort,
-      curl: 'curl ' + serviceProto + '://' + formattedHostAddress + ':' + servicePort,
-      telnet: 'telnet ' + hostAddress + ' ' + servicePort,
-    })
-    if (hostHostname !== null) {
-      links.push({
-        raw: serviceProto + '://' + hostHostname + ':' + servicePort,
-        curl: 'curl ' + serviceProto + '://' + hostHostname + ':' + servicePort,
-        telnet: 'telnet ' + hostHostname + ' ' + servicePort,
-      })
-    }
-
-    if (serviceProto === 'tcp') {
-      links.push({
-        raw: 'http://' + formattedHostAddress + ':' + servicePort,
-        curl: 'curl http://' + formattedHostAddress + ':' + servicePort,
-        telnet: 'telnet ' + hostAddress + ' ' + servicePort,
-      })
-      links.push({
-        raw: 'https://' + formattedHostAddress + ':' + servicePort,
-        curl: 'curl https://' + formattedHostAddress + ':' + servicePort,
-        telnet: 'telnet ' + hostAddress + ' ' + servicePort,
-      })
-
-      if (hostHostname !== null) {
-        links.push({
-          raw: 'http://' + hostHostname + ':' + servicePort,
-          curl: 'curl http://' + hostHostname + ':' + servicePort,
-          telnet: 'telnet ' + hostHostname + ' ' + servicePort,
-        })
-        links.push({
-          raw: 'https://' + hostHostname + ':' + servicePort,
-          curl: 'curl https://' + hostHostname + ':' + servicePort,
-          telnet: 'telnet ' + hostHostname + ' ' + servicePort,
-        })
-      }
-    }
+): linkForService[] => {
+  if (serviceProto === null || servicePort === null) {
+    return []
   }
+
+  const links = []
+  const isIpv6 = hostIdent.includes(':')
+  const formattedHostAddress = isIpv6 ? '[' + hostIdent + ']' : hostIdent
+
+  links.push({"name": "svcTgt", "value": `${serviceProto}://${formattedHostAddress}:${servicePort}`})
+
+  if (serviceProto === "tcp")
+    links.push({"name": "telnet", "value": `telnet ${hostIdent} ${servicePort}`})
+  if (serviceProto === "udp")
+    links.push({"name": "nc udp", "value": `nc -vu ${hostIdent} ${servicePort}`})
+
+  links.push({"name": "nmap", "value": `nmap -sV -sC -p${serviceProto[0].toUpperCase()}:${servicePort} ${hostIdent}`})
+
+  links.push({"name": "http", "value": `http://${formattedHostAddress}:${servicePort}`})
+  links.push({"name": "https", "value": `https://${formattedHostAddress}:${servicePort}`})
+
+  links.push({"name": "curl", "value": `curl -ik http://${formattedHostAddress}:${servicePort}`})
+  links.push({"name": "dirb", "value": `dirb http://${formattedHostAddress}:${servicePort}`})
 
   return links
 }

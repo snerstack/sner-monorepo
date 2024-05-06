@@ -1,7 +1,29 @@
 import { escapeHtml } from '@/utils'
 import { toast } from 'react-toastify'
 
-import { getLinksForService } from '@/lib/sner/storage'
+import { getLinksForService, linkForService } from '@/lib/sner/storage'
+
+const clipboardCopyLink = (link: linkForService) => {
+  const firstToken = link.value.split(" ")[0]
+
+  return (
+    <a
+      key={link.value}
+      className="mx-1"
+      role="button"
+      data-testid={`copy-${link.name}-to-clipboard-btn`}
+      title={`Copy ${link.name}`}
+      href={firstToken.includes("://") ? link.value : `command://${link.value}`}
+      onClick={(e) => {
+        e.preventDefault()
+        void navigator.clipboard.writeText(link.value)
+        toast.info('Copied to clipboard')
+      }}
+    >
+      {link.name}
+    </a>
+  )
+}
 
 const ServiceEndpointDropdown = ({
   service,
@@ -23,48 +45,21 @@ const ServiceEndpointDropdown = ({
       </a>
       <div className="dropdown-menu">
         <h6 className="dropdown-header">Service endpoint URIs</h6>
-        {getLinksForService(address, hostname, proto, port).map((link) => (
-          <span className="dropdown-item" key={link.raw}>
-            <i
-              className="far fa-clipboard mr-1"
-              role="button"
-              data-testid="copy-link-to-clipboard-btn"
-              title="Copy link"
-              onClick={() => {
-                void navigator.clipboard.writeText(link.raw)
-                toast.info('Link copied to clipboard')
-              }}
-            ></i>
-            <a
-              className="mx-1"
-              role="button"
-              data-testid="copy-telnet-to-clipboard-btn"
-              title="Copy telnet"
-              onClick={() => {
-                void navigator.clipboard.writeText(link.telnet)
-                toast.info('Telnet copied to clipboard')
-              }}
-            >
-              TEL
-            </a>
-            <a
-              className="mr-1"
-              role="button"
-              data-testid="copy-curl-to-clipboard-btn"
-              title="Copy curl"
-              onClick={() => {
-                void navigator.clipboard.writeText(link.curl)
-                toast.info('Curl copied to clipboard')
-              }}
-            >
-              CURL
-            </a>
-            <span className="user-select-none mr-1">|</span>
-            <a rel="noreferrer" href={escapeHtml(link.raw)}>
-              {escapeHtml(link.raw)}
-            </a>
+        <div className="dropdown-item">
+          <span>{escapeHtml(address)}</span>
+          <span>
+            {getLinksForService(address, proto, port).map((link) => clipboardCopyLink(link))}
           </span>
-        ))}
+        </div>
+
+        {hostname &&
+          <div className="dropdown-item">
+            <span>{escapeHtml(hostname)}</span>
+            <span>
+              {getLinksForService(hostname, proto, port).map((link) => clipboardCopyLink(link))}
+            </span>
+          </div>
+        }
       </div>
     </div>
   )

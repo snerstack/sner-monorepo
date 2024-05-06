@@ -80,3 +80,7 @@ ul.multiple_checkbox_field li {
 .rti--container {
   --rti-main: #80bdff !important;
 }
+
+.service_endpoint_dropdown .dropdown-item {
+  text-align: right;
+}

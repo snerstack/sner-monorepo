@@ -88,7 +88,7 @@ describe('Note list page', () => {
     testFilter({ query: 'Host.address=="127.4.4.4"' })
 
     await waitFor(() => {
-      expect(screen.getByText('127.4.4.4')).toBeInTheDocument()
+      expect(screen.getByRole('link', {'name': '127.4.4.4'})).toBeInTheDocument()
       expect(screen.queryByText('127.3.3.3')).toBeNull()
       expect(screen.queryByText('127.128.129.130')).toBeNull()
     })

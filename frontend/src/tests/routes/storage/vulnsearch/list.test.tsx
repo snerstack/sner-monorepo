@@ -75,7 +75,7 @@ describe('Vulnsearch list page', () => {
     testFilter({ query: 'Host.address=="127.5.5.5"' })
 
     await waitFor(() => {
-      expect(screen.getByText('127.5.5.5')).toBeInTheDocument()
+      expect(screen.getByRole('link', {'name': '127.5.5.5'})).toBeInTheDocument()
     })
   })
 

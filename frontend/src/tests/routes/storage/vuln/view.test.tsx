@@ -166,10 +166,9 @@ describe('Vuln view page', () => {
 
     await waitFor(() => {
       const serviceLink = screen.getByTestId('service_link')
-
       expect(serviceLink).toHaveTextContent('<Service 52: 127.128.129.130 tcp.443>')
-      expect(screen.getByText('tcp://127.128.129.130:443')).toBeInTheDocument()
-      expect(screen.getByText('tcp://serverz.localhost:443')).toBeInTheDocument()
+      expect(screen.getAllByTestId('copy-svcTgt-to-clipboard-btn')[0]).toHaveAttribute('href', 'tcp://127.128.129.130:443')
+      expect(screen.getAllByTestId('copy-svcTgt-to-clipboard-btn')[1]).toHaveAttribute('href', 'tcp://serverz.localhost:443')
     })
   })
 
