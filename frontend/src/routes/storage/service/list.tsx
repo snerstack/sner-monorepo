@@ -51,10 +51,10 @@ const ServiceListPage = () => {
         renderElements(
           cell,
           <a
-            href={`/storage/host/view/${row['id']}`}
+            href={`/storage/host/view/${row['host_id']}`}
             onClick={(e) => {
               e.preventDefault()
-              navigate(`/storage/host/view/${row['id']}`)
+              navigate(`/storage/host/view/${row['host_id']}`)
             }}
           >
             {data}

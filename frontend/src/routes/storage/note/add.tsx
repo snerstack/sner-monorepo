@@ -58,19 +58,12 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
     formData.append('comment', comment)
 
     try {
-      if (type === 'host') {
-        const resp = await httpClient.post<{ host_id: number }>(
-          urlFor(`/backend/storage/note/add/host/${hostId}`),
-          formData,
-        )
-        navigate(`/storage/host/view/${resp.data.host_id}`)
-      } else {
-        const resp = await httpClient.post<{ host_id: number }>(
-          urlFor(`/backend/storage/note/add/service/${serviceId}`),
-          formData,
-        )
-        navigate(`/storage/host/view/${resp.data.host_id}`)
-      }
+      const resp = await httpClient.post<{ host_id: number }>(
+        urlFor(`/backend/storage/note/add/${type}/${type === "host" ? hostId : serviceId}`),
+        formData,
+      )
+
+      navigate(`/storage/host/view/${resp.data.host_id}`)
 
       toast.success('Note has been successfully added.')
     } catch (err) {

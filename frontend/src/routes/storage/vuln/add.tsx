@@ -72,7 +72,7 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
 
     try {
       const resp = await httpClient.post<{ vuln_id: number }>(
-        urlFor(`/backend/storage/vuln/add/${type}/${hostId}`),
+        urlFor(`/backend/storage/vuln/add/${type}/${type === "host" ? hostId : serviceId}`),
         formData,
       )
 
@@ -83,11 +83,13 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
       toast.error('Error while adding a vuln.')
     }
   }
+
   return (
     <div>
       <Helmet>
         <title>Vulns / Add - sner4</title>
       </Helmet>
+
       <Heading headings={['Vulns', 'Add']} />
       <form id="service_form" method="post">
         <div className="form-group row">
