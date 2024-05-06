@@ -183,8 +183,12 @@ def test_host_view_route_services_list_selectrows(frontend_server, sl_operator, 
     get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
     wait_for_js(sl_operator)
-    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
-                                 'host_view_service_table', load_route=False)
+    check_dt_toolbox_select_rows(
+        sl_operator,
+        frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
+        'host_view_service_table',
+        load_route=False
+    )
 
 
 def test_host_view_route_services_list_multiactions(frontend_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
@@ -253,8 +257,12 @@ def test_host_view_route_vulns_list_selectrows(frontend_server, sl_operator, vul
     get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
     wait_for_js(sl_operator)
-    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
-                                 'host_view_vuln_table', load_route=False)
+    check_dt_toolbox_select_rows(
+        sl_operator,
+        frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
+        'host_view_vuln_table',
+        load_route=False
+    )
 
 
 def test_host_view_route_vulns_list_multiactions(frontend_server, sl_operator, vulns_multiaction):  # pylint: disable=unused-argument
@@ -322,8 +330,12 @@ def test_host_view_route_notes_list_selectrows(frontend_server, sl_operator, not
     get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
     wait_for_js(sl_operator)
-    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'),
-                                 'host_view_note_table', load_route=False)
+    check_dt_toolbox_select_rows(
+        sl_operator,
+        frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'),
+        'host_view_note_table',
+        load_route=False
+    )
 
 
 def test_host_view_route_notes_list_multiactions(frontend_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
@@ -358,8 +370,12 @@ def test_host_view_route_versioninfo_list_selectrows(frontend_server, sl_operato
     get_host_view_tab(sl_operator, versioninfo_multiaction[0].host_id, versioninfo_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
     wait_for_js(sl_operator)
-    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{versioninfo_multiaction[0].host_id}'),
-                                 'host_view_versioninfo_table', load_route=False)
+    check_dt_toolbox_select_rows(
+        sl_operator,
+        frontend_url(f'/storage/host/view/{versioninfo_multiaction[0].host_id}'),
+        'host_view_versioninfo_table',
+        load_route=False
+    )
 
 
 def test_host_view_route_versioninfo_list_multiactions(frontend_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
@@ -394,8 +410,12 @@ def test_host_view_route_vulnsearch_list_selectrows(frontend_server, sl_operator
     get_host_view_tab(sl_operator, vulnsearch_multiaction[0].host_id, vulnsearch_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
     wait_for_js(sl_operator)
-    check_dt_toolbox_select_rows(sl_operator, frontend_url(f'/storage/host/view/{vulnsearch_multiaction[0].host_id}'),
-                                 'host_view_vulnsearch_table', load_route=False)
+    check_dt_toolbox_select_rows(
+        sl_operator,
+        frontend_url(f'/storage/host/view/{vulnsearch_multiaction[0].host_id}'),
+        'host_view_vulnsearch_table',
+        load_route=False
+    )
 
 
 def test_host_view_route_vulnsearch_list_multiactions(frontend_server, sl_operator, vulnsearch_multiaction):  # pylint: disable=unused-argument
