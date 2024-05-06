@@ -1,10 +1,7 @@
 name: Semgrep OSS scan
 
 on:
-  pull_request: {}
-  workflow_dispatch: {}
-  push:
-    branches: ["main", "devel", "devel-*"]
+  workflow_call:
 
 jobs:
   semgrep:

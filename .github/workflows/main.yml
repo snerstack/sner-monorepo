@@ -1,0 +1,18 @@
+name: Main workflow
+
+on: [push, pull_request]
+
+jobs:
+  frontend:
+    uses: ./.github/workflows/frontend.yml
+
+  server:
+    uses: ./.github/workflows/server.yml
+
+  selenium:
+    needs: [frontend, server]
+    uses: ./.github/workflows/selenium.yml
+
+  semgrep:
+    needs: [selenium]
+    uses: ./.github/workflows/semgrep.yml

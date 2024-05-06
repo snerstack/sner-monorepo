@@ -1,14 +1,7 @@
-name: Frontend nodejs CI
+name: Frontend CI
 
 on:
-  push:
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-nodejs.yml"
-  pull_request:
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-nodejs.yml"
+  workflow_call:
 
 defaults:
   run:

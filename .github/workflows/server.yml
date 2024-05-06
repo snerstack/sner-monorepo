@@ -1,14 +1,7 @@
-name: Server python CI
+name: Server CI
 
 on:
-  push:
-    paths:
-      - "server/**"
-      - ".github/workflows/server-python.yml"
-  pull_request:
-    paths:
-      - "server/**"
-      - ".github/workflows/server-python.yml"
+  workflow_call:
 
 defaults:
   run:
