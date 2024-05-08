@@ -1,5 +1,5 @@
 import { unique } from '@/utils'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 
@@ -21,6 +21,11 @@ const AnnotateModal = ({
   const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState<string>('')
 
+  useEffect(() => {
+    setTags(annotate.tags)
+    setComment(annotate.comment)
+  }, [annotate.tags, annotate.comment])
+
   const annotateHandler = () => {
     const formData = new FormData()
     formData.append('tags', tags.join('\n'))
@@ -40,7 +45,7 @@ const AnnotateModal = ({
   return (
     <Modal
       show={annotate.show}
-      onHide={() => setAnnotate({ ...annotate, show: false })}
+      onHide={() => setAnnotate({show: false, tags: [], comment: '', url: ''})}
       size="lg"
       data-testid="annotate-modal"
     >
@@ -52,7 +57,7 @@ const AnnotateModal = ({
           name="tags"
           label="Tags"
           placeholder="Tags"
-          _state={tags.length === 0 ? annotate.tags : tags}
+          _state={tags}
           _setState={setTags}
           defaultTags={unique([...config.tags.host, ...config.tags.vuln, ...config.tags.annotate]).sort()}
         />{' '}
@@ -61,7 +66,7 @@ const AnnotateModal = ({
           label="Comment"
           placeholder="Comment"
           rows={2}
-          _state={comment === '' ? annotate.comment : comment}
+          _state={comment}
           _setState={setComment}
         />
         <SubmitField name="Save" handler={annotateHandler} />
