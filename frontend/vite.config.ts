@@ -46,7 +46,7 @@ export default ({ mode }) => {
       retry: 0,
       reporters: ['hanging-process', 'verbose'],
       coverage: {
-        reporter: 'html',
+        reporter: ['text', 'html'],
         provider: 'v8',
         lines: 100,
         functions: 100,
