@@ -41,6 +41,7 @@ const UserAddPage = () => {
         formData.append('roles', role.name)
       }
     })
+    formData.append('active', active.toString())
     formData.append('api_networks', apiNetworks)
 
     try {
