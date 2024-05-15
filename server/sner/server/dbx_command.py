@@ -89,6 +89,13 @@ def initdata_sner():
     ))
 
     db.session.add(Queue(
+        name='sner.quicmap',
+        config=yaml_dump({'module': 'quicmap', 'args': '--ports 1-1024'}),
+        group_size=50,
+        priority=15,
+    ))
+
+    db.session.add(Queue(
         name='sner.jarm',
         config=yaml_dump({'module': 'jarm', 'delay': 1}),
         group_size=50,
