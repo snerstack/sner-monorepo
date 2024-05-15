@@ -19,7 +19,7 @@ const Nav = () => {
   const links = [
     { title: 'Scheduler', url: '/scheduler/queue/list', icon: 'fa-tasks' },
     { title: 'Storage', url: '/storage/host/list', icon: 'fa-database' },
-    { title: 'Visuals', url: '/visuals', icon: 'fa-image' },
+    { title: 'Visuals', url: '/visuals/internals', icon: 'fa-image' },
   ]
 
   const logoutHandler = async () => {
