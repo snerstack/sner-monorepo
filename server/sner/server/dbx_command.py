@@ -65,7 +65,7 @@ def initdata_sner():
 
     db.session.add(Queue(
         name='sner.nmap.serviceversion',
-        config=yaml_dump({'module': 'manymap', 'args': '-sV --version-intensity 4 -Pn', 'delay': 1}),
+        config=yaml_dump({'module': 'manymap', 'args': '-sV --version-intensity 4 -O -Pn', 'delay': 1}),
         group_size=50,
         priority=15,
     ))
