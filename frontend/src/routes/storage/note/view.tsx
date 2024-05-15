@@ -6,10 +6,10 @@ import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
+import Tag from '@/components/Tag'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
-import Tag from '@/components/buttons/Tag'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 
 type ScreenshotWeb = {

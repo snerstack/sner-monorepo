@@ -8,7 +8,7 @@ import { userState } from '@/atoms/userAtom'
 import { urlFor } from '@/lib/urlHelper'
 import httpClient from '@/lib/httpClient'
 
-import config from '../config.ts'
+import { tagsConfigInitialize } from '@/lib/sner/tags'
 
 export default function App() {
   const [, setUser] = useRecoilState(userState)
@@ -27,9 +27,8 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!localStorage.getItem('tags')) {
-      localStorage.setItem('tags', JSON.stringify(config.tags.colors))
-    }
+    tagsConfigInitialize()
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     window.jQuery = jQuery // helper for selenium tests

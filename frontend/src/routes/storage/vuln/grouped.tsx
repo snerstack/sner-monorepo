@@ -11,8 +11,7 @@ import { urlFor } from '@/lib/urlHelper'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
-import Tag from '@/components/buttons/Tag'
-import TagConfigModal from '@/components/modals/TagConfigModal'
+import Tag from '@/components/Tag'
 
 const VulnGroupedPage = () => {
   const [searchParams] = useSearchParams()
@@ -113,8 +112,6 @@ const VulnGroupedPage = () => {
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
       />
-
-      <TagConfigModal tableId="vuln_grouped_table" />
     </div>
   )
 }

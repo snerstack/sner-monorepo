@@ -2,29 +2,25 @@ import { server } from './mocks/server'
 import '@testing-library/jest-dom'
 import * as matchers from '@testing-library/jest-dom/matchers'
 import { cleanup } from '@testing-library/react'
-import { afterAll, afterEach, beforeAll, expect } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, expect } from 'vitest'
+
+import { LSKEY_TAG_COLORS } from '@/lib/sner/tags'
 
 expect.extend(matchers)
 
 beforeAll(() => {
-  localStorage.setItem(
-    'tags',
-    JSON.stringify({
-      tags: {
-        todo: '#ffc107',
-        report: '#dc3545',
-      },
-      prefixes: {
-        report: '#dc3545',
-        i: '#6c757d',
-      },
-    }),
-  )
-
   server.listen()
 })
+
+beforeEach(() => {
+  localStorage.setItem(LSKEY_TAG_COLORS, JSON.stringify({dummy: '#ffc107'}))
+})
+
 afterEach(() => {
   server.resetHandlers()
   cleanup()
 })
-afterAll(() => server.close())
+
+afterAll(() => {
+  server.close()
+})

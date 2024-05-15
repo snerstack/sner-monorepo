@@ -1,7 +1,6 @@
 import { Api } from 'datatables.net-bs4'
 import { toast } from 'react-toastify'
 
-import { Config } from '../../../config'
 import { getTableApi } from '../DataTables'
 import httpClient from '../httpClient'
 
@@ -64,17 +63,6 @@ export const getTextForRef = (ref: string): string => {
     return 'MSF'
   }
   return ref
-}
-
-export const getColorForTag = (tag: string): string => {
-  const { tags, prefixes } = JSON.parse(localStorage.getItem('tags')!) as Config['tags']['colors']
-  const prefix = tag.split(':').length > 1 ? tag.split(':')[0] : ''
-
-  if (prefix) {
-    return prefixes[prefix] || '#6c757d'
-  }
-
-  return tags[tag] || '#6c757d'
 }
 
 export interface linkForService {

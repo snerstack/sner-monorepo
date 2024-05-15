@@ -11,17 +11,16 @@ import { urlFor } from '@/lib/urlHelper'
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
+import Tag from '@/components/Tag'
 import Button from '@/components/buttons/Button'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
-import Tag from '@/components/buttons/Tag'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
-import TagConfigModal from '@/components/modals/TagConfigModal'
 
 import config from '../../../../config.ts'
 
@@ -278,7 +277,6 @@ const HostListPage = () => {
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
       <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
-      <TagConfigModal tableId="host_list_table" />
     </div>
   )
 }

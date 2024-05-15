@@ -10,6 +10,7 @@ import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
+import TagsConfig from '@/components/TagsConfig'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import EditButton from '@/components/buttons/EditButton'
@@ -148,8 +149,12 @@ const ProfilePage = () => {
             </td>
           </tr>
           <tr>
-            <th>api_networks</th>
+            <th>api networks</th>
             <td>{profile.api_networks.join(', ')}</td>
+          </tr>
+          <tr>
+            <th>tags colors</th>
+            <td><TagsConfig /></td>
           </tr>
         </tbody>
       </table>

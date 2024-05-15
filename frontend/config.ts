@@ -1,4 +1,4 @@
-const config = {
+export const config = {
   tags: {
     host: ['reviewed', 'todo'],
     service: ['reviewed', 'todo'],
@@ -8,14 +8,9 @@ const config = {
     versioninfo: ['reviewed', 'todo'],
     vulnsearch: ['reviewed', 'todo'],
     colors: {
-      tags: {
-        todo: '#ffc107',
-        report: '#dc3545',
-      },
-      prefixes: {
-        report: '#dc3545',
-        i: '#6c757d',
-      },
+      todo: '#ffc107',
+      report: '#dc3545',
+      "report:": '#dc3545',
     },
   },
 } as Config
@@ -30,12 +25,7 @@ export type Config = {
     versioninfo: string[]
     vulnsearch: string[]
     colors: {
-      tags: {
-        [tag: string]: string
-      }
-      prefixes: {
-        [prefix: string]: string
-      }
+      [tag: string]: string
     }
   }
 }
