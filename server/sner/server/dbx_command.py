@@ -82,6 +82,13 @@ def initdata_sner():
     ))
 
     db.session.add(Queue(
+        name='sner.nmap.udpscan',
+        config=yaml_dump({'module': 'nmap', 'args': '-sU -F -sV --version-intensity 0 -Pn --open --max-retries 1'}),
+        group_size=50,
+        priority=15,
+    ))
+
+    db.session.add(Queue(
         name='sner.jarm',
         config=yaml_dump({'module': 'jarm', 'delay': 1}),
         group_size=50,
