@@ -10,7 +10,7 @@ const CodeBlock = ({ data, language }: { data: string; language: string }) => {
   }, [data, language])
 
   return (
-    <pre>
+    <pre className="break-spaces">
       <code className={language}>{data}</code>
     </pre>
   )

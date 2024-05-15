@@ -6,6 +6,7 @@ import { Link, useLoaderData } from 'react-router-dom'
 import { getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
+import CodeBlock from '@/components/CodeBlock'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
@@ -17,6 +18,17 @@ import TagButton from '@/components/buttons/TagButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 
 import config from '../../../../config.ts'
+
+const vulnDataElement = (vulnData: string) => {
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const value = JSON.parse(vulnData)
+    return <CodeBlock language="language-json" data={JSON.stringify(value, null, 4)} />
+  } catch (e) {
+    return <pre className="break-spaces">{vulnData}</pre>
+  }
+}
 
 const VulnViewPage = () => {
   const vuln = useLoaderData() as Vuln
@@ -199,7 +211,7 @@ const VulnViewPage = () => {
       </div>
 
       <h2>Data</h2>
-      <div>{vuln.xtype && vuln.xtype.startsWith('nuclei.') ? <pre>{vuln.data}</pre> : <pre>{vuln.data}</pre>}</div>
+      <div>{vulnDataElement(vuln.data)}</div>
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
     </div>
   )

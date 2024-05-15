@@ -84,3 +84,7 @@ ul.multiple_checkbox_field li {
 .service_endpoint_dropdown .dropdown-item {
   text-align: right;
 }
+
+.break-spaces {
+	white-space: break-spaces;
+}
