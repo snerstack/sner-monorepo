@@ -14,6 +14,7 @@ install:
 	sh bin/install_testssl.sh
 	sh bin/install_nuclei.sh
 	sh bin/install_quicmap.sh
+	sh bin/install_sshaudit.sh
 
 install-dev:
 	sh bin/install_selenium.sh
