@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import SubmitField from '@/components/fields/SubmitField'
@@ -23,7 +24,7 @@ const ServiceFilterPage = () => {
 
   const serviceFilterHandler = async () => {
     try {
-      const res = await httpClient.post<Result[]>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/service/list', {
+      const res = await httpClient.post<Result[]>(urlFor('/backend/pubux/storage/service/list'), {
         filter,
       })
 

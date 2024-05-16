@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { toast } from 'react-toastify'
 
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import CollapseMenu from '@/components/CollapseMenu'
 import Heading from '@/components/Heading'
@@ -36,7 +37,7 @@ const HostSinglePage = () => {
 
   const hostHandler = async () => {
     try {
-      const res = await httpClient.post<Result>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/host', { address })
+      const res = await httpClient.post<Result>(urlFor('/backend/pubux/storage/host'), { address })
 
       setResult(res.data)
     } catch (error) {

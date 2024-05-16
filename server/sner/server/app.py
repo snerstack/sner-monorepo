@@ -240,7 +240,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app.register_blueprint(scheduler_blueprint, url_prefix='/backend/scheduler')
     app.register_blueprint(storage_blueprint, url_prefix='/backend/storage')
     app.register_blueprint(visuals_blueprint, url_prefix='/backend/visuals')
-    app.register_blueprint(pubux_blueprint, url_prefix='/pubux')
+    app.register_blueprint(pubux_blueprint, url_prefix='/backend/pubux')
 
     app.cli.add_command(auth_command)
     app.cli.add_command(dbx_command)

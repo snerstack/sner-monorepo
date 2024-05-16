@@ -28,7 +28,7 @@ const ProductsPage = () => {
 
   const productsHandler = async () => {
     try {
-      const res = await httpClient.post<Result[]>(import.meta.env.VITE_SERVER_URL + '/pubux/storage/versioninfo', {
+      const res = await httpClient.post<Result[]>('/backend/pubux/storage/versioninfo', {
         filter,
         product,
         versionspec,
