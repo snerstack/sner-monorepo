@@ -49,7 +49,7 @@ const Nav = () => {
             <>
               {currentUser.roles.includes('user') && (
                 <li className="nav-item">
-                  <a className="nav-link" href="/api/doc/swagger" title="API">
+                  <a className="nav-link" href="/swagger" title="API">
                     <i className="fas fa-paper-plane"></i>
                   </a>
                 </li>

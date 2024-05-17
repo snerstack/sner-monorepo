@@ -3,7 +3,7 @@ import VulnSearchListPage from './storage/vulnsearch/list'
 import VulnSearchViewPage from './storage/vulnsearch/view'
 import BaseLayout from '@/layouts/BaseLayout'
 import ProtectedRoute from '@/routes/ProtectedRoute'
-import SwaggerPage from '@/routes/api/doc/swagger'
+import SwaggerPage from '@/routes/swagger'
 import LoginPage from '@/routes/auth/login'
 import TOTPLoginPage from '@/routes/auth/login_totp'
 import WebAuthnLoginPage from '@/routes/auth/login_webauthn'
@@ -66,11 +66,7 @@ export const routes = createRoutesFromElements(
   <Route path="/" element={<BaseLayout />}>
     <Route index element={<RootPage />} />
 
-    <Route path="api">
-      <Route path="doc">
-        <Route path="swagger" element={<SwaggerPage />} />
-      </Route>
-    </Route>
+    <Route path="swagger" element={<SwaggerPage />} />
 
     <Route path="auth">
       <Route path="login" element={<LoginPage />} />
