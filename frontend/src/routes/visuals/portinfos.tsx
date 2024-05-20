@@ -6,10 +6,16 @@ import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
+import httpClient from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import FilterForm from '@/components/FilterForm'
 import Heading from '@/components/Heading'
+
+interface ResponseData {
+  item: string
+  count: number
+}
 
 const PortinfosPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -35,12 +41,12 @@ const PortinfosPage = () => {
       .text('Processing graph ...')
 
     // generate graph layout
-    d3.json(
-      urlFor(`/backend/visuals/portinfos.json${searchParams.toString() ? `?${searchParams.toString()}` : ''}`),
-      { credentials: 'include' },
-    )
+    httpClient
+      .get<ResponseData[]>(
+        urlFor(`/backend/visuals/portinfos.json${searchParams.toString() ? `?${searchParams.toString()}` : ''}`),
+      )
       .then((data) => {
-        const counts = (data as { count: number }[]).map((item) => item.count)
+        const counts = data.data.map((item) => item.count)
         const max = Math.max.apply(null, counts)
         const min = Math.min.apply(null, counts)
         const fontSize = d3
@@ -51,14 +57,18 @@ const PortinfosPage = () => {
         d3Cloud()
           .size([width, height])
           .timeInterval(20)
-          .words(data as d3Cloud.Word[])
+          .words(data.data as d3Cloud.Word[])
           .rotate(0)
           .fontSize((item) => fontSize(item.size ?? 10))
           .text((item) => (item as { info: string }).info)
           .on('end', (data) => draw(data))
           .start()
       })
-      .catch(() => toast.error('Error while fetching data'))
+      .catch((e) => {
+        /* c8 ignore next 3 */
+        console.error(e)
+        toast.error('Error while fetching data')
+      })
 
     function draw(words: d3Cloud.Word[]) {
       d3.select('.wordcloud')
