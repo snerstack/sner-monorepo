@@ -54,7 +54,16 @@ export default ({ mode }) => {
         functions: 100,
         branches: 100,
         statements: 100,
-        exclude: ['src/tests/mocks', 'src/tests/utils'],
+        include: ['src'],
+        all: true,
+        exclude: [
+          'src/tests',
+          '**/*.cjs',
+          '**/*.d.ts',
+          // cannot test with vitest+jsdom because of canvas package issues
+          // with vitest threads (required for majority of tests)
+          'src/routes/visuals/portinfos.tsx',
+        ],
       },
     },
   })
