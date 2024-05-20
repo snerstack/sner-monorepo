@@ -25,16 +25,16 @@ export default ({ mode }) => {
     server: {
       port: 18080,
       proxy: {
-        "/backend": process.env.SNER_BACKEND_URL || "http://localhost:18000",
-        "/api": process.env.SNER_BACKEND_URL || "http://localhost:18000",
-      }
+        '/backend': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
+        '/api': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
+      },
     },
     preview: {
       port: 18081,
       proxy: {
-        "/backend": process.env.SNER_BACKEND_URL || "http://localhost:18000",
-        "/api": process.env.SNER_BACKEND_URL || "http://localhost:18000",
-      }
+        '/backend': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
+        '/api': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
+      },
     },
     test: {
       globals: true,
