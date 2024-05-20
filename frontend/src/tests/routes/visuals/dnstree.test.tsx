@@ -11,7 +11,6 @@ describe('DNS Tree page', () => {
       path: '/visuals/dnstree',
     })
 
-    // TODO: test fail for relative urls, https://github.com/mswjs/msw/issues/1597
     await waitFor(() => {
       expect(screen.getByText('DOTROOT')).toBeInTheDocument()
       expect(screen.getByText('localhost')).toBeInTheDocument()
