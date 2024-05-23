@@ -6,6 +6,7 @@ import { queueListHandler } from './handlers/scheduler/queue/list'
 import { hostListHandler } from './handlers/storage/host/list'
 import { noteGroupedHandler } from './handlers/storage/note/grouped'
 import { noteListHandler } from './handlers/storage/note/list'
+import { quickjumpHandler } from './handlers/storage/quickjump_autocomplete'
 import { serviceGroupedHandler } from './handlers/storage/service/grouped'
 import { serviceListHandler } from './handlers/storage/service/list'
 import { versioninfoListHandler } from './handlers/storage/versioninfo/list'
@@ -32,4 +33,5 @@ export const handlers = [
   vulnSearchListHandler,
   dnsTreeHandler,
   logoutHandler,
+  quickjumpHandler,
 ]
