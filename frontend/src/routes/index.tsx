@@ -15,7 +15,7 @@ import WebAuthnRegisterPage from '@/routes/auth/profile/webauthn/register'
 import UserAddPage from '@/routes/auth/user/add'
 import UserEditPage from '@/routes/auth/user/edit'
 import UserListPage from '@/routes/auth/user/list'
-import NotAuthorizedPage from '@/routes/forbidden'
+import ForbiddenPage from '@/routes/forbidden'
 import NotFoundPage from '@/routes/not-found'
 import RootPage from '@/routes/root'
 import JobListPage from '@/routes/scheduler/job/list'
@@ -242,7 +242,7 @@ export const routes = createRoutesFromElements(
       </Route>
     </Route>
 
-    <Route path="forbidden" element={<NotAuthorizedPage />} />
+    <Route path="forbidden" element={<ForbiddenPage />} />
     <Route path="not-found" element={<NotFoundPage />} />
     <Route path="*" element={<NotFoundPage />} />
   </Route>,
