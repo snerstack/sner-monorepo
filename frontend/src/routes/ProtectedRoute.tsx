@@ -12,4 +12,5 @@ const ProtectedRoute = ({ requiredRole }: { requiredRole: string }) => {
 
   return <Outlet />
 }
+
 export default ProtectedRoute
