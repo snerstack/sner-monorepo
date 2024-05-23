@@ -5,12 +5,12 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
-import { urlFor } from '@/lib/urlHelper'
+
 import httpClient from '@/lib/httpClient'
-
 import { tagsConfigInitialize } from '@/lib/sner/tags'
+import { urlFor } from '@/lib/urlHelper'
 
-export default function App() {
+const App = () => {
   const [, setUser] = useRecoilState(userState)
   const [isChecking, setIsChecking] = useState<boolean>(true)
 
@@ -42,3 +42,5 @@ export default function App() {
 
   return <RouterProvider router={router} />
 }
+
+export default App
