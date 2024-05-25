@@ -18,6 +18,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
   localStorage.clear()
   sessionStorage.clear()
   server.resetHandlers()
