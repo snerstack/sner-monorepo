@@ -1,6 +1,6 @@
-import NavLink from './NavLink'
 import QuickJump from './QuickJump'
 import clsx from 'clsx'
+import { MouseEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
@@ -12,26 +12,190 @@ import { urlFor } from '@/lib/urlHelper'
 
 const Nav = () => {
   const [currentUser, setCurrentUser] = useRecoilState(userState)
-
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const currentSubnav: string = pathname.split('/')[1]
 
-  const links = [
-    { title: 'Scheduler', url: '/scheduler/queue/list', icon: 'fa-tasks' },
-    { title: 'Storage', url: '/storage/host/list', icon: 'fa-database' },
-    { title: 'Visuals', url: '/visuals/internals', icon: 'fa-image' },
-  ]
+type SubnavItem = { title: string; link: string }
 
-  const logoutHandler = async () => {
-    try {
-      await httpClient.get(urlFor('/backend/auth/logout'))
+  type NavMenuConfig = {
+    [key: string]: { title: string; icon: string; link: string; acl: string; subnav: SubnavItem[] }
+  }
 
-      setCurrentUser({ id: 0, username: '', email: '', roles: [], isAuthenticated: false })
+  const navMenu: NavMenuConfig = {
+    swagger: {
+      title: 'API',
+      icon: 'fas fa-paper-plane',
+      link: '/swagger',
+      acl: 'user',
+      subnav: [],
+    },
+    scheduler: {
+      title: 'Scheduler',
+      icon: 'fas fa-tasks',
+      link: '/scheduler/queue/list',
+      acl: 'operator',
+      subnav: [
+        { title: 'Queues', link: '/scheduler/queue/list' },
+        { title: 'Jobs', link: '/scheduler/job/list' },
+      ],
+    },
+    storage: {
+      title: 'Storage',
+      icon: 'fas fa-database',
+      link: '/storage/host/list',
+      acl: 'operator',
+      subnav: [
+        { title: 'Hosts', link: '/storage/host/list' },
+        { title: 'Services', link: '/storage/service/list' },
+        { title: 'Services grouped', link: '/storage/service/grouped?crop=3' },
+        { title: 'Vulns', link: '/storage/vuln/list' },
+        { title: 'Vulns grouped', link: '/storage/vuln/grouped' },
+        { title: 'Notes', link: '/storage/note/list' },
+        { title: 'Notes grouped', link: '/storage/note/grouped' },
+        { title: 'Versioninfos', link: '/storage/versioninfo/list' },
+        { title: 'Vulnsearch', link: '/storage/vulnsearch/list' },
+      ],
+    },
+    visuals: {
+      title: 'Visuals',
+      icon: 'fas fa-image',
+      link: '/visuals/internals',
+      acl: 'operator',
+      subnav: [
+        { title: 'Internals', link: '/visuals/internals' },
+        { title: 'DNS Tree', link: '/visuals/dnstree?crop=1' },
+        { title: 'Portmap', link: '/visuals/portmap' },
+        { title: 'Port infos', link: '/visuals/portinfos?crop=3&limit=50' },
+      ],
+    },
+  }
 
-      navigate('/')
-    } catch (err) {
-      toast.error('Error while logging out.')
-    }
+  const UserNavbar = () => {
+    return (
+      <ul className="navbar-nav mr-auto">
+        {Object.entries(navMenu).map(
+          ([name, item]) =>
+            currentUser.roles.includes(item.acl) && (
+              <li key={name} className="nav-item">
+                <Link
+                  className={clsx('nav-link', currentSubnav === name && 'active')}
+                  to={item.link}
+                  title={item.title}
+                >
+                  <i className={item.icon}></i>
+                </Link>
+              </li>
+            ),
+        )}
+
+        {navMenu[currentSubnav] &&
+          currentUser.roles.includes(navMenu[currentSubnav].acl) &&
+          navMenu[currentSubnav].subnav.map((item: SubnavItem) => (
+            <li key={item.title} className="nav-item">
+              <Link className={clsx('nav-link', pathname.startsWith(item.link) && 'active')} to={item.link}>
+                {item.title}
+              </Link>
+            </li>
+          ))}
+      </ul>
+    )
+  }
+
+  const logoutHandler = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+
+    //TODO: must be post
+    httpClient
+      .get(urlFor('/backend/auth/logout'))
+      .then(() => {
+        setCurrentUser({ id: 0, username: '', email: '', roles: [], isAuthenticated: false })
+        navigate('/')
+      })
+      .catch((e) => {
+        /* c8 ignore next 3 */
+        console.error(e)
+        toast.error('Error while logging out.')
+      })
+  }
+
+  const toggleViaTargetHandler = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    sessionStorage.setItem(
+      'dt_viatarget_column_visible',
+      sessionStorage.getItem('dt_viatarget_column_visible') === 'true' ? 'false' : 'true',
+    )
+    Object.keys(sessionStorage)
+      .filter((key) => key.startsWith('DataTables_'))
+      .forEach((key) => sessionStorage.removeItem(key))
+    navigate(0)
+  }
+
+  const toggleToolboxesHandler = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    sessionStorage.setItem(
+      'dt_toolboxes_visible',
+      sessionStorage.getItem('dt_toolboxes_visible') === 'true' ? 'false' : 'true',
+    )
+    Object.keys(sessionStorage)
+      .filter((key) => key.startsWith('DataTables_'))
+      .forEach((key) => sessionStorage.removeItem(key))
+    navigate(0)
+  }
+
+  const UserMenu = () => {
+    return (
+      <ul className="navbar-nav">
+        <li className="nav-item dropdown">
+          <a className="nav-link dropdown-toggle" href="#" id="dropdownUser" data-toggle="dropdown">
+            {currentUser.username}
+          </a>
+          <div className="dropdown-menu dropdown-menu-right">
+            {currentUser.roles.includes('admin') && (
+              <Link className="dropdown-item" to="/auth/user/list">
+                Manage users
+              </Link>
+            )}
+            <a className="dropdown-item" href="#" onClick={toggleViaTargetHandler}>
+              {`Toggle via_target (${sessionStorage.getItem('dt_viatarget_column_visible')})`}
+            </a>
+            <a className="dropdown-item" href="#" onClick={toggleToolboxesHandler}>
+              {`Toggle DT toolboxes (${sessionStorage.getItem('dt_toolboxes_visible')})`}
+            </a>
+            {currentUser.roles.includes('user') && (
+              <Link className="dropdown-item" to="/auth/profile">
+                Profile
+              </Link>
+            )}
+            <a className="dropdown-item" href="#" onClick={logoutHandler}>
+              Logout
+            </a>
+          </div>
+        </li>
+      </ul>
+    )
+  }
+
+  const LoggedinNavbar = () => {
+    return (
+      <>
+        <UserNavbar />
+        {currentUser.roles.includes('operator') && <QuickJump />}
+        <UserMenu />
+      </>
+    )
+  }
+
+  const LoginNavbar = () => {
+    return (
+      <ul className="navbar-nav">
+        <li className="nav-item">
+          <Link className="nav-link" to="/auth/login">
+            Login
+          </Link>
+        </li>
+      </ul>
+    )
   }
 
   return (
@@ -39,147 +203,12 @@ const Nav = () => {
       <Link className="navbar-brand" to="/">
         <img src="/logo.png" />
       </Link>
-      <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault">
+      <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
         <span className="navbar-toggler-icon"></span>
       </button>
 
-      <div className="collapse navbar-collapse" id="navbarsExampleDefault">
-        <ul className="navbar-nav mr-auto">
-          {currentUser.isAuthenticated && (
-            <>
-              {currentUser.roles.includes('user') && (
-                <li className="nav-item">
-                  <a className="nav-link" href="/swagger" title="API">
-                    <i className="fas fa-paper-plane"></i>
-                  </a>
-                </li>
-              )}
-              {currentUser.roles.includes('operator') && (
-                <>
-                  {links.map(({ title, url, icon }) => (
-                    <li className="nav-item" key={title}>
-                      <Link
-                        className={clsx('nav-link', pathname.startsWith('/' + title.toLowerCase()) && 'active')}
-                        to={url}
-                        title={title}
-                      >
-                        <i className={`fas ${icon}`}></i>
-                      </Link>
-                    </li>
-                  ))}
-                </>
-              )}
-              {pathname.split('/')[1] === 'scheduler' && (
-                <>
-                  <NavLink title="Queues" url="/scheduler/queue/list" />
-                  <NavLink title="Jobs" url="/scheduler/job/list" />
-                </>
-              )}
-              {pathname.split('/')[1] === 'storage' && (
-                <>
-                  <NavLink title="Hosts" url="/storage/host/list" />
-                  <NavLink title="Services" url="/storage/service/list" />
-                  <NavLink title="Services grouped" url="/storage/service/grouped?crop=3" />
-                  <NavLink title="Vulnerabilities" url="/storage/vuln/list" />
-                  <NavLink title="Vulnerabilities grouped" url="/storage/vuln/grouped" />
-                  <NavLink title="Notes" url="/storage/note/list" />
-                  <NavLink title="Notes grouped" url="/storage/note/grouped" />
-                  <NavLink title="Versioninfos" url="/storage/versioninfo/list" />
-                  <NavLink title="Vulnsearch" url="/storage/vulnsearch/list" />
-                </>
-              )}
-              {pathname.split('/')[1] === 'visuals' && (
-                <>
-                  <NavLink title="Internals" url="/visuals/internals" />
-                  <NavLink title="DNS Tree" url="/visuals/dnstree?crop=1" />
-                  <NavLink title="Portmap" url="/visuals/portmap" />
-                  <NavLink title="Port infos" url="/visuals/portinfos?crop=3&limit=50" />
-                </>
-              )}
-            </>
-          )}
-        </ul>
-
-        {currentUser.isAuthenticated && currentUser.roles.includes('operator') && <QuickJump />}
-        <ul className="navbar-nav">
-          {!currentUser.isAuthenticated ? (
-            <li className="nav-item">
-              <Link className="nav-link" to="/auth/login">
-                Login
-              </Link>
-            </li>
-          ) : (
-            <li className="nav-item dropdown">
-              <a className="nav-link dropdown-toggle" href="#" id="dropdownUser" data-toggle="dropdown">
-                {currentUser.username}
-              </a>
-              <div className="dropdown-menu dropdown-menu-right">
-                {currentUser.roles.includes('admin') && (
-                  <Link className="dropdown-item" to="/auth/user/list">
-                    Manage users
-                  </Link>
-                )}
-                <a
-                  className="dropdown-item"
-                  href="#"
-                  onClick={() => {
-                    sessionStorage.setItem(
-                      'dt_viatarget_column_visible',
-                      sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? 'false' : 'true',
-                    )
-
-                    /* the saved states must be removed, the save state has precedence over dt initialization values */
-                    Object.keys(sessionStorage)
-                      .filter((key) => key.startsWith('DataTables_'))
-                      .map((key) => sessionStorage.removeItem(key))
-
-                    navigate(0)
-                  }}
-                >
-                  {`Toggle via_target (${
-                    sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? 'true' : 'false'
-                  })`}
-                </a>
-                <a
-                  className="dropdown-item"
-                  href="#"
-                  onClick={() => {
-                    sessionStorage.setItem(
-                      'dt_toolboxes_visible',
-                      sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? 'false' : 'true',
-                    )
-
-                    /* the saved states must be removed, the save state has precedence over dt initialization values */
-                    Object.keys(sessionStorage)
-                      .filter((key) => key.startsWith('DataTables_'))
-                      .map((key) => sessionStorage.removeItem(key))
-
-                    navigate(0)
-                  }}
-                >
-                  {`Toggle DT toolboxes (${
-                    sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? 'true' : 'false'
-                  })`}
-                </a>
-                {currentUser.roles.includes('user') && (
-                  <Link className="dropdown-item" to="/auth/profile">
-                    Profile
-                  </Link>
-                )}
-                <a
-                  className="dropdown-item"
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    void logoutHandler()
-                  }}
-                >
-                  Logout
-                </a>
-              </div>
-            </li>
-          )}
-        </ul>
+      <div className="collapse navbar-collapse" id="mainNavbar">
+        {currentUser.isAuthenticated ? <LoggedinNavbar /> : <LoginNavbar />}
       </div>
     </nav>
   )
