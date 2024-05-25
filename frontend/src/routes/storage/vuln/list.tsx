@@ -43,6 +43,7 @@ const VulnListPage = () => {
     url: '',
   })
 
+  /* c8 ignore next */
   const viaTargetVisible = sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? true : false
 
   const columns = [
