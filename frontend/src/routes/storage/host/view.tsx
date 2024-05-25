@@ -702,7 +702,7 @@ const HostViewPage = () => {
         <tbody>
           <tr>
             <th>os</th>
-            <td>{host.os || 'None'}</td>
+            <td>{host.os}</td>
           </tr>
           <tr>
             <th>tags</th>
