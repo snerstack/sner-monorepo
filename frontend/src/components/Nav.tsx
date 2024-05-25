@@ -9,6 +9,7 @@ import { userState } from '@/atoms/userAtom'
 
 import httpClient from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
+import { toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 
 const Nav = () => {
   const [currentUser, setCurrentUser] = useRecoilState(userState)
@@ -157,10 +158,10 @@ type SubnavItem = { title: string; link: string }
               </Link>
             )}
             <a className="dropdown-item" href="#" onClick={toggleViaTargetHandler}>
-              {`Toggle via_target (${sessionStorage.getItem('dt_viatarget_column_visible')})`}
+              {`Toggle via_target (${viaTargetVisible()})`}
             </a>
             <a className="dropdown-item" href="#" onClick={toggleToolboxesHandler}>
-              {`Toggle DT toolboxes (${sessionStorage.getItem('dt_toolboxes_visible')})`}
+              {`Toggle DT toolboxes (${toolboxesVisible()})`}
             </a>
             {currentUser.roles.includes('user') && (
               <Link className="dropdown-item" to="/auth/profile">

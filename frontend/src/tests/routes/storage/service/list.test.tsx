@@ -13,8 +13,6 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Service list page', () => {
   it('shows table of services', async () => {
-    sessionStorage.setItem('dt_toolboxes_visible', 'false')
-
     renderWithProviders({ element: <ServiceListPage />, path: '/storage/service/list' })
     expect(screen.getByRole('list')).toHaveTextContent('Services')
 
@@ -31,8 +29,16 @@ describe('Service list page', () => {
       expect(screen.getByText('testhost1.testdomain.test')).toBeInTheDocument()
       expect(screen.getByText('420')).toBeInTheDocument()
     })
+  })
 
+  it('shows list of services with toolboxes', async () => {
     sessionStorage.setItem('dt_toolboxes_visible', 'true')
+
+    renderWithProviders({ element: <ServiceListPage />, path: '/storage/service/list' })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('service_list_table_toolbox')).not.toHaveClass('collapse')
+    })
   })
 
   it('views host', async () => {

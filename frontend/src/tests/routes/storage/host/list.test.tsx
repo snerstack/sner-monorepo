@@ -16,10 +16,7 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Host list page', () => {
   it('shows table of hosts', async () => {
-    sessionStorage.setItem('dt_toolboxes_visible', 'false')
-
     renderWithProviders({ element: <HostListPage />, path: '/storage/host/list' })
-
     expect(screen.getByRole('list')).toHaveTextContent('Hosts')
 
     await waitFor(() => {
@@ -35,8 +32,16 @@ describe('Host list page', () => {
       expect(screen.getByText('serverz.localhost')).toBeInTheDocument()
       expect(screen.getByText('Microsoft Windows Vista')).toBeInTheDocument()
     })
+  })
 
+  it('shows list of hosts with toolboxes', async () => {
     sessionStorage.setItem('dt_toolboxes_visible', 'true')
+
+    renderWithProviders({ element: <HostListPage />, path: '/storage/host/list' })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('host_list_table_toolbox')).not.toHaveClass('collapse')
+    })
   })
 
   it('views host', async () => {

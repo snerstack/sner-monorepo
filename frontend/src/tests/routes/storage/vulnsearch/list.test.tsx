@@ -12,18 +12,24 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Vulnsearch list page', () => {
   it('shows table of vulnsearches', async () => {
-    sessionStorage.setItem('dt_toolboxes_visible', 'false')
-    sessionStorage.setItem('dt_viatarget_column_visible', 'false')
-
     renderWithProviders({ element: <VulnSearchListPage />, path: '/storage/vulnsearch/list' })
     expect(screen.getByRole('list')).toHaveTextContent('Vulnsearch')
 
     await waitFor(() => {
       expect(screen.getByText('127.5.5.5')).toBeInTheDocument()
     })
+  })
 
+  it('shows list of vulnsearches with toolboxes and via_target column', async () => {
     sessionStorage.setItem('dt_toolboxes_visible', 'true')
     sessionStorage.setItem('dt_viatarget_column_visible', 'true')
+
+    renderWithProviders({ element: <VulnSearchListPage />, path: '/storage/vulnsearch/list' })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('vulnsearch_list_table_toolbox')).not.toHaveClass('collapse')
+      expect(screen.getByText('via_target')).toBeVisible()
+    })
   })
 
   it('views host', async () => {

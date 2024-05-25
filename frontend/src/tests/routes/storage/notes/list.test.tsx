@@ -12,9 +12,6 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Note list page', () => {
   it('shows table of notes', async () => {
-    sessionStorage.setItem('dt_toolboxes_visible', 'false')
-    sessionStorage.setItem('dt_viatarget_column_visible', 'false')
-
     renderWithProviders({ element: <NoteListPage />, path: '/storage/note/list' })
     expect(screen.getByRole('list')).toHaveTextContent('Notes')
 
@@ -34,9 +31,18 @@ describe('Note list page', () => {
       expect(screen.getByText('46865/tcp')).toBeInTheDocument()
       expect(screen.getByText('testssl')).toBeInTheDocument()
     })
+  })
 
+  it('shows list of notes with toolboxes and via_target column', async () => {
     sessionStorage.setItem('dt_toolboxes_visible', 'true')
     sessionStorage.setItem('dt_viatarget_column_visible', 'true')
+
+    renderWithProviders({ element: <NoteListPage />, path: '/storage/note/list' })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('note_list_table_toolbox')).not.toHaveClass('collapse')
+      expect(screen.getByText('via_target')).toBeVisible()
+    })
   })
 
   it('views host', async () => {

@@ -6,6 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { urlFor } from '@/lib/urlHelper'
+import { toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -53,11 +54,8 @@ const VersionInfosListPage = () => {
     dt.ajax.reload()
   }
 
-  const toolboxesVisible = sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? true : false
-  const viaTargetVisible = sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? true : false
-
   const columns = [
-    ColumnSelect({ visible: toolboxesVisible }),
+    ColumnSelect({ visible: toolboxesVisible() }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
@@ -92,7 +90,7 @@ const VersionInfosListPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: viaTargetVisible }),
+    Column('via_target', { visible: viaTargetVisible() }),
     Column('product'),
     Column('version'),
     Column('extra'),
@@ -184,10 +182,7 @@ const VersionInfosListPage = () => {
       </div>
 
       <div id="versioninfo_list_table_toolbar" className="dt_toolbar">
-        <div
-          id="versioninfo_list_table_toolbox"
-          className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}
-        >
+        <div data-testid="versioninfo_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
           <div className="btn-group">
             <a className="btn btn-outline-secondary">
               <i className="fas fa-check-square"></i>
@@ -286,7 +281,7 @@ const VersionInfosListPage = () => {
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
         order={[[2, 'asc']]}
-        select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+        select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
       />
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />

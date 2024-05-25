@@ -6,6 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { urlFor } from '@/lib/urlHelper'
+import { viaTargetVisible, toolboxesVisible } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -39,11 +40,8 @@ const VulnSearchListPage = () => {
     url: '',
   })
 
-  const toolboxesVisible = sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? true : false
-  const viaTargetVisible = sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? true : false
-
   const columns = [
-    ColumnSelect({ visible: toolboxesVisible }),
+    ColumnSelect({ visible: toolboxesVisible() }),
     Column('id', { visible: false }),
     Column('host_address', {
       createdCell: (cell, data: string, row: VulnSearchRow) =>
@@ -78,7 +76,7 @@ const VulnSearchListPage = () => {
         ),
     }),
     Column('via_target', {
-      visible: viaTargetVisible,
+      visible: viaTargetVisible(),
     }),
     Column('cveid', {
       createdCell: (cell, data: string) => {
@@ -158,7 +156,8 @@ const VulnSearchListPage = () => {
       </Heading>
 
       <div id="vulnsearch_list_table_toolbar" className="dt_toolbar">
-        <div id="vulnsearch_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}>
+        <div data-testid="vulnsearch_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}
+        >
           <div className="btn-group">
             <a className="btn btn-outline-secondary">
               <i className="fas fa-check-square"></i>
@@ -268,7 +267,7 @@ const VulnSearchListPage = () => {
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
-        select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+        select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
       />
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />

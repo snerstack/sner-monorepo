@@ -6,7 +6,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useCookie, useLocalStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -58,11 +58,8 @@ const HostViewPage = () => {
     url: '',
   })
 
-  const toolboxesVisible = sessionStorage.getItem('dt_toolboxes_visible') == 'true' ? true : false
-  const viaTargetVisible = sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? true : false
-
   const serviceColumns = [
-    ColumnSelect({ visible: toolboxesVisible }),
+    ColumnSelect({ visible: toolboxesVisible() }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', { visible: false }),
@@ -178,7 +175,7 @@ const HostViewPage = () => {
   })
 
   const vulnColumns = [
-    ColumnSelect({ visible: toolboxesVisible }),
+    ColumnSelect({ visible: toolboxesVisible() }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', { visible: false }),
@@ -199,7 +196,7 @@ const HostViewPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: viaTargetVisible }),
+    Column('via_target', { visible: viaTargetVisible() }),
     Column('name', {
       createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
@@ -333,7 +330,7 @@ const HostViewPage = () => {
   })
 
   const noteColumns = [
-    ColumnSelect({ visible: toolboxesVisible }),
+    ColumnSelect({ visible: toolboxesVisible() }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', { visible: false }),
@@ -354,7 +351,7 @@ const HostViewPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: viaTargetVisible }),
+    Column('via_target', { visible: viaTargetVisible() }),
     Column('xtype', { visible: false }),
     Column('data', {
       className: 'forcewrap',
@@ -456,7 +453,7 @@ const HostViewPage = () => {
   })
 
   const versioninfoColumns = [
-    ColumnSelect({ visible: toolboxesVisible }),
+    ColumnSelect({ visible: toolboxesVisible() }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', { visible: false }),
@@ -477,7 +474,7 @@ const HostViewPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: viaTargetVisible }),
+    Column('via_target', { visible: viaTargetVisible() }),
     Column('product'),
     Column('version'),
     Column('extra'),
@@ -541,7 +538,7 @@ const HostViewPage = () => {
   })
 
   const vulnsearchColumns = [
-    ColumnSelect({ visible: toolboxesVisible }),
+    ColumnSelect({ visible: toolboxesVisible() }),
     Column('id', { visible: false }),
     Column('host_address', {
       visible: false,
@@ -566,7 +563,7 @@ const HostViewPage = () => {
         ),
     }),
     Column('via_target', {
-      visible: viaTargetVisible,
+      visible: viaTargetVisible(),
     }),
     Column('cveid', {
       createdCell: (cell, data: string) => {
@@ -792,10 +789,11 @@ const HostViewPage = () => {
       <div className="tab-content">
         <>
           <div id="host_view_service_tab" className={clsx('tab-pane', activeTab === 'service' && 'active')}>
-            <div id="host_view_service_table_toolbar" className="dt_toolbar">
+            <div data-testid="host_view_service_table_toolbar" className="dt_toolbar">
               <div
                 id="host_view_service_table_toolbox"
-                className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}
+                data-testid="host_view_service_table_toolbox"
+                className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}
               >
                 <div className="btn-group">
                   <a className="btn btn-outline-secondary disabled">
@@ -902,7 +900,7 @@ const HostViewPage = () => {
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
               order={[5, 'asc']}
-              select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
             />
 
             <AnnotateModal annotate={annotateService} setAnnotate={setAnnotateService} />
@@ -913,7 +911,7 @@ const HostViewPage = () => {
         <>
           <div id="host_view_vuln_tab" className={clsx('tab-pane', activeTab === 'vuln' && 'active')}>
             <div id="host_view_vuln_table_toolbar" className="dt_toolbar">
-              <div id="host_view_vuln_table_toolbox" className="dt_toolbar_toolbox_alwaysvisible">
+              <div data-testid="host_view_vuln_table_toolbox" className="dt_toolbar_toolbox_alwaysvisible">
                 <div className="btn-group">
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
@@ -1014,7 +1012,7 @@ const HostViewPage = () => {
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
               order={[1, 'asc']}
-              select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
             />
 
             <AnnotateModal annotate={annotateVuln} setAnnotate={setAnnotateVuln} />
@@ -1024,10 +1022,7 @@ const HostViewPage = () => {
         <>
           <div id="host_view_note_tab" className={clsx('tab-pane', activeTab === 'note' && 'active')}>
             <div id="host_view_note_table_toolbar" className="dt_toolbar">
-              <div
-                id="host_view_note_table_toolbox"
-                className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}
-              >
+              <div data-testid="host_view_note_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
                 <div className="btn-group">
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
@@ -1128,7 +1123,7 @@ const HostViewPage = () => {
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
               order={[1, 'asc']}
-              select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
             />
 
             <AnnotateModal annotate={annotateNote} setAnnotate={setAnnotateNote} />
@@ -1138,10 +1133,7 @@ const HostViewPage = () => {
         <>
           <div id="host_view_versioninfo_tab" className={clsx('tab-pane', activeTab === 'versioninfo' && 'active')}>
             <div id="host_view_versioninfo_table_toolbar" className="dt_toolbar">
-              <div
-                id="host_view_versioninfo_table_toolbox"
-                className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}
-              >
+              <div data-testid="host_view_versioninfo_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
                 <div className="btn-group">
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
@@ -1239,7 +1231,7 @@ const HostViewPage = () => {
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
               order={[6, 'asc']}
-              select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
               drawCallback={(settings) => {
                 setVersionInfosCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
               }}
@@ -1252,10 +1244,7 @@ const HostViewPage = () => {
         <>
           <div id="host_view_vulnsearch_tab" className={clsx('tab-pane', activeTab === 'vulnsearch' && 'active')}>
             <div id="host_view_vulnsearch_table_toolbar" className="dt_toolbar">
-              <div
-                id="host_view_vulnsearch_table_toolbox"
-                className={clsx('dt_toolbar_toolbox', !toolboxesVisible && 'collapse')}
-              >
+              <div data-testid="host_view_vulnsearch_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
                 <div className="btn-group">
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
@@ -1353,7 +1342,7 @@ const HostViewPage = () => {
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
               order={[1, 'asc']}
-              select={toolboxesVisible ? { style: 'multi', selector: 'td:first-child' } : false}
+              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
               drawCallback={(settings) => {
                 setVulnSearchesCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
               }}

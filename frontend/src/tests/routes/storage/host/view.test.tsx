@@ -28,9 +28,6 @@ const loader = () =>
   })
 
 describe('Host view page', () => {
-  sessionStorage.setItem('dt_toolboxes_visible', 'false')
-  sessionStorage.setItem('dt_viatarget_column_visible', 'false')
-
   it('shows host', async () => {
     renderWithProviders({
       element: <HostViewPage />,
@@ -43,9 +40,25 @@ describe('Host view page', () => {
       expect(listItems.includes('Host')).toBeTruthy()
       expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
     })
+  })
 
+  it('shows host with toolboxes and via_target column', async () => {
     sessionStorage.setItem('dt_toolboxes_visible', 'true')
     sessionStorage.setItem('dt_viatarget_column_visible', 'true')
+    localStorage.setItem('host_view_tabs_active', 'service')
+
+    renderWithProviders({ element: <HostViewPage />, path: '/storage/host/view/1', loader: loader })
+
+    await waitFor(() => {
+      const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
+      expect(listItems.includes('Host')).toBeTruthy()
+      expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
+    })
+
+    await waitFor(() => {
+      // toBeVisible does not account collapse
+      expect(screen.getByTestId('host_view_service_table_toolbox')).not.toHaveClass('collapse')
+    })
   })
 
   it('shows host (no hostname)', async () => {

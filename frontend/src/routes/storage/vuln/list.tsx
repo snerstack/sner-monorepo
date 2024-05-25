@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -42,9 +42,6 @@ const VulnListPage = () => {
     tableId: '',
     url: '',
   })
-
-  /* c8 ignore next */
-  const viaTargetVisible = sessionStorage.getItem('dt_viatarget_column_visible') == 'true' ? true : false
 
   const columns = [
     ColumnSelect({ visible: true }),
@@ -83,7 +80,7 @@ const VulnListPage = () => {
         ),
     }),
     Column('via_target', {
-      visible: viaTargetVisible,
+      visible: viaTargetVisible(),
     }),
     Column('name', {
       createdCell: (cell, _data: string, row: VulnRow) =>
@@ -224,7 +221,7 @@ const VulnListPage = () => {
       </Heading>
 
       <div id="vuln_list_table_toolbar" className="dt_toolbar">
-        <div id="vuln_list_table_toolbox" className="dt_toolbar_toolbox_alwaysvisible">
+        <div data-testid="vuln_list_table_toolbox" className="dt_toolbar_toolbox_alwaysvisible">
           <div className="btn-group">
             <a className="btn btn-outline-secondary">
               <i className="fas fa-check-square"></i>

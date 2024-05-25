@@ -11,9 +11,6 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Versioninfo list page', () => {
   it('shows table of versioninfos', async () => {
-    sessionStorage.setItem('dt_toolboxes_visible', 'false')
-    sessionStorage.setItem('dt_viatarget_column_visible', 'false')
-
     renderWithProviders({ element: <VersionInfosListPage />, path: '/storage/versioninfo/list' })
     expect(screen.getByRole('list')).toHaveTextContent('Versioninfo (pre-computed)')
 
@@ -24,9 +21,18 @@ describe('Versioninfo list page', () => {
       expect(screen.getByText('microsoft windows_nt')).toBeInTheDocument()
       expect(screen.getByText('3.5.1')).toBeInTheDocument()
     })
+  })
 
+  it('shows list of versioninfos with toolboxes and via_target column', async () => {
     sessionStorage.setItem('dt_toolboxes_visible', 'true')
     sessionStorage.setItem('dt_viatarget_column_visible', 'true')
+
+    renderWithProviders({ element: <VersionInfosListPage />, path: '/storage/versioninfo/list' })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('versioninfo_list_table_toolbox')).not.toHaveClass('collapse')
+      expect(screen.getByText('via_target')).toBeVisible()
+    })
   })
 
   it('views host', async () => {

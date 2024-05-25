@@ -188,3 +188,11 @@ export const deleteRow = (tableId: string, url: string) => {
     .then(() => api.draw())
     .catch(() => toast.error('Error while deleting a row'))
 }
+
+export const toolboxesVisible = () => {
+  return sessionStorage.getItem('dt_toolboxes_visible') === 'true'
+}
+
+export const viaTargetVisible = () => {
+  return sessionStorage.getItem('dt_viatarget_column_visible') === 'true'
+}

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react'
 import * as recoil from 'recoil'
 import { describe, expect, it, vi } from 'vitest'
 
+import { toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 import Nav from '@/components/Nav'
@@ -29,30 +30,40 @@ describe('Nav component', () => {
     expect(screen.getByText('Login')).toBeInTheDocument()
   })
 
-  it('test toggle via_target', () => {
+  it('test toggle via_target', async () => {
     mockLoggedinUserState()
 
     renderWithProviders({ element: <Nav />, path: '/' })
-    fireEvent.click(screen.getByText('Toggle via_target (null)'))
-    expect(sessionStorage.getItem('dt_viatarget_column_visible')).toBeTruthy()
 
-    fireEvent.click(screen.getByText('Toggle via_target (true)'))
-    expect(sessionStorage.getItem('dt_viatarget_column_visible')).toBe('false')
+    await waitFor(() => {
+      fireEvent.click(screen.getByText('Toggle via_target (false)'))
+      expect(viaTargetVisible()).toBeTruthy()
+    })
+
+    await waitFor(() => {
+      fireEvent.click(screen.getByText('Toggle via_target (true)'))
+      expect(viaTargetVisible()).toBeFalsy()
+    })
   })
 
-  it('test toggle dt toolboxes', () => {
+  it('test toggle dt toolboxes', async () => {
     mockLoggedinUserState()
 
     renderWithProviders({ element: <Nav />, path: '/' })
-    fireEvent.click(screen.getByText('Toggle DT toolboxes (null)'))
-    expect(sessionStorage.getItem('dt_toolboxes_visible')).toBeTruthy()
 
-    fireEvent.click(screen.getByText('Toggle DT toolboxes (true)'))
-    expect(sessionStorage.getItem('dt_toolboxes_visible')).toBe('false')
+    await waitFor(() => {
+      fireEvent.click(screen.getByText('Toggle DT toolboxes (false)'))
+      expect(toolboxesVisible()).toBeTruthy()
+    })
+
+    await waitFor(() => {
+      fireEvent.click(screen.getByText('Toggle DT toolboxes (true)'))
+      expect(toolboxesVisible()).toBeFalsy()
+    })
   })
 
   it('test logout button', async () => {
-    const [_, mockSetState] = mockLoggedinUserState()
+    const [, mockSetState] = mockLoggedinUserState()
 
     renderWithProviders({ element: <Nav />, path: '/' })
     fireEvent.click(screen.getByText('Logout'))
