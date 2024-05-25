@@ -509,20 +509,17 @@ describe('Host view page', () => {
       loader: loader,
     })
 
-    window.location = {
-      reload: vi.fn(),
-    } as unknown as Location
-    window.confirm = vi.fn(() => true)
-
+    const reloadMock = vi.fn()
+    vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
     vi.spyOn(httpClient, 'post').mockResolvedValue('')
+    vi.stubGlobal('location', {reload: reloadMock})
 
     await waitFor(() => {
       const deleteButton = screen.getAllByTestId('delete-btn')[0]
-
       fireEvent.click(deleteButton)
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(window.location.reload).toHaveBeenCalled()
+    })
+    await waitFor(() => {
+      expect(reloadMock).toHaveBeenCalled()
     })
   })
 

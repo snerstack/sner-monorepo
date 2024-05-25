@@ -53,18 +53,16 @@ describe('Vuln view page', () => {
       loader: loader,
     })
 
-    window.location = {
-      reload: vi.fn(),
-    } as unknown as Location
-
-    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
-      data: '',
-    })
+    const reloadMock = vi.fn()
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({data: ''})
+    vi.stubGlobal('location', {reload: reloadMock})
 
     await waitFor(() => {
       const infoTag = screen.getAllByTestId('tag-btn')[0]
-
       fireEvent.click(infoTag)
+    })
+    await waitFor(() => {
+      expect(reloadMock).toHaveBeenCalled()
     })
   })
 

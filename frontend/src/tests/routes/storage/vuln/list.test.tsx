@@ -219,34 +219,6 @@ describe('Vuln list page', () => {
     })
   })
 
-  it('deletes vuln (error)', async () => {
-    renderWithProviders({
-      element: <VulnListPage />,
-      path: '/storage/vuln/list',
-    })
-
-    await waitFor(() => {
-      window.confirm = vi.fn(() => true)
-
-      const deleteRowButton = screen.getByTestId('delete-row-btn')
-
-      fireEvent.click(deleteRowButton)
-    })
-  })
-
-  it('deletes vuln (not confirmed)', () => {
-    renderWithProviders({
-      element: <VulnListPage />,
-      path: '/storage/vuln/list',
-    })
-
-    window.confirm = vi.fn(() => false)
-
-    const deleteRowButton = screen.getByTestId('delete-row-btn')
-
-    fireEvent.click(deleteRowButton)
-  })
-
   it('sets tag', async () => {
     renderWithProviders({
       element: <VulnListPage />,
