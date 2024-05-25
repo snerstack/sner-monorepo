@@ -1,6 +1,4 @@
-import { arrayBufferToBase64, base64ToArrayBuffer } from '@/utils'
-import { isAxiosError } from 'axios'
-import { decode, encode } from 'cbor-x'
+import { decode as cborDecode, encode as cborEncode } from 'cbor-x'
 import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
@@ -11,16 +9,12 @@ import { userState } from '@/atoms/userAtom'
 
 import httpClient from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
+import { arrayBufferToBase64, base64ToArrayBuffer } from '@/utils'
 
 import Heading from '@/components/Heading'
 
-interface CustomPublicKeyCredential extends PublicKeyCredential {
-  response: {
-    authenticatorData: ArrayBuffer
-    clientDataJSON: ArrayBuffer
-    signature: ArrayBuffer
-    userHandle: ArrayBuffer
-  }
+interface AssertionCredential extends PublicKeyCredential {
+  response: AuthenticatorAssertionResponse
 }
 
 const WebAuthnLoginPage = () => {
@@ -29,54 +23,51 @@ const WebAuthnLoginPage = () => {
 
   useEffect(() => {
     if (!window.PublicKeyCredential) {
-      toast.warn('WebAuthn is not supported.')
+      toast.warn('WebAuthn is not supported')
       return
     }
+    void loginHandler()
+  })
 
-    void (async () => {
-      try {
-        const pkcco = await getPublicKeyCredentialRequestOptions()
-
-        const assertion = (await navigator.credentials.get(pkcco)) as PublicKeyCredential
-        const packedAssertion = getPackedAssertion(assertion as CustomPublicKeyCredential)
-
-        void loginHandler(packedAssertion)
-      } catch (err) {
-        toast.error((err as Error).message)
-      }
-    })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const loginHandler = async (assertion: string) => {
-    const formData = new FormData()
-    formData.append('assertion', assertion)
-
+  const loginHandler = async () => {
     try {
-      const resp = await httpClient.post<User>(urlFor('/backend/auth/login_webauthn'), formData)
-
-      setUser({ ...resp.data, isAuthenticated: true })
-
-      navigate('/')
+      const pkcco = await getPublicKeyCredentialRequestOptions()
+      const assertion = (await navigator.credentials.get(pkcco)) as AssertionCredential
+      await loginWebauthn(assertion)
+    /* c8 ignore next 4 */
     } catch (err) {
-      if (isAxiosError<{ error: { message: string; code: number } }>(err)) {
-        toast.error(err.response?.data.error.message)
-      }
+      console.error(err)
+      toast.error('Webauthn login failed')
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.base64ToArrayBuffer = base64ToArrayBuffer // CI helper for selenium tests
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.CBORDecode = decode // CI helper for selenium tests
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.getPackedAssertion = getPackedAssertion // CI helper for selenium tests
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.webauthnLogin = loginHandler // CI helper for selenium tests
+  const getPublicKeyCredentialRequestOptions = async (): Promise<CredentialCreationOptions> => {
+    const resp = await httpClient.post<string>(urlFor('/backend/auth/login_webauthn_pkcro'))
+    /* selenium CI helper */
+    window.pkcro_raw = resp.data
+    return cborDecode(base64ToArrayBuffer(resp.data)) as CredentialCreationOptions
+  }
+
+  const loginWebauthn = async (assertion: AssertionCredential) => {
+    const assertionData = {
+      credentialRawId: new Uint8Array(assertion.rawId),
+      authenticatorData: new Uint8Array(assertion.response.authenticatorData),
+      clientDataJSON: new Uint8Array(assertion.response.clientDataJSON),
+      signature: new Uint8Array(assertion.response.signature),
+      userHandle: new Uint8Array(assertion.response.userHandle!),
+    }
+
+    const formData = new FormData()
+    formData.append('assertion', arrayBufferToBase64(cborEncode(assertionData)))
+    const resp = await httpClient.post<User>(urlFor('/backend/auth/login_webauthn'), formData)
+    setUser({ ...resp.data, isAuthenticated: true })
+    navigate('/')
+  }
+
+  /* selenium CI helpers */
+  window.base64ToArrayBuffer = base64ToArrayBuffer
+  window.cborDecode = cborDecode
+  window.loginWebauthn = loginWebauthn
 
   return (
     <div>
@@ -97,25 +88,3 @@ const WebAuthnLoginPage = () => {
 }
 
 export default WebAuthnLoginPage
-
-const getPublicKeyCredentialRequestOptions = async (): Promise<CredentialCreationOptions> => {
-  const resp = await httpClient.post<string>(urlFor('/backend/auth/login_webauthn_pkcro'))
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.pkcro_raw = resp.data // CI helper for selenium tests
-
-  return decode(base64ToArrayBuffer(resp.data)) as CredentialCreationOptions
-}
-
-const getPackedAssertion = (assertion: CustomPublicKeyCredential): string => {
-  const assertionData = {
-    credentialRawId: new Uint8Array(assertion.rawId),
-    authenticatorData: new Uint8Array(assertion.response.authenticatorData),
-    clientDataJSON: new Uint8Array(assertion.response.clientDataJSON),
-    signature: new Uint8Array(assertion.response.signature),
-    userHandle: new Uint8Array(assertion.response.userHandle),
-  }
-
-  return arrayBufferToBase64(encode(assertionData))
-}

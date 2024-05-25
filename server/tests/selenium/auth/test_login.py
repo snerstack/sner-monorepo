@@ -36,7 +36,7 @@ def test_login_webauthn(frontend_server, selenium, webauthn_credential_factory):
     pkcro = cbor.decode(b64decode(selenium.execute_script('return window.pkcro_raw;').encode('utf-8')))
     assertion = device.get(pkcro, f'https://{webauthn.rp.id}')
     buf = b64encode(cbor.encode(assertion)).decode('utf-8')
-    selenium.execute_script(f'webauthnLogin(getPackedAssertion(CBORDecode(base64ToArrayBuffer("{buf}"))));')
+    selenium.execute_script(f'loginWebauthn(cborDecode(base64ToArrayBuffer("{buf}")));')
     # and back to standard test codeflow
 
     webdriver_waituntil(selenium, EC.presence_of_element_located((By.XPATH, '//a[text()="Logout"]')))
