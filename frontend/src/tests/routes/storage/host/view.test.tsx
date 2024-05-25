@@ -190,6 +190,9 @@ describe('Host view page', () => {
     })
 
     await waitFor(() => {
+      const serviceTab = screen.getByTestId('service_tab')
+      fireEvent.click(serviceTab)
+
       testAnnotate({ tagsId: 'service_tags_annotate', commentId: 'service_comment_annotate' })
     })
   })
