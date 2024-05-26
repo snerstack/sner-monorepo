@@ -3,8 +3,8 @@ import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-import { urlFor } from '@/lib/urlHelper'
 import httpClient from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import SubmitField from '@/components/fields/SubmitField'
@@ -24,11 +24,12 @@ const WebAuthnEditPage = () => {
         urlFor(`/backend/auth/profile/webauthn/edit/${cred.id}`),
         formData,
       )
-
       toast.success(resp.data.message)
       navigate('/auth/profile')
+      /* c8 ignore next 4*/
     } catch (err) {
-      toast.error('Error while editing a credential.')
+      console.error(err)
+      toast.error('Error while editing a credential')
     }
   }
 
