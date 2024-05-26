@@ -63,6 +63,14 @@ export default ({ mode }) => {
           // cannot test with vitest+jsdom because of canvas package issues
           // with vitest threads (required for majority of tests)
           'src/routes/visuals/portinfos.tsx',
+          // cannot test, vitest + swagger
+          'src/routes/swagger.tsx',
+          // dunno test app object itself
+          'src/App.tsx',
+          // dunno test main app module
+          'src/main.tsx',
+          // dunno test main app routing
+          'src/routes/index.tsx',
         ],
       },
     },
