@@ -41,15 +41,17 @@ describe('TOTP page', () => {
         }),
     })
 
-    await waitFor(() => {
-      vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 400, message: 'Invalid code.' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 400, message: 'Invalid code.' }))
 
+    await waitFor(() => {
       const totpCodeInput = screen.getByLabelText('TOTP Code')
       const submitButton = screen.getByRole('button', { name: 'Submit' })
 
       fireEvent.change(totpCodeInput, { target: { value: 'invalid' } })
       fireEvent.click(submitButton)
+    })
 
+    await waitFor(() => {
       expect(screen.getByText('Invalid code.')).toBeInTheDocument()
     })
   })
@@ -81,9 +83,9 @@ describe('TOTP page', () => {
       ],
     })
 
-    await waitFor(() => {
-      vi.spyOn(httpClient, 'post').mockResolvedValueOnce({ data: { message: 'TOTP successfully enabled.' } })
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({ data: { message: 'TOTP successfully enabled.' } })
 
+    await waitFor(() => {
       const totpCodeInput = screen.getByLabelText('TOTP Code')
       const submitButton = screen.getByRole('button', { name: 'Submit' })
 

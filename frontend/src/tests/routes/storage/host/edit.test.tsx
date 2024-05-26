@@ -61,12 +61,13 @@ describe('Host edit page', () => {
         }),
     })
 
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: {
+        message: 'Host has been successfully edited.',
+      },
+    })
+
     await waitFor(() => {
-      vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
-        data: {
-          message: 'Host has been successfully edited.',
-        },
-      })
 
       const addressInput = screen.getByLabelText('Address')
       const editButton = screen.getByRole('button', { name: 'Edit' })
@@ -102,13 +103,13 @@ describe('Host edit page', () => {
         }),
     })
 
-    await waitFor(() => {
-      vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
-        data: {
-          message: 'Host has been successfully edited.',
-        },
-      })
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: {
+        message: 'Host has been successfully edited.',
+      },
+    })
 
+    await waitFor(() => {
       const addressInput = screen.getByLabelText('Address')
       const editButton = screen.getByRole('button', { name: 'Edit' })
 
@@ -143,9 +144,9 @@ describe('Host edit page', () => {
         }),
     })
 
-    await waitFor(() => {
-      vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
 
+    await waitFor(() => {
       const addressInput = screen.getByLabelText('Address')
       const editButton = screen.getByRole('button', { name: 'Edit' })
 
