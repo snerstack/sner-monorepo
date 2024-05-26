@@ -150,7 +150,7 @@ const HostListPage = () => {
           <Link className="btn btn-outline-primary" to="/storage/host/add">
             Add
           </Link>{' '}
-          <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">
+          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
             <i className="fas fa-filter"></i>
           </a>
         </div>

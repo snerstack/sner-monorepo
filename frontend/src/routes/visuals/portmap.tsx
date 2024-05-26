@@ -31,7 +31,7 @@ const PortmapPage = () => {
 
       <Heading headings={['Visuals', 'Portmap']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-secondary" data-toggle="collapse" href="#filter_form">
+          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
             <i className="fas fa-filter"></i>
           </a>
         </div>
