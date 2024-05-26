@@ -184,8 +184,8 @@ describe('Vuln edit page', () => {
       ],
     })
 
-    await waitFor(() => {
-      user.click(screen.getByText('Host, Service'))
+    await waitFor(async () => {
+      await user.click(screen.getByText('Host, Service'))
     })
 
     const hostInput = screen.getByLabelText('Host ID')
@@ -208,8 +208,8 @@ describe('Vuln edit page', () => {
 
     vi.spyOn(httpClient, 'get').mockRejectedValueOnce(errorResponse({ message: 'Server error.' }))
 
-    await waitFor(() => {
-      user.click(screen.getByText('Host, Service'))
+    await waitFor(async () => {
+      await user.click(screen.getByText('Host, Service'))
     })
 
     const hostInput = screen.getByLabelText('Host ID')
@@ -240,8 +240,8 @@ describe('Vuln edit page', () => {
       ],
     })
 
-    await waitFor(() => {
-      user.click(screen.getByText('Host, Service'))
+    await waitFor(async () => {
+      await user.click(screen.getByText('Host, Service'))
     })
 
     const serviceInput = screen.getByLabelText('Service ID')
@@ -264,8 +264,8 @@ describe('Vuln edit page', () => {
 
     vi.spyOn(httpClient, 'get').mockRejectedValueOnce(errorResponse({ message: 'Server error.' }))
 
-    await waitFor(() => {
-      user.click(screen.getByText('Host, Service'))
+    await waitFor(async () => {
+      await user.click(screen.getByText('Host, Service'))
     })
 
     const serviceInput = screen.getByLabelText('Service ID')
