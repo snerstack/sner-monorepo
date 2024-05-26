@@ -31,15 +31,6 @@ describe('Login Webauthn page', () => {
   })
 
   it('does webauthn login', async () => {
-    renderWithProviders({
-      element: <LoginPage />,
-      path: '/auth/login',
-      routes: [
-        { path: '/auth/login_webauthn', element: <WebAuthnLoginPage /> },
-        { path: '/', element: <RootPage /> },
-      ],
-    })
-
     const publicKeyCredentialIdMock = new Uint8Array(64)
     const publicKeyCredentialRequestOptionsMock = {
       publicKey: {
@@ -79,6 +70,15 @@ describe('Login Webauthn page', () => {
           roles: ['user'],
         },
       })
+
+    renderWithProviders({
+      element: <LoginPage />,
+      path: '/auth/login',
+      routes: [
+        { path: '/auth/login_webauthn', element: <WebAuthnLoginPage /> },
+        { path: '/', element: <RootPage /> },
+      ],
+    })
 
     const usernameInput = screen.getByLabelText('Username')
     const loginButton = screen.getByRole('button')
