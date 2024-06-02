@@ -1,3 +1,13 @@
+/*
+ * Integration of React with DataTables.net
+ *
+ * roots, renderElements, observerElements and cleanupElements provides facilities
+ * for integrating React with DataTables.net, where both libraries manage the DOM.
+ * To coexist, React renders only the TABLE element managed further by DataTables.net,
+ * but the table cells are again React components. The cell elements are registered
+ * in roots, cleaned by MutationObserver if required, but directly cleaned up in tests.
+ */
+
 import DataTable, { ConfigColumns } from 'datatables.net-bs4'
 import { ReactElement } from 'react'
 import { Root, createRoot } from 'react-dom/client'
@@ -9,7 +19,7 @@ export const getTableApi = (id: string) => {
   return new DataTable.Api(filteredTables[0] as Node)
 }
 
-const roots: { root: Root; element: Element }[] = []
+let roots: { root: Root; element: Element }[] = []
 
 export const renderElements = (parent: Node | Element, elements: ReactElement | ReactElement[]) => {
   const root = createRoot(parent as Element)
@@ -21,17 +31,23 @@ export const renderElements = (parent: Node | Element, elements: ReactElement | 
 export const observeElements = () => {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach(() => {
-      roots.forEach(({ root, element }, index) => {
-        // if the element is not in DOM, unmount the root from virtual DOM
+      roots = roots.filter(({ root, element }) => {
         if (!document.contains(element)) {
           root.unmount()
-          roots.splice(index, 1)
+          return false
         }
+        return true
       })
     })
   })
 
   observer.observe(document.body, { subtree: true, childList: true })
+}
+
+// called from vitest to cleanup VDOM before generic cleanup in afterEach block
+export const cleanupElements = () => {
+  roots.forEach((item) => item.root.unmount())
+  roots.length = 0
 }
 
 export const Column = (name: string, extra?: ConfigColumns) => {
