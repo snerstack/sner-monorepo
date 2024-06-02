@@ -1,4 +1,5 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import httpClient from '@/lib/httpClient'
@@ -25,6 +26,10 @@ describe('Webauthn edit page', () => {
   })
 
   it('edits webauthn credential name', async () => {
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: { message: 'dummy success' },
+    })
+
     renderWithProviders({
       element: <WebAuthnEditPage />,
       path: '/auth/profile/webauthn/edit/1',
@@ -46,16 +51,10 @@ describe('Webauthn edit page', () => {
       ],
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
-      data: { message: 'dummy success' },
-    })
-
-    await waitFor(() => {
-      const addressInput = screen.getByLabelText('Name')
-      const editButton = screen.getByRole('button', { name: 'Edit' })
-      fireEvent.change(addressInput, { target: { value: 'newname' } })
-      fireEvent.click(editButton)
-    })
+    const addressInput = await screen.findByLabelText('Name')
+    const editButton = await screen.findByRole('button', { name: 'Edit' })
+    await userEvent.type(addressInput, 'newname')
+    await userEvent.click(editButton)
 
     await waitFor(() => {
       expect(screen.getByText('dummy success')).toBeInTheDocument()
