@@ -206,17 +206,23 @@ describe('Vuln edit page', () => {
       loader: loader,
     })
 
-    vi.spyOn(httpClient, 'get').mockRejectedValueOnce(errorResponse({ message: 'Server error.' }))
+    vi.spyOn(httpClient, 'get')
+      .mockRejectedValueOnce(errorResponse({ message: 'Server error' })) // focus
+      .mockResolvedValueOnce({data: [{label: 'dummy', value: '1'}]})  // input
 
     await waitFor(async () => {
-      await user.click(screen.getByText('Host, Service'))
+      const labelElement = screen.getByText('Host, Service')
+      await user.click(labelElement)
     })
-
-    const hostInput = screen.getByLabelText('Host ID')
-    await user.type(hostInput, '1')
+    
+    await waitFor(async () => {
+      const hostInput = screen.getByLabelText('Host ID')
+      await user.type(hostInput, '1')
+    })
 
     await waitFor(() => {
       expect(screen.getByText('Error while getting autocomplete suggestions.')).toBeInTheDocument()
+      expect(screen.getByText('dummy')).toBeInTheDocument()
     })
   })
 

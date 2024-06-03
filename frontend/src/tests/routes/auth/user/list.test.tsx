@@ -118,12 +118,14 @@ describe('User list page', () => {
       path: '/auth/user/list',
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
+    const backendMock = vi.spyOn(httpClient, 'post').mockResolvedValue('')
+    vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
 
     await waitFor(() => {
       const deleteButton = screen.getAllByTestId('delete-btn')[0]
-
       fireEvent.click(deleteButton)
     })
+
+    expect(backendMock).toBeCalledWith('/backend/auth/user/delete/1')
   })
 })

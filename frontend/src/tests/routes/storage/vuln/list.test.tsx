@@ -265,12 +265,15 @@ describe('Vuln list page', () => {
       fireEvent.click(cells[0])
     })
 
-    const tagButton = screen.getAllByTestId('tag-dropdown-btn')[0]
+    const untagEndpoint = vi.spyOn(httpClient, 'post').mockResolvedValue('')
+    const untagButton = screen.getAllByTestId('tag-dropdown-btn')[0]
+    fireEvent.click(untagButton)
 
-    fireEvent.click(tagButton)
-
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
-  })
+    expect(untagEndpoint).toHaveBeenCalledWith(
+      '/backend/storage/vuln/tag_multiid',
+      expect.anything()
+    )
+ })
 
   it('sets multiple tags', async () => {
     renderWithProviders({

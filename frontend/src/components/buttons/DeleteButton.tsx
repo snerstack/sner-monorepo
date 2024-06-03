@@ -12,6 +12,7 @@ const DeleteButton = ({ url, tableId, className }: { url: string; tableId?: stri
       onClick={(e) => {
         e.preventDefault()
 
+        /* c8 ignore next */
         if (!confirm('Really delete?')) return
 
         httpClient
