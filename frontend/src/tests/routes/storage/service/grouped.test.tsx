@@ -32,7 +32,7 @@ describe('Service grouped page', () => {
     await waitFor(() => {
       expect(screen.getByText('null')).toBeInTheDocument()
       expect(screen.getByText('testservice banner')).toBeInTheDocument()
-      expect(screen.queryByText('test info')).toBeNull()
+      expect(screen.queryByText('test info')).not.toBeInTheDocument()
     })
   })
 
@@ -54,17 +54,21 @@ describe('Service grouped page', () => {
     })
   })
 
-  it('changes crop', () => {
+  it('changes crop', async () => {
     renderWithProviders({
       element: <ServiceGroupedPage />,
       path: '/storage/service/grouped',
     })
 
-    const cropLinks = screen.getAllByTestId('grouped-crop-link')
+    await waitFor(() => {
+      expect(screen.getByText('testservice banner')).toBeInTheDocument()
+    })
 
+    const cropLinks = screen.getAllByTestId('grouped-crop-link')
     fireEvent.click(cropLinks[0])
-    fireEvent.click(cropLinks[1])
-    fireEvent.click(cropLinks[2])
-    fireEvent.click(cropLinks[3])
+
+    await waitFor(() => {
+      expect(screen.getByText('testservice')).toBeInTheDocument()
+    })
   })
 })

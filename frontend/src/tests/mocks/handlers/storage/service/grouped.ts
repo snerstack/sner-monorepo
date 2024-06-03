@@ -1,5 +1,17 @@
 import { rest } from 'msw'
 
+interface Data {
+  data: DataItem[]
+  draw: string
+  recordsFiltered: string
+  recordsTotal: string
+}
+
+interface DataItem {
+  cnt_services: number
+  info: string
+}
+
 const data = {
   data: [
     {
@@ -23,10 +35,26 @@ const data = {
 export const serviceGroupedHandler = rest.post(
   '/backend/storage/service/grouped.json',
   (req, res, ctx) => {
-    if (req.url.searchParams.get('filter') === 'Host.address=="127.4.4.4"') {
-      return res(ctx.json({ draw: '1', recordsTotal: '2', recordsFiltered: '2', data: [data.data[0], data.data[1]] }))
+    if (!req.url.searchParams.keys()) {
+      return res(ctx.json(data))
     }
 
-    return res(ctx.json(data))
+    const filtered = JSON.parse(JSON.stringify(data)) as Data
+
+    if (req.url.searchParams.get('filter') === 'Host.address=="127.4.4.4"') {
+      filtered.data = filtered.data.slice(0, 2);
+    }
+
+    if (req.url.searchParams.get('crop')) {
+      const cropLength = parseInt(req.url.searchParams.get('crop')!)
+      filtered.data.forEach((item: DataItem) => {
+        if (item.info) {
+          item.info = item.info.split(' ').slice(0, cropLength).join(' ');
+        }
+      })
+    }
+
+    filtered.recordsFiltered = filtered.data.length.toString()
+    return res(ctx.json(filtered))
   },
 )
