@@ -36,7 +36,7 @@
     "react-use": "^17.4.0",
     "recoil": "^0.7.7",
     "sass": "~1.64.2",
-    "swagger-ui-react": "^5.9.0"
+    "swagger-ui-react": "^5.17.10"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.3",
