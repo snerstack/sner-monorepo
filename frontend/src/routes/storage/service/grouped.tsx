@@ -101,7 +101,7 @@ const ServiceGroupedPage = () => {
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
-        order={[1, 'desc']}
+        order={[[1, 'desc']]}
       />
     </div>
   )

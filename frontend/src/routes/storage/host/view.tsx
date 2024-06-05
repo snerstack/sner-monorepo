@@ -899,7 +899,7 @@ const HostViewPage = () => {
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
-              order={[5, 'asc']}
+              order={[[5, 'asc']]}
               select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
             />
 
@@ -1011,7 +1011,7 @@ const HostViewPage = () => {
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
-              order={[1, 'asc']}
+              order={[[1, 'asc']]}
               select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
             />
 
@@ -1122,7 +1122,7 @@ const HostViewPage = () => {
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
-              order={[1, 'asc']}
+              order={[[1, 'asc']]}
               select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
             />
 
@@ -1230,7 +1230,7 @@ const HostViewPage = () => {
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
-              order={[6, 'asc']}
+              order={[[6, 'asc']]}
               select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
               drawCallback={(settings) => {
                 setVersionInfosCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
@@ -1341,7 +1341,7 @@ const HostViewPage = () => {
                 xhrFields: { withCredentials: true },
                 beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
               }}
-              order={[1, 'asc']}
+              order={[[1, 'asc']]}
               select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
               drawCallback={(settings) => {
                 setVulnSearchesCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)

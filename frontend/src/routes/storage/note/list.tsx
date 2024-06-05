@@ -297,7 +297,7 @@ const NoteListPage = () => {
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
         select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
-        order={[[3, 'asc'], [1, 'asc']]}
+        order={[[3, 'asc']]}
       />
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />

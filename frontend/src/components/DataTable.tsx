@@ -1,19 +1,26 @@
-import DataTables, { Config } from 'datatables.net-bs4'
+import DataTables, { AjaxData, Api, Config } from 'datatables.net-bs4'
 import 'datatables.net-select-bs4'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { observeElements } from '@/lib/DataTables'
 
+type OrderArray = [number, 'asc' | 'desc']
+
 interface TableConfig extends Config {
-  id: string
+  id?: string
+  order?: OrderArray[]
+}
+
+interface Column {
+  name: string
 }
 
 const DataTable = ({ id, ...props }: TableConfig) => {
   const tableRef = useRef<HTMLTableElement>(null)
   const [searchParams] = useSearchParams()
 
-  const DEFAULT_CONFIG: Config = {
+  const DEFAULT_CONFIG: TableConfig = {
     autoWidth: false,
     serverSide: true,
     processing: true,
@@ -24,7 +31,6 @@ const DataTable = ({ id, ...props }: TableConfig) => {
     lengthMenu: [10, 50, 100, 200, 500, 1000, 5000],
     stateSave: true,
     columnDefs: [{ targets: 'no-sort', orderable: false }],
-    order: [0, 'asc'],
     preDrawCallback: function (settings) {
       const api = new DataTables.Api(settings)
       const paginationElements = document.querySelectorAll<HTMLElement>(`#${id}_wrapper .dataTables_paginate`)
@@ -66,11 +72,35 @@ const DataTable = ({ id, ...props }: TableConfig) => {
     },
   }
 
-  useEffect(() => {
-    const dt = new DataTables(tableRef.current!, {
-      ...DEFAULT_CONFIG,
-      ...props,
+  const findIdColumnIndex = (columns: Column[]): number => {
+    return columns.findIndex(column => column.name === 'id')
+  }
+
+  // adds ID column sorting (initial setup)
+  const addSortingProps = (tableProps: TableConfig): void => {
+    const idColumnIndex = findIdColumnIndex(tableProps.columns as Column[])
+    if (idColumnIndex !== -1) {
+      tableProps.order = tableProps.order || []
+      tableProps.order.push([idColumnIndex, 'asc']);
+    }
+  }
+
+  // adds ID column sorting (on every request)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const addSortingXhr = (dt: Api<any>): void => {
+    dt.on('preXhr.dt', (_event, settings, data: AjaxData) => {
+      const idColumnIndex = findIdColumnIndex((settings as {aoColumns: Column[]}).aoColumns)
+      if (idColumnIndex !== -1) {
+        data.order.push({ 'column': idColumnIndex, 'dir': 'asc' })
+      }
     })
+  }
+
+  useEffect(() => {
+    const tableProps = { ...DEFAULT_CONFIG, ...props }
+    addSortingProps(tableProps)
+    const dt = new DataTables(tableRef.current!, tableProps)
+    addSortingXhr(dt)
 
     observeElements()
 

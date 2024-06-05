@@ -345,7 +345,7 @@ const VulnListPage = () => {
           xhrFields: { withCredentials: true },
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
-        order={[1, 'asc']}
+        order={[[1, 'asc']]}
         select={{ style: 'multi', selector: 'td:first-child' }}
       />
 

@@ -270,7 +270,7 @@ const HostListPage = () => {
           beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
         }}
         select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
-        order={[[2, 'asc'], [1, 'asc']]}
+        order={[[2, 'asc']]}
       />
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
