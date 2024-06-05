@@ -7,7 +7,7 @@ from flask import url_for
 
 
 def get_csrf_token(clnt):
-    """fetch @me route and parse csrf token"""
+    """fetch user/me route and parse csrf token"""
 
     response = clnt.get(url_for('auth.user_me_route'), expect_errors=True)
     cookie_list = response.headers.getall('Set-Cookie')

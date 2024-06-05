@@ -16,7 +16,7 @@ const App = () => {
 
   const authHandler = () => {
     httpClient
-      .get<User>(urlFor('/backend/auth/user/@me'))
+      .get<User>(urlFor('/backend/auth/user/me'))
       .then((resp) => {
         setUser({ ...resp.data, isAuthenticated: true })
         setIsChecking(false)

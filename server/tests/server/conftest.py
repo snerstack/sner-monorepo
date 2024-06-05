@@ -71,7 +71,7 @@ class CustomTestApp(TestApp):
     def get(self, *args, **kwargs):
         """token setup before GET request"""
 
-        if args[0] == '/backend/auth/user/%40me':   # prevent recursion
+        if args[0] == '/backend/auth/user/me':   # prevent recursion
             return super().get(*args, **kwargs)
 
         headers = kwargs.get('headers', {})

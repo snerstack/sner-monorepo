@@ -20,7 +20,7 @@ from sner.server.password_supervisor import PasswordSupervisor as PWS
 from sner.server.utils import filter_query, error_response
 
 
-@blueprint.route('/user/@me')
+@blueprint.route('/user/me')
 def user_me_route():
     """get current user"""
 
