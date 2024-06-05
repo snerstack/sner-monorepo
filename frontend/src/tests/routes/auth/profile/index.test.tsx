@@ -63,17 +63,18 @@ describe('Profile page', () => {
       loader: () => Promise.resolve(defaultProfile),
     })
 
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: {
+        apikey: 'test_api_key_value',
+      },
+    })
+
     await waitFor(() => {
       const generateApiKeyButton = screen.getByText('Generate')!
-
-      vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
-        data: {
-          apikey: 'test_api_key_value',
-        },
-      })
-
       fireEvent.click(generateApiKeyButton)
+    })
 
+    await waitFor(() => {
       expect(screen.getByText('new apikey test_api_key_value'))
     })
   })
@@ -85,20 +86,19 @@ describe('Profile page', () => {
       loader: () => Promise.resolve(defaultProfile),
     })
 
+    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+      data: {
+        message: 'Apikey successfully revoked',
+      },
+    })
+
     await waitFor(() => {
       const revokeApiKeyButton = screen.getByText('Revoke')!
-
-      vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
-        data: {
-          message: 'Apikey successfully revoked.',
-        },
-      })
-
       fireEvent.click(revokeApiKeyButton)
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Apikey successfully revoked.'))
+      expect(screen.getByText('Apikey successfully revoked'))
     })
   })
 
