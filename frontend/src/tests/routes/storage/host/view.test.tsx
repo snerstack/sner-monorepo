@@ -170,16 +170,25 @@ describe('Host view page', () => {
       loader: loader,
     })
 
+    const updateRouteMock = vi.spyOn(httpClient, 'post').mockResolvedValue({})
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const tagsCell = await screen.findByTestId('host_tags_annotate')
+    fireEvent.doubleClick(tagsCell)
+
+    expect(await screen.findByRole('dialog')).toBeVisible()
+
+    const tagsInput = await screen.findByPlaceholderText('Tags')
+    fireEvent.change(tagsInput, { target: { value: 'edited_tag' } })
+
+    const saveButton = screen.getByRole('button', { name: 'Save' })
+    fireEvent.click(saveButton)
+
     await waitFor(() => {
-      const tagsCell = screen.getByTestId('host_tags_annotate')
-      const commentCell = screen.getByTestId('host_comment_annotate')
-
-      fireEvent.doubleClick(tagsCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
+
+    expect(updateRouteMock).toBeCalledWith('/backend/storage/host/annotate/1', expect.anything())
   })
 
   it('annotates service', async () => {

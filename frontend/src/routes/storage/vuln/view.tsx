@@ -20,7 +20,6 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import config from '../../../../config.ts'
 
 const vulnDataElement = (vulnData: string) => {
-
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const value = JSON.parse(vulnData)
@@ -32,12 +31,25 @@ const vulnDataElement = (vulnData: string) => {
 
 const VulnViewPage = () => {
   const vuln = useLoaderData() as Vuln
-  const [annotate, setAnnotate] = useState<Annotate>({
-    show: false,
-    tags: vuln.tags,
-    comment: vuln.comment,
-    url: urlFor(`/backend/storage/vuln/annotate/${vuln.id}`),
-  })
+  const [vulnTags, setVulnTags] = useState(vuln.tags)
+  const [vulnComment, setVulnComment] = useState(vuln.comment)
+  const [annotate, setAnnotate] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+
+  const refreshAnnotations = (newTags: string[], newComment: string): void => {
+    setVulnTags(newTags)
+    setVulnComment(newComment)
+  }
+
+  const dblClickAnnotateHandler = (): void => {
+    setAnnotate({
+      show: true,
+      tags: vulnTags,
+      comment: vulnComment,
+      url: urlFor(`/backend/storage/vuln/annotate/${vuln.id}`),
+      refresh: refreshAnnotations
+    })
+  }
+
   return (
     <div>
       <Helmet>
@@ -161,14 +173,9 @@ const VulnViewPage = () => {
               className="abutton_annotate_view"
               data-testid="vuln_tags_annotate"
               colSpan={3}
-              onDoubleClick={() =>
-                setAnnotate({
-                  ...annotate,
-                  show: true,
-                })
-              }
+              onDoubleClick={dblClickAnnotateHandler}
             >
-              {vuln.tags.map((tag) => (
+              {vulnTags.map((tag) => (
                 <Fragment key={tag}>
                   <Tag tag={tag} />{' '}
                 </Fragment>
@@ -181,14 +188,9 @@ const VulnViewPage = () => {
               className="abutton_annotate_view"
               data-testid="vuln_comment_annotate"
               colSpan={5}
-              onDoubleClick={() =>
-                setAnnotate({
-                  ...annotate,
-                  show: true,
-                })
-              }
+              onDoubleClick={dblClickAnnotateHandler}
             >
-              {vuln.comment || 'No comment'}
+              {vulnComment}
             </td>
           </tr>
         </tbody>

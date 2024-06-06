@@ -28,35 +28,47 @@ import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import config from '../../../../config.ts'
 
 const HostViewPage = () => {
-  const host = useLoaderData() as Host
-  const [activeTab, setActiveTab] = useLocalStorage('host_view_tabs_active')
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
+
+  const host = useLoaderData() as Host
+  const [hostTags, setHostTags] = useState(host.tags)
+  const [hostComment, setHostComment] = useState(host.comment)
+  const [activeTab, setActiveTab] = useLocalStorage('host_view_tabs_active')
   const [versionInfosCount, setVersionInfosCount] = useState<string>('?')
   const [vulnSearchesCount, setVulnSearchesCount] = useState<string>('?')
 
-  const [annotateHost, setAnnotateHost] = useState<Annotate>({
-    show: false,
-    tags: host.tags,
-    comment: host.comment,
-    tableId: '',
-    url: urlFor(`/backend/storage/host/annotate/${host.id}`),
-  })
+  const [annotateHost, setAnnotateHost] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
 
-  const [annotateService, setAnnotateService] = useState<Annotate>({
-    show: false,
-    tags: [],
-    comment: '',
-    tableId: '',
-    url: '',
-  })
+  const refreshAnnotations = (newTags: string[], newComment: string): void => {
+    setHostTags(newTags)
+    setHostComment(newComment)
+  }
 
-  const [multipleTagService, setMultipleTagService] = useState<MultipleTag>({
-    show: false,
-    action: 'set',
-    tableId: '',
-    url: '',
-  })
+  const dblClickAnnotateHostHandler = (): void => {
+    setAnnotateHost({
+      show: true,
+      tags: hostTags,
+      comment: hostComment,
+      url: urlFor(`/backend/storage/host/annotate/${host.id}`),
+      refresh: refreshAnnotations
+    })
+  }
+
+  const [annotateService, setAnnotateService] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+  const [multipleTagService, setMultipleTagService] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
+
+  const [annotateVuln, setAnnotateVuln] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+  const [multipleTagVuln, setMultipleTagVuln] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
+
+  const [annotateNote, setAnnotateNote] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+  const [multipleTagNote, setMultipleTagNote] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
+
+  const [annotateVersioninfo, setAnnotateVersioninfo] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+  const [multipleTagVersioninfo, setMultipleTagVersioninfo] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
+
+  const [annotateVulnsearch, setAnnotateVulnsearch] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+  const [multipleTagVulnsearch, setMultipleTagVulnsearch] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
 
   const serviceColumns = [
     ColumnSelect({ visible: toolboxesVisible() }),
@@ -158,21 +170,6 @@ const HostViewPage = () => {
         ),
     }),
   ]
-
-  const [annotateVuln, setAnnotateVuln] = useState<Annotate>({
-    show: false,
-    tags: [],
-    comment: '',
-    tableId: '',
-    url: '',
-  })
-
-  const [multipleTagVuln, setMultipleTagVuln] = useState<MultipleTag>({
-    show: false,
-    action: 'set',
-    tableId: '',
-    url: '',
-  })
 
   const vulnColumns = [
     ColumnSelect({ visible: toolboxesVisible() }),
@@ -314,21 +311,6 @@ const HostViewPage = () => {
     }),
   ]
 
-  const [annotateNote, setAnnotateNote] = useState<Annotate>({
-    show: false,
-    tags: [],
-    comment: '',
-    tableId: '',
-    url: '',
-  })
-
-  const [multipleTagNote, setMultipleTagNote] = useState<MultipleTag>({
-    show: false,
-    action: 'set',
-    tableId: '',
-    url: '',
-  })
-
   const noteColumns = [
     ColumnSelect({ visible: toolboxesVisible() }),
     Column('id', { visible: false }),
@@ -436,22 +418,6 @@ const HostViewPage = () => {
         ),
     }),
   ]
-
-  const [annotateVersioninfo, setAnnotateVersioninfo] = useState<Annotate>({
-    show: false,
-    tags: [],
-    comment: '',
-    tableId: '',
-    url: '',
-  })
-
-  const [multipleTagVersioninfo, setMultipleTagVersioninfo] = useState<MultipleTag>({
-    show: false,
-    action: 'set',
-    tableId: '',
-    url: '',
-  })
-
   const versioninfoColumns = [
     ColumnSelect({ visible: toolboxesVisible() }),
     Column('id', { visible: false }),
@@ -521,21 +487,6 @@ const HostViewPage = () => {
       },
     }),
   ]
-
-  const [annotateVulnsearch, setAnnotateVulnsearch] = useState<Annotate>({
-    show: false,
-    tags: [],
-    comment: '',
-    tableId: '',
-    url: '',
-  })
-
-  const [multipleTagVulnsearch, setMultipleTagVulnsearch] = useState<MultipleTag>({
-    show: false,
-    action: 'set',
-    tableId: '',
-    url: '',
-  })
 
   const vulnsearchColumns = [
     ColumnSelect({ visible: toolboxesVisible() }),
@@ -709,9 +660,9 @@ const HostViewPage = () => {
             <td
               className="abutton_annotate_view"
               data-testid="host_tags_annotate"
-              onDoubleClick={() => setAnnotateHost({ ...annotateHost, show: true })}
+              onDoubleClick={dblClickAnnotateHostHandler}
             >
-              {host.tags.map((tag) => (
+              {hostTags.map((tag) => (
                 <Fragment key={tag}>
                   <Tag tag={tag} />{' '}
                 </Fragment>
@@ -723,9 +674,9 @@ const HostViewPage = () => {
             <td
               className="abutton_annotate_view"
               data-testid="host_comment_annotate"
-              onDoubleClick={() => setAnnotateHost({ ...annotateHost, show: true })}
+              onDoubleClick={dblClickAnnotateHostHandler}
             >
-              {host.comment || 'None'}
+              {hostComment}
             </td>
           </tr>
         </tbody>

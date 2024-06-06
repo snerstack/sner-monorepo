@@ -1,8 +1,9 @@
 import NoteViewPage from '@/routes/storage/note/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
+import httpClient from '@/lib/httpClient'
 
 const loader = () =>
   Promise.resolve({
@@ -39,23 +40,32 @@ describe('Note view page', () => {
     })
   })
 
-  it('annotates note', async () => {
+  it('annotates note (tags)', async () => {
     renderWithProviders({
       element: <NoteViewPage />,
       path: '/storage/note/view/1',
       loader: loader,
     })
 
+    const updateRouteMock = vi.spyOn(httpClient, 'post').mockResolvedValue({})
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const tagsCell = await screen.findByTestId('note_tags_annotate')
+    fireEvent.doubleClick(tagsCell)
+
+    expect(await screen.findByRole('dialog')).toBeVisible()
+
+    const tagsInput = await screen.findByPlaceholderText('Tags')
+    fireEvent.change(tagsInput, { target: { value: 'edited_tag' } })
+
+    const saveButton = screen.getByRole('button', { name: 'Save' })
+    fireEvent.click(saveButton)
+
     await waitFor(() => {
-      const tagsCell = screen.getByTestId('note_tags_annotate')
-      const commentCell = screen.getByTestId('note_comment_annotate')
-
-      fireEvent.doubleClick(tagsCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
+
+    expect(updateRouteMock).toBeCalledWith('/backend/storage/note/annotate/1', expect.anything())
   })
 
   it('shows note (nmap)', async () => {

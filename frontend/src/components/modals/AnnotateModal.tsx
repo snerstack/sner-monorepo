@@ -26,20 +26,19 @@ const AnnotateModal = ({
     setComment(annotate.comment)
   }, [annotate.tags, annotate.comment])
 
-  const annotateHandler = () => {
+  const annotateHandler = async (): Promise<void> => {
     const formData = new FormData()
     formData.append('tags', tags.join('\n'))
     formData.append('comment', comment)
 
-    httpClient
-      .post(annotate.url, formData)
-      .then(() => {
-        setAnnotate({ ...annotate, show: false })
-        if (annotate.tableId) {
-          getTableApi(annotate.tableId).draw()
-        }
-      })
-      .catch(() => toast.error('Error while annotating'))
+    try {
+      await httpClient.post(annotate.url, formData)
+      setAnnotate({ ...annotate, show: false })
+      annotate.tableId && getTableApi(annotate.tableId).draw()
+      annotate.refresh && annotate.refresh(tags, comment)
+    } catch (e) {
+      toast.error('Error while annotating')
+    }
   }
 
   return (

@@ -33,12 +33,24 @@ type TestSsl = {
 
 const NoteViewPage = () => {
   const note = useLoaderData() as Note
-  const [annotate, setAnnotate] = useState<Annotate>({
-    show: false,
-    tags: note.tags,
-    comment: note.comment,
-    url: urlFor(`/backend/storage/note/annotate/${note.id}`),
-  })
+  const [noteTags, setNoteags] = useState(note.tags)
+  const [noteComment, setNoteComment] = useState(note.comment)
+  const [annotate, setAnnotate] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+
+  const refreshAnnotations = (newTags: string[], newComment: string): void => {
+    setNoteags(newTags)
+    setNoteComment(newComment)
+  }
+
+  const dblClickAnnotateHandler = (): void => {
+    setAnnotate({
+      show: true,
+      tags: noteTags,
+      comment: noteComment,
+      url: urlFor(`/backend/storage/note/annotate/${note.id}`),
+      refresh: refreshAnnotations
+    })
+  }
 
   return (
     <div>
@@ -104,14 +116,9 @@ const NoteViewPage = () => {
               className="abutton_annotate_view"
               data-testid="note_tags_annotate"
               colSpan={3}
-              onDoubleClick={() =>
-                setAnnotate({
-                  ...annotate,
-                  show: true,
-                })
-              }
+              onDoubleClick={dblClickAnnotateHandler}
             >
-              {note.tags.map((tag) => (
+              {noteTags.map((tag) => (
                 <Fragment key={tag}>
                   <Tag tag={tag} />{' '}
                 </Fragment>
@@ -124,14 +131,9 @@ const NoteViewPage = () => {
               className="abutton_annotate_view"
               colSpan={5}
               data-testid="note_comment_annotate"
-              onDoubleClick={() =>
-                setAnnotate({
-                  ...annotate,
-                  show: true,
-                })
-              }
+              onDoubleClick={dblClickAnnotateHandler}
             >
-              {note.comment || 'None'}
+              {noteComment}
             </td>
           </tr>
         </tbody>

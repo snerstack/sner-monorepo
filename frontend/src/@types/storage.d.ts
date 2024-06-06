@@ -94,15 +94,16 @@ interface Annotate {
   show: boolean
   tags: string[]
   comment: string
-  tableId?: string
   url: string
+  tableId?: string
+  refresh?: (tags: string[], comment: string) => void
 }
 
 interface MultipleTag {
   show: boolean
   action: 'set' | 'unset'
-  tableId: string
   url: string
+  tableId: string
 }
 
 interface TagConfig {

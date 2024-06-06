@@ -66,23 +66,32 @@ describe('Vuln view page', () => {
     })
   })
 
-  it('annotates vuln', async () => {
+  it('annotates vuln (tags)', async () => {
     renderWithProviders({
       element: <VulnViewPage />,
       path: '/storage/vuln/view/1',
       loader: loader,
     })
 
+    const updateRouteMock = vi.spyOn(httpClient, 'post').mockResolvedValue({})
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const tagsCell = await screen.findByTestId('vuln_tags_annotate')
+    fireEvent.doubleClick(tagsCell)
+
+    expect(await screen.findByRole('dialog')).toBeVisible()
+
+    const tagsInput = await screen.findByPlaceholderText('Tags')
+    fireEvent.change(tagsInput, { target: { value: 'edited_tag' } })
+
+    const saveButton = screen.getByRole('button', { name: 'Save' })
+    fireEvent.click(saveButton)
+
     await waitFor(() => {
-      const tagsCell = screen.getByTestId('vuln_tags_annotate')
-      const commentCell = screen.getByTestId('vuln_comment_annotate')
-
-      fireEvent.doubleClick(tagsCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
-
-      fireEvent.doubleClick(commentCell)
-      expect(screen.getByText('Annotate')).toBeInTheDocument()
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
+
+    expect(updateRouteMock).toBeCalledWith('/backend/storage/vuln/annotate/1', expect.anything())
   })
 
   it('shows vuln (no hostname and xtype)', async () => {
