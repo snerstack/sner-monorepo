@@ -537,7 +537,7 @@ describe('Host view page', () => {
     const reloadMock = vi.fn()
     vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
     vi.spyOn(httpClient, 'post').mockResolvedValue('')
-    vi.stubGlobal('location', {reload: reloadMock})
+    vi.stubGlobal('location', { reload: reloadMock })
 
     await waitFor(() => {
       const deleteButton = screen.getAllByTestId('delete-btn')[0]
@@ -577,6 +577,7 @@ describe('Host view page', () => {
       testDeleteRow({ buttonId: 'vuln-delete-row-btn' })
     })
   })
+
   it('deletes note', async () => {
     renderWithProviders({
       element: <HostViewPage />,
