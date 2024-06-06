@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 
 import { getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
-import { getSelectedIdsFormData } from '@/lib/sner/storage'
+import { EMPTY_MULTIPLE_TAG_ANNOTATION_STATE, getSelectedIdsFormData } from '@/lib/sner/storage'
 
 import SubmitField from '../fields/SubmitField'
 import TagsField from '../fields/TagsField'
@@ -17,7 +17,8 @@ const MultipleTagModal = ({
   setMultipleTag: Dispatch<SetStateAction<MultipleTag>>
 }) => {
   const [tags, setTags] = useState<string[]>([])
-  const multipleTagHandler = () => {
+
+  const multipleTagHandler = async () => {
     const ids = getSelectedIdsFormData(getTableApi(multipleTag.tableId))
     const formData = new FormData()
 
@@ -27,24 +28,25 @@ const MultipleTagModal = ({
       formData.append(key, ids[key].toString())
     }
 
-    httpClient
-      .post(multipleTag.url, formData)
-      .then(() => {
-        setMultipleTag({ ...multipleTag, show: false })
-        getTableApi(multipleTag.tableId).draw()
-      })
-      .catch(() => toast.error(`Error while ${multipleTag.action}ting tags`))
+    try {
+      await httpClient.post(multipleTag.url, formData)
+      setMultipleTag(EMPTY_MULTIPLE_TAG_ANNOTATION_STATE)
+      getTableApi(multipleTag.tableId).draw()
+    /* c8 ignore next 3 */
+    } catch {
+      toast.error(`Error while ${multipleTag.action}ing tags`)
+    }
   }
 
   return (
     <Modal
       show={multipleTag.show}
-      onHide={() => setMultipleTag({ ...multipleTag, show: false })}
+      onHide={() => setMultipleTag(EMPTY_MULTIPLE_TAG_ANNOTATION_STATE)}
       size="lg"
       data-testid="multiple-tag-modal"
     >
       <Modal.Header>
-        <ModalTitle>{multipleTag.action === 'set' ? 'Tag multiple items' : 'Untag multiple items'}</ModalTitle>
+        <ModalTitle>{`${multipleTag.action === 'set' ? 'Tag' : 'Untag'} multiple items`}</ModalTitle>
       </Modal.Header>
       <ModalBody>
         <TagsField name="tags" label="Tags" placeholder="Tags" _state={tags} _setState={setTags} horizontal={false} />

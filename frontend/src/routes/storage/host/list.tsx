@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, toolboxesVisible } from '@/lib/sner/storage'
+import { EMPTY_MULTIPLE_TAG_ANNOTATION_STATE, deleteRow, toolboxesVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -22,7 +22,7 @@ import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
-import config from '../../../../config.ts'
+import config from '@/../config.ts'
 
 const HostListPage = () => {
   const [searchParams] = useSearchParams()
@@ -35,12 +35,7 @@ const HostListPage = () => {
     tableId: '',
     url: '',
   })
-  const [multipleTag, setMultipleTag] = useState<MultipleTag>({
-    show: false,
-    action: 'set',
-    tableId: '',
-    url: '',
-  })
+  const [multipleTag, setMultipleTag] = useState<MultipleTag>(EMPTY_MULTIPLE_TAG_ANNOTATION_STATE)
 
   const columns = [
     ColumnSelect({ visible: toolboxesVisible() }),
@@ -196,8 +191,8 @@ const HostListPage = () => {
                 setMultipleTag({
                   show: true,
                   action: 'set',
-                  tableId: 'host_list_table',
                   url: urlFor('/backend/storage/host/tag_multiid'),
+                  tableId: 'host_list_table',
                 })
               }
             >

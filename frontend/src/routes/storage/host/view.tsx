@@ -6,7 +6,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useCookie, useLocalStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
+import { EMPTY_MULTIPLE_TAG_ANNOTATION_STATE, deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -37,8 +37,9 @@ const HostViewPage = () => {
   const [activeTab, setActiveTab] = useLocalStorage('host_view_tabs_active')
   const [versionInfosCount, setVersionInfosCount] = useState<string>('?')
   const [vulnSearchesCount, setVulnSearchesCount] = useState<string>('?')
-
-  const [annotateHost, setAnnotateHost] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+  
+  const [annotate, setAnnotate] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+  const [multipleTag, setMultipleTag] = useState<MultipleTag>(EMPTY_MULTIPLE_TAG_ANNOTATION_STATE)
 
   const refreshAnnotations = (newTags: string[], newComment: string): void => {
     setHostTags(newTags)
@@ -46,7 +47,7 @@ const HostViewPage = () => {
   }
 
   const dblClickAnnotateHostHandler = (): void => {
-    setAnnotateHost({
+    setAnnotate({
       show: true,
       tags: hostTags,
       comment: hostComment,
@@ -54,21 +55,6 @@ const HostViewPage = () => {
       refresh: refreshAnnotations
     })
   }
-
-  const [annotateService, setAnnotateService] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
-  const [multipleTagService, setMultipleTagService] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
-
-  const [annotateVuln, setAnnotateVuln] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
-  const [multipleTagVuln, setMultipleTagVuln] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
-
-  const [annotateNote, setAnnotateNote] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
-  const [multipleTagNote, setMultipleTagNote] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
-
-  const [annotateVersioninfo, setAnnotateVersioninfo] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
-  const [multipleTagVersioninfo, setMultipleTagVersioninfo] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
-
-  const [annotateVulnsearch, setAnnotateVulnsearch] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
-  const [multipleTagVulnsearch, setMultipleTagVulnsearch] = useState<MultipleTag>({ show: false, action: 'set', url: '', tableId: '' })
 
   const serviceColumns = [
     ColumnSelect({ visible: toolboxesVisible() }),
@@ -99,12 +85,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string, row: ServiceRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateService({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_service_table',
             url: urlFor(`/backend/storage/service/annotate/${row['id']}`),
+            tableId: 'host_view_service_table',
           })
         }
         renderElements(
@@ -125,12 +111,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string, row: ServiceRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateService({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_service_table',
             url: urlFor(`/backend/storage/service/annotate/${row['id']}`),
+            tableId: 'host_view_service_table',
           })
         }
         renderElements(cell, <div data-testid="service_comment_annotate">{row['comment']}</div>)
@@ -240,12 +226,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string[], row: VulnRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateVuln({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_vuln_table',
             url: urlFor(`/backend/storage/vuln/annotate/${row['id']}`),
+            tableId: 'host_view_vuln_table',
           })
         }
         renderElements(
@@ -266,12 +252,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string, row: VulnRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateVuln({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_vuln_table',
             url: urlFor(`/backend/storage/vuln/annotate/${row['id']}`),
+            tableId: 'host_view_vuln_table',
           })
         }
         renderElements(cell, <div data-testid="vuln_comment_annotate">{row['comment']}</div>)
@@ -352,12 +338,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string[], row: NoteRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateNote({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_note_table',
             url: urlFor(`/backend/storage/note/annotate/${row['id']}`),
+            tableId: 'host_view_note_table',
           })
         }
         renderElements(
@@ -378,12 +364,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string, row: NoteRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateNote({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_note_table',
             url: urlFor(`/backend/storage/note/annotate/${row['id']}`),
+            tableId: 'host_view_note_table',
           })
         }
         renderElements(cell, <div data-testid="note_comment_annotate">{row['comment']}</div>)
@@ -449,12 +435,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string[], row: VersionInfoRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateVersioninfo({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_versioninfo_table',
             url: urlFor(`/backend/storage/versioninfo/annotate/${row['id']}`),
+            tableId: 'host_view_versioninfo_table',
           })
         }
         renderElements(
@@ -475,12 +461,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string, row: VersionInfoRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateVersioninfo({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_versioninfo_table',
             url: urlFor(`/backend/storage/versioninfo/annotate/${row['id']}`),
+            tableId: 'host_view_versioninfo_table',
           })
         }
         renderElements(cell, <div data-testid="versioninfo_comment_annotate">{row['comment']}</div>)
@@ -531,12 +517,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string[], row: VulnSearchRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateVulnsearch({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_vulnsearch_table',
             url: urlFor(`/backend/storage/vulnsearch/annotate/${row['id']}`),
+            tableId: 'host_view_vulnsearch_table',
           })
         }
         renderElements(
@@ -557,12 +543,12 @@ const HostViewPage = () => {
       createdCell: (cell, _data: string, row: VulnSearchRow) => {
         const element = cell as HTMLTableCellElement
         element.ondblclick = () => {
-          setAnnotateVulnsearch({
+          setAnnotate({
             show: true,
             tags: row['tags'],
             comment: row['comment'] || '',
-            tableId: 'host_view_vulnsearch_table',
             url: urlFor(`/backend/storage/vulnsearch/annotate/${row['id']}`),
+            tableId: 'host_view_vulnsearch_table',
           })
         }
         renderElements(cell, <div data-testid="vulnsearch_comment_annotate">{row['comment']}</div>)
@@ -779,11 +765,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="service_set_multiple_tag"
                     onClick={() =>
-                      setMultipleTagService({
+                      setMultipleTag({
                         show: true,
                         action: 'set',
-                        tableId: 'host_view_service_table',
                         url: urlFor('/backend/storage/service/tag_multiid'),
+                        tableId: 'host_view_service_table',
                       })
                     }
                   >
@@ -804,11 +790,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="service_unset_multiple_tag"
                     onClick={() =>
-                      setMultipleTagService({
+                      setMultipleTag({
                         show: true,
                         action: 'unset',
-                        tableId: 'host_view_service_table',
                         url: urlFor('/backend/storage/service/tag_multiid'),
+                        tableId: 'host_view_service_table',
                       })
                     }
                   >
@@ -853,9 +839,6 @@ const HostViewPage = () => {
               order={[[5, 'asc']]}
               select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
             />
-
-            <AnnotateModal annotate={annotateService} setAnnotate={setAnnotateService} />
-            <MultipleTagModal multipleTag={multipleTagService} setMultipleTag={setMultipleTagService} />
           </div>
         </>
 
@@ -896,11 +879,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="vuln_set_multiple_tag"
                     onClick={() =>
-                      setMultipleTagService({
+                      setMultipleTag({
                         show: true,
                         action: 'set',
-                        tableId: 'host_view_vuln_table',
                         url: urlFor('/backend/storage/vuln/tag_multiid'),
+                        tableId: 'host_view_vuln_table',                      
                       })
                     }
                   >
@@ -916,11 +899,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="vuln_unset_multiple_tag"
                     onClick={() =>
-                      setMultipleTagService({
+                      setMultipleTag({
                         show: true,
                         action: 'unset',
-                        tableId: 'host_view_vuln_table',
                         url: urlFor('/backend/storage/vuln/tag_multiid'),
+                        tableId: 'host_view_vuln_table',
                       })
                     }
                   >
@@ -965,9 +948,6 @@ const HostViewPage = () => {
               order={[[1, 'asc']]}
               select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
             />
-
-            <AnnotateModal annotate={annotateVuln} setAnnotate={setAnnotateVuln} />
-            <MultipleTagModal multipleTag={multipleTagVuln} setMultipleTag={setMultipleTagVuln} />
           </div>
         </>
         <>
@@ -1007,11 +987,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="note_set_multiple_tag"
                     onClick={() =>
-                      setMultipleTagService({
+                      setMultipleTag({
                         show: true,
                         action: 'set',
-                        tableId: 'host_view_note_table',
                         url: urlFor('/backend/storage/note/tag_multiid'),
+                        tableId: 'host_view_note_table',
                       })
                     }
                   >
@@ -1027,11 +1007,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="note_unset_multiple_tag"
                     onClick={() =>
-                      setMultipleTagService({
+                      setMultipleTag({
                         show: true,
                         action: 'unset',
-                        tableId: 'host_view_note_table',
                         url: urlFor('/backend/storage/note/tag_multiid'),
+                        tableId: 'host_view_note_table',
                       })
                     }
                   >
@@ -1076,9 +1056,6 @@ const HostViewPage = () => {
               order={[[1, 'asc']]}
               select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
             />
-
-            <AnnotateModal annotate={annotateNote} setAnnotate={setAnnotateNote} />
-            <MultipleTagModal multipleTag={multipleTagNote} setMultipleTag={setMultipleTagNote} />
           </div>
         </>
         <>
@@ -1118,11 +1095,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="versioninfo_set_multiple_tag"
                     onClick={() =>
-                      setMultipleTagVersioninfo({
+                      setMultipleTag({
                         show: true,
                         action: 'set',
-                        tableId: 'host_view_versioninfo_table',
                         url: urlFor('/backend/storage/versioninfo/tag_multiid'),
+                        tableId: 'host_view_versioninfo_table',
                       })
                     }
                   >
@@ -1143,11 +1120,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="versioninfo_unset_multiple_tag"
                     onClick={() =>
-                      setMultipleTagVersioninfo({
+                      setMultipleTag({
                         show: true,
                         action: 'unset',
-                        tableId: 'host_view_versioninfo_table',
                         url: urlFor('/backend/storage/versioninfo/tag_multiid'),
+                        tableId: 'host_view_versioninfo_table',
                       })
                     }
                   >
@@ -1187,9 +1164,6 @@ const HostViewPage = () => {
                 setVersionInfosCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
               }}
             />
-
-            <AnnotateModal annotate={annotateVersioninfo} setAnnotate={setAnnotateVersioninfo} />
-            <MultipleTagModal multipleTag={multipleTagVersioninfo} setMultipleTag={setMultipleTagVersioninfo} />
           </div>
         </>
         <>
@@ -1229,11 +1203,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="vulnsearch_set_multiple_tag"
                     onClick={() =>
-                      setMultipleTagVulnsearch({
+                      setMultipleTag({
                         show: true,
                         action: 'set',
-                        tableId: 'host_view_vulnsearch_table',
                         url: urlFor('/backend/storage/vulnsearch/tag_multiid'),
+                        tableId: 'host_view_vulnsearch_table',
                       })
                     }
                   >
@@ -1254,11 +1228,11 @@ const HostViewPage = () => {
                     href="#"
                     data-testid="vulnsearch_unset_multiple_tag"
                     onClick={() =>
-                      setMultipleTagVulnsearch({
+                      setMultipleTag({
                         show: true,
                         action: 'unset',
-                        tableId: 'host_view_vulnsearch_table',
                         url: urlFor('/backend/storage/vulnsearch/tag_multiid'),
+                        tableId: 'host_view_vulnsearch_table',
                       })
                     }
                   >
@@ -1298,13 +1272,12 @@ const HostViewPage = () => {
                 setVulnSearchesCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
               }}
             />
-
-            <AnnotateModal annotate={annotateVulnsearch} setAnnotate={setAnnotateVulnsearch} />
-            <MultipleTagModal multipleTag={multipleTagVulnsearch} setMultipleTag={setMultipleTagVulnsearch} />
           </div>
         </>
       </div>
-      <AnnotateModal annotate={annotateHost} setAnnotate={setAnnotateHost} />
+
+      <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />
+      <MultipleTagModal multipleTag={multipleTag} setMultipleTag={setMultipleTag} />
     </div>
   )
 }

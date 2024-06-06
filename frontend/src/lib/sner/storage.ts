@@ -196,3 +196,10 @@ export const toolboxesVisible = () => {
 export const viaTargetVisible = () => {
   return sessionStorage.getItem('dt_viatarget_column_visible') === 'true'
 }
+
+export const EMPTY_MULTIPLE_TAG_ANNOTATION_STATE: MultipleTag = {
+  show: false,
+  action: 'set',
+  url: '',
+  tableId: ''
+}
