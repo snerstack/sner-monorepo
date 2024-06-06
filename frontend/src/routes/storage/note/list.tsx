@@ -6,7 +6,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { deleteRow, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -30,19 +30,8 @@ const NoteListPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
-  const [annotate, setAnnotate] = useState<Annotate>({
-    show: false,
-    tags: [],
-    comment: '',
-    tableId: '',
-    url: '',
-  })
-  const [multipleTag, setMultipleTag] = useState<MultipleTag>({
-    show: false,
-    action: 'set',
-    tableId: '',
-    url: '',
-  })
+  const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
+  const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
   const columns = [
     ColumnSelect({ visible: toolboxesVisible() }),

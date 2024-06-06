@@ -6,7 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { urlFor } from '@/lib/urlHelper'
-import { toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -26,19 +26,8 @@ const VersionInfosListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
-  const [annotate, setAnnotate] = useState<Annotate>({
-    show: false,
-    tags: [],
-    comment: '',
-    tableId: '',
-    url: '',
-  })
-  const [multipleTag, setMultipleTag] = useState<MultipleTag>({
-    show: false,
-    action: 'set',
-    tableId: '',
-    url: '',
-  })
+  const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
+  const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
   const [product, setProduct] = useState<string>('')
   const [versionspec, setVersionspec] = useState<string>('')

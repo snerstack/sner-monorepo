@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 
 import { getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
-import { EMPTY_MULTIPLE_TAG_ANNOTATION_STATE, getSelectedIdsFormData } from '@/lib/sner/storage'
+import { DEFAULT_MULTIPLE_TAG_STATE, getSelectedIdsFormData } from '@/lib/sner/storage'
 
 import SubmitField from '../fields/SubmitField'
 import TagsField from '../fields/TagsField'
@@ -30,7 +30,7 @@ const MultipleTagModal = ({
 
     try {
       await httpClient.post(multipleTag.url, formData)
-      setMultipleTag(EMPTY_MULTIPLE_TAG_ANNOTATION_STATE)
+      setMultipleTag(DEFAULT_MULTIPLE_TAG_STATE)
       getTableApi(multipleTag.tableId).draw()
     /* c8 ignore next 3 */
     } catch {
@@ -41,7 +41,7 @@ const MultipleTagModal = ({
   return (
     <Modal
       show={multipleTag.show}
-      onHide={() => setMultipleTag(EMPTY_MULTIPLE_TAG_ANNOTATION_STATE)}
+      onHide={() => setMultipleTag(DEFAULT_MULTIPLE_TAG_STATE)}
       size="lg"
       data-testid="multiple-tag-modal"
     >

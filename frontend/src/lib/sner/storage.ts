@@ -197,7 +197,14 @@ export const viaTargetVisible = () => {
   return sessionStorage.getItem('dt_viatarget_column_visible') === 'true'
 }
 
-export const EMPTY_MULTIPLE_TAG_ANNOTATION_STATE: MultipleTag = {
+export const DEFAULT_ANNOTATE_STATE: Annotate = {
+  show: false,
+  tags: [],
+  comment: '',
+  url: '',
+}
+
+export const DEFAULT_MULTIPLE_TAG_STATE: MultipleTag = {
   show: false,
   action: 'set',
   url: '',

@@ -11,6 +11,7 @@ import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import EditButton from '@/components/buttons/EditButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
+import { DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage'
 
 type ScreenshotWeb = {
   url: string
@@ -35,7 +36,7 @@ const NoteViewPage = () => {
   const note = useLoaderData() as Note
   const [noteTags, setNoteags] = useState(note.tags)
   const [noteComment, setNoteComment] = useState(note.comment)
-  const [annotate, setAnnotate] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+  const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
 
   const refreshAnnotations = (newTags: string[], newComment: string): void => {
     setNoteags(newTags)

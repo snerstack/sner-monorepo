@@ -3,7 +3,7 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 
-import { getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import CodeBlock from '@/components/CodeBlock'
@@ -33,7 +33,7 @@ const VulnViewPage = () => {
   const vuln = useLoaderData() as Vuln
   const [vulnTags, setVulnTags] = useState(vuln.tags)
   const [vulnComment, setVulnComment] = useState(vuln.comment)
-  const [annotate, setAnnotate] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
+  const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
 
   const refreshAnnotations = (newTags: string[], newComment: string): void => {
     setVulnTags(newTags)

@@ -6,7 +6,7 @@ import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { urlFor } from '@/lib/urlHelper'
-import { viaTargetVisible, toolboxesVisible } from '@/lib/sner/storage'
+import { viaTargetVisible, toolboxesVisible, DEFAULT_MULTIPLE_TAG_STATE, DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -26,19 +26,8 @@ const VulnSearchListPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
-  const [annotate, setAnnotate] = useState<Annotate>({
-    show: false,
-    tags: [],
-    comment: '',
-    tableId: '',
-    url: '',
-  })
-  const [multipleTag, setMultipleTag] = useState<MultipleTag>({
-    show: false,
-    action: 'set',
-    tableId: '',
-    url: '',
-  })
+  const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
+  const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
   const columns = [
     ColumnSelect({ visible: toolboxesVisible() }),

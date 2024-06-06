@@ -10,6 +10,7 @@ import config from '../../../config.ts'
 import SubmitField from '../fields/SubmitField'
 import TagsField from '../fields/TagsField'
 import TextAreaField from '../fields/TextAreaField'
+import { DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage.ts'
 
 const AnnotateModal = ({
   annotate,
@@ -44,7 +45,7 @@ const AnnotateModal = ({
   return (
     <Modal
       show={annotate.show}
-      onHide={() => setAnnotate({show: false, tags: [], comment: '', url: ''})}
+      onHide={() => setAnnotate(DEFAULT_ANNOTATE_STATE)}
       size="lg"
       data-testid="annotate-modal"
     >

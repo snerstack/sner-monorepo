@@ -6,7 +6,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useCookie, useLocalStorage } from 'react-use'
 
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { EMPTY_MULTIPLE_TAG_ANNOTATION_STATE, deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -38,8 +38,8 @@ const HostViewPage = () => {
   const [versionInfosCount, setVersionInfosCount] = useState<string>('?')
   const [vulnSearchesCount, setVulnSearchesCount] = useState<string>('?')
   
-  const [annotate, setAnnotate] = useState<Annotate>({ show: false, tags: [], comment: '', url: '' })
-  const [multipleTag, setMultipleTag] = useState<MultipleTag>(EMPTY_MULTIPLE_TAG_ANNOTATION_STATE)
+  const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
+  const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
   const refreshAnnotations = (newTags: string[], newComment: string): void => {
     setHostTags(newTags)
