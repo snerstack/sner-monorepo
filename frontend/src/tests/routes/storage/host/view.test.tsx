@@ -89,26 +89,6 @@ describe('Host view page', () => {
     })
   })
 
-  it('sets tag', async () => {
-    renderWithProviders({
-      element: <HostViewPage />,
-      path: '/storage/host/view/1',
-      loader: loader,
-    })
-
-    await waitFor(() => {
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[0])
-    })
-
-    vi.spyOn(httpClient, 'post').mockResolvedValue('')
-
-    const tagButton = screen.getAllByTestId('tag-btn')[0]
-
-    fireEvent.click(tagButton)
-  })
-
   it('views vuln', async () => {
     renderWithProviders({
       element: <HostViewPage />,
@@ -163,7 +143,7 @@ describe('Host view page', () => {
     })
   })
 
-  it('annotates host', async () => {
+  it('annotates host (tags)', async () => {
     renderWithProviders({
       element: <HostViewPage />,
       path: '/storage/host/view/1',
