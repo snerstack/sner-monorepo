@@ -20,10 +20,9 @@ make prod
 ```
 # install
 apt-get -y install git sudo make docker.io docker-compose nodejs npm screen
-git clone https://github.com/snerstack/sner-monorepo.git /opt/sner
+git clone git@github.com:snerstack/sner-monorepo.git /opt/sner
 cd /opt/sner
 git checkout devel
-git remote set-url origin git@github.com:snerstack/sner-monorepo.git
 
 # frontend
 cd /opt/sner/frontend
