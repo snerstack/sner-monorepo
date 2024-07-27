@@ -1,0 +1,4 @@
+.env
+.git/
+frontend/node_modules/
+server/venv/

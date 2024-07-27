@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: server
+    container_name: sner_server
+    environment:
+      SNER_CONFIG: |
+        server:
+          secret_key: "${SNER_SECRET_KEY?err}"
+          sqlalchemy_database_uri: "postgresql://sner:${SNER_DB_PASSWORD?err}@db/sner"
+    volumes:
+      - vardata:/var/lib/sner
+    ports:
+      - 18000:18000
+    restart: always
+    depends_on:
+      - db
+    networks:
+      backend:
+
+  db:
+    image: postgres:15-bookworm
+    container_name: sner_db
+    volumes:
+      - dbdata:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: sner
+      POSTGRES_USER: sner
+      POSTGRES_PASSWORD: "${SNER_DB_PASSWORD?err}"
+    restart: always
+    networks:
+      backend:
+
+volumes:
+  dbdata:
+  vardata:
+
+networks:
+  backend:
