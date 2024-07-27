@@ -10,6 +10,7 @@ import os
 import sys
 
 import flask.cli
+import yaml
 from flask import Flask, has_request_context, request
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf, CSRFProtect, CSRFError
@@ -118,14 +119,25 @@ DEFAULT_CONFIG = {
 }
 
 
-def config_from_yaml(filename):
-    """pull config variables from config file"""
+def config_from(config_dict):
+    """pull config variables from config dict"""
 
-    config_dict = load_yaml(filename)
     config = {k.upper(): v for k, v in config_dict.get('server', {}).items()}
     if 'planner' in config_dict:
         config['SNER_PLANNER'] = config_dict['planner']
     return config
+
+
+def config_from_yaml(filename):
+    """pull config variables from config file"""
+
+    return config_from(load_yaml(filename))
+
+
+def config_from_env(var_name):
+    """pull config variables from env var"""
+
+    return config_from(yaml.safe_load(os.environ.get(var_name, "{}")))
 
 
 class LogFormatter(logging.Formatter):
@@ -189,7 +201,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app = Flask('sner.server')
     app.config.update(DEFAULT_CONFIG)  # default config
     app.config.update(config_from_yaml(config_file))  # service configuration
-    app.config.update(config_from_yaml(os.environ.get(config_env)))  # wsgi/container config
+    app.config.update(config_from_env(config_env))  # container config
 
     if app.config["DEBUG"]:
         logging.getLogger('sner.server').setLevel(logging.DEBUG)
