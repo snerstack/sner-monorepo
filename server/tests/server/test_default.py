@@ -45,10 +45,11 @@ def test_shell():
 
     patch_argv = patch.object(sys, 'argv', ['bin/server', 'shell'])
     patch_environ = patch.object(os, 'environ', {})
+    path_app_factory = patch.object(create_app, "__defaults__", ("dummy.yml", ""))
     patch_stdin = patch.object(sys, 'stdin', buf_stdin)
     patch_stdout = patch.object(sys, 'stdout', buf_stdout)
     with pytest.raises(SystemExit) as pytest_wrapped_e:
-        with patch_argv, patch_environ, patch_stdin, patch_stdout:
+        with patch_argv, path_app_factory, patch_environ, patch_stdin, patch_stdout:
             cli()
 
     assert pytest_wrapped_e.value.code == 0
@@ -58,10 +59,12 @@ def test_shell():
 def test_cli():
     """test sner server cli/main flask wrapper"""
 
+    patch_argv = patch.object(sys, 'argv', ['dummy'])
+    patch_environ = patch.object(os, 'environ', {})
+    path_app_factory = patch.object(create_app, "__defaults__", ("dummy.yml", ""))
     with pytest.raises(SystemExit) as pytest_wrapped_e:
-        with patch.object(sys, 'argv', ['dummy']):
-            with patch.object(os, 'environ', {}):
-                cli()
+        with patch_argv, path_app_factory, patch_environ:
+            cli()
     assert pytest_wrapped_e.type == SystemExit
     assert pytest_wrapped_e.value.code == 0
 
@@ -73,9 +76,10 @@ def test_version():
 
     patch_argv = patch.object(sys, 'argv', ['--version', '--debug'])
     patch_environ = patch.object(os, 'environ', {})
+    path_app_factory = patch.object(create_app, "__defaults__", ("dummy.yml", ""))
     patch_stdout = patch.object(sys, 'stdout', buf_stdout)
     with pytest.raises(SystemExit) as pytest_wrapped_e:
-        with patch_argv, patch_environ, patch_stdout:
+        with patch_argv, patch_environ, path_app_factory, patch_stdout:
             cli()
 
     assert pytest_wrapped_e.value.code == 0

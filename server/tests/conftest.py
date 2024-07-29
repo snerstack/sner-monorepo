@@ -35,7 +35,7 @@ from tests.server.storage.models import (
 def app():
     """yield application as pytest fixture"""
 
-    _app = create_app(config_file='tests/sner.yaml')
+    _app = create_app(config_file='tests/sner.yaml', config_env='dummy')
     with _app.test_request_context():
         db_remove()
         db.create_all()
