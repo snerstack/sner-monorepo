@@ -4,7 +4,7 @@ services:
 
   server:
     build:
-      context: .
+      context: ..
       dockerfile: docker/server/Dockerfile
     container_name: sner_server
     environment:
@@ -25,7 +25,7 @@ services:
 
   agent:
     build:
-      context: .
+      context: ..
       dockerfile: docker/agent/Dockerfile
     container_name: sner_agent
     environment:
