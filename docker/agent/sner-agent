@@ -1,0 +1,2 @@
+#!/bin/sh
+/opt/sner/server/venv/bin/python3 /opt/sner/server/bin/agent "$@"

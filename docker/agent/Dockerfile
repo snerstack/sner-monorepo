@@ -1,14 +1,4 @@
-FROM node:21-bookworm AS frontend
-
-WORKDIR /opt/sner
-COPY frontend /opt/sner/frontend
-
-WORKDIR /opt/sner/frontend
-RUN npm install
-RUN npm run build
-
-
-FROM debian:bookworm-slim AS server
+FROM debian:bookworm-slim AS agent
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python3 \
@@ -23,16 +13,23 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git \
     libpq-dev \
     postgresql-client \
-    unzip
+    unzip \
+    wget
 
 WORKDIR /opt/sner
 COPY server /opt/sner/server
-COPY docker/sner-server /usr/local/bin/sner-server
-RUN mkdir -p frontend/dist
-COPY --from=frontend /opt/sner/frontend/dist frontend/dist
+COPY docker/agent/sner-agent /usr/local/bin/sner-agent
 
 WORKDIR /opt/sner/server
 RUN python3 -m venv venv && venv/bin/pip install -r requirements.lock
 
-COPY docker/entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+RUN sh bin/install_nmap.sh && \
+    sh bin/install_ipv6toolkit.sh && \
+    sh bin/install_jarm.sh && \
+    sh bin/install_firefox.sh && \
+    sh bin/install_testssl.sh && \
+    sh bin/install_nuclei.sh && \
+    sh bin/install_quicmap.sh && \
+    sh bin/install_sshaudit.sh
+
+ENTRYPOINT ["/usr/local/bin/sner-agent"]
