@@ -21,7 +21,7 @@ services:
     depends_on:
       - db
     networks:
-      backend:
+      - backend
 
   agent:
     build:
@@ -37,7 +37,7 @@ services:
     depends_on:
       - server
     networks:
-      backend:
+      - backend
 
   db:
     image: postgres:15-bookworm
@@ -50,7 +50,7 @@ services:
       POSTGRES_PASSWORD: "${SNER_SERVER_DB_PASSWORD?err}"
     restart: always
     networks:
-      backend:
+      - backend
 
 volumes:
   dbdata:
