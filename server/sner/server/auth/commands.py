@@ -38,11 +38,12 @@ def reset_password(username):
 
 
 @command.command(name='add-agent', help='add agent')
+@click.option('--apikey', help='set agent apikey')
 @with_appcontext
-def add_agent():
+def add_agent(**kwargs):
     """add new agent"""
 
-    apikey = PWS.generate_apikey()
+    apikey = kwargs["apikey"] or PWS.generate_apikey()
     agent = User(
         username=f'agent_{uuid4()}',
         apikey=PWS.hash_simple(apikey),
