@@ -21,6 +21,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 import marshmallow
 import requests
+import yaml
 
 from sner.server.api.schema import JobAssignmentSchema
 from sner.lib import load_yaml, TerminateContextMixin
@@ -72,6 +73,13 @@ def config_from_yaml(filename):
     """pull config variables from config file"""
 
     return {k.upper(): v for k, v in load_yaml(filename).get('agent', {}).items()}
+
+
+def config_from_env(var_name):
+    """pull config variables from env var"""
+
+    var_data = yaml.safe_load(os.environ.get(var_name, "{}"))
+    return {k.upper(): v for k, v in var_data.get('agent', {}).items()}
 
 
 def config_from_args(args):
@@ -316,5 +324,6 @@ def main(argv=None):
     # standard agent
     config = copy.deepcopy(DEFAULT_CONFIG)
     config.update(config_from_yaml(args.config))
+    config.update(config_from_env("SNER_CONFIG"))
     config.update(config_from_args(args))
     return ServerableAgent(config).run()
