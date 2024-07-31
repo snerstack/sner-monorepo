@@ -1,0 +1,3 @@
+services:
+  server:
+    image: $CI_REGISTRY_IMAGE/server:$CI_COMMIT_REF_SLUG

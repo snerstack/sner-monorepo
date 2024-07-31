@@ -1,0 +1,17 @@
+image: docker:git
+
+stages:
+  - build-server
+  - build-agent
+
+build-server:
+  stage: build-server
+  tags:
+    - docker_build
+
+  script:
+    - cd docker
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker-compose -f docker-compose.yaml -f docker-compose.ci.yaml build --pull -- server
+    - docker-compose -f docker-compose.yaml -f docker-compose.ci.yaml push -- server
+    - docker logout $CI_REGISTRY
