@@ -8,11 +8,14 @@ services:
       dockerfile: docker/server/Dockerfile
     container_name: sner_server
     environment:
+      SNER_SERVER_SECRET_KEY:
+      SNER_SERVER_DB_PASSWORD:
+      SNER_AGENT_APIKEY:
+
       SNER_CONFIG: |
         server:
-          secret_key: "${SNER_SERVER_SECRET_KEY?err}"
-          sqlalchemy_database_uri: "postgresql://sner:${SNER_SERVER_DB_PASSWORD?err}@db/sner"
-      SNER_AGENT_APIKEY: "${SNER_AGENT_APIKEY?err}"
+          secret_key: "${SNER_SERVER_SECRET_KEY}"
+          sqlalchemy_database_uri: "postgresql://sner:${SNER_SERVER_DB_PASSWORD}@db/sner"
     volumes:
       - vardata:/var/lib/sner
     ports:
@@ -29,10 +32,12 @@ services:
       dockerfile: docker/agent/Dockerfile
     container_name: sner_agent
     environment:
+      SNER_AGENT_APIKEY:
+
       SNER_CONFIG: |
         agent:
           server: "http://server:18000"
-          apikey: "${SNER_AGENT_APIKEY?err}"
+          apikey: "${SNER_AGENT_APIKEY}"
     restart: always
     depends_on:
       - server
@@ -45,9 +50,11 @@ services:
     volumes:
       - dbdata:/var/lib/postgresql
     environment:
+      SNER_SERVER_DB_PASSWORD:
+
       POSTGRES_DB: sner
       POSTGRES_USER: sner
-      POSTGRES_PASSWORD: "${SNER_SERVER_DB_PASSWORD?err}"
+      POSTGRES_PASSWORD: "${SNER_SERVER_DB_PASSWORD}"
     restart: always
     networks:
       - backend
