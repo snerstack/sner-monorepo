@@ -35,5 +35,6 @@ COPY --from=frontend /opt/sner/frontend/dist frontend/dist
 WORKDIR /opt/sner/server
 RUN python3 -m venv venv && venv/bin/pip install -r requirements.lock
 
+EXPOSE 18000
 COPY docker/server/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
