@@ -15,3 +15,15 @@ build-server:
     - docker-compose -f docker-compose.yaml -f docker-compose.ci.yaml build --pull -- server
     - docker-compose -f docker-compose.yaml -f docker-compose.ci.yaml push -- server
     - docker logout $CI_REGISTRY
+
+build-agent:
+  stage: build-agent
+  tags:
+    - docker_build
+
+  script:
+    - cd docker
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - docker-compose -f docker-compose.yaml -f docker-compose.ci.yaml build --pull -- agent
+    - docker-compose -f docker-compose.yaml -f docker-compose.ci.yaml push -- agent
+    - docker logout $CI_REGISTRY
