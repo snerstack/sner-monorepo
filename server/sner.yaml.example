@@ -77,4 +77,4 @@
 #
 #    load_standalone:
 #      queues:
-#        - dummy1
+#        - dev.dummy
