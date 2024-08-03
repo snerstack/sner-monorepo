@@ -28,12 +28,14 @@ pytest-factoryboy
 pytest-flask
 pytest-httpserver
 pytest-selenium
-git+https://github.com/bodik/python-libnmap@devel-usertargetname#egg=python-libnmap
+# editable keeps git ref for freeze
+-e git+https://github.com/snerstack/python-libnmap@snerstack#egg=python-libnmap
 pytimeparse
 pyyaml
 requests
 schema
 soft-webauthn
 sqlalchemy-datatables
-git+https://github.com/bodik/sqlalchemy-filters@master-rb#egg=sqlalchemy-filters
+# editable keeps git ref for freeze
+-e git+https://github.com/snerstack/sqlalchemy-filters@snerstack#egg=sqlalchemy-filters
 webtest

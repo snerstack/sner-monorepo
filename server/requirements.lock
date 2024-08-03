@@ -96,7 +96,7 @@ tenacity==6.3.1
 toml==0.10.2
 tomli==2.0.1
 tomlkit==0.11.1
-typing-extensions==4.3.0
+typing_extensions==4.3.0
 urllib3==1.26.10
 waitress==2.1.2
 webargs==8.1.0
