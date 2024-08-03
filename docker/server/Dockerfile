@@ -1,40 +1,50 @@
+# Stage 1: Build the frontend assets
 FROM node:21-bookworm AS frontend
-
-WORKDIR /opt/sner
-COPY frontend /opt/sner/frontend
-
 WORKDIR /opt/sner/frontend
-RUN npm install
+
+# cache node_modules unless packages are changed
+COPY frontend/package*.json ./
+RUN npm ci
+
+COPY frontend/ ./
 RUN npm run build
 
-
+# Stage 2: Build the server
 FROM debian:bookworm-slim AS server
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python3 \
-	python3-dev \
-    python3-magic \
-	python3-pip \
-	python3-venv \
-	vim
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    gcc \
-    git \
-    libpq-dev \
-    iproute2 \
-    postgresql-client \
-    unzip
-
-WORKDIR /opt/sner
-COPY server /opt/sner/server
-COPY docker/server/sner-server /usr/local/bin/sner-server
-RUN mkdir -p frontend/dist
-COPY --from=frontend /opt/sner/frontend/dist frontend/dist
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        gcc \
+        git \
+        iproute2 \
+        libpq-dev \
+        postgresql-client \
+        python3 \
+        python3-dev \
+        python3-magic \
+        python3-pip \
+        python3-venv \
+        unzip \
+        vim \
+        wget \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/sner/server
+
+# cache venv unless packages are changed
+COPY server/requirements.lock ./
 RUN python3 -m venv venv && venv/bin/pip install -r requirements.lock
+
+COPY server/ ./
+RUN mkdir -p /opt/sner/frontend/dist
+COPY --from=frontend /opt/sner/frontend/dist/ /opt/sner/frontend/dist/
+
+COPY docker/server/sner-server /usr/local/bin/sner-server
+RUN chmod +x /usr/local/bin/sner-server
 
 EXPOSE 18000
 COPY docker/server/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
