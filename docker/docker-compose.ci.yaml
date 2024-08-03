@@ -1,6 +1,6 @@
 services:
   server:
-    image: $CI_REGISTRY_IMAGE/server:$CI_COMMIT_REF_SLUG
+    image: $CI_REGISTRY_IMAGE/server:$CI_COMMIT_REF_NAME
 
   agent:
-    image: $CI_REGISTRY_IMAGE/agent:$CI_COMMIT_REF_SLUG
+    image: $CI_REGISTRY_IMAGE/agent:$CI_COMMIT_REF_NAME
