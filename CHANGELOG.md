@@ -1,4 +1,11 @@
-# sner4 changelog
+# sner changelog
+
+## 1.0.0 - contained reactor [BC BREAK]
+
+* changed: server, many updates towards frontend integration
+* added: react frontend
+* added: basic containerization
+
 
 ## 0.12.0 - taglytics [BC BREAK]
 
