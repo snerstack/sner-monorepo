@@ -10,6 +10,7 @@ services:
     environment:
       SNER_SERVER_SECRET_KEY:
       SNER_SERVER_DB_PASSWORD:
+      SNER_ADMIN_PASSWORD:
       SNER_AGENT_APIKEY:
 
       SNER_CONFIG: |

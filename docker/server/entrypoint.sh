@@ -5,7 +5,14 @@ if ! sner-server psql -Atc 'select * from alembic_version' 1>/dev/null 2>/dev/nu
     sner-server dbx init
     sner-server dbx init-data
     sner-server db stamp head
-    sner-server auth add-agent --apikey "$SNER_AGENT_APIKEY"
+
+    if [ ! -z "$SNER_ADMIN_PASSWORD" ]; then
+        sner-server auth add-user admin admin@localhost --roles admin,operator,user --password "$SNER_ADMIN_PASSWORD"
+    fi
+
+    if [ ! -z "$SNER_AGENT_APIKEY" ]; then
+        sner-server auth add-agent --apikey "$SNER_AGENT_APIKEY"
+    fi
 else
     echo "database already initialized"
 fi
