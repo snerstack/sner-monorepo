@@ -324,3 +324,7 @@ See `scripts/`.
 * Swagger UI does not work well for session authenticated users. In order to
   prevent CSRF for API endpoints only apikey must be used in the request. Use
   private-browser window.
+
+* The application is not relocatable in terms of sub-URL and must be hosted
+  at "/". Relocating would require a Vite build with --base=, urlFor() with
+  import.meta.BASE_URL, Flask APPLICATION_ROOT, and WSGI SCRIPT_NAME.
