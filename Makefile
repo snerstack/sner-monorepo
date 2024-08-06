@@ -8,6 +8,6 @@ githook:
 
 devservers:
 	screen -S server -X quit || true
-	cd server && screen -S server -dm /opt/sner/server/venv/bin/python3 /opt/sner/server/bin/server run
+	cd server && screen -S server -dm /opt/sner/server/venv/bin/python3 /opt/sner/server/bin/server run --debug
 	screen -S frontend -X quit || true
 	cd frontend && screen -S frontend -dm npm run dev
