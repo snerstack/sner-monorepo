@@ -28,7 +28,7 @@ def pagenotfound_route(err):  # pylint: disable=unused-argument
     return asset_route("index.html")
 
 
-@blueprint.route('/frontend_config')
+@blueprint.route('/backend/frontend_config')
 def frontend_config():
     """server frontend config"""
 

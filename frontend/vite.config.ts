@@ -27,7 +27,6 @@ export default ({ mode }) => {
       proxy: {
         '/backend': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
         '/api': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
-        '/frontend_config': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
       },
     },
     preview: {
@@ -35,7 +34,6 @@ export default ({ mode }) => {
       proxy: {
         '/backend': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
         '/api': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
-        '/frontend_config': process.env.SNER_BACKEND_URL || 'http://localhost:18000',
       },
     },
     test: {
