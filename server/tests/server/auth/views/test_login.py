@@ -171,7 +171,7 @@ def test_login_oidc_route(client, user):
         assert response.headers['Location'] == 'fake_redir_to_idp'
 
         response = client.get(url_for('auth.login_oidc_callback_route'))
-        assert response.status_code == HTTPStatus.OK
+        assert response.status_code == HTTPStatus.FOUND
 
     authorize_redirect_mock.assert_called_once()
     authorize_access_token_mock.assert_called_once()
@@ -186,7 +186,7 @@ def test_login_oidc_route_noexist_user(client):
     with patch_oauth_token:
         response = client.get(url_for('auth.login_oidc_callback_route'), expect_errors=True)
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-        assert response.json['error']['message'] == 'OIDC authentication error.'
+        assert response.json['error']['message'] == 'OIDC authentication error, user lookup error'
 
     authorize_access_token_mock.assert_called_once()
 

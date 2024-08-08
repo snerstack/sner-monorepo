@@ -9,7 +9,7 @@ from http import HTTPStatus
 from authlib.common.errors import AuthlibBaseError
 from fido2 import cbor
 from fido2.webauthn import AuthenticatorData, CollectedClientData
-from flask import current_app, Response, session, url_for, jsonify
+from flask import current_app, redirect, Response, session, url_for, jsonify
 from flask_login import login_user, logout_user
 from requests.exceptions import HTTPError
 from sqlalchemy import func
@@ -186,11 +186,7 @@ def login_oidc_callback_route():
             regenerate_session()
             login_user(user)
             current_app.logger.info('auth.login oidc')
-            return jsonify({
-                        "id": user.id,
-                        "username": user.username,
-                        "email": user.email,
-                        "roles": user.roles
-            })
+            return redirect(url_for('frontend.index_route'))
 
-    return error_response(message='OIDC authentication error.', code=HTTPStatus.INTERNAL_SERVER_ERROR)
+    current_app.logger.info("failed to login user, userinfo=%s, token=%s", userinfo, token)
+    return error_response(message='OIDC authentication error, user lookup error', code=HTTPStatus.INTERNAL_SERVER_ERROR)
