@@ -62,11 +62,6 @@ DEFAULT_CONFIG = {
     'SNER_VAR': '/var/lib/sner',
     'SNER_AUTH_ROLES': ['admin', 'agent', 'operator', 'user'],
     'SNER_SESSION_IDLETIME': 36000,
-    'SNER_TAGS_HOST': ['reviewed', 'todo'],
-    'SNER_TAGS_SERVICE': ['reviewed', 'todo'],
-    'SNER_TAGS_VULN': ['info', 'report', 'report:data', 'todo', 'falsepositive'],
-    'SNER_TAGS_NOTE': ['reviewed', 'todo'],
-    'SNER_TAGS_ANNOTATE': ['sslhell'],
     'SNER_TRIM_REPORT_CELLS': 65000,
     'SNER_TRIM_NOTE_LIST_DATA': 4096,
     'SNER_VULNSEARCH_NAMELEN': 100,
@@ -79,6 +74,20 @@ DEFAULT_CONFIG = {
     'SNER_AUTOCOMPLETE_LIMIT': 10,
 
     'SNER_FRONTEND_CONFIG': {
+        "tags": {
+            "host": ["reviewed", "todo"],
+            "service": ["reviewed", "todo"],
+            "vuln": ["info", "report", "report:data", "todo", "falsepositive"],
+            "note": ["reviewed", "todo"],
+            "annotate": ["sslhell"],
+            "versioninfo": ["reviewed", "todo"],
+            "vulnsearch": ["reviewed", "todo"],
+            "colors": {
+                "todo": "#ffc107",
+                "report": "#dc3545",
+                "report:": "#dc3545",
+            },
+        },
         "oidc_enabled": False
     },
 
