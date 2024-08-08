@@ -11,7 +11,7 @@ import sys
 
 import flask.cli
 import yaml
-from flask import Flask, has_request_context, request
+from flask import current_app, Flask, has_request_context, request
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf, CSRFProtect, CSRFError
 from flask_cors import CORS
@@ -317,6 +317,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
 
     @app.errorhandler(CSRFError)
     def handle_csrf_error(err):
+        current_app.logger.warning('csrf error, %s', err.description)
         return error_response(message=err.description, code=400)
 
     return app
