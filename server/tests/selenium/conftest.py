@@ -22,6 +22,40 @@ def firefox_options(firefox_options):  # pylint: disable=redefined-outer-name
     """override firefox options"""
 
     firefox_options.headless = True
+
+    # Disable automatic updates
+    firefox_options.set_preference("app.update.auto", False)
+    firefox_options.set_preference("app.update.enabled", False)
+
+    # Disable add-on updates
+    firefox_options.set_preference("extensions.update.enabled", False)
+    firefox_options.set_preference("extensions.getAddons.cache.enabled", False)
+
+    # Disable Enhanced Tracking Protection (ETP)
+    firefox_options.set_preference("privacy.trackingprotection.enabled", False)
+    firefox_options.set_preference("privacy.trackingprotection.pbmode.enabled", False)
+    firefox_options.set_preference("privacy.trackingprotection.socialtracking.enabled", False)
+    firefox_options.set_preference("privacy.trackingprotection.cryptomining.enabled", False)
+    firefox_options.set_preference("privacy.trackingprotection.fingerprinting.enabled", False)
+    firefox_options.set_preference("privacy.trackingprotection.annotate_channels", False)
+    firefox_options.set_preference("privacy.trackingprotection.origin_telemetry.enabled", False)
+
+    # Disable Safe Browsing (which is part of the protection mechanisms)
+    firefox_options.set_preference("browser.safebrowsing.enabled", False)
+    firefox_options.set_preference("browser.safebrowsing.malware.enabled", False)
+    firefox_options.set_preference("browser.safebrowsing.phishing.enabled", False)
+    firefox_options.set_preference("browser.safebrowsing.downloads.remote.enabled", False)
+
+    # Disable protection updates
+    firefox_options.set_preference("browser.safebrowsing.provider.google.updateURL", "")
+    firefox_options.set_preference("browser.safebrowsing.provider.google.gethashURL", "")
+    firefox_options.set_preference("browser.safebrowsing.provider.google4.updateURL", "")
+    firefox_options.set_preference("browser.safebrowsing.provider.google4.gethashURL", "")
+    firefox_options.set_preference("browser.safebrowsing.provider.mozilla.updateURL", "")
+
+    # # Disable captive portal detection
+    firefox_options.set_preference("network.captive-portal-service.enabled", False)
+
     return firefox_options
 
 
