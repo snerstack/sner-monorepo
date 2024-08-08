@@ -16,8 +16,10 @@ from tests.selenium import webdriver_waituntil, frontend_url, wait_for_js
 from tests.selenium.auth import js_variable_ready
 
 
-def test_login_webauthn(frontend_server, selenium, webauthn_credential_factory):  # pylint: disable=unused-argument
+def test_login_webauthn(frontend_server, shared_browser, webauthn_credential_factory):  # pylint: disable=unused-argument
     """test login by webauthn"""
+
+    selenium = shared_browser
 
     device = SoftWebauthnDevice()
     device.cred_init(webauthn.rp.id, b'randomhandle')
