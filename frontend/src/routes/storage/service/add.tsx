@@ -3,9 +3,11 @@ import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { useRecoilState } from 'recoil'
 
 import httpClient from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
+import { appConfigState } from '@/atoms/appConfigAtom'
 
 import Heading from '@/components/Heading'
 import NumberField from '@/components/fields/NumberField'
@@ -14,9 +16,8 @@ import TagsField from '@/components/fields/TagsField'
 import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
-import config from '../../../../config.ts'
-
 const ServiceAddPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
   const host = useLoaderData() as Host
 
   const [hostId, setHostId] = useState<number>(host.id)
@@ -94,10 +95,10 @@ const ServiceAddPage = () => {
           label="Tags"
           placeholder="Tags"
           defaultTags={unique([
-            ...config.tags.host,
-            ...config.tags.service,
-            ...config.tags.vuln,
-            ...config.tags.annotate,
+            ...appConfig.tags.host,
+            ...appConfig.tags.service,
+            ...appConfig.tags.vuln,
+            ...appConfig.tags.annotate,
           ]).sort()}
           _state={tags}
           _setState={setTags}

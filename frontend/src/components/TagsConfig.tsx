@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-import { Config } from '@/../config.ts'
-import { getColorForTag, LSKEY_TAG_COLORS } from '@/lib/sner/tags'
+import { AppConfig } from '@/appConfig'
 import Tag from '@/components/Tag'
 import TagConfigModal, { TagConfigModalData } from '@/components/modals/TagConfigModal'
+import { getColorForTag, LSKEY_TAG_COLORS } from '@/lib/sner/tags'
 
 const TagsConfig = () => {
-    const [tags, setTags] = useState<Config['tags']['colors']>({})
+    const [tags, setTags] = useState<AppConfig['tags']['colors']>({})
     const [addTag, setAddTag] = useState<string>('')
     const [tagConfigModal, setTagConfigModal] = useState<TagConfigModalData>({tag: '', color: '', show: false})
 
     useEffect(() => {
-        const colorsConfig = JSON.parse(localStorage.getItem(LSKEY_TAG_COLORS)!) as Config['tags']['colors']
+        const colorsConfig = JSON.parse(localStorage.getItem(LSKEY_TAG_COLORS)!) as AppConfig['tags']['colors']
         setTags(colorsConfig)
     }, [])
 
@@ -20,7 +20,7 @@ const TagsConfig = () => {
             const colorsConfig = {...prevConfig, [addTag]: getColorForTag(addTag)};
             localStorage.setItem(LSKEY_TAG_COLORS, JSON.stringify(colorsConfig))
             return colorsConfig;
-        });
+        })
         setAddTag('')
     }
 
@@ -30,7 +30,7 @@ const TagsConfig = () => {
             delete colorsConfig[tag];
             localStorage.setItem(LSKEY_TAG_COLORS, JSON.stringify(colorsConfig))
             return colorsConfig;
-        });
+        })
     }
 
     return (

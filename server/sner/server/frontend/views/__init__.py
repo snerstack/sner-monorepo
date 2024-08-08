@@ -3,7 +3,7 @@
 frontend views
 """
 
-from flask import Blueprint, send_from_directory
+from flask import Blueprint, current_app, jsonify, send_from_directory
 
 
 blueprint = Blueprint('frontend', __name__)  # pylint: disable=invalid-name
@@ -26,3 +26,10 @@ def pagenotfound_route(err):  # pylint: disable=unused-argument
     """serve frontend app on any url, handles app bootstrap for client-side routing"""
 
     return asset_route("index.html")
+
+
+@blueprint.route('/frontend_config')
+def frontend_config():
+    """server frontend config"""
+
+    return jsonify(current_app.config["SNER_FRONTEND_CONFIG"])

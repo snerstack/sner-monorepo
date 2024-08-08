@@ -2,15 +2,16 @@ import { unique } from '@/utils'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
 import { toast } from 'react-toastify'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 
-import config from '../../../config.ts'
+import { DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage.ts'
 import SubmitField from '../fields/SubmitField'
 import TagsField from '../fields/TagsField'
 import TextAreaField from '../fields/TextAreaField'
-import { DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage.ts'
 
 const AnnotateModal = ({
   annotate,
@@ -19,6 +20,8 @@ const AnnotateModal = ({
   annotate: Annotate
   setAnnotate: Dispatch<SetStateAction<Annotate>>
 }) => {
+  const [appConfig, ] = useRecoilState(appConfigState)
+
   const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState<string>('')
 
@@ -59,7 +62,7 @@ const AnnotateModal = ({
           placeholder="Tags"
           _state={tags}
           _setState={setTags}
-          defaultTags={unique([...config.tags.host, ...config.tags.vuln, ...config.tags.annotate]).sort()}
+          defaultTags={unique([...appConfig.tags.host, ...appConfig.tags.vuln, ...appConfig.tags.annotate]).sort()}
         />{' '}
         <TextAreaField
           name="comment"

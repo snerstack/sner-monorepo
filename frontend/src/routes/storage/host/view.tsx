@@ -4,7 +4,9 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useCookie, useLocalStorage } from 'react-use'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
@@ -25,9 +27,8 @@ import ViewButton from '@/components/buttons/ViewButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
-import config from '../../../../config.ts'
-
 const HostViewPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
 
@@ -611,7 +612,7 @@ const HostViewPage = () => {
               <i className="fas fa-tag text-primary"></i>
             </a>
             <>
-              {config.tags.host.map((tag) => (
+              {appConfig.tags.host.map((tag) => (
                 <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/host/tag_multiid")} id={host.id} />
               ))}
             </>
@@ -775,7 +776,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {config.tags.service.map((tag) => (
+                  {appConfig.tags.service.map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -810,7 +811,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={config.tags.service}
+                      tags={appConfig.tags.service}
                       url={urlFor("/backend/storage/service/tag_multiid")}
                       tableId="host_view_service_table"
                     />
@@ -889,7 +890,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {config.tags.vuln.map((tag) => (
+                  {appConfig.tags.vuln.map((tag) => (
                     <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/vuln/tag_multiid")} tableId="host_view_vuln_table" />
                   ))}
                 </div>{' '}
@@ -919,7 +920,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={config.tags.vuln}
+                      tags={appConfig.tags.vuln}
                       url={urlFor("/backend/storage/vuln/tag_multiid")}
                       tableId="host_view_vuln_table"
                     />
@@ -997,7 +998,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {config.tags.note.map((tag) => (
+                  {appConfig.tags.note.map((tag) => (
                     <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/note/tag_multiid")} tableId="host_view_note_table" />
                   ))}
                 </div>{' '}
@@ -1027,7 +1028,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={config.tags.note}
+                      tags={appConfig.tags.note}
                       url={urlFor("/backend/storage/note/tag_multiid")}
                       tableId="host_view_note_table"
                     />
@@ -1105,7 +1106,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {config.tags.versioninfo.map((tag) => (
+                  {appConfig.tags.versioninfo.map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -1140,7 +1141,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={config.tags.versioninfo}
+                      tags={appConfig.tags.versioninfo}
                       url={urlFor("/backend/storage/versioninfo/tag_multiid")}
                       tableId="host_view_versioninfo_table"
                     />
@@ -1213,7 +1214,7 @@ const HostViewPage = () => {
                   >
                     <i className="fas fa-tag"></i>
                   </a>
-                  {config.tags.versioninfo.map((tag) => (
+                  {appConfig.tags.versioninfo.map((tag) => (
                     <TagButton
                       tag={tag}
                       key={tag}
@@ -1248,7 +1249,7 @@ const HostViewPage = () => {
                       <i className="fas fa-remove-format"></i>
                     </a>
                     <TagsDropdownButton
-                      tags={config.tags.versioninfo}
+                      tags={appConfig.tags.versioninfo}
                       url={urlFor("/backend/storage/vulnsearch/tag_multiid")}
                       tableId="host_view_vulnsearch_table"
                     />

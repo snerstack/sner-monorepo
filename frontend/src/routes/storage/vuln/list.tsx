@@ -3,7 +3,9 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
@@ -23,9 +25,9 @@ import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
-import config from '../../../../config.ts'
-
 const VulnListPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
+
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
@@ -256,7 +258,7 @@ const VulnListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {config.tags.vuln.map((tag) => (
+            {appConfig.tags.vuln.map((tag) => (
               <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/vuln/tag_multiid")} tableId="vuln_list_table" />
             ))}
           </div>{' '}
@@ -285,7 +287,7 @@ const VulnListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton tags={config.tags.vuln} url={urlFor("/backend/storage/vuln/tag_multiid")} tableId="vuln_list_table" />
+              <TagsDropdownButton tags={appConfig.tags.vuln} url={urlFor("/backend/storage/vuln/tag_multiid")} tableId="vuln_list_table" />
             </div>
             <a
               data-testid="delete-row-btn"

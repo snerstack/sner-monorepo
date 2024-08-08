@@ -22,3 +22,11 @@ def test_asset_serving(client):
     with patch('sner.server.frontend.views.asset_route', html):
         response = client.get("/frontendurlx")
         assert response.status_code == HTTPStatus.OK
+
+
+def test_config_route(client):
+    """test config route"""
+
+    response = client.get("/backend/frontend_config")
+    assert response.status_code == HTTPStatus.OK
+    assert response.json

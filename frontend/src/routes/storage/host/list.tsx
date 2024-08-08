@@ -3,7 +3,9 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, toolboxesVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
@@ -22,9 +24,9 @@ import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
-import config from '@/../config.ts'
-
 const HostListPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
+
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
@@ -192,7 +194,7 @@ const HostListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {config.tags.host.map((tag) => (
+            {appConfig.tags.host.map((tag) => (
               <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/host/tag_multiid")} tableId="host_list_table" />
             ))}
           </div>{' '}
@@ -220,7 +222,7 @@ const HostListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton tags={config.tags.host} url={urlFor("/backend/storage/host/tag_multiid")} tableId="host_list_table" />
+              <TagsDropdownButton tags={appConfig.tags.host} url={urlFor("/backend/storage/host/tag_multiid")} tableId="host_list_table" />
             </div>
             <a
               data-testid="delete-row-btn"

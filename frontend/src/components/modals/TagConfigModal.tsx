@@ -3,7 +3,7 @@ import { ModalBody, ModalTitle } from 'react-bootstrap'
 import Modal from 'react-bootstrap/Modal'
 import { HexColorInput, HexColorPicker } from 'react-colorful'
 
-import { Config } from '../../../config.ts'
+import { AppConfig } from '@/appConfig'
 import { LSKEY_TAG_COLORS, invertColor } from '@/lib/sner/tags'
 
 import SubmitField from '../fields/SubmitField'
@@ -32,7 +32,7 @@ const TagConfigModal = (
   }, [modalData.show])
 
   const tagConfigHandler = () => {
-    const colorsConfig = JSON.parse(localStorage.getItem(LSKEY_TAG_COLORS)!) as Config['tags']['colors']
+    const colorsConfig = JSON.parse(localStorage.getItem(LSKEY_TAG_COLORS)!) as AppConfig['tags']['colors']
     colorsConfig[modalData.tag] = color
 
     localStorage.setItem(LSKEY_TAG_COLORS, JSON.stringify(colorsConfig))

@@ -4,7 +4,9 @@ import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useCookie } from 'react-use'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnSelect, getTableApi } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
@@ -17,9 +19,8 @@ import TagsField from '@/components/fields/TagsField'
 import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
-import config from '../../../../config.ts'
-
 const VulnMulticopyPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
   const vuln = useLoaderData() as Vuln
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
@@ -126,7 +127,7 @@ const VulnMulticopyPage = () => {
           name="tags"
           label="Tags"
           placeholder="Tags"
-          defaultTags={unique([...config.tags.host, ...config.tags.vuln, ...config.tags.annotate]).sort()}
+          defaultTags={unique([...appConfig.tags.host, ...appConfig.tags.vuln, ...appConfig.tags.annotate]).sort()}
           _state={tags}
           _setState={setTags}
         />

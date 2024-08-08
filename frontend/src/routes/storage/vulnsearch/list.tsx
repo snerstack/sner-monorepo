@@ -3,10 +3,12 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
-import { viaTargetVisible, toolboxesVisible, DEFAULT_MULTIPLE_TAG_STATE, DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -20,9 +22,9 @@ import ViewButton from '@/components/buttons/ViewButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
-import config from '../../../../config.ts'
-
 const VulnSearchListPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
+
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
@@ -192,7 +194,7 @@ const VulnSearchListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {config.tags.vulnsearch.map((tag) => (
+            {appConfig.tags.vulnsearch.map((tag) => (
               <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/vulnsearch/tag_multiid")} tableId="vulnsearch_list_table" />
             ))}
           </div>{' '}
@@ -222,7 +224,7 @@ const VulnSearchListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={config.tags.vulnsearch}
+                tags={appConfig.tags.vulnsearch}
                 url={urlFor("/backend/storage/vulnsearch/tag_multiid")}
                 tableId="vulnsearch_list_table"
               />

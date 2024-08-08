@@ -1,17 +1,17 @@
-import { config, Config } from '@/../config.ts'
+import { AppConfig } from '@/appConfig';
 
 export const LSKEY_TAG_COLORS: string = 'config_tag_colors';
 const DEFAULT_COLOR: string = '#6c757d'
 
 /* app state initializer */
-export const tagsConfigInitialize = () => {
+export const tagsConfigInitialize = (appConfig: AppConfig) => {
   if (!localStorage.getItem(LSKEY_TAG_COLORS)) {
-    localStorage.setItem(LSKEY_TAG_COLORS, JSON.stringify(config.tags.colors))
+    localStorage.setItem(LSKEY_TAG_COLORS, JSON.stringify(appConfig.tags.colors))
   }
 }
 
 export const getColorForTag = (tag: string): string => {
-  const tags = JSON.parse(localStorage.getItem(LSKEY_TAG_COLORS)!) as Config['tags']['colors']
+  const tags = JSON.parse(localStorage.getItem(LSKEY_TAG_COLORS)!) as AppConfig['tags']['colors']
   const matcher = tag.includes(':') ? tag.split(':')[0]+':' : tag
   return tags[matcher] || DEFAULT_COLOR
 }

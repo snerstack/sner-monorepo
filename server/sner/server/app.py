@@ -78,6 +78,10 @@ DEFAULT_CONFIG = {
     'SNER_VULN_GROUP_IGNORE_TAG_PREFIX': "i:",
     'SNER_AUTOCOMPLETE_LIMIT': 10,
 
+    'SNER_FRONTEND_CONFIG': {
+        "oidc_enabled": False
+    },
+
     # sner server scheduler
     'SNER_MAINTENANCE': False,
     'SNER_HEATMAP_HOT_LEVEL': 0,
@@ -230,6 +234,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
                 'default_timeout': app.config["OIDC_TIMEOUT"],
             }
         )
+        app.config['SNER_FRONTEND_CONFIG']['oidc_enabled'] = True
     webauthn.init_app(app)
 
     # load sner.plugin components

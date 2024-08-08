@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { userState } from '@/atoms/userAtom'
-
 import httpClient from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -15,6 +15,7 @@ import SubmitField from '@/components/fields/SubmitField'
 import TextField from '@/components/fields/TextField'
 
 const LoginPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
   const navigate = useNavigate()
   const [, setUser] = useRecoilState(userState)
 
@@ -74,11 +75,11 @@ const LoginPage = () => {
           _setState={setPassword}
         />
         <SubmitField name="Login" handler={loginHandler} />
-        {/* {oauth_enabled && ( */}
-        {false && (
+
+        {appConfig.oidc_enabled && (
           <div className="form-group row">
             <div className="col-sm-10 offset-sm-2">
-              <a className="btn btn-primary" href="{{ url_for('auth.login_oidc_route') }}">
+              <a className="btn btn-primary" href={urlFor('/backend/auth/login_oidc')}>
                 OIDC
               </a>
             </div>

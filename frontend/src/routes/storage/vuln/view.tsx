@@ -2,7 +2,9 @@ import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { DEFAULT_ANNOTATE_STATE, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -17,8 +19,6 @@ import MultiCopyButton from '@/components/buttons/MultiCopyButton'
 import TagButton from '@/components/buttons/TagButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 
-import config from '../../../../config.ts'
-
 const vulnDataElement = (vulnData: string) => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -30,6 +30,8 @@ const vulnDataElement = (vulnData: string) => {
 }
 
 const VulnViewPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
+
   const vuln = useLoaderData() as Vuln
   const [vulnTags, setVulnTags] = useState(vuln.tags)
   const [vulnComment, setVulnComment] = useState(vuln.comment)
@@ -72,7 +74,7 @@ const VulnViewPage = () => {
             <a className="btn btn-outline-primary disabled">
               <i className="fas fa-tag text-primary"></i>
             </a>
-            {config.tags.vuln.map((tag) => (
+            {appConfig.tags.vuln.map((tag) => (
               <TagButton
                 tag={tag}
                 key={tag}

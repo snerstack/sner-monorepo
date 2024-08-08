@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import httpClient from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -16,9 +18,8 @@ import TagsField from '@/components/fields/TagsField'
 import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
-import config from '../../../../config.ts'
-
 const VulnEditPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
   const vuln = useLoaderData() as Vuln
 
   const [hostId, setHostId] = useState<number>(vuln.host_id)
@@ -120,7 +121,7 @@ const VulnEditPage = () => {
           name="tags"
           label="Tags"
           placeholder="Tags"
-          defaultTags={unique([...config.tags.host, ...config.tags.vuln, ...config.tags.annotate]).sort()}
+          defaultTags={unique([...appConfig.tags.host, ...appConfig.tags.vuln, ...appConfig.tags.annotate]).sort()}
           _state={tags}
           _setState={setTags}
         />

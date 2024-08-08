@@ -3,10 +3,12 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { urlFor } from '@/lib/urlHelper'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -20,9 +22,9 @@ import TextField from '@/components/fields/TextField'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
-import config from '../../../../config.ts'
-
 const VersionInfosListPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
+
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
@@ -217,7 +219,7 @@ const VersionInfosListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {config.tags.versioninfo.map((tag) => (
+            {appConfig.tags.versioninfo.map((tag) => (
               <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/versioninfo/tag_multiid")} tableId="versioninfo_list_table" />
             ))}
           </div>{' '}
@@ -247,7 +249,7 @@ const VersionInfosListPage = () => {
                 <i className="fas fa-remove-format"></i>
               </a>
               <TagsDropdownButton
-                tags={config.tags.versioninfo}
+                tags={appConfig.tags.versioninfo}
                 url={urlFor("/backend/storage/versioninfo/tag_multiid")}
                 tableId="versioninfo_list_table"
               />

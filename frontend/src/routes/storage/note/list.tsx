@@ -4,7 +4,9 @@ import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCookie } from 'react-use'
+import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
@@ -24,9 +26,9 @@ import ViewButton from '@/components/buttons/ViewButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
-import config from '../../../../config.ts'
-
 const NoteListPage = () => {
+  const [appConfig, ] = useRecoilState(appConfigState)
+
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [csrfToken] = useCookie('XSRF-TOKEN')
@@ -215,7 +217,7 @@ const NoteListPage = () => {
             >
               <i className="fas fa-tag"></i>
             </a>
-            {config.tags.note.map((tag) => (
+            {appConfig.tags.note.map((tag) => (
               <TagButton tag={tag} key={tag} url={urlFor("/backend/storage/note/tag_multiid")} tableId="note_list_table" />
             ))}
           </div>{' '}
@@ -244,7 +246,7 @@ const NoteListPage = () => {
               >
                 <i className="fas fa-remove-format"></i>
               </a>
-              <TagsDropdownButton tags={config.tags.note} url={urlFor("/backend/storage/note/tag_multiid")} tableId="note_list_table" />
+              <TagsDropdownButton tags={appConfig.tags.note} url={urlFor("/backend/storage/note/tag_multiid")} tableId="note_list_table" />
             </div>
             <a
               data-testid="delete-row-btn"
