@@ -570,7 +570,7 @@ const HostViewPage = () => {
     <div>
       <Helmet>
         <title>
-          Hosts / View / {host.address} {host.hostname || ''} - sner4
+          Hosts / View / {host.address} {host.hostname || ''} - SNER
         </title>
       </Helmet>
       <Heading headings={['Host', `${host.address}${host.hostname ? ' ' + host.hostname : ''}`]}>

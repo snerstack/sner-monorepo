@@ -58,7 +58,7 @@ const ServiceAddPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Services / Add - sner4</title>
+        <title>Services / Add - SNER</title>
       </Helmet>
 
       <Heading headings={['Services', 'Add']} />

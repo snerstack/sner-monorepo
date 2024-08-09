@@ -189,7 +189,7 @@ const DnsTreePage = () => {
   return (
     <div>
       <Helmet>
-        <title>Visuals / DNS Tree - sner4</title>
+        <title>Visuals / DNS Tree - SNER</title>
       </Helmet>
       <Heading headings={['Visuals', 'DNS Tree']}>
         <div className="breadcrumb-buttons pl-2">

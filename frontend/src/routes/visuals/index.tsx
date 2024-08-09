@@ -6,7 +6,7 @@ const VisualsPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Visuals - sner4</title>
+        <title>Visuals - SNER</title>
       </Helmet>
       <Heading headings={['Visuals']} />
     </div>

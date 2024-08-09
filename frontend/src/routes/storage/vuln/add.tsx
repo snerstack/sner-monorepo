@@ -90,7 +90,7 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
   return (
     <div>
       <Helmet>
-        <title>Vulns / Add - sner4</title>
+        <title>Vulns / Add - SNER</title>
       </Helmet>
 
       <Heading headings={['Vulns', 'Add']} />

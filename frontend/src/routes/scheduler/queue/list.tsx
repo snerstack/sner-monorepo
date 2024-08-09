@@ -86,7 +86,7 @@ const QueueListPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Queues / List - sner4</title>
+        <title>Queues / List - SNER</title>
       </Helmet>
 
       <Heading headings={['Queues']}>

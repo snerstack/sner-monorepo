@@ -58,7 +58,7 @@ const NoteViewPage = () => {
       <Helmet>
         <title>
           Notes / View / {note.address}
-          {note.hostname ? ' ' + note.hostname : ''} / {note.xtype} - sner4
+          {note.hostname ? ' ' + note.hostname : ''} / {note.xtype} - SNER
         </title>
       </Helmet>
       <Heading headings={['Note', `${note.address}${note.hostname ? ' ' + note.hostname : ''}`, note.xtype]}>

@@ -75,7 +75,7 @@ const QueueEditPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Queues / Edit - sner4</title>
+        <title>Queues / Edit - SNER</title>
       </Helmet>
       <Heading headings={['Queues', 'Edit']} />
       <form id="queue_form" method="post">

@@ -54,7 +54,7 @@ const LoginPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Login - sner4</title>
+        <title>Login - SNER</title>
       </Helmet>
       <Heading headings={['Login']} />
       <form id="login_form" method="post">

@@ -48,7 +48,7 @@ const JobListPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Jobs / List - sner4</title>
+        <title>Jobs / List - SNER</title>
       </Helmet>
 
       <Heading headings={['Jobs']} />

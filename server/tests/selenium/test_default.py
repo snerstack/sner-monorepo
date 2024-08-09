@@ -15,6 +15,5 @@ def test_index_route(frontend_server, shared_browser):  # pylint: disable=unused
     reset_browser(selenium)
 
     selenium.get(frontend_url("/"))
-    webdriver_waituntil(selenium, EC.title_is('Homepage - sner4'))
-
-    assert 'Homepage - sner4' in selenium.title
+    webdriver_waituntil(selenium, EC.title_is('Homepage - SNER'))
+    assert 'Homepage - SNER' in selenium.title

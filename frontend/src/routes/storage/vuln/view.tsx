@@ -58,7 +58,7 @@ const VulnViewPage = () => {
         <title>
           Vulns / View / {vuln.address}
           {vuln.hostname ? ' ' + vuln.hostname + ' ' : ''} / {vuln.name}
-          {vuln.xtype ? ' ' + vuln.xtype : ''} - sner4
+          {vuln.xtype ? ' ' + vuln.xtype : ''} - SNER
         </title>
       </Helmet>
 

@@ -10,7 +10,7 @@ const VulnSearchViewPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Vulnsearch / View / {vsearch.id} - sner4</title>
+        <title>Vulnsearch / View / {vsearch.id} - SNER</title>
       </Helmet>
       <Heading headings={['Vulnsearch', vsearch.id]} />
 

@@ -152,7 +152,7 @@ const ServiceListPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Services / List - sner4</title>
+        <title>Services / List - SNER</title>
       </Helmet>
       <Heading headings={['Services']}>
         <div className="breadcrumb-buttons pl-2">

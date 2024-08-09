@@ -61,7 +61,7 @@ const ChangePasswordPage = () => {
   return (
     <div>
       <Helmet>
-        <title>User profile / Change password - sner4</title>
+        <title>User profile / Change password - SNER</title>
       </Helmet>
 
       <Heading headings={['User profile', 'Change password']} />

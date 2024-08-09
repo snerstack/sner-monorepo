@@ -60,7 +60,7 @@ const UserAddPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Users / Add - sner4</title>
+        <title>Users / Add - SNER</title>
       </Helmet>
       <Heading headings={['Users', 'Add']} />
       <form id="login_form" method="post">

@@ -94,7 +94,7 @@ const PortinfosPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Visuals / Port infos - sner4</title>
+        <title>Visuals / Port infos - SNER</title>
       </Helmet>
       <Heading headings={['Visuals', 'Port infos']}>
         <div className="breadcrumb-buttons pl-2">

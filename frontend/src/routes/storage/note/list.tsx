@@ -159,7 +159,7 @@ const NoteListPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Notes / List - sner4</title>
+        <title>Notes / List - SNER</title>
       </Helmet>
 
       <Heading headings={['Notes']}>

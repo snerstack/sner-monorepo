@@ -189,7 +189,7 @@ const VulnListPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Vulns / List - sner4</title>
+        <title>Vulns / List - SNER</title>
       </Helmet>
       <Heading headings={['Vulns']}>
         <div className="breadcrumb-buttons pl-2">

@@ -41,7 +41,7 @@ const NoteGroupedPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Notes / Grouped - sner4</title>
+        <title>Notes / Grouped - SNER</title>
       </Helmet>
       <Heading headings={['Notes', 'Grouped']}>
         <div className="breadcrumb-buttons pl-2">

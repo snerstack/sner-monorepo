@@ -69,7 +69,7 @@ const VulnEditPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Vulns / Edit - sner4</title>
+        <title>Vulns / Edit - SNER</title>
       </Helmet>
       <Heading headings={['Vulns', 'Edit']} />
       <form id="vuln_form" method="post">

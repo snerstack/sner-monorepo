@@ -75,7 +75,7 @@ const VulnMulticopyPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Vulns / Multicopy - sner4</title>
+        <title>Vulns / Multicopy - SNER</title>
       </Helmet>
       <Heading headings={['Vulns', 'Multicopy']} />
 
