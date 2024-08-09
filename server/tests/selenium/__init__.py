@@ -70,7 +70,7 @@ def screenshot(sclnt):
     ```
     """
 
-    sclnt.save_screenshot("sner/server/static/screen.png")
+    sclnt.save_screenshot("screenshot.png")
 
 
 def wait_for_js(sclnt):
