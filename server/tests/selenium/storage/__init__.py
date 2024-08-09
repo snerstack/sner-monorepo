@@ -16,7 +16,7 @@ def check_dt_toolbox_select_rows(sclnt, route, dt_id, load_route=True):
     """check first-cols and toolbar button selections; there must be exactly 2 rows in the tested table"""
 
     if load_route:
-        # in case of mai data tables, toggle visibility, load page and test
+        # in case of main data tables, toggle visibility, load page and test
         # in host view vuln tab data table is page already prepared by callee
         sclnt.get(route)
         wait_for_js(sclnt)
