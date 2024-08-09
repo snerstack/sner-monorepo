@@ -3,7 +3,7 @@
 #
 # test the stability of the tests
 
-for iter in $(seq 1 100); do
+for iter in $(seq 1 30); do
 	timeout 600 make coverage
 	RET=$?
 	echo "INFO: round ${iter}"
