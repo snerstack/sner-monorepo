@@ -8,65 +8,28 @@ import signal
 import subprocess
 
 import pytest
+from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.auth.models import User
 from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from tests.selenium import FRONTEND_TESTSERVER_DEV, frontend_url, webdriver_waituntil, wait_for_js
-
-
-@pytest.fixture
-def firefox_options(firefox_options):  # pylint: disable=redefined-outer-name
-    """override firefox options"""
-
-    firefox_options.headless = True
-
-    # Disable automatic updates
-    firefox_options.set_preference("app.update.auto", False)
-    firefox_options.set_preference("app.update.enabled", False)
-
-    # Disable add-on updates
-    firefox_options.set_preference("extensions.update.enabled", False)
-    firefox_options.set_preference("extensions.getAddons.cache.enabled", False)
-
-    # Disable Enhanced Tracking Protection (ETP)
-    firefox_options.set_preference("privacy.trackingprotection.enabled", False)
-    firefox_options.set_preference("privacy.trackingprotection.pbmode.enabled", False)
-    firefox_options.set_preference("privacy.trackingprotection.socialtracking.enabled", False)
-    firefox_options.set_preference("privacy.trackingprotection.cryptomining.enabled", False)
-    firefox_options.set_preference("privacy.trackingprotection.fingerprinting.enabled", False)
-    firefox_options.set_preference("privacy.trackingprotection.annotate_channels", False)
-    firefox_options.set_preference("privacy.trackingprotection.origin_telemetry.enabled", False)
-
-    # Disable Safe Browsing (which is part of the protection mechanisms)
-    firefox_options.set_preference("browser.safebrowsing.enabled", False)
-    firefox_options.set_preference("browser.safebrowsing.malware.enabled", False)
-    firefox_options.set_preference("browser.safebrowsing.phishing.enabled", False)
-    firefox_options.set_preference("browser.safebrowsing.downloads.remote.enabled", False)
-
-    # Disable protection updates
-    firefox_options.set_preference("browser.safebrowsing.provider.google.updateURL", "")
-    firefox_options.set_preference("browser.safebrowsing.provider.google.gethashURL", "")
-    firefox_options.set_preference("browser.safebrowsing.provider.google4.updateURL", "")
-    firefox_options.set_preference("browser.safebrowsing.provider.google4.gethashURL", "")
-    firefox_options.set_preference("browser.safebrowsing.provider.mozilla.updateURL", "")
-
-    # # Disable captive portal detection
-    firefox_options.set_preference("network.captive-portal-service.enabled", False)
-
-    return firefox_options
+from tests.selenium import FRONTEND_TESTSERVER_DEV, frontend_url, reset_browser, webdriver_waituntil, wait_for_js
 
 
 def selenium_in_roles(sclnt, roles):
     """create user role and login selenium to role(s)"""
+
+    reset_browser(sclnt)
 
     tmp_password = PWS.generate()
     tmp_user = User(username='pytest_user', password=PWS.hash(tmp_password), active=True, roles=roles)
     db.session.add(tmp_user)
     db.session.commit()
 
+    # login the instance
     sclnt.get(frontend_url("/auth/login"))
     wait_for_js(sclnt)
     sclnt.find_element(By.XPATH, '//form//input[@name="username"]').send_keys(tmp_user.username)
@@ -77,25 +40,66 @@ def selenium_in_roles(sclnt, roles):
     return sclnt
 
 
+@pytest.fixture(scope="session")
+def shared_browser():
+    """shared browser instance, speeds up tests, but requires
+    manual resets in selenium_in_roles to achieve best test-isolation possible"""
+
+    options = Options()
+    options.headless = True
+
+    # Disable automatic updates
+    options.set_preference("app.update.auto", False)
+    options.set_preference("app.update.enabled", False)
+    # Disable add-on updates
+    options.set_preference("extensions.update.enabled", False)
+    options.set_preference("extensions.getAddons.cache.enabled", False)
+    # Disable Enhanced Tracking Protection (ETP)
+    options.set_preference("privacy.trackingprotection.enabled", False)
+    options.set_preference("privacy.trackingprotection.pbmode.enabled", False)
+    options.set_preference("privacy.trackingprotection.socialtracking.enabled", False)
+    options.set_preference("privacy.trackingprotection.cryptomining.enabled", False)
+    options.set_preference("privacy.trackingprotection.fingerprinting.enabled", False)
+    options.set_preference("privacy.trackingprotection.annotate_channels", False)
+    options.set_preference("privacy.trackingprotection.origin_telemetry.enabled", False)
+    # Disable Safe Browsing (which is part of the protection mechanisms)
+    options.set_preference("browser.safebrowsing.enabled", False)
+    options.set_preference("browser.safebrowsing.malware.enabled", False)
+    options.set_preference("browser.safebrowsing.phishing.enabled", False)
+    options.set_preference("browser.safebrowsing.downloads.remote.enabled", False)
+    # Disable protection updates
+    options.set_preference("browser.safebrowsing.provider.google.updateURL", "")
+    options.set_preference("browser.safebrowsing.provider.google.gethashURL", "")
+    options.set_preference("browser.safebrowsing.provider.google4.updateURL", "")
+    options.set_preference("browser.safebrowsing.provider.google4.gethashURL", "")
+    options.set_preference("browser.safebrowsing.provider.mozilla.updateURL", "")
+    # # Disable captive portal detection
+    options.set_preference("network.captive-portal-service.enabled", False)
+
+    driver = webdriver.Firefox(options=options, log_path="/tmp/geckodriver.log")
+    yield driver
+    driver.quit()
+
+
 @pytest.fixture
-def sl_user(selenium):  # pylint: disable=redefined-outer-name
+def sl_user(shared_browser):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role user"""
 
-    yield selenium_in_roles(selenium, ['user'])
+    yield selenium_in_roles(shared_browser, ['user'])
 
 
 @pytest.fixture
-def sl_operator(selenium):  # pylint: disable=redefined-outer-name
+def sl_operator(shared_browser):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role operator"""
 
-    yield selenium_in_roles(selenium, ['user', 'operator'])
+    yield selenium_in_roles(shared_browser, ['user', 'operator'])
 
 
 @pytest.fixture
-def sl_admin(selenium):  # pylint: disable=redefined-outer-name
+def sl_admin(shared_browser):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role admin"""
 
-    yield selenium_in_roles(selenium, ['user', 'operator', 'admin'])
+    yield selenium_in_roles(shared_browser, ['user', 'operator', 'admin'])
 
 
 @pytest.fixture(scope="session")

@@ -33,3 +33,24 @@ def frontend_config():
     """server frontend config"""
 
     return jsonify(current_app.config["SNER_FRONTEND_CONFIG"])
+
+
+@blueprint.route('/backend/reset_browser_storage')
+def reset_browser_storage():
+    """
+    reset browser state for selenium tests re-using running browser.
+
+    calling javascript "localStorage.clear()" on selenium client directly
+    gives "Operation is insecure" error
+    """
+
+    return """
+        <html><body><script>
+            localStorage.clear()
+            sessionStorage.clear()
+            // tests.selenium wait_for_js barrier
+            const mainElement = document.createElement('main')
+            mainElement.id = 'main'
+            document.body.appendChild(mainElement)
+        </script></body></html>
+    """

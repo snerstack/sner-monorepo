@@ -30,3 +30,10 @@ def test_config_route(client):
     response = client.get("/backend/frontend_config")
     assert response.status_code == HTTPStatus.OK
     assert response.json
+
+
+def test_reset_browser_storage_route(client):
+    """test reset_browser_storage route"""
+
+    response = client.get("/backend/reset_browser_storage")
+    assert response.status_code == HTTPStatus.OK

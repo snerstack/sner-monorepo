@@ -95,3 +95,11 @@ def frontend_url(route_path):
         else FRONTEND_TESTSERVER_DEFAULT
     )
     return base + route_path
+
+
+def reset_browser(sclnt):
+    """reset shared browser state helper"""
+
+    sclnt.delete_all_cookies()
+    sclnt.get(frontend_url("/backend/reset_browser_storage"))
+    wait_for_js(sclnt)

@@ -12,12 +12,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from soft_webauthn import SoftWebauthnDevice
 
 from sner.server.extensions import db, webauthn
-from tests.selenium import webdriver_waituntil, frontend_url, wait_for_js
+from tests.selenium import reset_browser, webdriver_waituntil, frontend_url, wait_for_js
 from tests.selenium.auth import js_variable_ready
 
 
-def test_login_webauthn(frontend_server, selenium, webauthn_credential_factory):  # pylint: disable=unused-argument
+def test_login_webauthn(frontend_server, shared_browser, webauthn_credential_factory):  # pylint: disable=unused-argument
     """test login by webauthn"""
+
+    selenium = shared_browser
+    reset_browser(selenium)
 
     device = SoftWebauthnDevice()
     device.cred_init(webauthn.rp.id, b'randomhandle')
