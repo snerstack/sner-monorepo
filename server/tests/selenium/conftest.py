@@ -5,7 +5,9 @@ shared fixtures for selenium tests
 
 import os
 import signal
+import socket
 import subprocess
+from time import sleep
 
 import pytest
 from selenium import webdriver
@@ -122,6 +124,19 @@ def built_frontend():
     yield 0
 
 
+def wait_for_port(host, port, timeout=3, interval=1):
+    """wait for tcp port opened"""
+
+    while timeout > 0:
+        try:
+            with socket.create_connection((host, port), timeout=interval):
+                return True
+        except (ConnectionRefusedError, socket.timeout):
+            sleep(interval)
+        timeout -= 1
+    return False
+
+
 @pytest.fixture
 def frontend_server(built_frontend, live_server):  # pylint: disable=redefined-outer-name,unused-argument
     """ensure frontend test server"""
@@ -131,8 +146,9 @@ def frontend_server(built_frontend, live_server):  # pylint: disable=redefined-o
     # PYTEST_FRONTENT=nobuild .. live_server without building assets (eg. uses already built assets)
 
     if os.environ.get("PYTEST_FRONTEND", "dev") == "dev":
+        dev_server_port = FRONTEND_TESTSERVER_DEV.rsplit(":", maxsplit=1)[-1]
         proc = subprocess.Popen(  # pylint: disable=consider-using-with
-            ["npm", "run", "dev", "--", "--port", FRONTEND_TESTSERVER_DEV.rsplit(":", maxsplit=1)[-1], "--strictPort"],
+            ["npm", "run", "dev", "--", "--port", dev_server_port, "--strictPort"],
             env={
                 "PATH": os.environ["PATH"],
                 "SNER_BACKEND_URL": f"http://localhost:{live_server.port}",
@@ -140,6 +156,7 @@ def frontend_server(built_frontend, live_server):  # pylint: disable=redefined-o
             cwd="../frontend",
             start_new_session=True
         )
+        wait_for_port('localhost', dev_server_port)
         yield proc
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
 
