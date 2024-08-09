@@ -72,7 +72,7 @@ const WebAuthnLoginPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Login Webauthn - sner4</title>
+        <title>Login Webauthn - SNER</title>
       </Helmet>
       <Heading headings={['WebAuthn Login']} />
       <div>

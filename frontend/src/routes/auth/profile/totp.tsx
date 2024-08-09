@@ -54,7 +54,7 @@ const TOTPPage = () => {
   return (
     <div>
       <Helmet>
-        <title>User profile / 2-factor authentication setup - sner4</title>
+        <title>User profile / 2-factor authentication setup - SNER</title>
       </Helmet>
 
       <Heading headings={['User profile', secret ? '2-factor authentication setup (enable)' : 'Disable']} />

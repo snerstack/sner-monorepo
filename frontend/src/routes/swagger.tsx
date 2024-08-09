@@ -8,7 +8,7 @@ const SwaggerPage = () => {
   return (
     <div>
       <Helmet>
-        <title>API - sner4</title>
+        <title>API - SNER</title>
       </Helmet>
       <SwaggerUI url={urlFor('/api/doc/openapi.json')} />
     </div>

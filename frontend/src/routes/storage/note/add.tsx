@@ -77,7 +77,7 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
   return (
     <div>
       <Helmet>
-        <title>Notes / Add - sner4</title>
+        <title>Notes / Add - SNER</title>
       </Helmet>
 
       <Heading headings={['Notes', 'Add']} />

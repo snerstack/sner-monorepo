@@ -57,7 +57,7 @@ const NoteEditPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Notes / Edit - sner4</title>
+        <title>Notes / Edit - SNER</title>
       </Helmet>
 
       <Heading headings={['Notes', 'Edit']} />

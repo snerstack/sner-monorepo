@@ -50,7 +50,7 @@ const HostAddPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Hosts / Add - sner4</title>
+        <title>Hosts / Add - SNER</title>
       </Helmet>
       <Heading headings={['Hosts', 'Add']} />
       <form id="host_form" method="post">

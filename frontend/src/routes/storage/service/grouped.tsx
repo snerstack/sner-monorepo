@@ -51,7 +51,7 @@ const ServiceGroupedPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Services / Grouped - sner4</title>
+        <title>Services / Grouped - SNER</title>
       </Helmet>
       <Heading headings={['Services', 'Grouped']}>
         <div className="breadcrumb-buttons pl-2">

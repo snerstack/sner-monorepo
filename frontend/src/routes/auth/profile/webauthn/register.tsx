@@ -87,7 +87,7 @@ const WebAuthnRegisterPage = () => {
   return (
     <div>
       <Helmet>
-        <title>User profile / Register WebAuthn credential - sner4</title>
+        <title>User profile / Register WebAuthn credential - SNER</title>
       </Helmet>
       <Heading headings={['User profile', 'Register WebAuthn credential']} />
       <div>

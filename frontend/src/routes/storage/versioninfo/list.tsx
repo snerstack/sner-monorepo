@@ -131,7 +131,7 @@ const VersionInfosListPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Versioninfos / List - sner4</title>
+        <title>Versioninfos / List - SNER</title>
       </Helmet>
 
       <Heading headings={['Versioninfo (pre-computed)']}>

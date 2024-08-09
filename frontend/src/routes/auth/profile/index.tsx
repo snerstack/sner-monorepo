@@ -43,7 +43,7 @@ const ProfilePage = () => {
   return (
     <div>
       <Helmet>
-        <title>User profile - sner4</title>
+        <title>User profile - SNER</title>
       </Helmet>
 
       <Heading headings={['User profile']} />

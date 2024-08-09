@@ -5,7 +5,7 @@ const ForbiddenPage = () => {
   return (
     <div className="d-flex flex-column justify-content-center align-items-center vh-100">
       <Helmet>
-        <title>Not Authorized - sner4</title>
+        <title>Not Authorized - SNER</title>
       </Helmet>
       <h1 className="mb-4">Not Authorized (403)</h1>
       <div>

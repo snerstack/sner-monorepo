@@ -39,7 +39,7 @@ const TOTPLoginPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Login TOTP - sner4</title>
+        <title>Login TOTP - SNER</title>
       </Helmet>
       <Heading headings={['Login with 2FA']} />
 

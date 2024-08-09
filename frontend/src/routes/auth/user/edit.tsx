@@ -67,7 +67,7 @@ const UserEditPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Users / Edit - sner4</title>
+        <title>Users / Edit - SNER</title>
       </Helmet>
       <Heading headings={['Users', 'Edit']} />
       <form id="login_form" method="post">

@@ -36,7 +36,7 @@ const WebAuthnEditPage = () => {
   return (
     <div>
       <Helmet>
-        <title>User profile / Edit WebAuthn credential - sner4</title>
+        <title>User profile / Edit WebAuthn credential - SNER</title>
       </Helmet>
 
       <Heading headings={['User profile', 'Edit WebAuthn credential']} />

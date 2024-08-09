@@ -78,7 +78,7 @@ const UserListPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Users / List - sner4</title>
+        <title>Users / List - SNER</title>
       </Helmet>
       <Heading headings={['Users']}>
         <div className="breadcrumb-buttons pl-2">

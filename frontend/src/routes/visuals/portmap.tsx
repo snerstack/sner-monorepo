@@ -26,7 +26,7 @@ const PortmapPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Visuals / Portmap - sner4</title>
+        <title>Visuals / Portmap - SNER</title>
       </Helmet>
 
       <Heading headings={['Visuals', 'Portmap']}>

@@ -60,7 +60,7 @@ const VulnGroupedPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Vulns / Grouped - sner4</title>
+        <title>Vulns / Grouped - SNER</title>
       </Helmet>
       <Heading headings={['Vulns', 'Grouped']}>
         <div className="breadcrumb-buttons pl-2">

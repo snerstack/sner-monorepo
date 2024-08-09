@@ -135,7 +135,7 @@ const VulnSearchListPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Vulnsearch / List - sner4</title>
+        <title>Vulnsearch / List - SNER</title>
       </Helmet>
 
       <Heading headings={['Vulnsearch (pre-computed)']}>

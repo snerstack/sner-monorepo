@@ -59,7 +59,7 @@ const ServiceEditPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Services / Edit - sner4</title>
+        <title>Services / Edit - SNER</title>
       </Helmet>
       <Heading headings={['Services', 'Edit']} />
       <form id="service_form" method="post">

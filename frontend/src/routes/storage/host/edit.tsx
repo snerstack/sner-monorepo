@@ -51,7 +51,7 @@ const HostEditPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Hosts / Edit - sner4</title>
+        <title>Hosts / Edit - SNER</title>
       </Helmet>
       <Heading headings={['Hosts', 'Edit']} />
       <form id="host_form" method="post">

@@ -133,7 +133,7 @@ const HostListPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Hosts / List - sner4</title>
+        <title>Hosts / List - SNER</title>
       </Helmet>
 
       <Heading headings={['Hosts']}>

@@ -17,7 +17,7 @@ const InternalsPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Visuals / Internals - sner4</title>
+        <title>Visuals / Internals - SNER</title>
       </Helmet>
 
       <Heading headings={['Visuals', 'Internals']} />
