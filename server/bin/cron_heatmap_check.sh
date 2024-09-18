@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/opt/sner/venv/bin/python /opt/sner/bin/server scheduler heatmap-check
+/opt/sner/server/venv/bin/python /opt/sner/server/bin/server scheduler heatmap-check
