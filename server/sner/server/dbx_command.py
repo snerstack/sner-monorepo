@@ -58,7 +58,7 @@ def initdata_sner():
 
     db.session.add(Queue(
         name='sner.nmap.servicedisco',
-        config=yaml_dump({'module': 'nmap', 'args': '-sS --top-ports 10000 -Pn --scanflags ECESYN', 'timing_perhost': 2}),
+        config=yaml_dump({'module': 'nmap', 'args': '-sS --top-ports 10000 -Pn', 'timing_perhost': 2}),
         group_size=1000,
         priority=10,
     ))
