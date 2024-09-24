@@ -2,13 +2,12 @@ import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useCookie } from 'react-use'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
-import { urlFor } from '@/lib/urlHelper'
+import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -27,7 +26,6 @@ const VulnSearchListPage = () => {
 
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [csrfToken] = useCookie('XSRF-TOKEN')
   const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
   const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
@@ -249,15 +247,7 @@ const VulnSearchListPage = () => {
       <DataTable
         id="vulnsearch_list_table"
         columns={columns}
-        ajax={{
-          url: urlFor(
-            '/backend/storage/vulnsearch/list.json' +
-            (searchParams.toString() ? `?${searchParams.toString()}` : ''),
-          ),
-          type: 'POST',
-          xhrFields: { withCredentials: true },
-          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
-        }}
+        ajax_url={urlFor(`/backend/storage/vulnsearch/list.json${toQueryString(searchParams)}`)}
         select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
       />
 

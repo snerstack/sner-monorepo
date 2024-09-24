@@ -1,7 +1,6 @@
 import clsx from 'clsx'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useCookie } from 'react-use'
 
 import { Column, renderElements } from '@/lib/DataTables'
 import { getServiceFilterInfo } from '@/lib/sner/storage'
@@ -14,7 +13,6 @@ import Heading from '@/components/Heading'
 const ServiceGroupedPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const currentCrop = searchParams.get('crop')
   const noCropParams = new URLSearchParams(searchParams)
@@ -95,12 +93,7 @@ const ServiceGroupedPage = () => {
       <DataTable
         id="service_grouped_table"
         columns={columns}
-        ajax={{
-          url: urlFor(`/backend/storage/service/grouped.json${toQueryString(searchParams)}`),
-          type: 'POST',
-          xhrFields: { withCredentials: true },
-          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
-        }}
+        ajax_url={urlFor(`/backend/storage/service/grouped.json${toQueryString(searchParams)}`)}
         order={[[1, 'desc']]}
       />
     </div>

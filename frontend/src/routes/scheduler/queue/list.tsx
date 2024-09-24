@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useCookie } from 'react-use'
 
 import { urlFor } from '@/lib/urlHelper'
 import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
@@ -17,7 +16,6 @@ import EditButton from '@/components/buttons/EditButton'
 
 const QueueListPage = () => {
   const navigate = useNavigate()
-  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const columns = [
     Column('id'),
@@ -100,12 +98,7 @@ const QueueListPage = () => {
       <DataTable
         id="queue_list_table"
         columns={columns}
-        ajax={{
-          url: urlFor('/backend/scheduler/queue/list.json'),
-          type: 'POST',
-          xhrFields: { withCredentials: true },
-          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
-        }}
+        ajax_url={urlFor('/backend/scheduler/queue/list.json')}
       />
     </div>
   )

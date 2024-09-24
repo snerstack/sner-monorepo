@@ -68,34 +68,32 @@ class CustomTestApp(TestApp):
     def __init__(self, app):
         super().__init__(app)
 
+    def _inject_csrf(self, kwargs):
+        """inject x-csrf-token to kwargs["headers"]"""
+
+        kwargs.setdefault("headers", {})
+        kwargs["headers"]["X-CSRF-TOKEN"] = get_csrf_token(self)
+        return kwargs
+
     def get(self, *args, **kwargs):
         """token setup before GET request"""
 
         if args[0] == '/backend/auth/user/me':   # prevent recursion
             return super().get(*args, **kwargs)
 
-        headers = kwargs.get('headers', {})
-        headers['X-CSRF-TOKEN'] = get_csrf_token(self)
-        kwargs['headers'] = headers
-
+        kwargs = self._inject_csrf(kwargs)
         return super().get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
         """token setup before POST request"""
 
-        headers = kwargs.get('headers', {})
-        headers['X-CSRF-TOKEN'] = get_csrf_token(self)
-        kwargs['headers'] = headers
-
+        kwargs = self._inject_csrf(kwargs)
         return super().post(*args, **kwargs)
 
     def post_json(self, *args, **kwargs):
         """token setup before POST JSON request"""
 
-        headers = kwargs.get('headers', {})
-        headers['X-CSRF-TOKEN'] = get_csrf_token(self)
-        kwargs['headers'] = headers
-
+        kwargs = self._inject_csrf(kwargs)
         return super().post_json(*args, **kwargs)
 
 

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 import httpClient from '@/lib/httpClient'
@@ -18,7 +17,6 @@ import EditButton from '@/components/buttons/EditButton'
 const ProfilePage = () => {
   const profile = useLoaderData() as Profile
   const navigate = useNavigate()
-  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const [newApikey, setNewApikey] = useState<string>('')
   const [hasApikey, setHasApikey] = useState<boolean>(profile.has_apikey)
@@ -84,12 +82,7 @@ const ProfilePage = () => {
               </div>
               <DataTable
                 id="profile_webauthn_table"
-                ajax={{
-                  url: urlFor('/backend/auth/profile/webauthn/list.json'),
-                  type: 'POST',
-                  xhrFields: { withCredentials: true },
-                  beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
-                }}
+                ajax_url={urlFor('/backend/auth/profile/webauthn/list.json')}
                 columns={columns}
                 ordering={false}
                 paging={false}

@@ -1,14 +1,17 @@
 import DataTables, { AjaxData, Api, Config } from 'datatables.net-bs4'
 import 'datatables.net-select-bs4'
+import { useCookie } from 'react-use'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { observeElements } from '@/lib/DataTables'
+import { csrfTokenHeaderName } from '@/lib/httpClient'
 
 type OrderArray = [number, 'asc' | 'desc']
 
 interface TableConfig extends Config {
   id?: string
+  ajax_url?: string
   order?: OrderArray[]
 }
 
@@ -19,6 +22,7 @@ interface Column {
 const DataTable = ({ id, ...props }: TableConfig) => {
   const tableRef = useRef<HTMLTableElement>(null)
   const [searchParams] = useSearchParams()
+  const [csrfToken] = useCookie('tokencsrf')
 
   const DEFAULT_CONFIG: TableConfig = {
     autoWidth: false,
@@ -85,6 +89,19 @@ const DataTable = ({ id, ...props }: TableConfig) => {
     }
   }
 
+  // add request type and csrf handling if called with ajax_url prop
+  const makeAjax = (tableProps: TableConfig): void => {
+    if ('ajax_url' in tableProps) {
+      tableProps.ajax = {
+        url: tableProps.ajax_url,
+        type: "POST",
+        xhrFields: { withCredentials: true },
+        beforeSend: (req) => req.setRequestHeader(csrfTokenHeaderName, csrfToken!)
+      }
+      delete tableProps.ajax_url
+    }
+  }
+
   // adds ID column sorting (on every request)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const addSortingXhr = (dt: Api<any>): void => {
@@ -98,6 +115,7 @@ const DataTable = ({ id, ...props }: TableConfig) => {
 
   useEffect(() => {
     const tableProps = { ...DEFAULT_CONFIG, ...props }
+    makeAjax(tableProps)
     addSortingProps(tableProps)
     const dt = new DataTables(tableRef.current!, tableProps)
     addSortingXhr(dt)

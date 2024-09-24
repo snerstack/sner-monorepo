@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useCookie } from 'react-use'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
@@ -23,7 +22,6 @@ const VulnMulticopyPage = () => {
   const [appConfig, ] = useRecoilState(appConfigState)
   const vuln = useLoaderData() as Vuln
   const navigate = useNavigate()
-  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const [endpoints, setEndpoints] = useState<string>('')
   const [name, setName] = useState<string>(vuln.name)
@@ -82,12 +80,7 @@ const VulnMulticopyPage = () => {
       <DataTable
         id="vuln_multicopy_endpoints_table"
         columns={columns}
-        ajax={{
-          url: urlFor('/backend/storage/vuln/multicopy_endpoints.json'),
-          type: 'POST',
-          xhrFields: { withCredentials: true },
-          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
-        }}
+        ajax_url={urlFor('/backend/storage/vuln/multicopy_endpoints.json')}
         select={{ style: 'multi', selector: 'tr' }}
         lengthMenu={[10, 50, 100, 200]}
         drawCallback={() => {

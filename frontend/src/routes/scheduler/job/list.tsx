@@ -1,6 +1,5 @@
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
-import { useCookie } from 'react-use'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 import { urlFor } from '@/lib/urlHelper'
@@ -14,8 +13,6 @@ import ReconcileButton from '@/components/buttons/ReconcileButton'
 import RepeatButton from '@/components/buttons/RepeatButton'
 
 const JobListPage = () => {
-  const [csrfToken] = useCookie('XSRF-TOKEN')
-
   const columns = [
     Column('id'),
     Column('queue_name'),
@@ -68,12 +65,7 @@ const JobListPage = () => {
       <DataTable
         id="job_list_table"
         columns={columns}
-        ajax={{
-          url: urlFor('/backend/scheduler/job/list.json'),
-          type: 'POST',
-          xhrFields: { withCredentials: true },
-          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
-        }}
+        ajax_url={urlFor('/backend/scheduler/job/list.json')}
       />
     </div>
   )

@@ -2,11 +2,10 @@ import clsx from 'clsx'
 import { Fragment } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useCookie } from 'react-use'
 
 import { Column, renderElements } from '@/lib/DataTables'
-import { encodeRFC3986URIComponent, getColorForSeverity, getVulnFilterName } from '@/lib/sner/storage'
-import { urlFor } from '@/lib/urlHelper'
+import { getColorForSeverity, getVulnFilterName } from '@/lib/sner/storage'
+import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -16,7 +15,6 @@ import Tag from '@/components/Tag'
 const VulnGroupedPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [csrfToken] = useCookie('XSRF-TOKEN')
 
   const columns = [
     Column('name', {
@@ -102,15 +100,7 @@ const VulnGroupedPage = () => {
       <DataTable
         id="vuln_grouped_table"
         columns={columns}
-        ajax={{
-          url: urlFor(
-            '/backend/storage/vuln/grouped.json' +
-            (searchParams.has('filter') ? `?filter=${encodeRFC3986URIComponent(searchParams.get('filter')!)}` : ''),
-          ),
-          type: 'POST',
-          xhrFields: { withCredentials: true },
-          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
-        }}
+        ajax_url={urlFor(`/backend/storage/vuln/grouped.json${toQueryString(searchParams)}`)}
       />
     </div>
   )

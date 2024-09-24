@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useCookie } from 'react-use'
 import { useRecoilState } from 'recoil'
 
 import { apikeyModalState } from '@/atoms/apikeyModalAtom'
@@ -19,7 +18,6 @@ import ApikeyModal from '@/components/modals/ApikeyModal'
 
 const UserListPage = () => {
   const navigate = useNavigate()
-  const [csrfToken] = useCookie('XSRF-TOKEN')
   const [, setApikeyModal] = useRecoilState(apikeyModalState)
 
   const columns = [
@@ -91,12 +89,7 @@ const UserListPage = () => {
       <DataTable
         id="user_list_table"
         columns={columns}
-        ajax={{
-          url: urlFor('/backend/auth/user/list.json'),
-          type: 'POST',
-          xhrFields: { withCredentials: true },
-          beforeSend: (req) => req.setRequestHeader('X-CSRF-TOKEN', csrfToken!),
-        }}
+        ajax_url={urlFor('/backend/auth/user/list.json')}
       />
 
       <ApikeyModal />

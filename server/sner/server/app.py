@@ -321,7 +321,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
 
     @app.after_request
     def inject_csrf_token(response):
-        response.set_cookie('XSRF-TOKEN', generate_csrf())
+        response.set_cookie('tokencsrf', generate_csrf(), samesite='Strict')
         return response
 
     @app.errorhandler(CSRFError)
