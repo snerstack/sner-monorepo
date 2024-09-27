@@ -6,6 +6,7 @@ shared functions
 import os
 import signal
 from contextlib import contextmanager
+from ipaddress import ip_address
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -65,3 +66,13 @@ def get_nested_key(data, *keys):
         return data
     except KeyError:
         return None
+
+
+def is_address(addr):
+    """is_address helper"""
+
+    try:
+        ip_address(addr)
+        return True
+    except ValueError:
+        return False

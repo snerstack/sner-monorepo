@@ -9,11 +9,10 @@ from zipfile import ZipFile
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from sner.lib import file_from_zip, get_nested_key, is_zip
+from sner.lib import file_from_zip, get_nested_key, is_address, is_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
 from sner.server.storage.models import SeverityEnum
 from sner.server.utils import SnerJSONEncoder
-from sner.plugin.nessus.parser import ParserModule as NessusParser
 
 
 logger = logging.getLogger(__name__)
@@ -52,7 +51,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
             host_address = report['ip']
             host_data = {}
             hostname = urlsplit(report['host']).hostname
-            if not NessusParser.is_addr(hostname):
+            if not is_address(hostname):
                 host_data['hostname'] = hostname
 
             pidb.upsert_host(host_address, **host_data)

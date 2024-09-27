@@ -5,11 +5,11 @@ parsers to import from agent outputs to storage
 
 import json
 import sys
-from ipaddress import ip_address
 from pprint import pprint
 
 from tenable.reports import NessusReportv2
 
+from sner.lib import is_address
 from sner.server.parser import ParsedItemsDb, ParserBase
 from sner.server.storage.models import SeverityEnum
 from sner.server.utils import SnerJSONEncoder
@@ -41,7 +41,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
             if 'host-fqdn' in report_item:
                 hostnames.add(report_item['host-fqdn'])
             # host-rdns might contain address
-            if ('host-rdns' in report_item) and (not cls.is_addr(report_item['host-rdns'])):
+            if ('host-rdns' in report_item) and (not is_address(report_item['host-rdns'])):
                 hostnames.add(report_item['host-rdns'])
             if hostnames:
                 host_data['hostnames'] = list(hostnames)
@@ -113,16 +113,6 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
             refs.append(f'NSS-{report_item["pluginID"]}')
 
         return refs
-
-    @staticmethod
-    def is_addr(addr):
-        """check if argument is internet address"""
-
-        try:
-            ip_address(addr)
-            return True
-        except ValueError:
-            return False
 
 
 if __name__ == '__main__':  # pragma: no cover
