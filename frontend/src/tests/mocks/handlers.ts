@@ -4,6 +4,7 @@ import { userListHandler } from './handlers/auth/user/list'
 import { jobListHandler } from './handlers/scheduler/job/list'
 import { queueListHandler } from './handlers/scheduler/queue/list'
 import { hostListHandler } from './handlers/storage/host/list'
+import { hostLookupHandler } from './handlers/storage/host/lookup'
 import { noteGroupedHandler } from './handlers/storage/note/grouped'
 import { noteListHandler } from './handlers/storage/note/list'
 import { quickjumpHandler } from './handlers/storage/quickjump_autocomplete'
@@ -22,6 +23,7 @@ export const handlers = [
   userListHandler,
   webauthnListHandler,
   hostListHandler,
+  hostLookupHandler,
   serviceListHandler,
   serviceGroupedHandler,
   vulnListHandler,

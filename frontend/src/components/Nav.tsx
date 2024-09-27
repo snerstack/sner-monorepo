@@ -168,6 +168,9 @@ type SubnavItem = { title: string; link: string }
                 Profile
               </Link>
             )}
+            <Link className="dropdown-item" to="/storage/host/lookup">
+              Host lookup
+            </Link>
             <a className="dropdown-item" href="#" onClick={logoutHandler}>
               Logout
             </a>

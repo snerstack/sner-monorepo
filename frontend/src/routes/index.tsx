@@ -22,6 +22,7 @@ import QueueListPage from '@/routes/scheduler/queue/list'
 import HostAddPage from '@/routes/storage/host/add'
 import HostEditPage from '@/routes/storage/host/edit'
 import HostListPage from '@/routes/storage/host/list'
+import HostLookupPage from '@/routes/storage/host/lookup'
 import HostViewPage from '@/routes/storage/host/view'
 import NoteAddPage from '@/routes/storage/note/add'
 import NoteEditPage from '@/routes/storage/note/edit'
@@ -133,6 +134,7 @@ export const routes = createRoutesFromElements(
             element={<HostViewPage />}
             loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/host/view/${id}.json`)}
           />
+          <Route path="lookup" element={<HostLookupPage />} />
         </Route>
         <Route path="service">
           <Route path="list" element={<ServiceListPage />} />
