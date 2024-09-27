@@ -10,6 +10,7 @@ from datatables import ColumnDT, DataTables
 from flask import jsonify, request, Response
 from sqlalchemy import func, literal_column
 
+from sner.lib import is_address
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_delete_multiid, model_tag_multiid
@@ -155,3 +156,34 @@ def host_tag_multiid_route():
         return '', HTTPStatus.OK
 
     return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+
+
+@blueprint.route('/host/lookup', methods=['GET'])
+@session_required('operator')
+def host_lookup_route():
+    """
+    lookup hosts, used for external links by address or hostnames.
+    returns json with url containing redirect url to single host or host/list with filter
+    """
+
+    ident = None
+    field = None
+    url = None
+
+    if (ident := request.args.get("address")) and is_address(ident):
+        field = 'address'
+    elif ident := request.args.get("hostname"):
+        field = 'hostname'
+
+    if ident and field:
+        hosts = Host.query.filter_by(**{field: ident}).all()
+        if len(hosts) == 1:
+            url = f"/storage/host/view/{hosts[0].id}"
+        elif len(hosts) > 1:
+            url = f'/storage/host/list?filter=Host.{field}%3D%3D"{ident}"'
+
+    return (
+        jsonify({"url": url})
+        if url
+        else error_response(message="host not found", code=HTTPStatus.NOT_FOUND)
+    )

@@ -102,3 +102,19 @@ def test_host_delete_multiid_route(cl_operator, host):
     """host multi delete route for ajaxed toolbars test"""
 
     check_delete_multiid(cl_operator, 'storage.host_delete_multiid_route', host)
+
+
+def test_host_loookup_route(cl_operator, host_factory):
+    """host lookup route test"""
+
+    host1 = host_factory.create(address='127.5.5.5', hostname='ahost.localdomain')
+    host_factory.create(address='127.5.5.6', hostname='ahost.localdomain')
+
+    response = cl_operator.get(url_for('storage.host_lookup_route', address=host1.address))
+    assert response.json.get("url")
+
+    response = cl_operator.get(url_for('storage.host_lookup_route', hostname=host1.hostname))
+    assert response.json.get("url")
+
+    response = cl_operator.get(url_for('storage.host_lookup_route'), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
