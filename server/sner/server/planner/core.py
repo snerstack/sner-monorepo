@@ -16,10 +16,9 @@ from flask import current_app
 from pytimeparse import parse as timeparse
 from sqlalchemy import select
 from sqlalchemy.orm.exc import NoResultFound
-
 from sner.lib import format_host_address, get_nested_key, TerminateContextMixin
 from sner.server.extensions import db
-from sner.server.scheduler.core import enumerate_network, JobManager, QueueManager
+from sner.server.scheduler.core import enumerate_network, ExclMatcher, JobManager, QueueManager
 from sner.server.scheduler.models import Queue, Job, Target
 from sner.server.storage.core import StorageManager
 from sner.server.storage.versioninfo import VersioninfoManager
@@ -356,7 +355,7 @@ class Planner(TerminateContextMixin):
         self.config = config
         self.stages = {}
 
-        if self.config:
+        if self.config.get('stage'):
             self._setup_stages()
 
     def _setup_stages(self):
@@ -444,3 +443,16 @@ class Planner(TerminateContextMixin):
 
         self.log.info('exit')
         return 0
+
+    def dump_targets(self):
+        """dump all available targets, helper for manual sweeps"""
+
+        blacklist = ExclMatcher(current_app.config['SNER_EXCLUSIONS'])
+
+        addrs = []
+        for net in self.config.get('home_netranges_ipv4', []):
+            for addr in enumerate_network(net):
+                if not blacklist.match(addr):
+                    addrs.append(addr)
+
+        return addrs

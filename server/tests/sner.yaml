@@ -6,9 +6,14 @@ server:
   sner_var: '/tmp/sner_test_var'
   sner_trim_report_cells: 1000
 
+  sner_exclusions:
+    - [regex, '^tcp://.*:22$']
+    - [network, '127.66.66.0/26']
+
   oidc_name: 'OIDC_DEFAULT'
   oidc_default_metadata: 'https://URL/.well-known/openid-configuration'
   oidc_default_client_id: 'dummy'
   oidc_default_client_secret: 'dummy'
 
-planner: {}
+planner:
+  home_netranges_ipv4: ['127.13.13.1/32']

@@ -254,3 +254,15 @@ def test_storagerescan_largedataset(runner, queue_factory, host_factory):  # pyl
     StorageRescan('0s', '0s', dummy, '0s', [dummy]).run()
 
     assert Target.query.count() == existing_targets_count + Service.query.count()
+
+
+def test_planner_dumptargets(app):  # pylint: disable=unused-argument
+    """test dump targets"""
+
+    config = yaml.safe_load("""
+home_netranges_ipv4: ['127.0.0.11/32']
+home_netranges_ipv6: ['::1/128']
+""")
+
+    planner = Planner(config)
+    assert len(planner.dump_targets()) == 1

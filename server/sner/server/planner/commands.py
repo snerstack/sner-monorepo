@@ -22,3 +22,12 @@ def run(**kwargs):
     """run planner daemon"""
 
     Planner(current_app.config['SNER_PLANNER'], kwargs['oneshot']).run()
+
+
+@command.command(name='dump_targets', help='dump all targets respecting exclusions')
+@with_appcontext
+def dump_targets():
+    """dump all targets respecting exclusions"""
+
+    if targets := Planner(current_app.config['SNER_PLANNER']).dump_targets():
+        print("\n".join(targets))
