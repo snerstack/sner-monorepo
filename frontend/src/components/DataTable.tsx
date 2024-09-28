@@ -6,6 +6,7 @@ import { useSearchParams } from 'react-router-dom'
 
 import { observeElements } from '@/lib/DataTables'
 import { csrfTokenHeaderName } from '@/lib/httpClient'
+import { toast } from 'react-toastify'
 
 type OrderArray = [number, 'asc' | 'desc']
 
@@ -96,7 +97,13 @@ const DataTable = ({ id, ...props }: TableConfig) => {
         url: tableProps.ajax_url,
         type: "POST",
         xhrFields: { withCredentials: true },
-        beforeSend: (req) => req.setRequestHeader(csrfTokenHeaderName, csrfToken!)
+        beforeSend: (req) => req.setRequestHeader(csrfTokenHeaderName, csrfToken!),
+        /* c8 ignore next 5 */
+        error: (err: JQuery.jqXHR) => {
+          console.log(tableProps.ajax)
+          console.error("DT ajax error", err)
+          toast.error(`DT ajax error, ${(err.responseJSON as ErrorResponse)?.error?.message ?? err.statusText}`)
+        }
       }
       delete tableProps.ajax_url
     }

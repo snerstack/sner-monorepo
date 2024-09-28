@@ -513,6 +513,9 @@ describe('Host view page', () => {
       path: '/storage/host/view/1',
       loader: loader,
     })
+    await waitFor(() => {
+      expect(screen.getByText(/127.4.4.4 testhost.testdomain.test/i)).toBeInTheDocument()
+    })
 
     const reloadMock = vi.fn()
     vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
