@@ -85,7 +85,7 @@ const NoteViewPage = () => {
             />
             <EditButton url={`/storage/note/edit/${note.id}`} className="btn btn-outline-primary" />
           </div>{' '}
-          <DeleteButton url={urlFor(`/storage/note/delete/${note.id}`)} />
+          <DeleteButton url={urlFor(`/backend/storage/note/delete/${note.id}`)} />
         </div>
       </Heading>
 
