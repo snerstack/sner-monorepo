@@ -18,7 +18,6 @@ const DeleteButton = ({ url, tableId, className }: { url: string; tableId?: stri
         httpClient
           .post(url)
           .then(() => {
-            /* c8 ignore next 2 */
             if (tableId) {
               getTableApi(tableId).draw()
             } else {

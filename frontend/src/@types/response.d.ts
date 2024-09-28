@@ -1,9 +1,9 @@
 interface StorageHostLookupResponse {
-    url: string;
+    url: string
 }
 
 interface ErrorResponse {
     error?: {
-        message?: string;
-    };
+        message?: string
+    }
 }
