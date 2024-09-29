@@ -37,9 +37,6 @@ def test_versioninfo_list_json_route(cl_operator, versioninfo):
     response_data = json.loads(response.body.decode('utf-8'))
     assert response_data['data'][0]['product'] == expected_product
 
-    response = cl_operator.post(url_for('storage.versioninfo_list_json_route', filter='invalid'), {'draw': 1, 'start': 0, 'length': 1}, status='*')
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-
 
 def test_versioninfo_list_json_route_query_form(cl_operator, service_factory, versioninfo_factory):
     """versioninfo list_json route test"""

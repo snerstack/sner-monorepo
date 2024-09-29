@@ -50,8 +50,7 @@ def user_list_json_route():
         ColumnDT(literal_column('1'), mData='_buttons', search_method='none', global_search=False)
     ]
     query = db.session.query().select_from(User)
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
+    query = filter_query(query, request.values.get('filter'))
 
     users = DataTables(request.values.to_dict(), query, columns).output_result()
     return jsonify(users)

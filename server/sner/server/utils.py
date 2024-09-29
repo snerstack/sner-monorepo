@@ -60,6 +60,10 @@ def windowed_query(query, column, windowsize=5000):
                 yield row[0:-1]
 
 
+class FilterQueryError(Exception):
+    """filter query exception"""
+
+
 def filter_query(query, qfilter):
     """filter sqla query"""
 
@@ -69,10 +73,9 @@ def filter_query(query, qfilter):
     try:
         query = apply_filters(query, FILTER_PARSER.parse(qfilter), do_auto_join=False)
     except LarkError as exc:
-        if current_app.config['DEBUG']:  # pragma: no cover  ; wont debug logging coverage
-            raise
-        current_app.logger.error('failed to parse filer: %s', str(exc).split('\n', maxsplit=1)[0])
-        return None
+        mesg = str(exc).split('\n', maxsplit=1)[0]
+        current_app.logger.error('failed to parse filter: %s', mesg)
+        raise FilterQueryError(mesg) from None
 
     return query
 

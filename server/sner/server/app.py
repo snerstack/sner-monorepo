@@ -8,6 +8,7 @@ import logging
 import logging.config
 import os
 import sys
+from http import HTTPStatus
 
 import flask.cli
 import yaml
@@ -24,7 +25,7 @@ from sner.server.extensions import api, db, migrate, login_manager, oauth, webau
 from sner.server.parser import load_parser_plugins
 from sner.server.scheduler.core import ExclMatcher
 from sner.server.sessions import FilesystemSessionInterface
-from sner.server.utils import error_response
+from sner.server.utils import error_response, FilterQueryError
 from sner.version import __version__
 
 # blueprints and commands
@@ -328,6 +329,10 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     def handle_csrf_error(err):
         current_app.logger.warning('csrf error, %s', err.description)
         return error_response(message=err.description, code=400)
+
+    @app.errorhandler(FilterQueryError)
+    def handle_filter_query_error(err):
+        return error_response(message=str(err), code=HTTPStatus.BAD_REQUEST)
 
     return app
 

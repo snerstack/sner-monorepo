@@ -3,8 +3,6 @@
 controller dnstree
 """
 
-from http import HTTPStatus
-
 from flask import jsonify, request
 
 from sner.server.auth.core import session_required
@@ -38,8 +36,7 @@ def dnstree_json_route():
         return (nodes, links)
 
     query = Host.query
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+    query = filter_query(query, request.values.get('filter'))
     crop = request.values.get('crop', 0, type=int)
 
     hostnames_tree = {}

@@ -47,8 +47,7 @@ def vulnsearch_list_json_route():
         ColumnDT(literal_column('1'), mData='_buttons', search_method='none', global_search=False)
     ]
     query = db.session.query().select_from(Vulnsearch)
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+    query = filter_query(query, request.values.get('filter'))
 
     vulnsearches = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(vulnsearches, cls=SnerJSONEncoder), mimetype='application/json')

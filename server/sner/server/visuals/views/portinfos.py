@@ -3,8 +3,6 @@
 controller portinfos
 """
 
-from http import HTTPStatus
-
 from flask import jsonify, request
 from sqlalchemy import desc, func
 
@@ -27,8 +25,7 @@ def portinfos_json_route():
         .filter(Service.info != '', Service.info != None) \
         .group_by(info_column).order_by(desc('info_count'))  # noqa: E711  pylint: disable=singleton-comparison
 
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return 'Failed to filter query', HTTPStatus.BAD_REQUEST
+    query = filter_query(query, request.values.get('filter'))
     if request.values.get('limit'):
         query = query.limit(request.values.get('limit'))
 

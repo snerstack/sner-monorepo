@@ -35,8 +35,7 @@ def job_list_json_route():
         ColumnDT(literal_column('1'), mData='_buttons', search_method='none', global_search=False)
     ]
     query = db.session.query().select_from(Job).outerjoin(Queue)
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
+    query = filter_query(query, request.values.get('filter'))
 
     jobs = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(jobs, cls=SnerJSONEncoder), mimetype='application/json')

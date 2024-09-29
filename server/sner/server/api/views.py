@@ -9,7 +9,7 @@ from http import HTTPStatus
 
 from flask import current_app, jsonify, Response
 from flask_login import current_user
-from flask_smorest import abort, Blueprint, Page
+from flask_smorest import Blueprint, Page
 from sqlalchemy import or_
 
 import sner.server.api.schema as api_schema
@@ -191,10 +191,7 @@ def v2_public_storage_servicelist_route(args):
         Service.info
     ).filter(or_(*restrict))
 
-    if not (query := filter_query(query, args.get('filter'))):
-        # must use abort for paginate
-        abort(HTTPStatus.BAD_REQUEST, message="Failed to filter query")
-
+    query = filter_query(query, args.get('filter'))
     current_app.logger.info(f'api.public storage servicelist {args}')
     return query
 
@@ -233,10 +230,7 @@ def v2_public_storage_notelist_route(args):
         .filter(or_(*restrict))
     )
 
-    if not (query := filter_query(query, args.get("filter"))):
-        # must use abort for paginate
-        abort(HTTPStatus.BAD_REQUEST, message="Failed to filter query")
-
+    query = filter_query(query, args.get("filter"))
     current_app.logger.info(f"api.public storage notelist {args}")
     return query
 
@@ -254,10 +248,7 @@ def v2_public_storage_versioninfo_route(args):
 
     restrict = [Versioninfo.host_address.op("<<=")(net) for net in current_user.api_networks]
     query = Versioninfo.query.filter(or_(*restrict))
-
-    if not (query := filter_query(query, args.get("filter"))):
-        # must use abort for paginate
-        abort(HTTPStatus.BAD_REQUEST, message="Failed to filter query")
+    query = filter_query(query, args.get("filter"))
 
     if "product" in args:
         query = query.filter(Versioninfo.product.ilike(f'%{args["product"]}%'))
@@ -288,10 +279,7 @@ def v2_public_storage_vulnsearch_route(args):
 
     restrict = [Vulnsearch.host_address.op("<<=")(net) for net in current_user.api_networks]
     query = Vulnsearch.query.filter(or_(*restrict))
-
-    if not (query := filter_query(query, args.get("filter"))):
-        # must use abort for paginate
-        abort(HTTPStatus.BAD_REQUEST, message="Failed to filter query")
+    query = filter_query(query, args.get("filter"))
 
     current_app.logger.info(f"api.public storage vulnsearch {args}")
     return query

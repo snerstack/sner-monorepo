@@ -28,9 +28,6 @@ def test_note_list_json_route(cl_operator, note):
     response_data = json.loads(response.body.decode('utf-8'))
     assert response_data['data'][0]['data'] == note.data
 
-    response = cl_operator.post(url_for('storage.note_list_json_route', filter='invalid'), {'draw': 1, 'start': 0, 'length': 1}, status='*')
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-
 
 def test_note_add_route(cl_operator, host, service, note_factory):
     """note add route test"""
@@ -139,6 +136,3 @@ def test_note_grouped_json_route(cl_operator, note):
     assert response.status_code == HTTPStatus.OK
     response_data = json.loads(response.body.decode('utf-8'))
     assert note.xtype in response_data['data'][0]['xtype']
-
-    response = cl_operator.post(url_for('storage.note_grouped_json_route', filter='invalid'), {'draw': 1, 'start': 0, 'length': 1}, status='*')
-    assert response.status_code == HTTPStatus.BAD_REQUEST

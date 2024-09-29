@@ -56,8 +56,7 @@ def vuln_list_json_route():
         ColumnDT(literal_column('1'), mData='_buttons', search_method='none', global_search=False)
     ]
     query = db.session.query().select_from(Vuln).outerjoin(Host, Vuln.host_id == Host.id).outerjoin(Service, Vuln.service_id == Service.id)
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
+    query = filter_query(query, request.values.get('filter'))
 
     vulns = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype='application/json')
@@ -194,8 +193,7 @@ def vuln_grouped_json_route():
         .outerjoin(Host, Vuln.host_id == Host.id)  # allows filter over host attrs
         .group_by(Vuln.name, Vuln.severity, vuln_tags_query.c.utags)
     )
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
+    query = filter_query(query, request.values.get('filter'))
 
     vulns = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype='application/json')

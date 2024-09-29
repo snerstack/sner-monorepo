@@ -45,8 +45,7 @@ def note_list_json_route():
         ColumnDT(literal_column('1'), mData='_buttons', search_method='none', global_search=False)
     ]
     query = db.session.query().select_from(Note).outerjoin(Host, Note.host_id == Host.id).outerjoin(Service, Note.service_id == Service.id)
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
+    query = filter_query(query, request.values.get('filter'))
 
     notes = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(notes, cls=SnerJSONEncoder), mimetype='application/json')
@@ -173,8 +172,7 @@ def note_grouped_json_route():
         .outerjoin(Host, Note.host_id == Host.id) \
         .outerjoin(Service, Note.service_id == Service.id) \
         .group_by(Note.xtype)
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+    query = filter_query(query, request.values.get('filter'))
 
     notes = DataTables(request.values.to_dict(), query, columns).output_result()
     return jsonify(notes)

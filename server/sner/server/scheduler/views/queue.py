@@ -40,8 +40,7 @@ def queue_list_json_route():
     query = db.session.query().select_from(Queue) \
         .outerjoin(query_nr_targets, Queue.id == query_nr_targets.c.queue_id) \
         .outerjoin(query_nr_jobs, Queue.id == query_nr_jobs.c.queue_id)
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+    query = filter_query(query, request.values.get('filter'))
 
     queues = DataTables(request.values.to_dict(), query, columns).output_result()
     return jsonify(queues)

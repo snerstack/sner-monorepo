@@ -44,8 +44,7 @@ def versioninfo_list_json_route():
         ColumnDT(Versioninfo.comment, mData='comment'),
     ]
     query = db.session.query().select_from(Versioninfo)
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return jsonify({'message': 'Failed to filter query'}), HTTPStatus.BAD_REQUEST
+    query = filter_query(query, request.values.get('filter'))
 
     if request.values.get('product'):
         query = query.filter(Versioninfo.product.ilike(f"%{request.values.get('product')}%"))

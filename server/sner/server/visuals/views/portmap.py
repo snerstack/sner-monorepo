@@ -3,8 +3,6 @@
 controller portmap
 """
 
-from http import HTTPStatus
-
 from socket import getservbyport
 
 from flask import request, jsonify
@@ -29,14 +27,12 @@ def portmap_json_route():
     # join allows filter over host attrs
     query = db.session.query(Service.state, func.count(Service.id).label('state_count')).join(Host) \
         .group_by(Service.state).order_by(desc('state_count'))
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return 'Failed to filter query', HTTPStatus.BAD_REQUEST
+    query = filter_query(query, request.values.get('filter'))
     portstates = query.all()
 
     # join allows filter over host attrs
     query = db.session.query(Service.port, func.count(Service.id)).join(Host).order_by(Service.port).group_by(Service.port)
-    if not (query := filter_query(query, request.values.get('filter'))):  # pragma: no cover  ; cannot test, failed by filter processing above
-        return 'Failed to filter query', HTTPStatus.BAD_REQUEST
+    query = filter_query(query, request.values.get('filter'))
     portmap = [{'port': port, 'count': count} for port, count in query.all()]
 
     # compute sizing for rendered element
@@ -72,8 +68,6 @@ def portmap_portstat_json_route(port):
     infos = filter_query(infos, request.values.get('filter'))
     comments = filter_query(comments, request.values.get('filter'))
     hosts = filter_query(hosts, request.values.get('filter'))
-    if not all([stats, infos, comments, hosts]):
-        return 'Failed to parse filter', HTTPStatus.BAD_REQUEST
 
     try:
         portname = getservbyport(int(port))

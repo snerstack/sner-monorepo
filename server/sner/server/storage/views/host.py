@@ -48,8 +48,7 @@ def host_list_json_route():
         .outerjoin(query_cnt_services, Host.id == query_cnt_services.c.host_id) \
         .outerjoin(query_cnt_vulns, Host.id == query_cnt_vulns.c.host_id) \
         .outerjoin(query_cnt_notes, Host.id == query_cnt_notes.c.host_id)
-    if not (query := filter_query(query, request.values.get('filter'))):
-        return error_response(message='Failed to filter query', code=HTTPStatus.BAD_REQUEST)
+    query = filter_query(query, request.values.get('filter'))
 
     hosts = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(hosts, cls=SnerJSONEncoder), mimetype='application/json')

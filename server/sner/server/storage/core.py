@@ -199,8 +199,7 @@ def vuln_report(qfilter=None, group_by_host=False):  # pylint: disable=too-many-
     if group_by_host:
         query = query.group_by(host_ident_format)
 
-    if not (query := filter_query(query, qfilter)):
-        raise ValueError('failed to filter query')
+    query = filter_query(query, qfilter)
 
     content_trimmed = False
     fieldnames = [
@@ -267,8 +266,7 @@ def vuln_export(qfilter=None):
         .outerjoin(Host, Vuln.host_id == Host.id) \
         .outerjoin(Service, Vuln.service_id == Service.id)
 
-    if not (query := filter_query(query, qfilter)):
-        raise ValueError('failed to filter query')
+    query = filter_query(query, qfilter)
 
     content_trimmed = False
     fieldnames = [

@@ -6,6 +6,7 @@ storage.core functions tests
 import pytest
 
 from sner.server.parser import ParsedItemsDb
+from sner.server.utils import FilterQueryError
 from sner.server.storage.core import get_related_models, StorageManager, vuln_report
 from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
 
@@ -104,5 +105,5 @@ def test_vuln_report(app, host_factory, service_factory, vuln_factory):  # pylin
     output = vuln_report(qfilter='Host.address == "127.3.3.1"', group_by_host=True)
     assert output
 
-    with pytest.raises(ValueError):
+    with pytest.raises(FilterQueryError):
         output = vuln_report(qfilter='invalid')

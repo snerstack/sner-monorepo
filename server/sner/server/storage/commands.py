@@ -13,6 +13,7 @@ from flask.cli import with_appcontext
 
 from sner.lib import format_host_address
 from sner.server.extensions import db
+from sner.server.utils import FilterQueryError
 from sner.server.parser import REGISTERED_PARSERS
 from sner.server.storage.core import StorageManager, vuln_export, vuln_report
 from sner.server.storage.models import Host, Service, Versioninfo, Vulnsearch
@@ -118,8 +119,9 @@ def storage_service_list(**kwargs):
         current_app.logger.error('--short and --long are mutualy exclusive options')
         sys.exit(1)
 
-    if not (query := filter_query(Service.query, kwargs.get('filter'))):
-        current_app.logger.error('failed to filter query')
+    try:
+        query = filter_query(Service.query, kwargs.get('filter'))
+    except FilterQueryError:
         sys.exit(1)
 
     fmt = '{proto}://{host}:{port}'
