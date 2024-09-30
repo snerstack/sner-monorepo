@@ -37,11 +37,11 @@ def vulnsearch_list_json_route():
         ColumnDT(service_column, mData='service'),
         ColumnDT(Vulnsearch.via_target, mData='via_target'),
         ColumnDT(Vulnsearch.cveid, mData='cveid'),
+        ColumnDT(Vulnsearch.name, mData='name'),
         ColumnDT(Vulnsearch.cvss, mData='cvss'),
         ColumnDT(Vulnsearch.cvss3, mData='cvss3'),
         ColumnDT(Vulnsearch.attack_vector, mData='attack_vector'),
         ColumnDT(Vulnsearch.cpe_full, mData='cpe_full'),
-        ColumnDT(Vulnsearch.name, mData='name'),
         ColumnDT(Vulnsearch.tags, mData='tags'),
         ColumnDT(Vulnsearch.comment, mData='comment'),
         ColumnDT(literal_column('1'), mData='_buttons', search_method='none', global_search=False)

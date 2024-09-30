@@ -56,7 +56,7 @@ const VulnSearchListPage = () => {
         renderElements(
           cell,
           <ServiceEndpointDropdown
-            service={`${row['service_port']}/${row['service_proto']}`}
+            service={row['service']}
             address={row['host_address']}
             hostname={row['host_hostname']}
             proto={row['service_proto']}

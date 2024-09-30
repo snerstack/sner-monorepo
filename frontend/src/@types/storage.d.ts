@@ -169,9 +169,9 @@ interface VulnMulticopyRow {
   endpoint_id: { host_id: number; service_id?: number }
   host_address: string
   host_hostname: string
-  servuce_info: string | null
-  servuce_proto: string | null
-  servuce_port: number | null
+  service_info: string | null
+  service_proto: string | null
+  service_port: number | null
 }
 
 interface NoteRow {
@@ -197,9 +197,9 @@ interface VersionInfoRow {
   host_id: number
   host_address: string
   host_hostname: string
+  service_proto: string | null
+  service_port: number | null
   service: string
-  service_proto: string
-  service_port: number
   via_target: string | null
   product: string
   version: string
@@ -211,20 +211,17 @@ interface VersionInfoRow {
 interface VulnSearchRow {
   id: string
   host_id: number
-  service_id: number
   host_address: string
   host_hostname: string
-  service_proto: string
-  service_port: number
+  service_proto: string | null
+  service_port: number | null
+  service: string
   via_target: string | null
   cveid: string
   name: string
-  description: string
   cvss: string
   cvss3: string
   attack_vector: string
-  dara: string
-  cpe: string
   cpe_full: string | null
   tags: string[]
   comment: string | null
