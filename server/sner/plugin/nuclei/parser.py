@@ -44,7 +44,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
         for report in data:
             if 'ip' not in report:
                 # dns templates are skipped
-                logger.warning('IP missing in report, %s', report["template"])
+                logger.warning('IP missing in report, template-id %s', report["template-id"])
                 continue
 
             # parse host
