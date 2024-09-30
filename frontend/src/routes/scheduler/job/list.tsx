@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet-async'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
-import { urlFor } from '@/lib/urlHelper'
+import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import FilterForm from '@/components/FilterForm'
@@ -13,6 +13,8 @@ import ReconcileButton from '@/components/buttons/ReconcileButton'
 import RepeatButton from '@/components/buttons/RepeatButton'
 
 const JobListPage = () => {
+  const [searchParams] = useSearchParams()
+
   const columns = [
     Column('id'),
     Column('queue_name'),
@@ -65,7 +67,7 @@ const JobListPage = () => {
       <DataTable
         id="job_list_table"
         columns={columns}
-        ajax_url={urlFor('/backend/scheduler/job/list.json')}
+        ajax_url={urlFor(`/backend/scheduler/job/list.json${toQueryString(searchParams)}`)}
       />
     </div>
   )
