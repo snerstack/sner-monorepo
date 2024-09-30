@@ -29,7 +29,7 @@ RUN sh bin/install_nmap.sh && \
     sh bin/install_jarm.sh && \
     sh bin/install_firefox.sh && \
     sh bin/install_testssl.sh && \
-    sh bin/install_nuclei.sh && \
+    sh bin/install_nuclei.sh && nuclei -update-templates && \
     sh bin/install_quicmap.sh && \
     sh bin/install_sshaudit.sh
 
