@@ -1,5 +1,5 @@
 import { decode as cborDecode, encode as cborEncode } from 'cbor-x'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -20,26 +20,7 @@ interface AssertionCredential extends PublicKeyCredential {
 const WebAuthnLoginPage = () => {
   const navigate = useNavigate()
   const [, setUser] = useRecoilState(userState)
-
-  useEffect(() => {
-    if (!window.PublicKeyCredential) {
-      toast.warn('WebAuthn is not supported')
-      return
-    }
-    void loginHandler()
-  })
-
-  const loginHandler = async () => {
-    try {
-      const pkcco = await getPublicKeyCredentialRequestOptions()
-      const assertion = (await navigator.credentials.get(pkcco)) as AssertionCredential
-      await loginWebauthn(assertion)
-    /* c8 ignore next 4 */
-    } catch (err) {
-      console.error(err)
-      toast.error('Webauthn login failed')
-    }
-  }
+  const [inProgress, setInProgress] = useState(false)
 
   const getPublicKeyCredentialRequestOptions = async (): Promise<CredentialCreationOptions> => {
     const resp = await httpClient.post<string>(urlFor('/backend/auth/login_webauthn_pkcro'))
@@ -48,7 +29,7 @@ const WebAuthnLoginPage = () => {
     return cborDecode(base64ToArrayBuffer(resp.data)) as CredentialCreationOptions
   }
 
-  const loginWebauthn = async (assertion: AssertionCredential) => {
+  const loginWebauthn = useCallback(async (assertion: AssertionCredential) => {
     const assertionData = {
       credentialRawId: new Uint8Array(assertion.rawId),
       authenticatorData: new Uint8Array(assertion.response.authenticatorData),
@@ -62,12 +43,39 @@ const WebAuthnLoginPage = () => {
     const resp = await httpClient.post<User>(urlFor('/backend/auth/login_webauthn'), formData)
     setUser({ ...resp.data, isAuthenticated: true })
     navigate('/')
-  }
+  }, [setUser, navigate])
+
+  const loginHandler = useCallback(async () => {
+    try {
+      const pkcco = await getPublicKeyCredentialRequestOptions()
+      const assertion = (await navigator.credentials.get(pkcco)) as AssertionCredential
+      await loginWebauthn(assertion)
+      /* c8 ignore next 4 */
+    } catch (err) {
+      console.error(err)
+      toast.error('Webauthn login failed')
+    }
+  }, [loginWebauthn])
 
   /* selenium CI helpers */
   window.base64ToArrayBuffer = base64ToArrayBuffer
   window.cborDecode = cborDecode
   window.loginWebauthn = loginWebauthn
+
+  useEffect(() => {
+    if (!window.PublicKeyCredential) {
+      toast.warn('WebAuthn is not supported')
+      return
+    }
+
+    // here, an empty useEffect empty dependency list and eslint deps silence would suffice
+    // but for completeness we try to stick to react best practices, hence use of
+    // flag guard and memoized functions (required outside of useEffect for selenium tests)
+    if (!inProgress) {
+      setInProgress(true)
+      void loginHandler()
+    }
+  }, [inProgress, loginHandler])
 
   return (
     <div>
