@@ -111,7 +111,14 @@ def initdata_sner():
 
     db.session.add(Queue(
         name='sner.nuclei',
-        config=yaml_dump({'module': 'nuclei', 'args': '-rate-limit 15'}),
+        config=yaml_dump({'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'}),
+        group_size=5,
+        priority=15,
+    ))
+
+    db.session.add(Queue(
+        name='sner.nuclei.rolling',
+        config=yaml_dump({'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'}),
         group_size=5,
         priority=15,
     ))

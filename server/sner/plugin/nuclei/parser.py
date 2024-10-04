@@ -101,7 +101,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
             pidb.upsert_vuln(
                 host_address,
                 name=report['info']['name'],
-                xtype=f"nuclei.{report['template-id']}",
+                xtype=f"nuclei.{report['template-id']}{'.' + report['matcher-name'] if 'matcher-name' in report else ''}",
                 **vuln_data
             )
 

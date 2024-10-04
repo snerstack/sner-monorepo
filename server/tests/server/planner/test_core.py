@@ -26,11 +26,12 @@ from sner.server.planner.core import (
     StorageSixEnum,
     StorageCleanup,
     StorageLoader,
+    StorageLoaderNuclei,
     StorageRescan
 )
 from sner.server.scheduler.core import SchedulerService
 from sner.server.scheduler.models import Job, Target
-from sner.server.storage.models import Host, Note, Service
+from sner.server.storage.models import Host, Note, Service, Vuln
 from sner.server.utils import yaml_dump
 
 
@@ -266,3 +267,33 @@ home_netranges_ipv6: ['::1/128']
 
     planner = Planner(config)
     assert len(planner.dump_targets()) == 1
+
+
+def test_storage_loader_nuclei(app, queue_factory, job_completed_factory):  # pylint: disable=unused-argument
+    """mock completed job with real data"""
+
+    queue = queue_factory.create(
+        name='nuclei.rolling.test',
+        config=yaml_dump({'module': 'nuclei', 'args': 'arg1'}),
+    )
+    job_completed_factory.create(
+        queue=queue,
+        make_output=Path('tests/server/data/nuclei_movingtarget_phase1.job.zip').read_bytes()
+    )
+
+    loader = StorageLoaderNuclei(queue.name)
+    loader.run()
+
+    assert Host.query.count() == 1
+    assert Vuln.query.filter_by(xtype='nuclei.http-missing-security-headers.x-frame-options').count() == 1
+    assert Vuln.query.filter_by(xtype='nuclei.readme-md').count() == 0
+
+    job_completed_factory.create(
+        queue=queue,
+        make_output=Path('tests/server/data/nuclei_movingtarget_phase2.job.zip').read_bytes()
+    )
+    loader.run()
+
+    assert Host.query.count() == 1
+    assert Vuln.query.filter_by(xtype='nuclei.http-missing-security-headers.x-frame-options').count() == 0
+    assert Vuln.query.filter_by(xtype='nuclei.readme-md').count() == 1

@@ -14,13 +14,14 @@ from time import sleep
 import psycopg2
 from flask import current_app
 from pytimeparse import parse as timeparse
-from sqlalchemy import select
+from sqlalchemy import select, tuple_
 from sqlalchemy.orm.exc import NoResultFound
 from sner.lib import format_host_address, get_nested_key, TerminateContextMixin
 from sner.server.extensions import db
 from sner.server.scheduler.core import enumerate_network, ExclMatcher, JobManager, QueueManager
 from sner.server.scheduler.models import Queue, Job, Target
 from sner.server.storage.core import StorageManager
+from sner.server.storage.models import Host, Vuln
 from sner.server.storage.versioninfo import VersioninfoManager
 
 
@@ -339,6 +340,71 @@ class RebuildVersioninfoMap(Schedule):  # pylint: disable=too-few-public-methods
         current_app.logger.info(f'{self.__class__.__name__} finished')
 
 
+class NetlistEnumNuclei(NetlistEnum):  # pylint: disable=too-few-public-methods
+    """
+    naming stub, reuses logic but has separated run file by class name
+    """
+
+
+class StorageLoaderNuclei(QueueHandler):
+    """load nuclei queue to storage"""
+
+    def run(self):
+        """run"""
+
+        for pidb in self._drain():
+            current_app.logger.info(
+                f'{self.__class__.__name__} loading {len(pidb.hosts)} '
+                f'hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes'
+            )
+
+            StorageManager.import_parsed(pidb)
+
+            # To ware-out old findings, nuclei pipeline requires only full targets
+            # (ip or hostname) to be specified. that yields full list of reported items.
+            #
+            # To prune old data, walk all storage vulns for current targets and if it's
+            # upsert index is not in current job, delete it. This ensures that only
+            # the latest findings are kept.
+            # The upsert index for vuln in storage is handled by import_parsed(pidb) as
+            # (address, name, xtype, proto, port, via_target)
+            #
+            # we could also drop any report item by lowest time for any target in pidb
+            #
+            # we could add flow tags in import_parsed, and prune not-touched item for all targets in pidb
+            # than cleanup tags (would produce too many queries)
+
+            upsert_map = set()
+            targets = set()
+            for vuln in pidb.vulns:
+                # upsert index should be also honored by parser
+                upsert_map.add((
+                    pidb.hosts[vuln.host_iid].address,
+                    vuln.name,
+                    vuln.xtype,
+                    pidb.services[vuln.service_iid].proto if (vuln.service_iid is not None) else None,
+                    pidb.services[vuln.service_iid].port if (vuln.service_iid is not None) else None,
+                    vuln.via_target,
+                ))
+                targets.add((pidb.hosts[vuln.host_iid].address, vuln.via_target))
+
+            vulns_to_check = Vuln.query.join(Host).filter(tuple_(Host.address, Vuln.via_target).in_(targets)).all()
+            for vuln in vulns_to_check:
+                ident = (
+                    vuln.host.address,
+                    vuln.name,
+                    vuln.xtype,
+                    vuln.service.proto if vuln.service else None,
+                    vuln.service.port if vuln.service else None,
+                    vuln.via_target,
+                )
+
+                if ident not in upsert_map:
+                    db.session.delete(vuln)
+
+            db.session.commit()
+
+
 class Planner(TerminateContextMixin):
     """planner"""
 
@@ -359,8 +425,9 @@ class Planner(TerminateContextMixin):
             self._setup_stages()
 
     def _setup_stages(self):
-        """setup plannet stages"""
+        """setup planner stages/pipelines"""
 
+        # default pipeline, heavy to be refactored
         sscan_stages = []
         for sscan_qname in self.config['stage']['service_scan']['queues']:
             self.stages[sscan_qname] = StorageLoader(sscan_qname)
@@ -408,6 +475,16 @@ class Planner(TerminateContextMixin):
 
         if get_nested_key(self.config, 'stage', 'rebuild_versioninfo_map'):
             self.stages['rebuild_versioninfo_map'] = RebuildVersioninfoMap(self.config['stage']['rebuild_versioninfo_map']['schedule'])
+
+        # nuclei pipeline
+        if ('load_nuclei' in self.config['stage']) and ('netlist_enum_nuclei' in self.config['stage']):
+            self.stages['load_nuclei'] = StorageLoaderNuclei(self.config['stage']['load_nuclei']['queue'])
+
+            self.stages['netlist_enum_nuclei'] = NetlistEnumNuclei(
+                self.config['stage']['netlist_enum_nuclei']['schedule'],
+                self.config['home_netranges_ipv4_nuclei'],
+                [self.stages['load_nuclei']]
+            )
 
     def terminate(self, signum=None, frame=None):  # pragma: no cover  pylint: disable=unused-argument  ; running over multiprocessing
         """terminate at once"""

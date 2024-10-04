@@ -78,3 +78,11 @@
 #    load_standalone:
 #      queues:
 #        - dev.dummy
+#
+#    netlist_enum_nuclei:
+#      schedule: 23days
+#      queue: sner.nuclei.rolling
+#
+#    load_nuclei:
+#       queue: sner.nuclei.rolling
+#
