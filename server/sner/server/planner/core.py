@@ -16,8 +16,9 @@ from flask import current_app
 from pytimeparse import parse as timeparse
 from sqlalchemy import select, tuple_
 from sqlalchemy.orm.exc import NoResultFound
-from sner.lib import format_host_address, get_nested_key, TerminateContextMixin
+from sner.lib import format_host_address, TerminateContextMixin
 from sner.server.extensions import db
+from sner.server.planner.config import PlannerConfig
 from sner.server.scheduler.core import enumerate_network, ExclMatcher, JobManager, QueueManager
 from sner.server.scheduler.models import Queue, Job, Target
 from sner.server.storage.core import StorageManager
@@ -232,7 +233,7 @@ class NetlistEnum(Schedule):  # pylint: disable=too-few-public-methods
             stage.task(hosts)
 
 
-class StorageSixEnum(Schedule):  # pylint: disable=too-few-public-methods
+class StorageSixTargetlist(Schedule):  # pylint: disable=too-few-public-methods
     """enumerates v6 networks from storage data"""
 
     def __init__(self, schedule, next_stage):
@@ -369,6 +370,10 @@ class StorageLoaderNuclei(QueueHandler):
             # The upsert index for vuln in storage is handled by import_parsed(pidb) as
             # (address, name, xtype, proto, port, via_target)
             #
+            # During monitoring, any responded vulnerability must be forked it's own copy,
+            # so further updates to the database item would not overwrite existing data
+            # modified by handler?
+            #
             # we could also drop any report item by lowest time for any target in pidb
             #
             # we could add flow tags in import_parsed, and prune not-touched item for all targets in pidb
@@ -418,73 +423,91 @@ class Planner(TerminateContextMixin):
         self.original_signal_handlers = {}
         self.loop = None
         self.oneshot = oneshot
-        self.config = config
-        self.stages = {}
+        self.config = PlannerConfig(**config)
 
-        if self.config.get('stage'):
-            self._setup_stages()
+        self.stages = {}
+        self._setup_stages()
 
     def _setup_stages(self):
         """setup planner stages/pipelines"""
 
-        # default pipeline, heavy to be refactored
-        sscan_stages = []
-        for sscan_qname in self.config['stage']['service_scan']['queues']:
-            self.stages[sscan_qname] = StorageLoader(sscan_qname)
-            sscan_stages.append(self.stages[sscan_qname])
+        if not self.config.pipelines:
+            return
+        plines = self.config.pipelines
 
-        self.stages['service_disco'] = ServiceDisco(
-            self.config['stage']['service_disco']['queue'],
-            sscan_stages
-        )
-
-        self.stages['six_dns_disco'] = SixDisco(
-            self.config['stage']['six_dns_disco']['queue'],
-            self.stages['service_disco'],
-            self.config['home_netranges_ipv6']
-        )
-        self.stages['six_enum_disco'] = SixDisco(
-            self.config['stage']['six_enum_disco']['queue'],
-            self.stages['service_disco']
-        )
-
-        self.stages['netlist_enum'] = NetlistEnum(
-            self.config['stage']['netlist_enum']['schedule'],
-            self.config['home_netranges_ipv4'],
-            [self.stages['service_disco'], self.stages['six_dns_disco']]
-        )
-
-        self.stages['storage_six_enum'] = StorageSixEnum(
-            self.config['stage']['storage_six_enum']['schedule'],
-            self.stages['six_enum_disco']
-        )
-        self.stages['storage_rescan'] = StorageRescan(
-            self.config['stage']['storage_rescan']['schedule'],
-            self.config['stage']['storage_rescan']['host_interval'],
-            self.stages['service_disco'],
-            self.config['stage']['storage_rescan']['service_interval'],
-            sscan_stages
-        )
-
-        if standalones := get_nested_key(self.config, 'stage', 'load_standalone', 'queues'):
-            for qname in standalones:
+        # loads standalone queues
+        if plines.standalone_queues:
+            for qname in plines.standalone_queues.queues:
                 queue = Queue.query.filter_by(name=qname).one()
-                self.stages[f'load_standalone-{queue.id}'] = StorageLoader(qname)
+                self.stages[f'standalone_queue:{queue.name}'] = StorageLoader(queue_name=qname)
 
+        # perform basic discovery and version scanning
+        # netlist -> (service disco | six dns enum) -> service scans
+        if plines.basic_scan:
+            basic_servicescan_stages = []
+            for sscan_qname in plines.basic_scan.service_scan_queues:
+                stage = StorageLoader(queue_name=sscan_qname)
+                self.stages[f"basic_scan:{sscan_qname}"] = stage
+                basic_servicescan_stages.append(stage)
+
+            self.stages['basic_scan:service_disco'] = ServiceDisco(
+                queue_name=plines.basic_scan.service_disco_queue,
+                next_stages=basic_servicescan_stages
+            )
+
+            self.stages['basic_scan:six_dns_disco'] = SixDisco(
+                queue_name=plines.basic_scan.six_dns_disco_queue,
+                next_stage=self.stages['basic_scan:service_disco'],
+                filternets=self.config.basic_nets_ipv6
+            )
+
+            self.stages['basic_scan:netlist'] = NetlistEnum(
+                schedule=plines.basic_scan.netlist_schedule,
+                netlist=self.config.basic_nets_ipv4,
+                next_stages=[
+                    self.stages['basic_scan:service_disco'],
+                    self.stages['basic_scan:six_dns_disco']
+                ]
+            )
+
+        # do basic rescan of hosts and services in storage
+        if plines.basic_rescan:
+            self.stages['storage_rescan'] = StorageRescan(
+                schedule=plines.basic_rescan.schedule,
+                host_interval=plines.basic_rescan.host_interval,
+                servicedisco_stage=self.stages['basic_scan:service_disco'],
+                service_interval=plines.basic_rescan.service_interval,
+                servicescan_stages=basic_servicescan_stages
+            )
+
+        # performs six discovery based on neighbors of known
+        # six hosts. required basic_scan
+        if plines.storage_six_enum:
+            self.stages['storage_six_enum:disco'] = SixDisco(
+                queue_name=plines.storage_six_enum.queue,
+                next_stage=self.stages['basic_scan:service_disco']
+            )
+            self.stages['storage_six_enum:targetlist'] = StorageSixTargetlist(
+                schedule=plines.storage_six_enum.schedule,
+                next_stage=self.stages['storage_six_enum:disco']
+            )
+
+        # perform nuclei scan
+        if plines.nuclei_scan:
+            self.stages['nuclei_scan:load'] = StorageLoaderNuclei(queue_name=plines.nuclei_scan.queue)
+
+            self.stages['nuclei_scan:netlist'] = NetlistEnumNuclei(
+                schedule=plines.nuclei_scan.netlist_schedule,
+                netlist=self.config.nuclei_nets_ipv4,
+                next_stages=[self.stages['nuclei_scan:load']]
+            )
+
+        # do storage cleanup
         self.stages['storage_cleanup'] = StorageCleanup()
 
-        if get_nested_key(self.config, 'stage', 'rebuild_versioninfo_map'):
-            self.stages['rebuild_versioninfo_map'] = RebuildVersioninfoMap(self.config['stage']['rebuild_versioninfo_map']['schedule'])
-
-        # nuclei pipeline
-        if ('load_nuclei' in self.config['stage']) and ('netlist_enum_nuclei' in self.config['stage']):
-            self.stages['load_nuclei'] = StorageLoaderNuclei(self.config['stage']['load_nuclei']['queue'])
-
-            self.stages['netlist_enum_nuclei'] = NetlistEnumNuclei(
-                self.config['stage']['netlist_enum_nuclei']['schedule'],
-                self.config['home_netranges_ipv4_nuclei'],
-                [self.stages['load_nuclei']]
-            )
+        # rebuild versioninfo
+        if plines.rebuild_versioninfo_map:
+            self.stages['rebuild_versioninfo_map'] = RebuildVersioninfoMap(schedule=plines.rebuild_versioninfo_map.schedule)
 
     def terminate(self, signum=None, frame=None):  # pragma: no cover  pylint: disable=unused-argument  ; running over multiprocessing
         """terminate at once"""
@@ -527,7 +550,7 @@ class Planner(TerminateContextMixin):
         blacklist = ExclMatcher(current_app.config['SNER_EXCLUSIONS'])
 
         addrs = []
-        for net in self.config.get('home_netranges_ipv4', []):
+        for net in self.config.basic_nets_ipv4:
             for addr in enumerate_network(net):
                 if not blacklist.match(addr):
                     addrs.append(addr)

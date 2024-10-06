@@ -20,6 +20,7 @@ lxml
 packaging
 passlib
 psycopg2
+pydantic
 pylint
 pyroute2
 pytenable

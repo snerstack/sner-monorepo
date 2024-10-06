@@ -47,42 +47,39 @@
 #
 #
 #planner:
-#  home_netranges_ipv4: []
-#  home_netranges_ipv6: ['::1/128']
-#
-#  stage:
-#    service_scan:
-#      queues:
-#        - 'sner.nmap.serviceversion'
-#
-#    service_disco:
-#      queue: 'sner.nmap.servicedisco'
-#
-#    six_dns_disco:
-#      queue: 'sner.six_dns_discover'
-#
-#    six_enum_disco:
-#      queue: 'sner.six_enum_discover'
-#
-#    netlist_enum:
-#      schedule: 120days
-#
-#    storage_six_enum:
-#      schedule: 90days
-#
-#    storage_rescan:
-#      schedule: 1hour
-#      host_interval: 60days
-#      service_interval: 20days
-#
-#    load_standalone:
+#  basic_nets_ipv4: []
+#  basic_nets_ipv6: ['::1/128']
+#  nuclei_nets_ipv4: []
+#  pipelines:
+#    standalone_queues:
 #      queues:
 #        - dev.dummy
+#        - sner.nuclei
+#    
+#    basic_scan:
+#      netlist_schedule: 5days
+#      service_disco_queue: sner.nmap.servicedisco
+#      six_dns_disco_queue: sner.six_dns_discover
+#      service_scan_queues:
+#        - sner.nmap.serviceversion
+#        - sner.jarm
+#        - sner.nmap.script
 #
-#    netlist_enum_nuclei:
-#      schedule: 23days
+#    basic_rescan:
+#      schedule: 1day
+#      host_interval: 3days
+#      service_interval: 2days
+#
+#    storage_six_enum:
+#      schedule: 2days
+#      queue: sner.six_enum_discover
+#
+#    nuclei_scan:
+#      netlist_schedule: 7days
 #      queue: sner.nuclei.rolling
 #
-#    load_nuclei:
-#       queue: sner.nuclei.rolling
+#    storage_cleanup:
+#      enabled: true
 #
+#    rebuild_versioninfo_map:
+#      schedule: 10minutes

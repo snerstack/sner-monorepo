@@ -23,7 +23,7 @@ from sner.server.planner.core import (
     project_sixenum_targets,
     ServiceDisco,
     SixDisco,
-    StorageSixEnum,
+    StorageSixTargetlist,
     StorageCleanup,
     StorageLoader,
     StorageLoaderNuclei,
@@ -83,13 +83,13 @@ def test_netlistenum(app):  # pylint: disable=unused-argument
     assert dummy.task_args == ['127.0.0.0', '127.0.0.1']
 
 
-def test_storagesixenum(app, host_factory):  # pylint: disable=unused-argument
-    """test StorageSixEnum"""
+def test_storagesixtargetlist(app, host_factory):  # pylint: disable=unused-argument
+    """test StorageSixTargetlist"""
 
     host_factory.create(address='2001:DB8:aa::')
     host_factory.create(address='2001:DB8:bb::')
     dummy = DummyStage()
-    StorageSixEnum('0s', dummy).run()
+    StorageSixTargetlist('0s', dummy).run()
 
     expected = ['sixenum://2001:0db8:00aa:0000:0000:0000:0000:0-ffff', 'sixenum://2001:0db8:00bb:0000:0000:0000:0000:0-ffff']
     assert sorted(dummy.task_args) == sorted(expected)
@@ -180,42 +180,43 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     queue_factory.create(name='sner.six_dns_discover')
     queue_factory.create(name='sner.six_enum_discover')
     queue_factory.create(name='standalone')
+    queue_factory.create(name='sner.nuclei.rolling')
 
     config = yaml.safe_load("""
-home_netranges_ipv4: []
-home_netranges_ipv6: ['::1/128']
+basic_nets_ipv4: []
+basic_nets_ipv6: ['::1/128']
+nuclei_nets_ipv4: []
 
-stage:
-  service_scan:
-    queues:
-      - 'sner.nmap.serviceversion'
+pipelines:
+    standalone_queues:
+      queues:
+        - standalone
 
-  service_disco:
-    queue: 'sner.nmap.servicedisco'
+    basic_scan:
+      netlist_schedule: 5days
+      service_disco_queue: sner.nmap.servicedisco
+      six_dns_disco_queue: sner.six_dns_discover
+      service_scan_queues:
+        - sner.nmap.serviceversion
 
-  six_dns_disco:
-    queue: 'sner.six_dns_discover'
+    basic_rescan:
+      schedule: 1day
+      host_interval: 3days
+      service_interval: 2days
 
-  six_enum_disco:
-    queue: 'sner.six_enum_discover'
+    storage_six_enum:
+      schedule: 2days
+      queue: sner.six_enum_discover
 
-  netlist_enum:
-    schedule: 120days
+    nuclei_scan:
+      netlist_schedule: 5days
+      queue: sner.nuclei.rolling
 
-  storage_six_enum:
-    schedule: 90days
+    storage_cleanup:
+      enabled: true
 
-  storage_rescan:
-    schedule: 1hour
-    host_interval: 60days
-    service_interval: 20days
-
-  load_standalone:
-    queues:
-      - standalone
-
-  rebuild_versioninfo_map:
-    schedule: 1h
+    rebuild_versioninfo_map:
+      schedule: 10minutes
 """)
 
     planner = Planner(config, oneshot=True)
@@ -261,8 +262,8 @@ def test_planner_dumptargets(app):  # pylint: disable=unused-argument
     """test dump targets"""
 
     config = yaml.safe_load("""
-home_netranges_ipv4: ['127.0.0.11/32']
-home_netranges_ipv6: ['::1/128']
+basic_nets_ipv4: ['127.0.0.11/32']
+basic_nets_ipv6: ['::1/128']
 """)
 
     planner = Planner(config)

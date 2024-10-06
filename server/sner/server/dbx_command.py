@@ -109,6 +109,7 @@ def initdata_sner():
         priority=15,
     ))
 
+    # handled by default add-only upsert StorageLoader
     db.session.add(Queue(
         name='sner.nuclei',
         config=yaml_dump({'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'}),
@@ -116,6 +117,7 @@ def initdata_sner():
         priority=15,
     ))
 
+    # handled by nuclei upsert with pruning
     db.session.add(Queue(
         name='sner.nuclei.rolling',
         config=yaml_dump({'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'}),
