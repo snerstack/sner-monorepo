@@ -189,13 +189,13 @@ class Planner(TerminateContextMixin):
         self.log.info('exit')
         return 0
 
-    def dump_targets(self):
+    def dump_targets(self, netlist):
         """dump all available targets, helper for manual sweeps"""
 
         blacklist = ExclMatcher(current_app.config['SNER_EXCLUSIONS'])
 
         addrs = []
-        for net in self.config.basic_nets_ipv4:
+        for net in getattr(self.config, netlist):
             for addr in enumerate_network(net):
                 if not blacklist.match(addr):
                     addrs.append(addr)

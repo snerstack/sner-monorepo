@@ -17,5 +17,5 @@ def test_command_run(runner):
 def test_command_dump_targets(runner):
     """test dump_targets command"""
 
-    result = runner.invoke(command, ['dump_targets'])
+    result = runner.invoke(command, ['dump-targets'])
     assert result.exit_code == 0

@@ -24,10 +24,15 @@ def run(**kwargs):
     Planner(current_app.config['SNER_PLANNER'], kwargs['oneshot']).run()
 
 
-@command.command(name='dump_targets', help='dump all targets respecting exclusions')
+@command.command(name='dump-targets', help='dump all targets respecting exclusions')
 @with_appcontext
-def dump_targets():
+@click.option(
+    '--netlist',
+    type=click.Choice(['basic_nets_ipv4', 'nuclei_nets_ipv4'], case_sensitive=False),
+    default="basic_nets_ipv4"
+)
+def dump_targets(netlist):
     """dump all targets respecting exclusions"""
 
-    if targets := Planner(current_app.config['SNER_PLANNER']).dump_targets():
+    if targets := Planner(current_app.config['SNER_PLANNER']).dump_targets(netlist):
         print("\n".join(targets))

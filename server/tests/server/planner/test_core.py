@@ -68,4 +68,4 @@ basic_nets_ipv6: ['::1/128']
 """)
 
     planner = Planner(config)
-    assert len(planner.dump_targets()) == 1
+    assert len(planner.dump_targets("basic_nets_ipv4")) == 1
