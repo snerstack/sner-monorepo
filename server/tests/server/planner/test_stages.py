@@ -205,7 +205,7 @@ def test_storagerescan_largedataset(runner, queue_factory, host_factory):  # pyl
     assert Target.query.count() == existing_targets_count + Service.query.count()
 
 
-def test_storage_loader_nuclei(app, queue_factory, job_completed_factory):  # pylint: disable=unused-argument
+def test_storage_loader_nuclei(app, queue_factory, job_completed_factory, vuln_factory):  # pylint: disable=unused-argument
     """mock completed job with real data"""
 
     queue = queue_factory.create(
@@ -224,6 +224,10 @@ def test_storage_loader_nuclei(app, queue_factory, job_completed_factory):  # py
     assert Vuln.query.filter_by(xtype='nuclei.http-missing-security-headers.x-frame-options').count() == 1
     assert Vuln.query.filter_by(xtype='nuclei.readme-md').count() == 0
 
+    host = host=Host.query.one()
+    # should not be pruned, not nuclei.* vuln
+    vuln_factory.create(host=host, name="rolling dummy", xtype="dummy", via_target=host.address)
+
     job_completed_factory.create(
         queue=queue,
         make_output=Path('tests/server/data/nuclei_movingtarget_phase2.job.zip').read_bytes()
@@ -233,3 +237,4 @@ def test_storage_loader_nuclei(app, queue_factory, job_completed_factory):  # py
     assert Host.query.count() == 1
     assert Vuln.query.filter_by(xtype='nuclei.http-missing-security-headers.x-frame-options').count() == 0
     assert Vuln.query.filter_by(xtype='nuclei.readme-md').count() == 1
+    assert Vuln.query.filter_by(xtype='dummy').count() == 1

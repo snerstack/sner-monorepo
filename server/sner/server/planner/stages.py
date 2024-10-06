@@ -332,11 +332,10 @@ class StorageLoaderNuclei(QueueHandler):
             # To ware-out old findings, nuclei pipeline requires only full targets
             # (ip or hostname) to be specified. that yields full list of reported items.
             #
-            # To prune old data, walk all storage vulns for current targets and if it's
-            # upsert index is not in current job, delete it. This ensures that only
-            # the latest findings are kept.
-            # The upsert index for vuln in storage is handled by import_parsed(pidb) as
-            # (address, name, xtype, proto, port, via_target)
+            # To prune old data, walk all storage vulns xtype=nuclei.* for current targets (address, via_target)
+            # and if it's upsert index is not in current job, delete it. This ensures that only
+            # the latest findings are kept. The upsert index for vuln in storage is handled by
+            # import_parsed(pidb) as (address, name, xtype, proto, port, via_target)
             #
             # During monitoring, any responded vulnerability must be forked it's own copy,
             # so further updates to the database item would not overwrite existing data
@@ -361,7 +360,10 @@ class StorageLoaderNuclei(QueueHandler):
                 ))
                 targets.add((pidb.hosts[vuln.host_iid].address, vuln.via_target))
 
-            vulns_to_check = Vuln.query.join(Host).filter(tuple_(Host.address, Vuln.via_target).in_(targets)).all()
+            vulns_to_check = Vuln.query.join(Host).filter(
+                tuple_(Host.address, Vuln.via_target).in_(targets),
+                Vuln.xtype.startswith('nuclei.')
+            ).all()
             for vuln in vulns_to_check:
                 ident = (
                     vuln.host.address,
