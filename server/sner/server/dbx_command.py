@@ -122,7 +122,7 @@ def initdata_sner():
         name='sner.nuclei.rolling',
         config=yaml_dump({'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'}),
         group_size=5,
-        priority=15,
+        priority=10,
     ))
 
 
