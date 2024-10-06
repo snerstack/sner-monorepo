@@ -44,4 +44,4 @@ def test_parse_agent_output():
 def test_parse_dns_template_output():
     """test import dns, does not have IP field"""
 
-    ParserModule.parse_path('tests/server/data/parser-nuclei-dns.json')
+    ParserModule.parse_path('tests/server/data/parser-nuclei-dns-dnssec.json')
