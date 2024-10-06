@@ -5,6 +5,8 @@ api functions
 
 from datetime import datetime, timedelta
 
+from flask import current_app
+from pytimeparse import parse as timeparse
 from sqlalchemy import func
 
 from sner.server.extensions import db
@@ -30,7 +32,7 @@ def get_metrics():
         metrics[f'sner_scheduler_queue_targets_total{{name="{queue}"}}'] = targets
     metrics['sner_scheduler_targets_total'] = Target.query.count()
 
-    stale_horizont = datetime.utcnow() - timedelta(days=5)
+    stale_horizont = datetime.utcnow() - timedelta(seconds=timeparse(current_app.config['SNER_METRICS_STALE_HORIZONT']))
     metrics['sner_scheduler_jobs_total{state="running"}'] = Job.query.filter(Job.retval == None, Job.time_start > stale_horizont).count()  # noqa: E501,E711  pylint: disable=singleton-comparison
     metrics['sner_scheduler_jobs_total{state="stale"}'] = Job.query.filter(Job.retval == None, Job.time_start < stale_horizont).count()  # noqa: E501,E711  pylint: disable=singleton-comparison
     metrics['sner_scheduler_jobs_total{state="finished"}'] = Job.query.filter(Job.retval == 0).count()

@@ -103,6 +103,7 @@ DEFAULT_CONFIG = {
     # other sner subsystems
     'SNER_PLANNER': {},
     'SNER_VULNSEARCH': {},
+    'SNER_METRICS_STALE_HORIZONT': '3days',
 
     # smorest api
     'API_TITLE': 'sner4 api',
