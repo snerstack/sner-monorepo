@@ -14,6 +14,7 @@ from sner.server.planner.config import PlannerConfig
 from sner.server.planner.stages import (
     NetlistEnum,
     NetlistEnumNuclei,
+    NetlistSix,
     RebuildVersioninfoMap,
     ServiceDisco,
     SixDisco,
@@ -115,6 +116,12 @@ class Planner(TerminateContextMixin):
                 ]
             )
 
+            self.stages['basic_scan:netlist_six'] = NetlistSix(
+                schedule=plines.basic_scan.netlist_schedule,
+                addrlist=self.config.basic_nets_ipv6_hosts,
+                next_stages=[self.stages['basic_scan:service_disco']]
+            )
+
         # do basic rescan of hosts and services in storage
         if plines.basic_rescan:
             self.stages['storage_rescan'] = StorageRescan(
@@ -144,6 +151,12 @@ class Planner(TerminateContextMixin):
             self.stages['nuclei_scan:netlist'] = NetlistEnumNuclei(
                 schedule=plines.nuclei_scan.netlist_schedule,
                 netlist=self.config.nuclei_nets_ipv4,
+                next_stages=[self.stages['nuclei_scan:load']]
+            )
+
+            self.stages['nuclei_scan:netlist_six'] = NetlistSix(
+                schedule=plines.nuclei_scan.netlist_schedule,
+                addrlist=self.config.nuclei_nets_ipv6_hosts,
                 next_stages=[self.stages['nuclei_scan:load']]
             )
 

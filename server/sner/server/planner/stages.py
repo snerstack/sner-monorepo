@@ -201,6 +201,22 @@ class NetlistEnum(Schedule):  # pylint: disable=too-few-public-methods
             stage.task(hosts)
 
 
+class NetlistSix(Schedule):  # pylint: disable=too-few-public-methods
+    """periodic emit ipv6 targets from simple list"""
+
+    def __init__(self, schedule, addrlist, next_stages):
+        super().__init__(schedule)
+        self.addrlist = addrlist
+        self.next_stages = next_stages
+
+    def _run(self):
+        """run"""
+
+        current_app.logger.info(f'{self.__class__.__name__} enumerated {len(self.addrlist)} hosts')
+        for stage in self.next_stages:
+            stage.task(self.addrlist)
+
+
 class StorageSixTargetlist(Schedule):  # pylint: disable=too-few-public-methods
     """enumerates v6 networks from storage data"""
 
