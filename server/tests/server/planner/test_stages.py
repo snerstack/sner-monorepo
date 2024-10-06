@@ -224,7 +224,7 @@ def test_storage_loader_nuclei(app, queue_factory, job_completed_factory, vuln_f
     assert Vuln.query.filter_by(xtype='nuclei.http-missing-security-headers.x-frame-options').count() == 1
     assert Vuln.query.filter_by(xtype='nuclei.readme-md').count() == 0
 
-    host = host=Host.query.one()
+    host = Host.query.one()
     # should not be pruned, not nuclei.* vuln
     vuln_factory.create(host=host, name="rolling dummy", xtype="dummy", via_target=host.address)
 
