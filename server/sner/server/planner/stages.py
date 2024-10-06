@@ -360,6 +360,7 @@ class StorageLoaderNuclei(QueueHandler):
                 ))
                 targets.add((pidb.hosts[vuln.host_iid].address, vuln.via_target))
 
+            prune_count = 0
             vulns_to_check = Vuln.query.join(Host).filter(
                 tuple_(Host.address, Vuln.via_target).in_(targets),
                 Vuln.xtype.startswith('nuclei.')
@@ -376,5 +377,7 @@ class StorageLoaderNuclei(QueueHandler):
 
                 if ident not in upsert_map:
                     db.session.delete(vuln)
+                    prune_count += 1
 
             db.session.commit()
+            current_app.logger.info(f'{self.__class__.__name__} prunned {prune_count} old vulns')

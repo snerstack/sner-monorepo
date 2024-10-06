@@ -41,7 +41,15 @@ def test_parse_agent_output():
     assert pidb.services[vuln.service_iid].port == 22
 
 
-def test_parse_dns_template_output():
-    """test import dns, does not have IP field"""
+def test_parse_missing_report_ip():
+    """test report which does not have IP field"""
 
     ParserModule.parse_path('tests/server/data/parser-nuclei-dns-dnssec.json')
+
+
+def test_parse_output_dns_ptr():
+    """test import dns ptr"""
+
+    pidb = ParserModule.parse_path('tests/server/data/parser-nuclei-dns-ptr.json')
+    assert pidb.hosts[0].hostname == "nucleix.localdomain.test"
+    assert pidb.hosts[1].hostname == "nuclei6.localdomain.test"

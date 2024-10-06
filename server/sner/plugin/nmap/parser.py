@@ -53,8 +53,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
             host_data = {}
             if ihost.hostnames:
                 host_data['hostnames'] = list(set(ihost.hostnames))
-                if not host_data.get('hostname'):
-                    host_data['hostname'] = host_data['hostnames'][0]
+                host_data['hostname'] = host_data['hostnames'][0]
 
             for osmatch in [item for item in ihost.os_match_probabilities() if item.accuracy == 100]:
                 host_data['os'] = osmatch.name
