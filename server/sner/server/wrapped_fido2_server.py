@@ -18,5 +18,5 @@ class WrappedFido2Server(Fido2Server):
 
     def init_app(self, app):
         """reinitialize on factory pattern config request"""
-        ident = app.config['SERVER_NAME'] or getfqdn()
+        ident = app.config['SNER_WEBAUTHN_RP_HOSTNAME'] or app.config['SERVER_NAME'] or getfqdn()
         super().__init__(PublicKeyCredentialRpEntity(name=f'{ident} RP', id=ident))
