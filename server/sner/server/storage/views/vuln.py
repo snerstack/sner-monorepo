@@ -9,7 +9,7 @@ from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
 from flask import current_app, jsonify, request, Response
-from sqlalchemy import cast, func, literal_column, or_, select, union
+from sqlalchemy import cast, func, literal_column, null, or_, select, union
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
@@ -257,27 +257,37 @@ def vuln_multicopy_endpoints_json_route():
     # does not use serverSide processing/sorting (unlinke other DT instances
     # host/list, service/list, ...)
 
-    query = select(
-        func.jsonb_build_object('host_id', Host.id).label("endpoint_id"),
-        Host.address.label("host_address"),
-        Host.hostname.label("host_hostname"),
-    ).select_from(Host)
-    hosts = [
-        {**x._asdict(), "service_proto": None, "service_port": None, "service_info": None}
-        for x in db.session.execute(query).all()
+    cols_hosts = [
+        ColumnDT(func.jsonb_build_object('host_id', Host.id), mData="endpoint_id"),
+        ColumnDT(Host.address, mData="host_address"),
+        ColumnDT(Host.hostname, mData="host_hostname"),
+        ColumnDT(null(), mData="service_proto"),
+        ColumnDT(null(), mData="service_port"),
+        ColumnDT(null(), mData="service_info"),
     ]
+    query = db.session.query().select_from(Host)
+    hosts = DataTables(request.values.to_dict(), query, cols_hosts).output_result()
 
-    query = select(
-        func.jsonb_build_object('host_id', Host.id, 'service_id', Service.id).label("endpoint_id"),
-        Host.address.label("host_address"),
-        Host.hostname.label("host_hostname"),
-        Service.proto.label("service_proto"),
-        Service.port.label("service_port"),
-        Service.info.label("service_info")
-    ).select_from(Service).outerjoin(Host, Service.host_id == Host.id)
-    services = [x._asdict() for x in db.session.execute(query).all()]
+    cols_services = [
+        ColumnDT(func.jsonb_build_object('host_id', Host.id, 'service_id', Service.id).label("endpoint_id"), mData="endpoint_id"),
+        ColumnDT(Host.address, mData="host_address"),
+        ColumnDT(Host.hostname, mData="host_hostname"),
+        ColumnDT(Service.proto, mData="service_proto"),
+        ColumnDT(Service.port, mData="service_port"),
+        ColumnDT(Service.info, mData="service_info"),
+    ]
+    query = db.session.query().select_from(Service).outerjoin(Host, Service.host_id == Host.id)
+    services = DataTables(request.values.to_dict(), query, cols_services).output_result()
 
-    data = {"data": sorted(hosts + services, key=lambda item: (item['host_address'], item['service_port'] or 0))}
+    data = {
+        "draw": hosts["draw"],
+        "recordsTotal": hosts["recordsTotal"] + services["recordsTotal"],
+        "recordsFiltered": hosts["recordsFiltered"] + services["recordsFiltered"],
+        "data": sorted(
+            hosts["data"] + services["data"],
+            key=lambda item: (item['host_address'], item['service_port'] or 0)
+        )
+    }
     return Response(json.dumps(data, cls=SnerJSONEncoder), mimetype='application/json')
 
 

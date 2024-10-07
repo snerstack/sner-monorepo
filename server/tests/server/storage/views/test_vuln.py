@@ -187,7 +187,10 @@ def test_vuln_multicopy_json_route(cl_operator, vuln, host_factory):
 def test_vuln_multicopy_endpoints_json_route(cl_operator, vuln):
     """vuln multicopy endpoints route test"""
 
-    response = cl_operator.post(url_for('storage.vuln_multicopy_endpoints_json_route'))
+    response = cl_operator.post(
+        url_for('storage.vuln_multicopy_endpoints_json_route'),
+        {'draw': 1, 'start': 0, 'length': 1}
+    )
     assert response.status_code == HTTPStatus.OK
     response_data = json.loads(response.body.decode('utf-8'))
     assert vuln.host.hostname in response_data['data'][0]["host_hostname"]
