@@ -120,6 +120,7 @@ const data = {
         'MSFT-MS17-013',
         'MSKB-4012598',
         'SN-1',
+        'SV-1',
         'invalid-ref',
         '',
       ],

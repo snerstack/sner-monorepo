@@ -10,9 +10,11 @@ from http import HTTPStatus
 from datatables import ColumnDT, DataTables
 from flask import current_app, jsonify, request, Response
 from sqlalchemy import cast, func, literal_column, null, or_, select, union
+from sqlalchemy.orm import make_transient
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
+from sner.server.forms import ButtonForm
 from sner.server.storage.core import (
     model_annotate,
     filtered_vuln_tags_query,
@@ -357,3 +359,28 @@ def vuln_addedit_viatarget_autocomplete_route():
     data = items
 
     return jsonify(data)
+
+
+@blueprint.route('/vuln/duplicate/<int:vuln_id>', methods=['POST'])
+@session_required('operator')
+def vuln_duplicate_route(vuln_id):
+    """
+    duplicate vuln route
+
+    when handling rolling vulns (like nuclei), operator might want to update vuln data,
+    nuclei rescanning process could destroy the updates or delete vuln. to corectly handle
+    such cases, operator should duplicate vulnerability and use the copy.
+    """
+
+    form = ButtonForm()
+    if form.validate_on_submit():
+        if vuln := Vuln.query.get(vuln_id):
+            make_transient(vuln)
+            vuln.xtype = f"duplicate.{vuln.xtype}"
+            vuln.refs = vuln.refs + [f"SV-{vuln.id}"]
+            vuln.id = None
+            db.session.add(vuln)
+            db.session.commit()
+            return jsonify({"new_id": vuln.id}), HTTPStatus.OK
+
+    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)

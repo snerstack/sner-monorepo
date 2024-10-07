@@ -50,6 +50,8 @@ export const getUrlForRef = (ref: string): string => {
       return 'https://support.microsoft.com/en-us/help/' + id
     case 'SN':
       return '/storage/note/view/' + id
+    case 'SV':
+      return '/storage/vuln/view/' + id
     default:
       return '#'
   }

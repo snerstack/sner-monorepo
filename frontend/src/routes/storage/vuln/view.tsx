@@ -18,6 +18,7 @@ import EditButton from '@/components/buttons/EditButton'
 import MultiCopyButton from '@/components/buttons/MultiCopyButton'
 import TagButton from '@/components/buttons/TagButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
+import DuplicateButton from '@/components/buttons/DuplicateButton'
 
 const vulnDataElement = (vulnData: string) => {
   try {
@@ -120,6 +121,7 @@ const VulnViewPage = () => {
             </a>
             <EditButton url={`/storage/vuln/edit/${vuln.id}`} className="btn btn-outline-primary" />
             <MultiCopyButton url={`/storage/vuln/multicopy/${vuln.id}`} className="btn btn-outline-primary" />
+            <DuplicateButton url={urlFor(`/backend/storage/vuln/duplicate/${vuln.id}`)} className="btn btn-outline-primary" />
           </div>{' '}
           <DeleteButton url={urlFor(`/backend/storage/vuln/delete/${vuln.id}`)} className="btn btn-outline-primary" />
         </div>

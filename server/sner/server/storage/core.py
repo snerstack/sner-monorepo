@@ -96,7 +96,8 @@ def url_for_ref(ref):
         'MSF': lambda d: 'https://www.rapid7.com/db/?q=' + d,
         'MSFT': lambda d: 'https://technet.microsoft.com/en-us/security/bulletin/' + d,
         'MSKB': lambda d: 'https://support.microsoft.com/en-us/help/' + d,
-        'SN': lambda d: 'SN-' + d
+        'SN': lambda d: 'SN-' + d,
+        'SV': lambda d: 'SV-' + d
     }
     try:
         matched = ref.split('-', maxsplit=1)

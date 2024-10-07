@@ -234,3 +234,13 @@ def test_vuln_addedit_viatarget_autocomplete_route(cl_operator, service, vuln_fa
     assert response.status_code == HTTPStatus.OK
     response_data = json.loads(response.body.decode('utf-8'))
     assert vuln.via_target in response_data[0]
+
+
+def test_vuln_duplicate_route(cl_operator, vuln):
+    """vuln duplicate test"""
+
+    cl_operator.post(url_for('storage.vuln_duplicate_route', vuln_id=vuln.id))
+    assert Vuln.query.count() == 2
+
+    response = cl_operator.post(url_for('storage.vuln_duplicate_route', vuln_id=33), expect_errors=True)
+    assert response.status_code == HTTPStatus.BAD_REQUEST
