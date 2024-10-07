@@ -309,6 +309,24 @@ def test_v2_public_storage_servicelist_route(api_user, service_factory):
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
+def test_v2_public_storage_vulnlist_route_nonetworks(api_user_nonetworks, vuln):  # pylint: disable=unused-argument
+    """test queries with user without any configured networks"""
+
+    response = api_user_nonetworks.post_json(url_for('api.v2_public_storage_vulnlist_route'), {'filter': f'Vuln.name=="{vuln.name}"'})
+    assert not response.json
+
+
+def test_v2_public_storage_vulnlist_route(api_user, vuln_factory):
+    """test public vulnlist api"""
+
+    vuln_factory.create(name="dummy1")
+    vuln_factory.create(name="dummy2")
+
+    response = api_user.post_json(url_for('api.v2_public_storage_vulnlist_route'), {'filter': 'Vuln.name=="dummy2"'})
+    assert api_schema.PublicVulnlistSchema(many=True).load(response.json)
+    assert len(response.json) == 1
+
+
 def test_v2_public_storage_notelist_route_nonetworks(api_user_nonetworks, note):  # pylint: disable=unused-argument
     """test queries with user without any configured networks"""
 

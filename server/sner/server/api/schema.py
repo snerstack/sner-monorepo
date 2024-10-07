@@ -135,6 +135,12 @@ class PublicRangeSchema(BaseSchema):
     services = fields.List(fields.Nested(PublicRangeServiceSchema))
 
 
+class PublicListArgsSchema(BaseSchema):
+    """public * list args schema"""
+
+    filter = fields.String()
+
+
 class PublicServicelistArgsSchema(BaseSchema):
     """public service list args schema"""
 
@@ -150,6 +156,28 @@ class PublicServicelistSchema(BaseSchema):
     port = fields.Integer()
     state = fields.String()
     info = fields.String()
+
+
+class PublicVulnlistSchema(BaseSchema):
+    """public vuln list schema"""
+
+    address = fields.String()
+    hostname = fields.String()
+    proto = fields.String()
+    port = fields.Integer()
+    via_target = fields.String()
+    name = fields.String()
+    xtype = fields.String()
+    severity = fields.String()
+    descr = fields.String()
+    data = fields.String()
+    refs = fields.List(fields.String)
+    tags = fields.List(fields.String)
+    comment = fields.String()
+    created = fields.DateTime()
+    modified = fields.DateTime()
+    rescan_time = fields.DateTime()
+    import_time = fields.DateTime()
 
 
 class PublicNotelistArgsSchema(BaseSchema):

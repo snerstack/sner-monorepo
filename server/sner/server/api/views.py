@@ -18,7 +18,7 @@ from sner.server.auth.core import apikey_required
 from sner.server.extensions import db
 from sner.server.scheduler.core import SchedulerService, SchedulerServiceBusyException
 from sner.server.scheduler.models import Job
-from sner.server.storage.models import Host, Note, Service, Versioninfo, Vulnsearch
+from sner.server.storage.models import Host, Note, Service, Vuln, Versioninfo, Vulnsearch
 from sner.server.storage.version_parser import is_in_version_range, parse as versionspec_parse
 from sner.server.utils import filter_query
 
@@ -173,6 +173,50 @@ def v2_public_storage_servicelist_route(args):
 
     query = filter_query(query, args.get('filter'))
     current_app.logger.info(f'api.public storage servicelist {args}')
+    return query
+
+
+@blueprint.route("/v2/public/storage/vulnlist", methods=['POST'])
+@apikey_required("user")
+@blueprint.arguments(api_schema.PublicListArgsSchema)
+@blueprint.response(HTTPStatus.OK, api_schema.PublicVulnlistSchema(many=True))
+@blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
+def v2_public_storage_vulnlist_route(args):
+    """filtered vulnlist (see sner.server.sqlafilter for syntax)"""
+
+    if not current_user.api_networks:
+        return []
+
+    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
+    query = (
+        db.session.query()
+        .select_from(Vuln)
+        .outerjoin(Host, Vuln.host_id == Host.id)
+        .outerjoin(Service, Vuln.service_id == Service.id)
+        .add_columns(
+            Host.address,
+            Host.hostname,
+            Service.proto,
+            Service.port,
+            Vuln.via_target,
+            Vuln.name,
+            Vuln.xtype,
+            Vuln.severity,
+            Vuln.descr,
+            Vuln.data,
+            Vuln.refs,
+            Vuln.tags,
+            Vuln.comment,
+            Vuln.created,
+            Vuln.modified,
+            Vuln.rescan_time,
+            Vuln.import_time,
+        )
+        .filter(or_(*restrict))
+    )
+
+    query = filter_query(query, args.get("filter"))
+    current_app.logger.info(f"api.public storage vulnlist {args}")
     return query
 
 
