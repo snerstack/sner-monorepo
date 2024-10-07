@@ -305,6 +305,10 @@ def test_v2_public_storage_servicelist_route(api_user, service_factory):
     assert api_schema.PublicServicelistSchema(many=True).load(response.json)
     assert len(response.json) == 1
 
+
+def test_v2_public_storage_servicelist_route_filterqueryerror(api_user):
+    """test public servicelist api, triggers FilterQueryError app handler"""
+
     response = api_user.post_json(url_for('api.v2_public_storage_servicelist_route'), {'filter': 'invalid'}, status='*')
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
@@ -344,9 +348,6 @@ def test_v2_public_storage_notelist_route(api_user, note_factory):
     assert api_schema.PublicNotelistSchema(many=True).load(response.json)
     assert len(response.json) == 1
 
-    response = api_user.post_json(url_for('api.v2_public_storage_notelist_route'), {'filter': 'invalid'}, status='*')
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-
 
 def test_v2_public_storage_versioninfo_route_nonetworks(api_user_nonetworks, versioninfo):  # pylint: disable=unused-argument
     """test queries with user without any configured networks"""
@@ -370,9 +371,6 @@ def test_v2_public_storage_versioninfo_route(api_user, versioninfo):  # pylint: 
     response = api_user.post_json(url_for('api.v2_public_storage_versioninfo_route'), {'product': 'dummy', 'versionspec': '<1.0'})
     assert len(response.json) == 0
 
-    response = api_user.post_json(url_for('api.v2_public_storage_versioninfo_route'), {'filter': 'invalid'}, status='*')
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-
 
 def test_v2_public_storage_vulnsearch_route_nonetworks(api_user_nonetworks, vulnsearch):  # pylint: disable=unused-argument
     """test queries with user without any configured networks"""
@@ -387,6 +385,3 @@ def test_v2_public_storage_vulnsearch_route(api_user, vulnsearch):  # pylint: di
     response = api_user.post_json(url_for('api.v2_public_storage_vulnsearch_route'))
     assert api_schema.PublicVulnsearchSchema(many=True).load(response.json)
     assert len(response.json) == 1
-
-    response = api_user.post_json(url_for('api.v2_public_storage_vulnsearch_route'), {'filter': 'invalid'}, status='*')
-    assert response.status_code == HTTPStatus.BAD_REQUEST
