@@ -109,9 +109,9 @@ class Stage(ABC):  # pylint: disable=too-few-public-methods
 class Schedule(Stage):  # pylint: disable=too-few-public-methods
     """schedule base"""
 
-    def __init__(self, schedule):
+    def __init__(self, schedule, lockname):
         self.schedule = schedule
-        self.lastrun_path = Path(f'{current_app.config["SNER_VAR"]}/lastrun.{self.__class__.__name__}')
+        self.lastrun_path = Path(f'{current_app.config["SNER_VAR"]}/lastrun.{lockname}')
 
     def run(self):
         """run only on configured schedule"""
@@ -185,8 +185,8 @@ class DummyStage(Stage):  # pylint: disable=too-few-public-methods
 class NetlistEnum(Schedule):  # pylint: disable=too-few-public-methods
     """periodic host discovery via list of ipv4 networks"""
 
-    def __init__(self, schedule, netlist, next_stages):
-        super().__init__(schedule)
+    def __init__(self, schedule, lockname, netlist, next_stages):
+        super().__init__(schedule, lockname)
         self.netlist = netlist
         self.next_stages = next_stages
 
@@ -201,11 +201,11 @@ class NetlistEnum(Schedule):  # pylint: disable=too-few-public-methods
             stage.task(hosts)
 
 
-class NetlistSix(Schedule):  # pylint: disable=too-few-public-methods
+class NetlistSimple(Schedule):  # pylint: disable=too-few-public-methods
     """periodic emit ipv6 targets from simple list"""
 
-    def __init__(self, schedule, addrlist, next_stages):
-        super().__init__(schedule)
+    def __init__(self, schedule, lockname, addrlist, next_stages):
+        super().__init__(schedule, lockname)
         self.addrlist = addrlist
         self.next_stages = next_stages
 
@@ -220,8 +220,8 @@ class NetlistSix(Schedule):  # pylint: disable=too-few-public-methods
 class StorageSixTargetlist(Schedule):  # pylint: disable=too-few-public-methods
     """enumerates v6 networks from storage data"""
 
-    def __init__(self, schedule, next_stage):
-        super().__init__(schedule)
+    def __init__(self, schedule, lockname, next_stage):
+        super().__init__(schedule, lockname)
         self.next_stage = next_stage
 
     def _run(self):
@@ -235,8 +235,8 @@ class StorageSixTargetlist(Schedule):  # pylint: disable=too-few-public-methods
 class StorageRescan(Schedule):  # pylint: disable=too-few-public-methods
     """storage rescan"""
 
-    def __init__(self, schedule, host_interval, servicedisco_stage, service_interval, servicescan_stages):  # pylint: disable=too-many-arguments
-        super().__init__(schedule)
+    def __init__(self, schedule, lockname, host_interval, servicedisco_stage, service_interval, servicescan_stages):  # noqa: E501  pylint: disable=too-many-arguments,line-too-long
+        super().__init__(schedule, lockname)
         self.host_interval = host_interval
         self.servicedisco_stage = servicedisco_stage
         self.service_interval = service_interval
@@ -323,12 +323,6 @@ class RebuildVersioninfoMap(Schedule):  # pylint: disable=too-few-public-methods
 
         VersioninfoManager.rebuild()
         current_app.logger.info(f'{self.__class__.__name__} finished')
-
-
-class NetlistEnumNuclei(NetlistEnum):  # pylint: disable=too-few-public-methods
-    """
-    naming stub, reuses logic but has separated run file by class name
-    """
 
 
 class StorageLoaderNuclei(QueueHandler):

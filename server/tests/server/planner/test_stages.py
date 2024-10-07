@@ -73,9 +73,9 @@ def test_netlistenum(app):  # pylint: disable=unused-argument
     """test NetlistEnum"""
 
     dummy = DummyStage()
-    NetlistEnum('600s', ['127.0.0.0/31'], [dummy]).run()
+    NetlistEnum(schedule='600s', lockname='dummylock', netlist=['127.0.0.0/31'], next_stages=[dummy]).run()
     # trigger schedule timing code, must not affect output stages
-    NetlistEnum('600s', ['127.0.0.0/31'], [dummy]).run()
+    NetlistEnum(schedule='600s', lockname='dummylock', netlist=['127.0.0.0/31'], next_stages=[dummy]).run()
 
     assert dummy.task_count == 1
     assert dummy.task_args == ['127.0.0.0', '127.0.0.1']
@@ -87,7 +87,7 @@ def test_storagesixtargetlist(app, host_factory):  # pylint: disable=unused-argu
     host_factory.create(address='2001:DB8:aa::')
     host_factory.create(address='2001:DB8:bb::')
     dummy = DummyStage()
-    StorageSixTargetlist('0s', dummy).run()
+    StorageSixTargetlist(schedule='0s', lockname='dummylock', next_stage=dummy).run()
 
     expected = ['sixenum://2001:0db8:00aa:0000:0000:0000:0000:0-ffff', 'sixenum://2001:0db8:00bb:0000:0000:0000:0000:0-ffff']
     assert sorted(dummy.task_args) == sorted(expected)
@@ -100,7 +100,14 @@ def test_storagerescan(app, host_factory, service_factory, queue_factory):  # py
     service_factory.create(host=host_factory.create(address='::1'))
     sdisco_dummy = DummyStage()
     sscan_dummy = DummyStage()
-    StorageRescan('0s', '0s', sdisco_dummy, '0s', [sscan_dummy]).run()
+    StorageRescan(
+        schedule='0s',
+        lockname='dummylock',
+        host_interval='0s',
+        servicedisco_stage=sdisco_dummy,
+        service_interval='0s',
+        servicescan_stages=[sscan_dummy]
+    ).run()
 
     assert len(sdisco_dummy.task_args) == 2
     assert len(sscan_dummy.task_args) == 2
@@ -110,7 +117,11 @@ def test_sixdiscoqueuehandler(app, job_completed_sixenumdiscover):  # pylint: di
     """test SixDiscoQueueHandle"""
 
     dummy = DummyStage()
-    SixDisco(job_completed_sixenumdiscover.queue.name, dummy, ['127.0.0.0/24', '::1/128']).run()
+    SixDisco(
+        queue_name=job_completed_sixenumdiscover.queue.name,
+        next_stage=dummy,
+        filternets=['127.0.0.0/24', '::1/128']
+    ).run()
 
     assert dummy.task_count == 1
     assert '::1' in dummy.task_args
@@ -120,7 +131,7 @@ def test_servicedisco(app, job_completed_nmap):  # pylint: disable=unused-argume
     """test ServiceDisco"""
 
     dummy = DummyStage()
-    ServiceDisco(job_completed_nmap.queue.name, [dummy]).run()
+    ServiceDisco(queue_name=job_completed_nmap.queue.name, next_stages=[dummy]).run()
 
     assert dummy.task_count == 1
     assert len(dummy.task_args) == 5
@@ -130,7 +141,7 @@ def test_servicedisco(app, job_completed_nmap):  # pylint: disable=unused-argume
 def test_storageloader(app, job_completed_nmap):  # pylint: disable=unused-argument
     """test test_stage_StandaloneQueues"""
 
-    StorageLoader(job_completed_nmap.queue.name).run()
+    StorageLoader(queue_name=job_completed_nmap.queue.name).run()
 
     assert Host.query.count() == 1
     assert Service.query.count() == 6
@@ -146,7 +157,7 @@ def test_storageloader_invalidjobs(app, queue_factory, job_completed_factory):  
     assert Job.query.count() == 2
 
     dummy = DummyStage()
-    ServiceDisco(queue.name, [dummy]).run()
+    ServiceDisco(queue_name=queue.name, next_stages=[dummy]).run()
 
     assert job.retval == 1000
     assert Job.query.count() == 1
@@ -156,7 +167,7 @@ def test_queuehandler_nxqueue(app, job_completed_nmap):  # pylint: disable=unuse
     """test exception handling"""
 
     with pytest.raises(ValueError):
-        StorageLoader('nx queue')
+        StorageLoader(queue_name='nx queue')
 
 
 def test_storagecleanup(app, host_factory, service_factory):  # pylint: disable=unused-argument
@@ -199,8 +210,18 @@ def test_storagerescan_largedataset(runner, queue_factory, host_factory):  # pyl
 
     db.session.expire_all()
 
-    dummy = ServiceDisco('queue1', [DummyStage()])
-    StorageRescan('0s', '0s', dummy, '0s', [dummy]).run()
+    dummy = ServiceDisco(
+        queue_name='queue1',
+        next_stages=[DummyStage()]
+    )
+    StorageRescan(
+        schedule='0s',
+        lockname='dummylock',
+        host_interval='0s',
+        servicedisco_stage=dummy,
+        service_interval='0s',
+        servicescan_stages=[dummy]
+    ).run()
 
     assert Target.query.count() == existing_targets_count + Service.query.count()
 
@@ -217,7 +238,7 @@ def test_storage_loader_nuclei(app, queue_factory, job_completed_factory, vuln_f
         make_output=Path('tests/server/data/nuclei_movingtarget_phase1.job.zip').read_bytes()
     )
 
-    loader = StorageLoaderNuclei(queue.name)
+    loader = StorageLoaderNuclei(queue_name=queue.name)
     loader.run()
 
     assert Host.query.count() == 1

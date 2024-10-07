@@ -13,8 +13,7 @@ from sner.server.extensions import db
 from sner.server.planner.config import PlannerConfig
 from sner.server.planner.stages import (
     NetlistEnum,
-    NetlistEnumNuclei,
-    NetlistSix,
+    NetlistSimple,
     RebuildVersioninfoMap,
     ServiceDisco,
     SixDisco,
@@ -109,6 +108,7 @@ class Planner(TerminateContextMixin):
 
             self.stages['basic_scan:netlist'] = NetlistEnum(
                 schedule=plines.basic_scan.netlist_schedule,
+                lockname="basic_scan__netlist",
                 netlist=self.config.basic_nets_ipv4,
                 next_stages=[
                     self.stages['basic_scan:service_disco'],
@@ -116,8 +116,9 @@ class Planner(TerminateContextMixin):
                 ]
             )
 
-            self.stages['basic_scan:netlist_six'] = NetlistSix(
+            self.stages['basic_scan:netlist_six'] = NetlistSimple(
                 schedule=plines.basic_scan.netlist_schedule,
+                lockname="basic_scan__netlist_six",
                 addrlist=self.config.basic_nets_ipv6_hosts,
                 next_stages=[self.stages['basic_scan:service_disco']]
             )
@@ -126,6 +127,7 @@ class Planner(TerminateContextMixin):
         if plines.basic_rescan:
             self.stages['storage_rescan'] = StorageRescan(
                 schedule=plines.basic_rescan.schedule,
+                lockname='storage_rescan',
                 host_interval=plines.basic_rescan.host_interval,
                 servicedisco_stage=self.stages['basic_scan:service_disco'],
                 service_interval=plines.basic_rescan.service_interval,
@@ -141,6 +143,7 @@ class Planner(TerminateContextMixin):
             )
             self.stages['storage_six_enum:targetlist'] = StorageSixTargetlist(
                 schedule=plines.storage_six_enum.schedule,
+                lockname='storage_six_enum__targetlist',
                 next_stage=self.stages['storage_six_enum:disco']
             )
 
@@ -148,14 +151,16 @@ class Planner(TerminateContextMixin):
         if plines.nuclei_scan:
             self.stages['nuclei_scan:load'] = StorageLoaderNuclei(queue_name=plines.nuclei_scan.queue)
 
-            self.stages['nuclei_scan:netlist'] = NetlistEnumNuclei(
+            self.stages['nuclei_scan:netlist'] = NetlistEnum(
                 schedule=plines.nuclei_scan.netlist_schedule,
+                lockname='nuclei_scan__netlist',
                 netlist=self.config.nuclei_nets_ipv4,
                 next_stages=[self.stages['nuclei_scan:load']]
             )
 
-            self.stages['nuclei_scan:netlist_six'] = NetlistSix(
+            self.stages['nuclei_scan:netlist_six'] = NetlistSimple(
                 schedule=plines.nuclei_scan.netlist_schedule,
+                lockname='nuclei_scan__netlist_six',
                 addrlist=self.config.nuclei_nets_ipv6_hosts,
                 next_stages=[self.stages['nuclei_scan:load']]
             )
@@ -165,7 +170,10 @@ class Planner(TerminateContextMixin):
 
         # rebuild versioninfo
         if plines.rebuild_versioninfo_map:
-            self.stages['rebuild_versioninfo_map'] = RebuildVersioninfoMap(schedule=plines.rebuild_versioninfo_map.schedule)
+            self.stages['rebuild_versioninfo_map'] = RebuildVersioninfoMap(
+                schedule=plines.rebuild_versioninfo_map.schedule,
+                lockname='rebuild_versioninfo_map'
+            )
 
     def terminate(self, signum=None, frame=None):  # pragma: no cover  pylint: disable=unused-argument  ; running over multiprocessing
         """terminate at once"""
