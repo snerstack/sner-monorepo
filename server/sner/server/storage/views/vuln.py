@@ -14,7 +14,6 @@ from sqlalchemy.orm import make_transient
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
-from sner.server.forms import ButtonForm
 from sner.server.storage.core import (
     model_annotate,
     filtered_vuln_tags_query,
@@ -372,15 +371,11 @@ def vuln_duplicate_route(vuln_id):
     such cases, operator should duplicate vulnerability and use the copy.
     """
 
-    form = ButtonForm()
-    if form.validate_on_submit():
-        if vuln := Vuln.query.get(vuln_id):
-            make_transient(vuln)
-            vuln.xtype = f"duplicate.{vuln.xtype}"
-            vuln.refs = vuln.refs + [f"SV-{vuln.id}"]
-            vuln.id = None
-            db.session.add(vuln)
-            db.session.commit()
-            return jsonify({"new_id": vuln.id}), HTTPStatus.OK
-
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    vuln = Vuln.query.get(vuln_id)
+    make_transient(vuln)
+    vuln.xtype = f"duplicate.{vuln.xtype}"
+    vuln.refs = vuln.refs + [f"SV-{vuln.id}"]
+    vuln.id = None
+    db.session.add(vuln)
+    db.session.commit()
+    return jsonify({"new_id": vuln.id}), HTTPStatus.OK

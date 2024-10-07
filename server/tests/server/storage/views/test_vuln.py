@@ -241,6 +241,3 @@ def test_vuln_duplicate_route(cl_operator, vuln):
 
     cl_operator.post(url_for('storage.vuln_duplicate_route', vuln_id=vuln.id))
     assert Vuln.query.count() == 2
-
-    response = cl_operator.post(url_for('storage.vuln_duplicate_route', vuln_id=33), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST

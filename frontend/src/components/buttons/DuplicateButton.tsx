@@ -1,5 +1,5 @@
 import httpClient from '@/lib/httpClient'
-import axios from 'axios'
+import { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -15,7 +15,7 @@ const DuplicateButton = ({ url, className }: { url: string, className?: string }
       /* c8 ignore next 5 */
     } catch (err) {
       console.error("Duplicate error", err)
-      const message = axios.isAxiosError(err) ? (err.response?.data as ErrorResponse).error?.message : "Unknown error"
+      const message = ((err as AxiosError).response?.data as ErrorResponse)?.error?.message ?? "Unknown error"
       toast.error(`Duplicate error, ${message}`)
     }
   }
