@@ -91,16 +91,6 @@ def v2_stats_prometheus_route():
     return Response(get_metrics(), mimetype='text/plain')
 
 
-@blueprint.route('/v2/public/storage/host', methods=['GET'])
-@apikey_required('user')
-@blueprint.arguments(api_schema.PublicHostArgsSchema, location='query')
-@blueprint.response(HTTPStatus.OK, api_schema.PublicHostSchema)
-def v2_public_storage_host_route_get(args):
-    """DEPRECATED host data by address"""
-
-    return _storage_host_api(args)
-
-
 @blueprint.route('/v2/public/storage/host', methods=['POST'])
 @apikey_required('user')
 @blueprint.arguments(api_schema.PublicHostArgsSchema)
@@ -135,17 +125,6 @@ def _storage_host_api(args):
     }
     current_app.logger.info(f'api.public storage host {args}')
     return host_data
-
-
-@blueprint.route('/v2/public/storage/range', methods=['GET'])
-@apikey_required('user')
-@blueprint.arguments(api_schema.PublicRangeArgsSchema, location='query')
-@blueprint.response(HTTPStatus.OK, api_schema.PublicRangeSchema(many=True))
-@blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
-def v2_public_storage_range_route_get(args):
-    """DEPRECATED list of hosts by cidr with simplified data"""
-
-    return _storage_range_api(args)
 
 
 @blueprint.route('/v2/public/storage/range', methods=['POST'])
