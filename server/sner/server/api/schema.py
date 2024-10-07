@@ -136,13 +136,7 @@ class PublicRangeSchema(BaseSchema):
 
 
 class PublicListArgsSchema(BaseSchema):
-    """public * list args schema"""
-
-    filter = fields.String()
-
-
-class PublicServicelistArgsSchema(BaseSchema):
-    """public service list args schema"""
+    """public *list args schema"""
 
     filter = fields.String()
 
@@ -178,12 +172,6 @@ class PublicVulnlistSchema(BaseSchema):
     modified = fields.DateTime()
     rescan_time = fields.DateTime()
     import_time = fields.DateTime()
-
-
-class PublicNotelistArgsSchema(BaseSchema):
-    """public note list args schema"""
-
-    filter = fields.String()
 
 
 class PublicNotelistSchema(BaseSchema):
@@ -227,12 +215,6 @@ class PublicVersioninfoSchema(BaseSchema):
     # user data
     tags = fields.List(fields.String)
     comment = fields.String()
-
-
-class PublicVulnsearchArgsSchema(BaseSchema):
-    """public vulnsearch list args schema"""
-
-    filter = fields.String()
 
 
 class PublicVulnsearchSchema(BaseSchema):

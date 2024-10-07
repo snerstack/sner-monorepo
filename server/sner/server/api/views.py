@@ -152,7 +152,7 @@ def _storage_range_api(args):
 
 @blueprint.route('/v2/public/storage/servicelist', methods=['POST'])
 @apikey_required('user')
-@blueprint.arguments(api_schema.PublicServicelistArgsSchema)
+@blueprint.arguments(api_schema.PublicListArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.PublicServicelistSchema(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
 def v2_public_storage_servicelist_route(args):
@@ -222,7 +222,7 @@ def v2_public_storage_vulnlist_route(args):
 
 @blueprint.route("/v2/public/storage/notelist", methods=['POST'])
 @apikey_required("user")
-@blueprint.arguments(api_schema.PublicNotelistArgsSchema)
+@blueprint.arguments(api_schema.PublicListArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.PublicNotelistSchema(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
 def v2_public_storage_notelist_route(args):
@@ -292,7 +292,7 @@ def v2_public_storage_versioninfo_route(args):
 
 @blueprint.route("/v2/public/storage/vulnsearch", methods=["POST"])
 @apikey_required("user")
-@blueprint.arguments(api_schema.PublicVulnsearchArgsSchema)
+@blueprint.arguments(api_schema.PublicListArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.PublicVulnsearchSchema(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
 def v2_public_storage_vulnsearch_route(args):
