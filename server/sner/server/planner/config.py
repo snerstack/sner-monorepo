@@ -66,15 +66,18 @@ class PlannerConfig(BaseModel):
 
     Attributes:
         basic_nets_ipv4: List of IPv4 networks to scan.
-        basic_hosts_ipv6: List of IPv6 (or single) addresses to scan.
-        nuclei_nets_ipv4: List of IPv4 networks to scan with Nuclei.
-        nuclei_hosts_ipv6: List of IPv6 addresses (or single) to scan with Nuclei.
+        basic_targets: List of targets to scan, list not enumerated.
         filter_nets_ipv6: List of all valid IPv6 addresses used as filters in discoveries.
+        nuclei_nets_ipv4: List of IPv4 networks to scan; nuclei pipeline
+        nuclei_targets: List of targets to scan, list, not enumerated; nuclei pipeline
         pipelines: Pipelines configuration, if any.
     """
+
     basic_nets_ipv4: List[str] = []
-    basic_hosts_ipv6: List[str] = []
-    nuclei_nets_ipv4: List[str] = []
-    nuclei_hosts_ipv6: List[str] = []
+    basic_targets: List[str] = []
     filter_nets_ipv6: List[str] = []
+
+    nuclei_nets_ipv4: List[str] = []
+    nuclei_targets: List[str] = []
+
     pipelines: Optional[Pipelines] = None

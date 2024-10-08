@@ -13,7 +13,7 @@ from sner.server.extensions import db
 from sner.server.planner.config import PlannerConfig
 from sner.server.planner.stages import (
     NetlistEnum,
-    NetlistSimple,
+    NetlistTargets,
     RebuildVersioninfoMap,
     ServiceDisco,
     SixDisco,
@@ -116,10 +116,10 @@ class Planner(TerminateContextMixin):
                 ]
             )
 
-            self.stages['basic_scan:netlist_six'] = NetlistSimple(
+            self.stages['basic_scan:netlist_targets'] = NetlistTargets(
                 schedule=plines.basic_scan.netlist_schedule,
-                lockname="basic_scan__netlist_six",
-                addrlist=self.config.basic_hosts_ipv6,
+                lockname="basic_scan__netlist_targets",
+                targets=self.config.basic_targets,
                 next_stages=[self.stages['basic_scan:service_disco']]
             )
 
@@ -159,10 +159,10 @@ class Planner(TerminateContextMixin):
                 next_stages=[self.stages['nuclei_scan:load']]
             )
 
-            self.stages['nuclei_scan:netlist_six'] = NetlistSimple(
+            self.stages['nuclei_scan:netlist_targets'] = NetlistTargets(
                 schedule=plines.nuclei_scan.netlist_schedule,
-                lockname='nuclei_scan__netlist_six',
-                addrlist=self.config.nuclei_hosts_ipv6,
+                lockname='nuclei_scan__netlist_targets',
+                targets=self.config.nuclei_targets,
                 next_stages=[self.stages['nuclei_scan:load']]
             )
 
