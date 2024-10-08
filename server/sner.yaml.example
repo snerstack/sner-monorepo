@@ -48,10 +48,10 @@
 #
 #planner:
 #  basic_nets_ipv4: []
-#  basic_nets_ipv6_hosts: []
-#  basic_nets_ipv6: ['::1/128']
+#  basic_hosts_ipv6: []
 #  nuclei_nets_ipv4: []
-#  nuclei_nets_ipv6_hosts: []
+#  nuclei_hosts_ipv6: []
+#  filter_nets_ipv6: ['::1/128']
 #  pipelines:
 #    standalone_queues:
 #      queues:

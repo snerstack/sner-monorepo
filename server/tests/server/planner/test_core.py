@@ -20,9 +20,8 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
 
     config = yaml.safe_load("""
 basic_nets_ipv4: []
-basic_nets_ipv6: ['::1/128']
 nuclei_nets_ipv4: []
-
+filter_nets_ipv6: ['::1/128']
 pipelines:
     standalone_queues:
       queues:
@@ -64,7 +63,7 @@ def test_planner_dumptargets(app):  # pylint: disable=unused-argument
 
     config = yaml.safe_load("""
 basic_nets_ipv4: ['127.0.0.11/32']
-basic_nets_ipv6: ['::1/128']
+filter_nets_ipv6: ['::1/128']
 """)
 
     planner = Planner(config)

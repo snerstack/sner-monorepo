@@ -103,7 +103,7 @@ class Planner(TerminateContextMixin):
             self.stages['basic_scan:six_dns_disco'] = SixDisco(
                 queue_name=plines.basic_scan.six_dns_disco_queue,
                 next_stage=self.stages['basic_scan:service_disco'],
-                filternets=self.config.basic_nets_ipv6
+                filternets=self.config.filter_nets_ipv6
             )
 
             self.stages['basic_scan:netlist'] = NetlistEnum(
@@ -119,7 +119,7 @@ class Planner(TerminateContextMixin):
             self.stages['basic_scan:netlist_six'] = NetlistSimple(
                 schedule=plines.basic_scan.netlist_schedule,
                 lockname="basic_scan__netlist_six",
-                addrlist=self.config.basic_nets_ipv6_hosts,
+                addrlist=self.config.basic_hosts_ipv6,
                 next_stages=[self.stages['basic_scan:service_disco']]
             )
 
@@ -139,7 +139,8 @@ class Planner(TerminateContextMixin):
         if plines.storage_six_enum:
             self.stages['storage_six_enum:disco'] = SixDisco(
                 queue_name=plines.storage_six_enum.queue,
-                next_stage=self.stages['basic_scan:service_disco']
+                next_stage=self.stages['basic_scan:service_disco'],
+                filternets=self.config.filter_nets_ipv6
             )
             self.stages['storage_six_enum:targetlist'] = StorageSixTargetlist(
                 schedule=plines.storage_six_enum.schedule,
@@ -161,7 +162,7 @@ class Planner(TerminateContextMixin):
             self.stages['nuclei_scan:netlist_six'] = NetlistSimple(
                 schedule=plines.nuclei_scan.netlist_schedule,
                 lockname='nuclei_scan__netlist_six',
-                addrlist=self.config.nuclei_nets_ipv6_hosts,
+                addrlist=self.config.nuclei_hosts_ipv6,
                 next_stages=[self.stages['nuclei_scan:load']]
             )
 
