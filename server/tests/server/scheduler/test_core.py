@@ -10,6 +10,7 @@ import pytest
 import yaml
 from flask import current_app
 
+from sner.server.dbx_command import QueuePrio
 from sner.server.extensions import db
 from sner.server.scheduler.core import enumerate_network, ExclMatcher, QueueManager, SchedulerService, sixenum_target_boundaries
 from sner.server.scheduler.models import Heatmap, Job, Readynet
@@ -201,3 +202,43 @@ def test_schedulerservice_heatmapcheck(app, target):  # pylint: disable=unused-a
     Job.query.filter(Job.id == assignment['id']).delete()
     db.session.commit()
     assert not SchedulerService.heatmap_check()
+
+
+def test_schedulerservice_capsrouting(app, queue_factory, target_factory):  # pylint: disable=unused-argument
+    """
+    test scheduler service queue routing for agents with caps
+
+    queue with no reqs can be run on any agent, queue.reqs [] is contained by agent.caps [any]
+    agents with no caps can run any queue
+
+    # pool0 (dummy, pentest) = queue.reqs []
+    planned to any agent by priority
+
+    # pool1 (sner) = agent.caps [default, testssl], queue.reqs [default], queue.prio normal
+    general sner workload, can also work on slow queues
+
+    # pool2 (testssl)= agent.caps [testssl], queue.reqs [testssl], prio low
+    dedicated (small pool) for slow workload (ensure throughtput), but must have
+    low priority so it will be backfill for default pool
+    """
+
+    qsner_pool1_normal = queue_factory.create(name="sner.normal", reqs=['default'], priority=QueuePrio.NORMAL)
+    qsner_pool1_prio = queue_factory.create(name="sner.high", reqs=['default'], priority=QueuePrio.HIGH)
+    qsner_pool2 = queue_factory.create(name="sner.pooly", reqs=['testssl'], priority=QueuePrio.LOW)
+
+    target_factory.create(queue=qsner_pool1_normal, target='normal')
+    target_factory.create(queue=qsner_pool1_prio, target='prio')
+    target_factory.create(queue=qsner_pool2, target='pool2')
+    target_factory.create(queue=qsner_pool2, target='pool2')
+
+    assignment = SchedulerService.job_assign(None, agent_caps=['default', 'testssl'])
+    assert assignment['targets'] == ['prio']
+
+    assignment = SchedulerService.job_assign(None, agent_caps=['testssl'])
+    assert assignment['targets'] == ['pool2']
+
+    assignment = SchedulerService.job_assign(None, agent_caps=['default', 'testssl'])
+    assert assignment['targets'] == ['normal']
+
+    assignment = SchedulerService.job_assign(None, agent_caps=['default', 'testssl'])
+    assert assignment['targets'] == ['pool2']

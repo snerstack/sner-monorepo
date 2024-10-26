@@ -461,12 +461,13 @@ class SchedulerService:
         ).scalars().all()
 
     @staticmethod
-    def _get_assignment_queue(queue_name, client_caps):
+    def _get_assignment_queue(queue_name, agent_caps):
         """
         select queue for target assignment accounting client request constraints
 
         * queue must be active
-        * client capabilities (caps) must conform queue requirements (reqs)
+        * agent capabilities (caps) must conform queue requirements (reqs)
+          no capabilities means all reqs (default agent handles anything)
         * queue must have any rate-limit available targets/networks enqueued
         * must suffice client requested parameters (name)
         * queue is selected with priority in respect, but at random on same prio levels
@@ -477,11 +478,15 @@ class SchedulerService:
 
         query = select(Queue).filter(
             Queue.active,
-            Queue.reqs.contained_by(cast(client_caps, pg_ARRAY(db.String))),
             Queue.id.in_(select(distinct(Readynet.queue_id)))
         )
+
+        if agent_caps:
+            query = query.filter(Queue.reqs.contained_by(cast(agent_caps, pg_ARRAY(db.String))))
+
         if queue_name:
             query = query.filter(Queue.name == queue_name)
+
         query = query.order_by(Queue.priority.desc(), func.random())
         return db.session.execute(query).scalars().first()
 
@@ -524,7 +529,7 @@ class SchedulerService:
         return RandomTarget(target_id, target, readynet_hashval)
 
     @classmethod
-    def job_assign(cls, queue_name, client_caps):
+    def job_assign(cls, queue_name, agent_caps):
         """
         assign job for agent
 
@@ -543,7 +548,7 @@ class SchedulerService:
         assigned_targets = []
         blacklist = ExclMatcher(current_app.config['SNER_EXCLUSIONS'])
 
-        queue = cls._get_assignment_queue(queue_name, client_caps)
+        queue = cls._get_assignment_queue(queue_name, agent_caps)
         if not queue:
             SchedulerService.release_lock()
             return assignment

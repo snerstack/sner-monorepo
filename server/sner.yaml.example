@@ -39,8 +39,8 @@
 #  apikey: 'generateit'
 #  queue: 'a_queue_name'
 #  caps:
-#    - capability1
-#    - capability2
+#    - default
+#    - testssl
 #  backoff_time: 5.0
 #  net_timeout: 300
 #  oneshot: False
@@ -57,6 +57,7 @@
 #      queues:
 #        - dev.dummy
 #        - sner.nuclei
+#        - sner.testssl
 #    
 #    basic_scan:
 #      netlist_schedule: 5days

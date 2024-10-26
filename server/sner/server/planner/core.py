@@ -1,6 +1,9 @@
 # This file is part of sner4 project governed by MIT license, see the LICENSE.txt file.
 """
 planner core
+
+planner handles processing of queues acording to defined pipelines. queues has system of priorities
+and requirements so they can be handled by pools of agents with respective capabilities
 """
 
 import logging

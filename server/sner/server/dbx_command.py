@@ -3,6 +3,7 @@
 sner.server db command module
 """
 
+from enum import IntEnum
 import json
 import os
 import shutil
@@ -39,105 +40,119 @@ def db_remove():
             os.unlink(file_object_path)
 
 
-def initdata_sner():
-    """initialize sner queues"""
-
-    db.session.add(Queue(
-        name='sner.six_dns_discover',
-        config=yaml_dump({'module': 'six_dns_discover', 'delay': 1}),
-        group_size=1000,
-        priority=10,
-    ))
-
-    db.session.add(Queue(
-        name='sner.six_enum_discover',
-        config=yaml_dump({'module': 'six_enum_discover', 'rate': 100}),
-        group_size=5,
-        priority=10,
-    ))
-
-    db.session.add(Queue(
-        name='sner.nmap.servicedisco',
-        config=yaml_dump({'module': 'nmap', 'args': '-sS --top-ports 10000 -Pn', 'timing_perhost': 2}),
-        group_size=1000,
-        priority=10,
-    ))
-
-    db.session.add(Queue(
-        name='sner.nmap.serviceversion',
-        config=yaml_dump({'module': 'manymap', 'args': '-sV --version-intensity 4 -O -Pn', 'delay': 1}),
-        group_size=50,
-        priority=15,
-    ))
-
-    db.session.add(Queue(
-        name='sner.nmap.script',
-        config=yaml_dump({
-            'module': 'manymap',
-            'args': '-sS --script default,http-headers,ldap-rootdse,ssl-enum-ciphers,ssh-auth-methods --script-timeout 10m -Pn',
-            'delay': 5
-        }),
-        group_size=50,
-        priority=15,
-    ))
-
-    db.session.add(Queue(
-        name='sner.nmap.udpscan',
-        config=yaml_dump({'module': 'nmap', 'args': '-sU -F -sV --version-intensity 0 -Pn --open --max-retries 1'}),
-        group_size=50,
-        priority=15,
-    ))
-
-    db.session.add(Queue(
-        name='sner.quicmap',
-        config=yaml_dump({'module': 'quicmap', 'args': '--ports 1-1024'}),
-        group_size=50,
-        priority=15,
-    ))
-
-    db.session.add(Queue(
-        name='sner.jarm',
-        config=yaml_dump({'module': 'jarm', 'delay': 1}),
-        group_size=50,
-        priority=15,
-    ))
-
-    db.session.add(Queue(
-        name='sner.testssl',
-        config=yaml_dump({'module': 'testssl', 'delay': 1}),
-        group_size=10,
-        priority=15,
-    ))
-
-    # handled by default add-only upsert StorageLoader
-    db.session.add(Queue(
-        name='sner.nuclei',
-        config=yaml_dump({'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'}),
-        group_size=5,
-        priority=15,
-    ))
-
-    # handled by nuclei upsert with pruning
-    db.session.add(Queue(
-        name='sner.nuclei.rolling',
-        config=yaml_dump({'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'}),
-        group_size=5,
-        priority=10,
-    ))
+class QueuePrio(IntEnum):
+    """queue priority enum"""
+    HIGH = 15
+    NORMAL = 10
+    LOW = 5
 
 
-def initdata_pentest():
-    """initialize pentest data"""
+def initdata_prod():
+    """Initialize sner queues"""
 
-    db.session.add(Queue(
-        name='pentest.nmap.fullsynscan',
-        config=yaml_dump({
-            'module': 'nmap',
-            'args': '-sS -A -p1-65535 -Pn  --max-retries 3 --script-timeout 10m --min-hostgroup 20 --min-rate 900 --max-rate 1500'
-        }),
-        group_size=20,
-        priority=10,
-    ))
+    definitions = [
+        # standalone_queues
+        {
+            'name': 'sner.nuclei',
+            'config': {'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'},
+            'group_size': 5,
+            'priority': QueuePrio.NORMAL,
+            'reqs': ['default'],
+        },
+        {
+            'name': 'sner.testssl',
+            'config': {'module': 'testssl', 'delay': 1},
+            'group_size': 10,
+            'priority': QueuePrio.LOW,
+            'reqs': ['testssl'],
+        },
+
+        # basic scan
+        {
+            'name': 'sner.nmap.servicedisco',
+            'config': {'module': 'nmap', 'args': '-sS --top-ports 10000 -Pn', 'timing_perhost': 2},
+            'group_size': 1000,
+            'priority': QueuePrio.NORMAL,
+            'reqs': ['default'],
+        },
+        {
+            'name': 'sner.six_dns_discover',
+            'config': {'module': 'six_dns_discover', 'delay': 1},
+            'group_size': 1000,
+            'priority': QueuePrio.NORMAL,
+            'reqs': ['default'],
+        },
+        {
+            'name': 'sner.nmap.serviceversion',
+            'config': {'module': 'manymap', 'args': '-sV --version-intensity 4 -O -Pn', 'delay': 1},
+            'group_size': 50,
+            'priority': QueuePrio.HIGH,
+            'reqs': ['default'],
+        },
+        {
+            'name': 'sner.jarm',
+            'config': {'module': 'jarm', 'delay': 1},
+            'group_size': 50,
+            'priority': QueuePrio.HIGH,
+            'reqs': ['default'],
+        },
+        {
+            'name': 'sner.nmap.script',
+            'config': {
+                'module': 'manymap',
+                'args': '-sS --script default,http-headers,ldap-rootdse,ssl-enum-ciphers,ssh-auth-methods --script-timeout 10m -Pn',
+                'delay': 5
+            },
+            'group_size': 50,
+            'priority': QueuePrio.HIGH,
+            'reqs': ['default'],
+        },
+
+        # storage_six_enum
+        {
+            'name': 'sner.six_enum_discover',
+            'config': {'module': 'six_enum_discover', 'rate': 100},
+            'group_size': 5,
+            'priority': QueuePrio.NORMAL,
+            'reqs': ['default'],
+        },
+
+        # nuclei_scan
+        {
+            'name': 'sner.nuclei.rolling',
+            'config': {'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'},
+            'group_size': 5,
+            'priority': QueuePrio.NORMAL,
+            'reqs': ['default'],
+        },
+
+        # other queues
+        {
+            'name': 'sner.nmap.udpscan',
+            'config': {'module': 'nmap', 'args': '-sU -F -sV --version-intensity 0 -Pn --open --max-retries 1'},
+            'group_size': 50,
+            'priority': QueuePrio.HIGH,
+        },
+        {
+            'name': 'sner.quicmap',
+            'config': {'module': 'quicmap', 'args': '--ports 1-1024'},
+            'group_size': 50,
+            'priority': QueuePrio.HIGH,
+        },
+        {
+            'name': 'pentest.nmap.fullsynscan',
+            'config': {
+                'module': 'nmap',
+                'args': '-sS -A -p1-65535 -Pn --max-retries 3 --script-timeout 10m --min-hostgroup 20 --min-rate 900 --max-rate 1500'
+            },
+            'group_size': 20,
+            'priority': QueuePrio.NORMAL,
+        }
+    ]
+
+    for queue_info in definitions:
+        queue_info['config'] = yaml_dump(queue_info['config'])
+        db.session.add(Queue(**queue_info))
 
 
 def initdata_dev():
@@ -147,7 +162,7 @@ def initdata_dev():
         name='dev.dummy',
         config=yaml_dump({'module': 'dummy', 'args': '--dummyparam 1'}),
         group_size=2,
-        priority=10,
+        priority=QueuePrio.NORMAL,
         active=True
     )
     db.session.add(queue)
@@ -350,8 +365,7 @@ def initdata():  # pylint: disable=too-many-statements
 
     db.session.add(User(username='user1', active=True, roles=['user', 'operator', 'admin']))
     initdata_dev()
-    initdata_sner()
-    initdata_pentest()
+    initdata_prod()
     db.session.commit()
 
 

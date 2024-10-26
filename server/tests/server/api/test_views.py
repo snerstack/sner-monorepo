@@ -102,40 +102,6 @@ def test_v2_scheduler_job_assign_route_locked(api_agent, target):  # pylint: dis
     assert not response.json
 
 
-def test_v2_scheduler_job_assign_route_caps(api_agent, queue_factory, target_factory):  # pylint: disable=unused-argument
-    """test assignment with client capabilities"""
-
-    queue1 = queue_factory.create(name='q1', priority=20)
-    queue2 = queue_factory.create(name='q2', reqs=['req1'], priority=10)
-    queue3 = queue_factory.create(name='q3', reqs=['req1', 'req2'], priority=10)
-    queue4 = queue_factory.create(name='q4', reqs=['req1', 'req2'], priority=30)
-
-    target_factory.create(queue=queue1, target='t1')
-    target_factory.create(queue=queue2, target='t2')
-    target_factory.create(queue=queue3, target='t3')
-    target_factory.create(queue=queue4, target='t4')
-
-    # should receive t1; priority
-    response = api_agent.post_json(url_for('api.v2_scheduler_job_assign_route'), {'caps': ['req1']})
-    assert 't1' in response.json['targets']
-
-    # should receive response-nowork; specific queue name request
-    response = api_agent.post_json(url_for('api.v2_scheduler_job_assign_route'), {'caps': ['req1'], 'queue': 'q1'})
-    assert not response.json
-
-    # should receive t2; q1 empty, caps match q2 reqs
-    response = api_agent.post_json(url_for('api.v2_scheduler_job_assign_route'), {'caps': ['req1']})
-    assert 't2' in response.json['targets']
-
-    # should receive t4; priority
-    response = api_agent.post_json(url_for('api.v2_scheduler_job_assign_route'), {'caps': ['req1', 'req2', 'req3']})
-    assert 't4' in response.json['targets']
-
-    # should receive t3; reqs match
-    response = api_agent.post_json(url_for('api.v2_scheduler_job_assign_route'), {'caps': ['req1', 'req2', 'req3']})
-    assert 't3' in response.json['targets']
-
-
 def test_v2_scheduler_job_output_route(api_agent, job):
     """job output route test"""
 
