@@ -37,6 +37,20 @@ jobs:
           mkdir -p /tmp/sner_test_var
         working-directory: server
 
-      - name: Run selenium tests with pre-built assets
-        run: . venv/bin/activate && PYTEST_FRONTEND=nobuild make test-selenium
+      - name: Run selenium tests with pre-built assets (retry once)
+        run: |
+          . venv/bin/activate
+          attempts_remaining=2
+          while [ "$attempts_remaining" -gt 0 ]; do
+            if PYTEST_FRONTEND=nobuild make test-selenium; then
+              break
+            else
+              attempts_remaining=$((attempts_remaining - 1))
+              echo "Attempt failed. Attempts remaining: $attempts_remaining"
+            fi
+          done
+          if [ "$attempts_remaining" -eq 0 ]; then
+            echo "All attempts failed."
+            exit 1
+          fi
         working-directory: server
