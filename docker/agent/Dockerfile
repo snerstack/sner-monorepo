@@ -38,4 +38,4 @@ RUN apt-get clean \
 
 COPY docker/agent/sner-agent /usr/local/bin/sner-agent
 RUN chmod +x /usr/local/bin/sner-agent
-ENTRYPOINT ["/usr/local/bin/sner-agent"]
+ENTRYPOINT ["/opt/sner/server/venv/bin/python3", "/opt/sner/server/bin/agent"]
