@@ -59,7 +59,7 @@ def storage_import(path, parser, **kwargs):
             else:
                 StorageManager.import_parsed(parser_impl.parse_path(item), list(kwargs['addtag']))
         except Exception as exc:  # pylint: disable=broad-except
-            current_app.logger.warning(f'failed to parse {item}, {exc}')
+            current_app.logger.warning(f'failed to parse {item}, {exc.__repr__()}')
 
     sys.exit(0)
 

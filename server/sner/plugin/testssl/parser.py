@@ -4,16 +4,20 @@ sner agent testssl
 """
 
 import json
-from pathlib import Path
+import logging
 import re
 import subprocess
 import sys
 from collections import defaultdict
+from pathlib import Path
 from pprint import pprint
 from zipfile import ZipFile
 
 from sner.lib import file_from_zip, is_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
+
+
+logger = logging.getLogger(__name__)
 
 
 class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
@@ -44,51 +48,62 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
         if not isinstance(json_data['scanTime'], int):  # pragma: no cover
             return pidb
 
-        result = json_data['scanResult'][0]
-        host_address = result['ip']
-        via_target = result['targetHost']
-        service_port = int(result['port'])
-        service_proto = 'tcp'
+        for result in json_data['scanResult']:
+            if 'ip' not in result:
+                logger.warning('missing ip field, %s', result)
+                continue
 
-        note_data = {
-            'output': data,
-            'data': {},
-            'findings': defaultdict(list)
-        }
+            host_address = result['ip'].strip('[]')
+            via_target = result['targetHost']
+            service_port = int(result['port'])
+            service_proto = 'tcp'
 
-        for section_name, section_data in result.items():
-            if isinstance(section_data, list):
-                # pop findings for section
-                for finding in section_data:
-                    if finding['id'] == 'cert':
-                        # rewrap certificate data
-                        tmp = finding['finding'].split(' ')
-                        tmp = ' '.join(tmp[:2]) + '\n' + '\n'.join(tmp[2:-2]) + '\n' + ' '.join(tmp[-2:])
-                        # parse as auror tool
-                        try:
-                            note_data['cert_txt'] = subprocess.run(
-                                ['openssl', 'x509', '-text', '-noout'],
-                                input=tmp, check=True, capture_output=True, text=True
-                            ).stdout
-                        except subprocess.CalledProcessError as exc:  # pragma: no cover
-                            note_data['cert_txt'] = str(exc)
+            note_data = {
+                'output': data,
+                'data': {},
+                'findings': defaultdict(list)
+            }
+            for section_name, section_data in result.items():
+                note_data = cls._process_section(note_data, section_name, section_data)
 
-                    if finding['severity'] not in cls.FINDINGS_IGNORE:
-                        note_data['findings'][section_name].append(finding)
-            else:
-                # pop scalar data
-                note_data['data'][section_name] = section_data
-
-        pidb.upsert_note(
-            host_address,
-            'testssl',
-            service_proto,
-            service_port,
-            via_target,
-            data=json.dumps(note_data)
-        )
+            pidb.upsert_note(
+                host_address,
+                'testssl',
+                service_proto,
+                service_port,
+                via_target,
+                data=json.dumps(note_data)
+            )
 
         return pidb
+
+    @classmethod
+    def _process_section(cls, note_data, section_name, section_data):
+        """proces section data as auror"""
+
+        if isinstance(section_data, list):
+            # pop findings for section
+            for finding in section_data:
+                if finding['id'] == 'cert':
+                    # rewrap certificate data
+                    tmp = finding['finding'].split(' ')
+                    tmp = ' '.join(tmp[:2]) + '\n' + '\n'.join(tmp[2:-2]) + '\n' + ' '.join(tmp[-2:])
+                    # parse as auror tool
+                    try:
+                        note_data['cert_txt'] = subprocess.run(
+                            ['openssl', 'x509', '-text', '-noout'],
+                            input=tmp, check=True, capture_output=True, text=True
+                        ).stdout
+                    except subprocess.CalledProcessError as exc:  # pragma: no cover
+                        note_data['cert_txt'] = str(exc)
+
+                if finding['severity'] not in cls.FINDINGS_IGNORE:
+                    note_data['findings'][section_name].append(finding)
+        else:
+            # pop scalar data
+            note_data['data'][section_name] = section_data
+
+        return note_data
 
 
 if __name__ == '__main__':  # pragma: no cover
