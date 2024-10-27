@@ -12,21 +12,22 @@ import DeleteButton from '@/components/buttons/DeleteButton'
 import ReconcileButton from '@/components/buttons/ReconcileButton'
 import RepeatButton from '@/components/buttons/RepeatButton'
 
+
+const renderAssignmentCell = (cell: Node, data: string) => {
+  const maxLength = 100
+  renderElements(
+    cell,
+    <div title={data}>{data.length >= maxLength ? `${data.substring(0, maxLength - 1)}...` : data}</div>
+  )
+}
+
 const JobListPage = () => {
   const [searchParams] = useSearchParams()
 
   const columns = [
     Column('id'),
     Column('queue_name'),
-    Column('assignment', {
-      render: (data: string) => {
-        if (data.length >= 100) {
-          return data.substring(0, 99) + '...'
-        }
-
-        return data
-      },
-    }),
+    Column('assignment', { createdCell: renderAssignmentCell }),
     Column('retval'),
     Column('time_start'),
     Column('time_end'),
