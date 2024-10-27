@@ -4,6 +4,7 @@ sner agent testssl
 """
 
 import json
+from pathlib import Path
 import re
 import subprocess
 import sys
@@ -11,7 +12,7 @@ from collections import defaultdict
 from pprint import pprint
 from zipfile import ZipFile
 
-from sner.lib import file_from_zip
+from sner.lib import file_from_zip, is_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
 
 
@@ -19,7 +20,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
     """testssl parser"""
 
     ARCHIVE_PATHS = r'output\-[0-9]+\.json'
-    FINDINGS_IGNORE = ['OK', 'INFO']
+    FINDINGS_IGNORE = []
 
     @classmethod
     def parse_path(cls, path):
@@ -27,11 +28,13 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
 
         pidb = ParsedItemsDb()
 
-        with ZipFile(path) as fzip:
-            for fname in filter(lambda x: re.match(cls.ARCHIVE_PATHS, x), fzip.namelist()):
-                pidb = cls._parse_data(file_from_zip(path, fname).decode('utf-8'), pidb)
+        if is_zip(path):
+            with ZipFile(path) as fzip:
+                for fname in filter(lambda x: re.match(cls.ARCHIVE_PATHS, x), fzip.namelist()):
+                    pidb = cls._parse_data(file_from_zip(path, fname).decode('utf-8'), pidb)
+            return pidb
 
-        return pidb
+        return cls._parse_data(Path(path).read_text(encoding='utf-8'), pidb)
 
     @classmethod
     def _parse_data(cls, data, pidb):
