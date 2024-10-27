@@ -566,6 +566,8 @@ class SchedulerService:
             assignment = JobManager.create(queue, assigned_targets)
 
         cls.release_lock()
+        if assignment:
+            current_app.logger.info(f'SchedulerService job_assign {assignment["id"]} ({queue.name})')
         return assignment
 
     @classmethod
@@ -584,6 +586,7 @@ class SchedulerService:
             cls.heatmap_pop(cls.hashval(target))
 
         cls.release_lock()
+        current_app.logger.info(f'SchedulerService job_output {job.id} ({job.queue.name})')
 
     @classmethod
     def readynet_recount(cls):
