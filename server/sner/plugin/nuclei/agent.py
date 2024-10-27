@@ -32,9 +32,7 @@ class AgentModule(ModuleBase):
 
         cmd = ['nuclei'] + target_args + shlex.split(assignment['config']['args']) + output_args
 
-        self._execute(cmd, 'output')
-
-        return 0
+        return self._execute(cmd, 'output')
 
     def terminate(self):  # pragma: no cover  ; not tested / running over multiprocessing
         """terminate scanner if running"""

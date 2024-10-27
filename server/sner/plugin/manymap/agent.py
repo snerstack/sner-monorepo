@@ -45,9 +45,10 @@ class AgentModule(ModuleBase):
 
             cmd = ['nmap'] + shlex.split(assignment['config']['args']) + output_args + target_args
             ret |= self._execute(cmd, f'output-{idx}')
-            sleep(assignment['config']['delay'])
 
+            sleep(assignment['config']['delay'])
             if not self.loop:  # pragma: no cover  ; not tested
+                ret |= 2
                 break
 
         return ret

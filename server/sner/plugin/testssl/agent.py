@@ -31,6 +31,7 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
         """run the agent"""
 
         super().run(assignment)
+        ret = 0
 
         for idx, target, proto, host, port in self.enumerate_service_targets(assignment['targets']):
             if proto != 'tcp':
@@ -39,13 +40,14 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
 
             target_args = ['--jsonfile-pretty', f'output-{idx}.json', f'{host}:{port}']
             cmd = ['testssl.sh', '--quiet', '--full', '-6', '--connect-timeout', '5', '--openssl-timeout', '5'] + target_args
-            self._execute(cmd, f'output-{idx}')
+            ret |= self._execute(cmd, f'output-{idx}')
 
             sleep(assignment['config']['delay'])
             if not self.loop:  # pragma: no cover  ; not tested
+                ret |= 2
                 break
 
-        return 0
+        return ret
 
     def terminate(self):  # pragma: no cover  ; not tested / running over multiprocessing
         """terminate scanner if running"""
