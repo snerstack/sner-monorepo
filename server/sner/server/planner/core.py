@@ -9,8 +9,8 @@ and requirements so they can be handled by pools of agents with respective capab
 import logging
 from time import sleep
 
-import psycopg2
 from flask import current_app
+
 from sner.lib import TerminateContextMixin
 from sner.server.extensions import db
 from sner.server.planner.config import PlannerConfig
@@ -197,11 +197,9 @@ class Planner(TerminateContextMixin):
                     try:
                         current_app.logger.debug(f'stage run {name} {stage}')
                         stage.run()
-                    except psycopg2.OperationalError as exc:  # pragma: no cover  ; won't test
-                        current_app.logger.error(f'stage failed, {name} {stage}, {exc}', exc_info=True)
-                        db.session.rollback()
                     except Exception as exc:  # pragma: no cover  ; pylint: disable=broad-except
                         current_app.logger.error(f'stage failed, {name} {stage}, {exc}', exc_info=True)
+                        db.session.rollback()
 
                 if self.oneshot:
                     self.loop = False
