@@ -57,7 +57,6 @@
 #      queues:
 #        - dev.dummy
 #        - sner.nuclei
-#        - sner.testssl
 #    
 #    basic_scan:
 #      netlist_schedule: 5days
@@ -80,6 +79,10 @@
 #    nuclei_scan:
 #      netlist_schedule: 7days
 #      queue: sner.nuclei.rolling
+#
+#    testssl_scan:
+#      schedule: 7days
+#      queue: sner.testssl
 #
 #    storage_cleanup:
 #      enabled: true

@@ -18,7 +18,7 @@ from sner.server.extensions import db
 from sner.server.scheduler.core import enumerate_network, JobManager, QueueManager
 from sner.server.scheduler.models import Queue, Job, Target
 from sner.server.storage.core import StorageManager
-from sner.server.storage.models import Host, Vuln
+from sner.server.storage.models import Host, Service, Vuln
 from sner.server.storage.versioninfo import VersioninfoManager
 
 
@@ -391,3 +391,22 @@ class StorageLoaderNuclei(QueueHandler):
 
             db.session.commit()
             current_app.logger.info(f'{self.__class__.__name__} prunned {prune_count} old vulns')
+
+
+class StorageTestsslTargetlist(Schedule):  # pylint: disable=too-few-public-methods
+    """enumerates testssl targets from storage data"""
+
+    def __init__(self, schedule, lockname, next_stage):
+        super().__init__(schedule, lockname)
+        self.next_stage = next_stage
+
+    def _run(self):
+        """run"""
+
+        targets = [
+            f"{svc.proto}://{format_host_address(svc.host.address)}:{svc.port}"
+            for svc in
+            Service.query.filter(Service.proto == "tcp", Service.port == 443, Service.state.ilike("open:%")).all()
+        ]
+        current_app.logger.info(f'{self.__class__.__name__} projected {len(targets)} targets')
+        self.next_stage.task(targets)

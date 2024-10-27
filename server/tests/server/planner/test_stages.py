@@ -13,6 +13,7 @@ import pytest
 from sner.server.extensions import db
 from sner.server.planner.stages import (
     DummyStage,
+    StorageTestsslTargetlist,
     filter_external_hosts,
     filter_tarpits,
     NetlistEnum,
@@ -259,3 +260,13 @@ def test_storage_loader_nuclei(app, queue_factory, job_completed_factory, vuln_f
     assert Vuln.query.filter_by(xtype='nuclei.http-missing-security-headers.x-frame-options').count() == 0
     assert Vuln.query.filter_by(xtype='nuclei.readme-md').count() == 1
     assert Vuln.query.filter_by(xtype='dummy').count() == 1
+
+
+def test_storage_testssl_targetlist(app, service_factory):  # pylint: disable=unused-argument
+    """test stage"""
+
+    service_factory.create(port=443)
+    dummy = DummyStage()
+
+    StorageTestsslTargetlist('0s', 'lockname', dummy).run()
+    assert dummy.task_count == 1

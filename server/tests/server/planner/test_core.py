@@ -17,6 +17,7 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     queue_factory.create(name='sner.six_enum_discover')
     queue_factory.create(name='standalone')
     queue_factory.create(name='sner.nuclei.rolling')
+    queue_factory.create(name='sner.testssl')
 
     config = yaml.safe_load("""
 basic_nets_ipv4: []
@@ -46,6 +47,10 @@ pipelines:
     nuclei_scan:
       netlist_schedule: 5days
       queue: sner.nuclei.rolling
+
+    testssl_scan:
+      schedule: 7days
+      queue: sner.testssl
 
     storage_cleanup:
       enabled: true

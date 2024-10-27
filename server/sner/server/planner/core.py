@@ -25,6 +25,7 @@ from sner.server.planner.stages import (
     StorageLoaderNuclei,
     StorageRescan,
     StorageSixTargetlist,
+    StorageTestsslTargetlist,
 )
 from sner.server.scheduler.core import enumerate_network, ExclMatcher
 from sner.server.scheduler.models import Queue
@@ -167,6 +168,16 @@ class Planner(TerminateContextMixin):
                 lockname='nuclei_scan__netlist_targets',
                 targets=self.config.nuclei_targets,
                 next_stages=[self.stages['nuclei_scan:load']]
+            )
+
+        # perform testssl scan
+        if plines.testssl_scan:
+            self.stages['testssl_scan:load'] = StorageLoader(queue_name=plines.testssl_scan.queue)
+
+            self.stages['testssl_scan:targetlist'] = StorageTestsslTargetlist(
+                schedule=plines.testssl_scan.schedule,
+                lockname='testssl_scan__targetlist',
+                next_stage=self.stages['testssl_scan:load']
             )
 
         # do storage cleanup

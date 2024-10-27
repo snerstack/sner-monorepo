@@ -39,6 +39,12 @@ class NucleiScan(BaseModel):
     queue: str
 
 
+class TestsslScan(BaseModel):
+    """testssl scan"""
+    schedule: str
+    queue: str
+
+
 class StorageCleanup(BaseModel):
     """storage cleanup"""
     enabled: bool
@@ -56,6 +62,7 @@ class Pipelines(BaseModel):
     basic_rescan: Optional[BasicRescan] = None
     storage_six_enum: Optional[StorageSixEnum] = None
     nuclei_scan: Optional[NucleiScan] = None
+    testssl_scan: Optional[TestsslScan] = None
     storage_cleanup: Optional[StorageCleanup] = None
     rebuild_versioninfo_map: Optional[RebuildVersionInfoMap] = None
 
