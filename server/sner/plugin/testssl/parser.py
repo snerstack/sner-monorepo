@@ -45,7 +45,8 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
             return pidb
 
         result = json_data['scanResult'][0]
-        host_address = result['targetHost']
+        host_address = result['ip']
+        via_target = result['targetHost']
         service_port = int(result['port'])
         service_proto = 'tcp'
 
@@ -78,7 +79,14 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
                 # pop scalar data
                 note_data['data'][section_name] = section_data
 
-        pidb.upsert_note(host_address, 'testssl', service_proto, service_port, data=json.dumps(note_data))
+        pidb.upsert_note(
+            host_address,
+            'testssl',
+            service_proto,
+            service_port,
+            via_target,
+            data=json.dumps(note_data)
+        )
 
         return pidb
 

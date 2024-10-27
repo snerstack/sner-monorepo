@@ -21,3 +21,6 @@ def test_parse_path():
     assert [x.port for x in pidb.services] == expected_services
     assert [x.xtype for x in pidb.notes] == expected_notes
     assert 'DNS_CAArecord' in [x['id'] for x in json.loads(pidb.notes[0].data)['findings']['serverDefaults']]
+
+    pidb = ParserModule.parse_path('tests/server/data/parser-testssl-targethostname.json')
+    assert [x.via_target for x in pidb.notes] == ['sner.flab.cesnet.cz']
