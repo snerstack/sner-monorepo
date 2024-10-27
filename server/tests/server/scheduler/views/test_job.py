@@ -84,3 +84,10 @@ def test_job_repeat_route(cl_operator, job):
     assert response.status_code == HTTPStatus.OK
 
     assert len(json.loads(job.assignment)['targets']) == Target.query.count()
+
+
+def test_job_download(cl_operator, job_completed):
+    """download route test"""
+
+    response = cl_operator.get(url_for('scheduler.job_download_route', job_id=job_completed.id))
+    assert response.headers['Content-Type'] == 'application/zip'

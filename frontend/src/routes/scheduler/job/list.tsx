@@ -37,6 +37,14 @@ const JobListPage = () => {
         renderElements(
           cell,
           <ButtonGroup>
+            <a
+              className="btn btn-outline-secondary"
+              title="Download job output"
+              data-testid="view-btn"
+              href={urlFor(`/backend/scheduler/job/download/${row['id']}`)}
+            >
+              <i className="fas fa-download"></i>
+            </a>
             <RepeatButton url={urlFor(`/backend/scheduler/job/repeat/${row['id']}`)} tableId="job_list_table" />
             <ReconcileButton url={urlFor(`/backend/scheduler/job/reconcile/${row['id']}`)} tableId="job_list_table" />
             <DeleteButton url={urlFor(`/backend/scheduler/job/delete/${row['id']}`)} tableId="job_list_table" />

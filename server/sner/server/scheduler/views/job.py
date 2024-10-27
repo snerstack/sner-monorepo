@@ -8,7 +8,7 @@ from datetime import datetime
 from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
-from flask import jsonify, request, Response
+from flask import jsonify, request, Response, send_file
 from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
@@ -72,3 +72,12 @@ def job_repeat_route(job_id):
 
     JobManager.repeat(Job.query.get(job_id))
     return jsonify({'message': 'Job has been successfully repeated.'})
+
+
+@blueprint.route('/job/download/<job_id>', methods=['GET'])
+@session_required('operator')
+def job_download_route(job_id):
+    """download job output"""
+
+    job = Job.query.get(job_id)
+    return send_file(job.output_abspath, as_attachment=True, download_name=f"{job_id}.zip")
