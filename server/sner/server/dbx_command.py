@@ -62,7 +62,7 @@ def initdata_prod():
         {
             'name': 'sner.testssl',
             'config': {'module': 'testssl', 'delay': 1},
-            'group_size': 10,
+            'group_size': 1,
             'priority': QueuePrio.LOW,
             'reqs': ['testssl'],
         },
