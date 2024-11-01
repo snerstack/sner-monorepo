@@ -47,11 +47,15 @@
 #
 #
 #planner:
+#  # basic&testssl scan ranges
 #  basic_nets_ipv4: []
 #  basic_targets: []
 #  filter_nets_ipv6: ['::1/128']
+#
+#  # vulnerability scan ranges
 #  nuclei_nets_ipv4: []
 #  nuclei_targets: []
+#
 #  pipelines:
 #    standalone_queues:
 #      queues:
