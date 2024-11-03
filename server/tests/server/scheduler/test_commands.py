@@ -107,3 +107,10 @@ def test_heatmap_check_command(runner, target):  # pylint: disable=unused-argume
     db.session.commit()
     result = runner.invoke(command, ['heatmap-check'])
     assert result.exit_code == 1
+
+
+def test_repeat_failed_jobs_command(runner):
+    """test repeat-failed-jobs command"""
+
+    result = runner.invoke(command, ['repeat-failed-jobs'])
+    assert result.exit_code == 0

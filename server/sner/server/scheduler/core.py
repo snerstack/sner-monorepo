@@ -653,3 +653,20 @@ class SchedulerService:
         heatmaps_equal = not bool(keys_only_in_dict1 or keys_only_in_dict2 or different_values)
         cls.release_lock()
         return heatmaps_equal
+
+    @classmethod
+    def repeat_failed_jobs(cls):
+        """repeat and prune failed jobs, tries to recover from deployment restart"""
+
+        cls.get_lock()
+        count = 0
+        for job in Job.query.filter(
+                Job.retval != None,  # noqa: E711  pylint: disable=singleton-comparison  ; not running jobs
+                Job.retval != 0,  # not successful jobs
+                Job.retval < 1000  # do not repeat planner failed jobs
+        ).all():
+            JobManager.repeat(job)
+            JobManager.delete(job)
+            count += 1
+        cls.release_lock()
+        current_app.logger.info(f"SchedulerService repeat_failed_jobs, {count} jobs repeated")

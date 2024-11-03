@@ -242,3 +242,18 @@ def test_schedulerservice_capsrouting(app, queue_factory, target_factory):  # py
 
     assignment = SchedulerService.job_assign(None, agent_caps=['default', 'testssl'])
     assert assignment['targets'] == ['pool2']
+
+
+def test_schedulerservice_repeatfailedjobs(app, queue, job_factory):  # pylint: disable=unused-argument
+    """test scheduler service repeat_failed_jobs"""
+
+    job_factory.create(queue=queue, retval=None)
+    job_factory.create(queue=queue, retval=0)
+    job_factory.create(queue=queue, retval=1000)
+    job_factory.create(queue=queue, retval=-15)
+
+    SchedulerService.repeat_failed_jobs()
+    assert Job.query.filter(Job.retval == None).count() == 1  # noqa: E711  pylint: disable=singleton-comparison
+    assert Job.query.filter(Job.retval == 0).count() == 1
+    assert Job.query.filter(Job.retval == 1000).count() == 1
+    assert Job.query.filter(Job.retval == -15).count() == 0

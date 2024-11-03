@@ -114,3 +114,12 @@ def heatmap_check_command():
         current_app.logger.error('heatmap not correct')
         sys.exit(1)
     sys.exit(0)
+
+
+@command.command(name='repeat-failed-jobs', help='repeat and prune failed jobs (deployment helper)')
+@with_appcontext
+def repeat_failed_jobs_command():
+    """repeat and prune failed jobs"""
+
+    SchedulerService.repeat_failed_jobs()
+    sys.exit(0)
