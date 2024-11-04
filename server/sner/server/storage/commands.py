@@ -19,7 +19,6 @@ from sner.server.storage.core import StorageManager, vuln_export, vuln_report
 from sner.server.storage.models import Host, Service, Versioninfo, Vulnsearch
 from sner.server.storage.versioninfo import VersioninfoManager
 from sner.server.storage.vulnsearch import VulnsearchManager
-from sner.server.storage.elasticstorage import ElasticStorageManager
 from sner.server.utils import filter_query
 
 
@@ -174,25 +173,6 @@ def storage_rebuild_vulnsearch_localdb(**kwargs):
         sys.exit(1)
 
     VulnsearchManager(cvesearch, tlsauth_key, tlsauth_cert).rebuild_localdb()
-
-
-@command.command(name='rebuild-elasticstorage', help='synchronize storage to elk index')
-@with_appcontext
-@click.option('--esd', help='elasticsearch url')
-@click.option('--tlsauth_key', help='tlsauth key path')
-@click.option('--tlsauth_cert', help='tlsauth cert path')
-def storage_rebuild_elasticstorage(**kwargs):
-    """synchronize storage elk index"""
-
-    esd = kwargs_or_config(kwargs, 'esd')
-    tlsauth_key = kwargs_or_config(kwargs, 'tlsauth_key')
-    tlsauth_cert = kwargs_or_config(kwargs, 'tlsauth_cert')
-
-    if not esd:
-        current_app.logger.error('configuration required (config or cmdline)')
-        sys.exit(1)
-
-    ElasticStorageManager(esd, tlsauth_key, tlsauth_cert).rebuild()
 
 
 @command.command(name='rebuild-versioninfo', help='rebuild versioninfo map')

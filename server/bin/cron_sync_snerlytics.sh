@@ -12,7 +12,6 @@ if ! touch "$LOCKFILE"; then
 fi
 trap 'rm -f "$LOCKFILE"' INT TERM EXIT
 
-/opt/sner/server/venv/bin/python /opt/sner/server/bin/server storage rebuild-elasticstorage
 /opt/sner/server/venv/bin/python /opt/sner/server/bin/server storage rebuild-vulnsearch-localdb
 /opt/sner/server/venv/bin/python /opt/sner/server/bin/server storage rebuild-vulnsearch-elastic
 

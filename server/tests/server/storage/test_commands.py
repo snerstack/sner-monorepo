@@ -146,23 +146,6 @@ def test_rebuild_vulnsearch_localdb_command(runner):
     assert result.exit_code == 0
 
 
-def test_rebuild_elasticstorage_command(runner):
-    """tests param/config handling"""
-
-    result = runner.invoke(command, ['rebuild-elasticstorage'])
-    assert result.exit_code == 1
-
-    update_alias_mock = Mock()
-    with (
-        patch.object(sner.server.storage.elastic.BulkIndexer, 'initialize', Mock()),
-        patch.object(sner.server.storage.elastic.BulkIndexer, 'update_alias', update_alias_mock)
-    ):
-        result = runner.invoke(command, ['rebuild-elasticstorage', '--esd', 'http://dummy:80'])
-
-    assert result.exit_code == 0
-    update_alias_mock.assert_called()
-
-
 def test_rebuild_versioninfo_command(runner):
     """tests rebuild versioninfo command"""
 
