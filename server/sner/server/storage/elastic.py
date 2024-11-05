@@ -28,13 +28,12 @@ def ignore_warning(category):
 class BulkIndexer:
     """elasticsearch bulk indexing buffer"""
 
-    TIMEOUT = 30
-
-    def __init__(self, esd_url, tlsauth_key, tlsauth_cert, buflen=1000):
+    def __init__(self, esd_url, tlsauth_key, tlsauth_cert, buflen=1000, timeout=60):  # pylint: disable=too-many-arguments
         """constructor"""
 
         self.buf = []
         self.buflen = buflen
+        self.timeout = timeout
 
         esclient_options = {}
         if tlsauth_key and tlsauth_cert:
@@ -44,7 +43,7 @@ class BulkIndexer:
             # ctx.maximum_version = ssl.TLSVersion.TLSv1_2
             ctx.post_handshake_auth = True
             esclient_options['ssl_context'] = ctx
-        self.esclient = Elasticsearch([esd_url], request_timeout=self.TIMEOUT, **esclient_options)
+        self.esclient = Elasticsearch([esd_url], request_timeout=self.timeout, **esclient_options)
 
     def initialize(self, index):  # pragma: nocover  ; mocked
         """initialize empty index"""
@@ -64,7 +63,7 @@ class BulkIndexer:
     def flush(self):
         """flush buffer"""
 
-        res = es_bulk(self.esclient, self.buf, request_timeout=self.TIMEOUT)
+        res = es_bulk(self.esclient, self.buf, request_timeout=self.timeout)
         self.buf = []
         return res
 

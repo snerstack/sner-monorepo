@@ -147,6 +147,7 @@ class VulnsearchManager:
         self.tlsauth_cert = tlsauth_cert
         self.namelen = current_app.config['SNER_VULNSEARCH_NAMELEN']
         self.rebuild_buflen = current_app.config['SNER_VULNSEARCH_REBUILD_BUFLEN']
+        self.timeout = current_app.config['SNER_VULNSEARCH_TIMEOUT']
 
     @functools.lru_cache(maxsize=256)
     def cvefor(self, cpe):  # pragma: nocover  ; mocked
@@ -155,7 +156,7 @@ class VulnsearchManager:
         res = requests.get(
             f'{self.cvesearch_url}/api/cvefor/{cpe}',
             cert=(self.tlsauth_cert, self.tlsauth_key),
-            timeout=30
+            timeout=current_app.config["SNER_VULNSEARCH_TIMEOUT"]
         )
         if res.status_code == HTTPStatus.OK:
             # filter unused/oversized data; ex. linux:linux_kernel:xyz is about 800MB
@@ -180,7 +181,7 @@ class VulnsearchManager:
         alias = 'vulnsearch'
         index = f'{alias}-{datetime.now().strftime("%Y%m%d%H%M%S")}'
         esd_indexer = (
-            BulkIndexer(elastic_url, self.tlsauth_key, self.tlsauth_cert, self.rebuild_buflen)
+            BulkIndexer(elastic_url, self.tlsauth_key, self.tlsauth_cert, self.rebuild_buflen, self.timeout)
             if elastic_url
             else None
         )
@@ -204,6 +205,7 @@ class VulnsearchManager:
         vulnsearch_writer = LocaldbWriter(self.rebuild_buflen)
 
         for note, icpe, parsed_cpe in cpe_notes():
+            current_app.logger.debug(f"processing cpe_note {note} {icpe} {parsed_cpe}")
             for cve in self.cvefor(icpe):
                 data_id, data = vulndata(note, parsed_cpe, cve, self.namelen)
                 vulnsearch_writer.index(data_id, data)
