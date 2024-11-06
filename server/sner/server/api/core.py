@@ -27,9 +27,9 @@ def get_metrics():
     metrics['sner_storage_versioninfo_total'] = Versioninfo.query.count()
     metrics['sner_storage_vulnsearch_total'] = Vulnsearch.query.count()
 
-    queue_targets = db.session.query(Queue.name, func.count(Target.id).label('cnt')).select_from(Queue).outerjoin(Target).group_by(Queue.name).all()
-    for queue, targets in queue_targets:
-        metrics[f'sner_scheduler_queue_targets_total{{name="{queue}"}}'] = targets
+    targets = dict(db.session.query(Target.queue_id, func.count(Target.id)).group_by(Target.queue_id).all())
+    for queue in Queue.query.all():
+        metrics[f'sner_scheduler_queue_targets_total{{name="{queue.name}"}}'] = targets.get(queue.id, 0)
     metrics['sner_scheduler_targets_total'] = Target.query.count()
 
     stale_horizont = datetime.utcnow() - timedelta(seconds=timeparse(current_app.config['SNER_METRICS_STALE_HORIZONT']))

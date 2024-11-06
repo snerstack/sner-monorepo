@@ -12,7 +12,7 @@ while [[ $ROUND -lt $TOTAL_SEGMENTS ]]; do
 	NET="${FIRST_OCTET}.${SECOND_OCTET}.0.0/16"
 
 	echo "## round $ROUND $NET"
-	bin/server scheduler enumips "$NET" | bin/server scheduler queue-enqueue 'dev dummy' --file=-
+	bin/server scheduler enumips "$NET" | bin/server scheduler queue-enqueue 'dev.dummy' --file=-
 
 	ROUND=$((ROUND+1))
 done
