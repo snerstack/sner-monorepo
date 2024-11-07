@@ -331,3 +331,5 @@ See `scripts/`.
 
 * Implementation of authentication might be vulnerable to user enumeration attacks
   (select query timing or webauthn authentication ceremony)
+
+* Virtualbox NAT network (devnode) duplicates SYN scan packets, ? perhaps implemented as tcp proxy in vboxnet
