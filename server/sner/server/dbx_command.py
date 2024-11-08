@@ -66,6 +66,13 @@ def initdata_prod():
             'priority': QueuePrio.LOW,
             'reqs': ['testssl'],
         },
+        {
+            'name': 'sner.sportmap',
+            'config': {'module': 'sportmap', 'delay': 1},
+            'group_size': 1,
+            'priority': QueuePrio.NORMAL,
+            'reqs': ['sportmap'],
+        },
 
         # basic scan
         {
@@ -124,6 +131,15 @@ def initdata_prod():
             'group_size': 5,
             'priority': QueuePrio.NORMAL,
             'reqs': ['default'],
+        },
+
+        # sportmap_scan
+        {
+            'name': 'sner.sportmap.rolling',
+            'config': {'module': 'sportmap', 'delay': 1},
+            'group_size': 1,
+            'priority': QueuePrio.LOW,
+            'reqs': ['sportmap'],
         },
 
         # other queues

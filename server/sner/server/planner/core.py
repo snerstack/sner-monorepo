@@ -23,6 +23,7 @@ from sner.server.planner.stages import (
     StorageCleanup,
     StorageLoader,
     StorageLoaderNuclei,
+    StorageLoaderSportmap,
     StorageRescan,
     StorageSixTargetlist,
     StorageTestsslTargetlist,
@@ -178,6 +179,17 @@ class Planner(TerminateContextMixin):
                 schedule=plines.testssl_scan.schedule,
                 lockname='testssl_scan__targetlist',
                 next_stage=self.stages['testssl_scan:load']
+            )
+
+        # perform sportmap scan
+        if plines.sportmap_scan:
+            self.stages['sportmap_scan:load'] = StorageLoaderSportmap(queue_name=plines.sportmap_scan.queue)
+
+            self.stages['sportmap_scan:netlist'] = NetlistEnum(
+                schedule=plines.sportmap_scan.schedule,
+                lockname='sportmap_scan__netlist',
+                netlist=self.config.sportmap_nets_ipv4,
+                next_stages=[self.stages['sportmap_scan:load']]
             )
 
         # do storage cleanup

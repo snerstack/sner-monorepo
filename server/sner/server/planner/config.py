@@ -45,6 +45,12 @@ class TestsslScan(BaseModel):
     queue: str
 
 
+class SportmapScan(BaseModel):
+    """sportmap scan"""
+    schedule: str
+    queue: str
+
+
 class StorageCleanup(BaseModel):
     """storage cleanup"""
     enabled: bool
@@ -63,6 +69,7 @@ class Pipelines(BaseModel):
     storage_six_enum: Optional[StorageSixEnum] = None
     nuclei_scan: Optional[NucleiScan] = None
     testssl_scan: Optional[TestsslScan] = None
+    sportmap_scan: Optional[SportmapScan] = None
     storage_cleanup: Optional[StorageCleanup] = None
     rebuild_versioninfo_map: Optional[RebuildVersionInfoMap] = None
 
@@ -77,6 +84,7 @@ class PlannerConfig(BaseModel):
         filter_nets_ipv6: List of all valid IPv6 addresses used as filters in discoveries.
         nuclei_nets_ipv4: List of IPv4 networks to scan; nuclei pipeline
         nuclei_targets: List of targets to scan, list, not enumerated; nuclei pipeline
+        sportmap_nets_ipv4: List of IPv4 networks to scan; sportmap pipeline
         pipelines: Pipelines configuration, if any.
     """
 
@@ -86,5 +94,7 @@ class PlannerConfig(BaseModel):
 
     nuclei_nets_ipv4: List[str] = []
     nuclei_targets: List[str] = []
+
+    sportmap_nets_ipv4: List[str] = []
 
     pipelines: Optional[Pipelines] = None

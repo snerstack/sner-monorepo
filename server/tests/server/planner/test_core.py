@@ -18,11 +18,13 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     queue_factory.create(name='standalone')
     queue_factory.create(name='sner.nuclei.rolling')
     queue_factory.create(name='sner.testssl')
+    queue_factory.create(name='sner.sportmap.rolling')
 
     config = yaml.safe_load("""
 basic_nets_ipv4: []
 filter_nets_ipv6: ['::1/128']
 nuclei_nets_ipv4: []
+sportmap_nets_ipv4: []
 pipelines:
     standalone_queues:
       queues:
@@ -51,6 +53,10 @@ pipelines:
     testssl_scan:
       schedule: 7days
       queue: sner.testssl
+
+    sportmap_scan:
+      schedule: 13days
+      queue: sner.sportmap.rolling
 
     storage_cleanup:
       enabled: true

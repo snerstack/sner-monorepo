@@ -7,13 +7,14 @@ import logging
 import os
 from ipaddress import ip_address
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
 from sner.server.extensions import db
+from sner.server.parser import ParsedItemsDb
 from sner.server.planner.stages import (
     DummyStage,
-    StorageTestsslTargetlist,
     filter_external_hosts,
     filter_tarpits,
     NetlistEnum,
@@ -22,11 +23,13 @@ from sner.server.planner.stages import (
     project_sixenum_targets,
     ServiceDisco,
     SixDisco,
-    StorageSixTargetlist,
     StorageCleanup,
     StorageLoader,
     StorageLoaderNuclei,
-    StorageRescan
+    StorageLoaderSportmap,
+    StorageRescan,
+    StorageSixTargetlist,
+    StorageTestsslTargetlist,
 )
 from sner.server.scheduler.core import SchedulerService
 from sner.server.scheduler.models import Job, Target
@@ -270,3 +273,22 @@ def test_storage_testssl_targetlist(app, service_factory):  # pylint: disable=un
 
     StorageTestsslTargetlist('0s', 'lockname', dummy).run()
     assert dummy.task_count == 1
+
+
+def test_storage_loader_sportmap(app, queue, host_factory, note_factory):  # pylint: disable=unused-argument
+    """mock completed job with real data"""
+
+    host1 = host_factory.create(address='127.3.4.6')
+    note_factory.create(host=host1, xtype='sportmap', data='prune dummy')
+
+    pidb = ParsedItemsDb()
+    pidb.upsert_host('127.3.4.6')
+    pidb.upsert_note('127.3.4.2', xtype='sportmap', data='dummy')
+
+    loader = StorageLoaderSportmap(queue_name=queue.name)
+    with patch.object(loader, '_drain') as drain_mock:
+        drain_mock.return_value = [pidb]
+        loader.run()
+
+    assert Host.query.count() == 2
+    assert Note.query.count() == 1

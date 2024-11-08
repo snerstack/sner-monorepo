@@ -56,11 +56,16 @@
 #  nuclei_nets_ipv4: []
 #  nuclei_targets: []
 #
+#  # fixed source port scan ranges
+#  sportmap_nets_ipv4: []
+#  sportmap_targets: []
+#
 #  pipelines:
 #    standalone_queues:
 #      queues:
 #        - dev.dummy
 #        - sner.nuclei
+#        - sner.sportmap
 #    
 #    basic_scan:
 #      netlist_schedule: 5days

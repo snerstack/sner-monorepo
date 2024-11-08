@@ -18,7 +18,7 @@ from sner.server.extensions import db
 from sner.server.scheduler.core import enumerate_network, JobManager, QueueManager
 from sner.server.scheduler.models import Queue, Job, Target
 from sner.server.storage.core import StorageManager
-from sner.server.storage.models import Host, Service, Vuln
+from sner.server.storage.models import Host, Note, Service, Vuln
 from sner.server.storage.versioninfo import VersioninfoManager
 
 
@@ -410,3 +410,31 @@ class StorageTestsslTargetlist(Schedule):  # pylint: disable=too-few-public-meth
         ]
         current_app.logger.info(f'{self.__class__.__name__} projected {len(targets)} targets')
         self.next_stage.task(targets)
+
+
+class StorageLoaderSportmap(QueueHandler):
+    """load nuclei queue to storage"""
+
+    def run(self):
+        """run"""
+
+        for pidb in self._drain():
+            current_app.logger.info(
+                f'{self.__class__.__name__} loading {len(pidb.hosts)} '
+                f'hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes'
+            )
+
+            StorageManager.import_parsed(pidb)
+
+            # drop all old sportmap notes on hosts (addrs) which are in pidb without notes
+            all_hosts = [x.address for x in pidb.hosts]
+            detected_hosts = [pidb.hosts[x.host_iid].address for x in pidb.notes if x.xtype == 'sportmap']
+            prune_hosts = list(set(all_hosts) - set(detected_hosts))
+
+            affected_rows = Note.query.filter(
+                Note.xtype == 'sportmap',
+                Note.host_id.in_(db.session.query(Host.id).filter(Host.address.in_(prune_hosts)))
+            ).delete(synchronize_session=False)
+            current_app.logger.info(f'{self.__class__.__name__} prunned {affected_rows} old notes')
+            db.session.commit()
+            db.session.expire_all()
