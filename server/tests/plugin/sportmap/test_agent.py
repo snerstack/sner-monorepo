@@ -15,7 +15,8 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
 
     test_a = {
         'id': str(uuid4()),
-        'config': {'module': 'sportmap', 'args': '-sS -sU -Pn -n --max-retries 0 --top-ports 1', 'source_ports': [80, 53]},
+        # omiting -sS -sU here allows to be run with non-root user (github actions)
+        'config': {'module': 'sportmap', 'args': '-Pn -n --max-retries 0 --top-ports 1', 'source_ports': [80, 53]},
         'targets': ['127.0.0.1', '::1'],
     }
 

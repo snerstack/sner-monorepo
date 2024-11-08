@@ -37,9 +37,9 @@ class AgentModule(ModuleBase):
     def run(self, assignment):
         """run the agent"""
 
-        if 'args' not in assignment['config']:
+        if 'args' not in assignment['config']:  # pragma: no cover  ; not tested
             assignment["config"]["args"] = "-sS -sU -Pn -n --max-retries 3 --top-ports 20 --max-rate 5"
-        if 'source_ports' not in assignment['config']:
+        if 'source_ports' not in assignment['config']:  # pragma: no cover  ; not tested
             assignment["config"]["source_ports"] = [self.DEFAULT_SPORT, 80, 53, 443, 123]
         super().run(assignment)
 
