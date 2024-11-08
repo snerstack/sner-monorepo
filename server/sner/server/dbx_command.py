@@ -168,7 +168,10 @@ def initdata_prod():
 
     for queue_info in definitions:
         queue_info['config'] = yaml_dump(queue_info['config'])
-        db.session.add(Queue(**queue_info))
+        existing = Queue.query.filter_by(name=queue_info['name']).first()
+        if not existing:
+            db.session.add(Queue(**queue_info))
+    db.session.commit()
 
 
 def initdata_dev():
@@ -359,6 +362,7 @@ def initdata_dev():
     ))
 
     VersioninfoManager.rebuild()
+    db.session.commit()
 
 
 @click.group(name='dbx', help='sner.server db management')
@@ -382,7 +386,6 @@ def initdata():  # pylint: disable=too-many-statements
     db.session.add(User(username='user1', active=True, roles=['user', 'operator', 'admin']))
     initdata_dev()
     initdata_prod()
-    db.session.commit()
 
 
 @command.command(name='remove', help='remove database (including var content)')
@@ -391,3 +394,11 @@ def remove():
     """db remove command stub"""
 
     db_remove()
+
+
+@command.command(name='update-prod-queues', help='update new prod queues (deployment helper)')
+@with_appcontext
+def update_prod_queues_command():
+    """update new prod queues"""
+
+    initdata_prod()

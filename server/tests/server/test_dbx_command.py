@@ -45,3 +45,10 @@ def test_remove_command(runner):
     assert not inspect(db.engine).get_table_names()
     assert not test_dir.exists()
     assert not test_path.exists()
+
+
+def test_update_prod_queues_command(runner):
+    """dbx update-prod-queues test"""
+
+    result = runner.invoke(command, ['update-prod-queues'])
+    assert result.exit_code == 0

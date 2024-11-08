@@ -93,6 +93,10 @@
 #      schedule: 7days
 #      queue: sner.testssl
 #
+#    sportmap_scan:
+#      schedule: 7days
+#      queue: sner.sportmap.rolling
+#
 #    storage_cleanup:
 #      enabled: true
 #
