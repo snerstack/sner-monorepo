@@ -10,6 +10,7 @@ from ipaddress import ip_address, ip_network, IPv6Address
 from pathlib import Path
 
 from flask import current_app
+from littletable import Table
 from pytimeparse import parse as timeparse
 from sqlalchemy import select, tuple_
 from sqlalchemy.orm.exc import NoResultFound
@@ -424,16 +425,17 @@ class StorageLoaderSportmap(QueueHandler):
                 f'hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes'
             )
 
+            # do not import empty hosts
+            all_addrs = set(pidb.hosts.all.address)
+            detected_addrs = set(pidb.notes.where(xtype='sportmap').join(pidb.hosts, host_iid="iid").all.address)
+            prune_addrs = all_addrs - detected_addrs
+            pidb.hosts.remove_many(pidb.hosts.where(address=Table.is_in(prune_addrs)))
             StorageManager.import_parsed(pidb)
 
-            # drop all old sportmap notes on hosts (addrs) which are in pidb without notes
-            all_hosts = [x.address for x in pidb.hosts]
-            detected_hosts = [pidb.hosts[x.host_iid].address for x in pidb.notes if x.xtype == 'sportmap']
-            prune_hosts = list(set(all_hosts) - set(detected_hosts))
-
+            # prune old notes
             affected_rows = Note.query.filter(
                 Note.xtype == 'sportmap',
-                Note.host_id.in_(db.session.query(Host.id).filter(Host.address.in_(prune_hosts)))
+                Note.host_id.in_(db.session.query(Host.id).filter(Host.address.in_(prune_addrs)))
             ).delete(synchronize_session=False)
             current_app.logger.info(f'{self.__class__.__name__} prunned {affected_rows} old notes')
             db.session.commit()
