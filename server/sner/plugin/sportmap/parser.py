@@ -49,7 +49,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
                 default_state = list(allparsed["default"].services.where(proto=svc.proto, port=svc.port))
                 default_state = default_state[0].state if default_state else None
 
-                if ('open' in svc.state) and ((not default_state) or (default_state != svc.state)):
+                if ('open:' in svc.state) and ((not default_state) or (default_state != svc.state)):
                     diffmap[address][svc.proto][svc.port]["default"] = default_state or "closed:nostate"
                     diffmap[address][svc.proto][svc.port][sport] = svc.state
 
