@@ -1,0 +1,9 @@
+#!/bin/sh
+
+OPTS="-it"
+# if stdin is not TTY (it's piped, queue-enqueue)
+if [ ! -t 0 ]; then
+        OPTS="-i"
+fi
+
+docker exec $OPTS sner_server sner-server "$@"

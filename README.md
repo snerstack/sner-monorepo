@@ -71,71 +71,50 @@ Project goals:
 ```
 
 
-
 ## 2 Features
 
-### 2.1 General features
+* **Scanning Capabilities:**
+  * One-time and continuous scanning
+  * Configurable queues of targets and concurrent scanning pipelines
+  * Rate-limit aware target scheduling
+  * Various scanning techniques including:
+    * IPv4 address scanning
+    * IPv6 DNS and address pattern enumeration
+    * Configurable nmap-based scannig and service version fingerprinting
+    * JA3/JARM scanning
+    * TLS scanning (nmap script. testssl)
+    * Vulnerability scanning (nuclei)
+    * Source port scanning
 
-* React frontend, Flask server/agents backend
-* Authentication
-  * username/password with optional OTP
-  * FIDO2 / WebAuthn
-  * OIDC
-* Server-side session storage (DEPRECATED)
-* CLI interface and automation scripts
-* Extendable plugin mechanims for extending agents and parsers
+* **Data Management:**
+  * Service version extraction
+  * CPE-CVE correlation
+  * Long-term IP-centric storage
+  * Visualization and analytics user-interface
+  * REST-like API for data access
 
+* **System Architecture:**
+  * Modular agent-based scanning tools
+  * Scheduler for job distribution
+  * Planner for continuous scanning management
+  * Parsers for agent output data parsing
 
-### 2.2 Reconnaissance subsystem
+* **User Interface:**
+  * React frontend
+  * Flask server/agents backend
+  * Authentication options including username/password with OTP, FIDO2/WebAuthn, and OIDC
+  * Basic data filtering, aggregations and visualisations
 
-#### Agent
-
-Agent provides communication and execution layer for plugins implementing
-various tools wrappers and supports fine-graned workload routing via
-capabilities metadata (DEPRECATED).
-
-For list of currently available agent plugins see `sner/plugin/*/agent.py`
-
-
-#### Server: Scheduler
-
-Scheduler provides workload configuration management and distribution with
-heatmap based rate-limiting scheduling.
-
-* **Queue** -- a list of targets and coresponding agent module and scheduling
-  attributes container.  Each module has a different config and target
-  specification, see corresponding module implementation for details.
-
-* **Job** -- workload unit object, eg. assignment and output tuple.
-  Job assignment features CIDR or regex targets exclusions based
-  on configuration values.
-
-* **Heatmap**, **Readynet** -- internal structures for rate-limited target
-  selection.
-
-CLI helpers are available for IP ranges enumerations and queues/targets
-management.
+* **Additional Features:**
+  * CLI interface and automation scripts
+  * Extendable plugin mechanisms for agents and parsers
+  * Experimental external services for data analysis (Elastic storage, CVE-Search)
 
 
-#### Server: Planner
+### Tags
 
-Long-running daemon providing continuous orchestration of agents and output
-data processing in order to keep storage up-to-date with monitored networks
-reconnaissance data.
-
-
-
-### 2.3 Data management subsystem
-
-#### 2.3.1 Storage and Parsers
-
-Storage is a main IP-centric database model and user interface heavily inspired
-by Metasploit framework PRO UI. Allows somewhat flexible data management
-including predefined aggregations and items tagging.
-
-##### Special tags
-
-Tags are being evaluated in certain usecases:
+Storage data objects can be tagged for purpose of data management. Some special tags
+are being evaluated in certain usecases:
 
 * `i:anything` is ignored in vuln grouping (view and report generation).
   Tag is used to differentiate availability of the vuln/service/host/note from
@@ -145,36 +124,6 @@ Tags are being evaluated in certain usecases:
 * `report`, `report:data`, `info` are used to sort out issues already been processed
   by operator during engagement. Can be used to filter out and get "to be processed"
   vulns.
-
-Parsers are used to parse and ingest agent output data or raw files to storage.
-
-For list of currently available parser plugins see `sner/plugin/*/parser.py`
-
-##### Versioninfo
-
-Dataminend view of product-version informations for corresponding endpoints.
-
-##### Vulnsearch
-
-(EXPERIMENTAL) CPE-CVE correlations dataminig view.
-
-
-#### 2.3.2 Visuals
-
-Visualization modules of configuration and storage.
-
-
-#### 2.3.3 API interface
-
-Basic access to managed data.
-
-
-### 2.4 Snerlytics
-
-(EXPERIMENTAL) Set of external services for data analysis.
-
-  * Elastic storage (copy of storage data for analysis)
-  * CVE-Search (local instance used for CPE-CVE corelations)
 
 
 
@@ -234,30 +183,20 @@ docker-compose up -d
 * 18082 - vite test server
 
 
-### 3.3 Upgrade procedure
-
-* restart server with maintenance flag (`sner_maintenance: True`)
-* wait for agents to finish
-* stop agents, server and planner
-* pull new images
-* perform db migrations
-* start all components
-* restart server without maintenance flag
-
-
-
 ## 4 Usage
+
+Run commands as `bin/server` from development venv or `sner-server`/`sner-exec` in dockerized deployment.
 
 ### 4.1 Simple reconnaissance scenario
 
 1. Generate target list
   ```
-  bin/server scheduler enumips 127.0.0.0/24 > targets1
-  bin/server scheduler rangetocidr 127.0.0.1 127.0.3.5 | bin/server scheduler enumips > targets2
+  sner-server scheduler enumips 127.0.0.0/24 > targets1
+  sner-server scheduler rangetocidr 127.0.0.1 127.0.3.5 | bin/server scheduler enumips > targets2
   ```
 2. Enqueue targets in queue (web: *scheduler > queue > enqueue*)
   ```
-  bin/server scheduler queue-enqueue <queue.name> --file=targets
+  sner-server scheduler queue-enqueue <queue.name> --file=targets
   ```
 3. Run the agent
 4. Monitor the queue until all jobs has been finished
@@ -269,7 +208,7 @@ docker-compose up -d
 
 1. Import existing data with suitable parser
   ```
-  bin/server storage import <parser name> <filename>
+  sner-server storage import <parser name> <filename>
   ```
 2. Use web interface, flask shell or raw database to consult or manage gathered data
 3. Generate preliminary vulnerability report (web: *storage > vulns > Generate report*)
@@ -281,7 +220,7 @@ docker-compose up -d
 
 ```
 nmap -sL 192.168.2.0/24 -oA scan-dnsenum
-bin/server storage import nmap scan-dnsenum.xml
+sner-server storage import nmap scan-dnsenum.xml
 ```
 
 
@@ -301,7 +240,7 @@ bin/server storage import nmap /var/lib/sner/scheduler/queue-<queue.id>/*
 nmap SCANTYPE TIMING OUTPUT TARGETS
 
 # example
-bin/server storage service-list --filter 'Service.port == 22' --short > targets
+sner-server storage service-list --filter 'Service.port == 22' --short > targets
 nmap \
     -sV --version-intensity 4 -Pn \
     --max-retries 3 --script-timeout 30m --max-hostgroup 1 --max-rate 1 --scan-delay 10 \
@@ -309,13 +248,13 @@ nmap \
     -p T:22 -iL targets
 
 # import data
-bin/server storage import nmap output.xml
+sner-server storage import nmap output.xml
 ```
 
 
 #### Use-case: Shell interface and scripting
 
-See `scripts/`.
+Use `sner-server shell`, `sner-server psql` or see `scripts/`.
 
 
 
