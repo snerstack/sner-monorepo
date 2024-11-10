@@ -1,5 +1,64 @@
 # sner changelog
 
+## 1.1.0 - into production [BC BREAK]
+
+### Changed
+
+* plugin: bump testssl to the current bleeding edge
+* frontend: server, Refactor CSRF protection
+* ghaction:, Selenium tests allow one retry
+* plugin: nuclei, parser pull DNS (also drop unnecessary code from nmap parser)
+* server: Bump littletable package
+* server: better logging
+* server: always rolback if planner stage failed
+* server: Refactor queue routing with caps and reqs
+* server: Bump pyroute2 (should solve hang of six_enum_discover)
+* server: planner, refactor configuration (pipelines, sstack-infra)
+* server: planner, refactor internals
+* server: API, shorter and configurable metrics job stale horizon
+* server: Scheduler, drop ECESYN from default discovery
+* server: Run devserver in debug mode
+* server: api, force paging on all public endpoints by default #92
+* tests: Replace function scoped selenium browser with shared instance with manual resets
+* server: Configurable timeout for vulnsearch
+
+### Fixed
+
+* agent: better error propagation in nuclei, manymap, and testssl
+* frontend: Prevent rerender of login component on setUser which is followed by navigate (2nd cut)
+* frontend: various UI/UX features
+* frontend: Serialize boot requests (fixes session based CSRF handling?)
+* server: Multicopy DT search not filtering
+* server: Allow to set webauthn RP hostname explicitly
+* server: propagate filtering errors to UI
+* server: Update auth oidc login flow to use it in frontend
+* server: use proper Snerstack libnmap, sqlalchemy filters forks
+* tests: misc fixes
+
+### Added
+
+* frontend: job description on hover
+* frontend: server, Job output download button for debugging
+* frontend: Add storage host lookup endpoint
+* frontend: Add frontend config overridable from server
+* frontend: server, Duplicate vulnerability button, nuclei workflow
+* plugin: server, sportmap source port scanning and pipeline
+* plugin: server, testssl source port scanning and pipeline
+* server: Add dbx update-prod-queues
+* server: Add vuln public API
+* server: planner, Add explicit targets (ex. IPv6 addrs) for scanning
+* server: Multiple list aware planner dump-targets CLI command
+* server: add cron_sync_snerlytics.sh missing run lock
+* server: Add script/tag_rename
+* server: Add explicit csrf errors logging
+* server: Add command to repeat failed jobs (deployment helper)
+
+### Removed
+
+* server: some unused scripts
+* server: Drop elastic storage support
+
+
 ## 1.0.0 - contained reactor [BC BREAK]
 
 * changed: server, many updates towards frontend integration
