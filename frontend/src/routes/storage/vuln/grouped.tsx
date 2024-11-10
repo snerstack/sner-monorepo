@@ -92,6 +92,12 @@ const VulnGroupedPage = () => {
             >
               Only Report
             </Link>
+            <Link
+              className="btn btn-outline-secondary"
+              to='/storage/vuln/grouped?filter=Vuln.severity not_in ["info", "low"]'
+            >
+              Severe
+            </Link>
           </div>
         </div>
       </div>

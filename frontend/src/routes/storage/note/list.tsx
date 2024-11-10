@@ -162,9 +162,23 @@ const NoteListPage = () => {
 
       <Heading headings={['Notes']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
-            <i className="fas fa-filter"></i>
-          </a>
+        <div className='btn-group'>
+            <Link
+              className="btn btn-outline-secondary"
+              to='/storage/note/list?filter=Note.xtype=="testssl"'
+            >
+              Testssl
+            </Link>
+            <Link
+              className="btn btn-outline-secondary"
+              to='/storage/note/list?filter=Note.xtype=="sportmap"'
+            >
+              Sportmap
+            </Link>
+            <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
+              <i className="fas fa-filter"></i>
+            </a>
+          </div>
         </div>
       </Heading>
 

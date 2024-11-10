@@ -138,9 +138,31 @@ const VulnSearchListPage = () => {
 
       <Heading headings={['Vulnsearch (pre-computed)']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
-            <i className="fas fa-filter"></i>
-          </a>
+          <div className='btn-group'>
+            <Link
+              className="btn btn-outline-secondary"
+              to='/storage/vulnsearch/list?filter=Vulnsearch.attack_vector ilike "%NETWORK%"'
+              title="Remotely exploitable"
+            >
+              Remote
+            </Link>
+            <Link
+              className="btn btn-outline-secondary"
+              to='/storage/vulnsearch/list?filter=Vulnsearch.data astext_ilike "%exploit-db%"'
+            >
+              With exploit
+            </Link>
+            <Link
+              className="btn btn-outline-secondary"
+              to='/storage/vulnsearch/list?filter=Vulnsearch.attack_vector ilike "%NETWORK%" AND Vulnsearch.cvss > "7" AND Vulnsearch.data astext_ilike "%exploit-db%" AND Vulnsearch.tags not_any "reviewed"'
+            >
+              Farmer
+            </Link>
+
+            <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
+              <i className="fas fa-filter"></i>
+            </a>
+          </div>
         </div>
       </Heading>
 

@@ -318,6 +318,19 @@ const VulnListPage = () => {
             >
               Only Report
             </Link>
+            <Link
+              className="btn btn-outline-secondary"
+              to='/storage/vuln/list?filter=Vuln.severity not_in ["info", "low"]'
+            >
+              Severe
+            </Link>
+            <Link
+              className="btn btn-outline-secondary"
+              to='/storage/vuln/list?filter=Vuln.xtype=="manual"'
+            >
+              Manual
+            </Link>
+
           </div>
         </div>
         <FilterForm url="/storage/vuln/list" />
