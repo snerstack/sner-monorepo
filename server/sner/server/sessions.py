@@ -55,9 +55,12 @@ class FilesystemSessionInterface(SessionInterface):
             return
 
         horizont = time() - self.max_idle_time
-        for fpath in [os.path.join(self.storage, fn) for fn in os.listdir(self.storage)]:
-            if os.path.getatime(fpath) < horizont:
-                os.remove(fpath)
+        try:
+            for fpath in [os.path.join(self.storage, fn) for fn in os.listdir(self.storage)]:
+                if os.path.getatime(fpath) < horizont:
+                    os.remove(fpath)
+        except OSError:  # pragma: no cover  ; won't test
+            pass
 
     def new_session(self):
         """create new session, used in open_session and during login"""
