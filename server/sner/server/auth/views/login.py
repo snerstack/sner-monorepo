@@ -10,7 +10,7 @@ from authlib.common.errors import AuthlibBaseError
 from fido2 import cbor
 from fido2.webauthn import AuthenticatorData, CollectedClientData
 from flask import current_app, redirect, Response, session, url_for, jsonify
-from flask_login import login_user, logout_user
+from flask_login import current_user, login_user, logout_user
 from requests.exceptions import HTTPError
 from sqlalchemy import func
 
@@ -41,7 +41,7 @@ def login_route():
 
                     regenerate_session()
                     login_user(user)
-                    current_app.logger.info('auth.login password')
+                    current_app.logger.info('auth.login password success, username=%s', user.username)
 
                     return jsonify({
                         "id": user.id,
@@ -54,6 +54,7 @@ def login_route():
                     session['webauthn_login_user_id'] = user.id
                     return jsonify({"webauthn_login": True})
 
+    current_app.logger.info("auth.login password failed, username=%s", form.username.data)
     return error_response(message='Invalid credentials.', code=HTTPStatus.UNAUTHORIZED)
 
 
@@ -61,10 +62,9 @@ def login_route():
 def logout_route():
     """logout route"""
 
-    current_app.logger.info('auth.logout')
+    current_app.logger.info('auth.logout, username=%s', current_user.username if current_user.is_authenticated else 'anonymous')
     logout_user()
     session.clear()
-
     return jsonify({"message": "Successfully logged out."})
 
 
@@ -81,7 +81,7 @@ def login_totp_route():
         if TOTPImpl(user.totp).verify_code(form.code.data):
             regenerate_session()
             login_user(user)
-            current_app.logger.info('auth.login totp')
+            current_app.logger.info('auth.login totp success, username=%s', user.username)
             return jsonify({
                         "id": user.id,
                         "username": user.username,
@@ -89,8 +89,10 @@ def login_totp_route():
                         "roles": user.roles
             })
 
+        current_app.logger.info("auth.login password failed code, username=%s", user.username)
         return error_response(message='Invalid code.', code=HTTPStatus.BAD_REQUEST)
 
+    current_app.logger.info("auth.login password failed form error, username=%s", user.username)
     return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
@@ -129,7 +131,8 @@ def login_webauthn_route():
                 assertion['signature'])
             regenerate_session()
             login_user(user)
-            current_app.logger.info('auth.login webauthn')
+            current_app.logger.info('auth.login webauthn success, username=%s', user.username)
+
             return jsonify({
                         "id": user.id,
                         "username": user.username,
@@ -141,6 +144,7 @@ def login_webauthn_route():
             current_app.logger.exception(exc)
             return error_response(message='Error during Webauthn authentication.', code=HTTPStatus.BAD_REQUEST)
 
+    current_app.logger.info('auth.login webauthn failed form error')
     return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
 
 
@@ -185,8 +189,13 @@ def login_oidc_callback_route():
         if user:
             regenerate_session()
             login_user(user)
-            current_app.logger.info('auth.login oidc')
+            current_app.logger.info('auth.login oidc success, username=%s', user.username)
             return redirect(url_for('frontend.index_route'))
 
-    current_app.logger.info("failed to login user, userinfo=%s, token=%s", userinfo, token)
+    userinfo['nonce'] = "redacted"
+    token['access_token'] = "redacted"
+    token['refresh_token'] = "redacted"
+    if 'userinfo' in token:  # pragma: nocover  ; won't test
+        token['userinfo']['nonce'] = "redacted"
+    current_app.logger.info('auth.login oidc failed, userinfo=%s, token=%s', userinfo, token)
     return error_response(message='OIDC authentication error, user lookup error', code=HTTPStatus.INTERNAL_SERVER_ERROR)
