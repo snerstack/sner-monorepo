@@ -149,7 +149,10 @@ type SubnavItem = { title: string; link: string }
       <ul className="navbar-nav">
         <li className="nav-item dropdown">
           <a className="nav-link dropdown-toggle" href="#" id="dropdownUser" data-toggle="dropdown">
-            {currentUser.username}
+            {
+              /* c8 ignore next */
+              currentUser.username.length > 15 ? `${currentUser.username.substring(0, 12)}...` : currentUser.username
+            }
           </a>
           <div className="dropdown-menu dropdown-menu-right">
             {currentUser.roles.includes('admin') && (
