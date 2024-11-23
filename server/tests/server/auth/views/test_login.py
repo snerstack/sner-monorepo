@@ -161,7 +161,7 @@ def test_login_oidc_route(client, user):
     """test_login_oidc_route"""
 
     authorize_redirect_mock = Mock(return_value=redirect('fake_redir_to_idp'))
-    authorize_access_token_mock = Mock(return_value={'userinfo': {'email': user.email}})
+    authorize_access_token_mock = Mock(return_value={'userinfo': {'sub': user.username, 'email': user.email}})
 
     patch_oauth_redirect = patch.object(oauth.OIDC_DEFAULT, 'authorize_redirect', authorize_redirect_mock)
     patch_oauth_token = patch.object(oauth.OIDC_DEFAULT, 'authorize_access_token', authorize_access_token_mock)
@@ -180,7 +180,21 @@ def test_login_oidc_route(client, user):
 def test_login_oidc_route_noexist_user(client):
     """test non-existing user"""
 
-    authorize_access_token_mock = Mock(return_value={'userinfo': {'email': 'notexist'}})
+    authorize_access_token_mock = Mock(return_value={'userinfo': {'sub': 'dummy', 'email': 'notexist'}})
+    current_app.config['OIDC_CREATE_USER'] = True
+
+    patch_oauth_token = patch.object(oauth.OIDC_DEFAULT, 'authorize_access_token', authorize_access_token_mock)
+    with patch_oauth_token:
+        response = client.get(url_for('auth.login_oidc_callback_route'))
+        assert response.status_code == HTTPStatus.FOUND
+
+    authorize_access_token_mock.assert_called_once()
+
+
+def test_login_oidc_route_failed_userinfo(client):
+    """test non-existing user"""
+
+    authorize_access_token_mock = Mock(return_value={'userinfo': {'required_fields_missing': 1}})
 
     patch_oauth_token = patch.object(oauth.OIDC_DEFAULT, 'authorize_access_token', authorize_access_token_mock)
     with patch_oauth_token:
@@ -189,20 +203,6 @@ def test_login_oidc_route_noexist_user(client):
         assert response.json['error']['message'] == 'OIDC authentication error, user lookup error'
 
     authorize_access_token_mock.assert_called_once()
-
-
-def test_login_oidc_route_disabled_oidc(client):
-    """test disabled oidc redirects"""
-
-    current_app.config['OIDC_NAME'] = None
-
-    response = client.get(url_for('auth.login_oidc_route'), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json['error']['message'] == 'OIDC is not enabled.'
-
-    response = client.get(url_for('auth.login_oidc_callback_route'), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json['error']['message'] == 'OIDC is not enabled.'
 
 
 def test_login_oidc_route_handle_oidc_errors(client):

@@ -28,6 +28,7 @@
 #    - [network, '127.66.66.0/26']
 #
 #  oidc_name: 'OIDC_DEFAULT'
+#  oidc_create_user: true
 #  oidc_default_metadata: 'https://URL/.well-known/openid-configuration'
 #  oidc_default_client_id: 'dummy'
 #  oidc_default_client_secret: 'dummy'

@@ -127,6 +127,7 @@ DEFAULT_CONFIG = {
     # oauth oidc
     'OIDC_NAME': None,
     'OIDC_TIMEOUT': 10,
+    'OIDC_CREATE_USER': False,
     # 'OIDC_DEFAULT_METADATA': 'https://URL/.well-known/openid-configuration',
     # 'OIDC_DEFAULT_CLIENT_ID': '',
     # 'OIDC_DEFAULT_CLIENT_SECRET': ''
