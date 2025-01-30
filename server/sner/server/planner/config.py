@@ -85,6 +85,8 @@ class PlannerConfig(BaseModel):
         nuclei_nets_ipv4: List of IPv4 networks to scan; nuclei pipeline
         nuclei_targets: List of targets to scan, list, not enumerated; nuclei pipeline
         sportmap_nets_ipv4: List of IPv4 networks to scan; sportmap pipeline
+        agreegate_url: agreegate base url (system for managing scanned networks)
+        agreegate_apikey: agreegate apikey
         pipelines: Pipelines configuration, if any.
     """
 
@@ -96,5 +98,8 @@ class PlannerConfig(BaseModel):
     nuclei_targets: List[str] = []
 
     sportmap_nets_ipv4: List[str] = []
+
+    agreegate_url: str = None
+    agreegate_apikey: str = None
 
     pipelines: Optional[Pipelines] = None

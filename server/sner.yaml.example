@@ -61,6 +61,11 @@
 #  sportmap_nets_ipv4: []
 #  sportmap_targets: []
 #
+#  # dynamic netlists configuration
+#  agreegate_url: null
+#  agreegate_apikey: null
+#
+#  # execution pipelines
 #  pipelines:
 #    standalone_queues:
 #      queues:

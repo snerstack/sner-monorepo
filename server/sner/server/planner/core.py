@@ -6,9 +6,14 @@ planner handles processing of queues acording to defined pipelines. queues has s
 and requirements so they can be handled by pools of agents with respective capabilities
 """
 
+import ipaddress
+import json
 import logging
+from http import HTTPStatus
+from pathlib import Path
 from time import sleep
 
+import requests
 from flask import current_app
 
 from sner.lib import TerminateContextMixin
@@ -60,6 +65,25 @@ def configure_logging():
     })
 
 
+def split_ip_networks(networks):
+    """split ipv4/ipv6 addrs helper"""
+
+    ipv4_networks = []
+    ipv6_networks = []
+
+    for net in networks:
+        try:
+            ip_net = ipaddress.ip_network(net, strict=False)
+            if ip_net.version == 4:
+                ipv4_networks.append(net)
+            else:
+                ipv6_networks.append(net)
+        except ValueError:
+            current_app.logger.error("Invalid network: %s", net)
+
+    return ipv4_networks, ipv6_networks
+
+
 class Planner(TerminateContextMixin):
     """planner"""
 
@@ -73,10 +97,27 @@ class Planner(TerminateContextMixin):
         self.original_signal_handlers = {}
         self.loop = None
         self.oneshot = oneshot
-        self.config = PlannerConfig(**config)
-
         self.stages = {}
+        self.agreegate_netlists_path = Path(f"{current_app.config['SNER_VAR']}/agreegate_netlists.json")
+
+        self.config = PlannerConfig(**config)
+        self._load_merge_agreegate_netlists()
         self._setup_stages()
+
+    def _load_merge_agreegate_netlists(self):
+        """load and merge netlists from agreegate file"""
+
+        if self.agreegate_netlists_path.exists():
+            current_app.logger.info("merging agreegate netlists")
+            ag_netlists = json.loads(self.agreegate_netlists_path.read_text(encoding="utf-8"))
+
+            ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/basic", []))
+            self.config.basic_nets_ipv4 = list(set(self.config.basic_nets_ipv4 + ipv4_networks))
+            self.config.filter_nets_ipv6 = list(set(self.config.filter_nets_ipv6 + ipv6_networks))
+
+            ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/nuclei", []))
+            self.config.nuclei_nets_ipv4 = list(set(self.config.nuclei_nets_ipv4 + ipv4_networks))
+            self.config.sportmap_nets_ipv4 = list(set(self.config.sportmap_nets_ipv4 + ipv4_networks))
 
     def _setup_stages(self):
         """setup planner stages/pipelines"""
@@ -247,3 +288,19 @@ class Planner(TerminateContextMixin):
                     addrs.append(addr)
 
         return addrs
+
+    def fetch_agreegate_netlists(self):
+        """fetch networks to be scanned from agreegate API"""
+
+        resp = requests.get(
+            f"{self.config.agreegate_url}/api/v1/networks/aggregated?output=json",
+            headers={"X-API-KEY": self.config.agreegate_apikey},
+            timeout=60
+        )
+
+        if resp.status_code != HTTPStatus.OK:  # pragma nocover  ; won't test
+            current_app.logger.error("failed to fetch agreegate netlists, %s", resp)
+            return 1
+
+        self.agreegate_netlists_path.write_text(resp.text, encoding="utf-8")
+        return 0

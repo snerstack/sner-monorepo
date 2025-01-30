@@ -36,3 +36,11 @@ def dump_targets(netlist):
 
     if targets := Planner(current_app.config['SNER_PLANNER']).dump_targets(netlist):
         print("\n".join(targets))
+
+
+@command.command(name='fetch-agreegate-netlists', help='fetch networks to be scanned from agreegate API')
+@with_appcontext
+def fetch_agreegate_netlists():  # pragma nocover  ; won't test
+    """fetch networks to be scanned from agreegate API"""
+
+    return Planner(current_app.config['SNER_PLANNER']).fetch_agreegate_netlists()
