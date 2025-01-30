@@ -17,4 +17,8 @@ else
     echo "database already initialized"
 fi
 
-/opt/sner/server/venv/bin/gunicorn --bind '0.0.0.0:18000' --workers=5 'sner.server.app:create_app()' --access-logfile -
+if [ -z "$SNER_SERVER_BIND" ]; then
+    SNER_SERVER_BIND="0.0.0.0:18000"
+fi
+
+/opt/sner/server/venv/bin/gunicorn --bind "$SNER_SERVER_BIND" --workers=5 'sner.server.app:create_app()' --access-logfile -
