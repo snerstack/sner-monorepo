@@ -6,7 +6,7 @@ on:
 jobs:
   semgrep:
     name: semgrep-oss/scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     container:
       image: semgrep/semgrep
