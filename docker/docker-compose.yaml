@@ -15,14 +15,14 @@ services:
       SNER_CONFIG: |
         server:
           secret_key: "${SNER_SERVER_SECRET_KEY}"
-          sqlalchemy_database_uri: "postgresql://sner:${SNER_SERVER_DB_PASSWORD}@db/sner"
+          sqlalchemy_database_uri: "postgresql://sner:${SNER_SERVER_DB_PASSWORD}@database/sner"
     volumes:
-      - vardata:/var/lib/sner
+      - server_data:/var/lib/sner
     ports:
       - 18000:18000
     restart: always
     depends_on:
-      - db
+      - database
     networks:
       - backend
 
@@ -36,7 +36,7 @@ services:
       SNER_CONFIG: |
         server:
           secret_key: "${SNER_SERVER_SECRET_KEY}"
-          sqlalchemy_database_uri: "postgresql://sner:${SNER_SERVER_DB_PASSWORD}@db/sner"
+          sqlalchemy_database_uri: "postgresql://sner:${SNER_SERVER_DB_PASSWORD}@database/sner"
         planner:
           home_netranges_ipv4: []
           home_netranges_ipv6: ['::1/128']
@@ -65,10 +65,10 @@ services:
               schedule: 10m
 
     volumes:
-      - vardata:/var/lib/sner
+      - server_data:/var/lib/sner
     restart: always
     depends_on:
-      - db
+      - database
     networks:
       - backend
 
@@ -91,11 +91,11 @@ services:
     networks:
       - backend
 
-  db:
+  database:
     image: postgres:15-bookworm
-    container_name: sner_db
+    container_name: sner_database
     volumes:
-      - dbdata:/var/lib/postgresql
+      - database_data:/var/lib/postgresql
     environment:
       SNER_SERVER_DB_PASSWORD:
 
@@ -107,8 +107,8 @@ services:
       - backend
 
 volumes:
-  dbdata:
-  vardata:
+  database_data:
+  server_data:
 
 networks:
   backend:
