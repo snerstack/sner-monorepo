@@ -22,6 +22,7 @@ import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import LensButton from '@/components/buttons/LensButton'
 
 const HostListPage = () => {
   const [appConfig, ] = useRecoilState(appConfigState)
@@ -101,6 +102,7 @@ const HostListPage = () => {
         renderElements(
           cell,
           <ButtonGroup>
+            <LensButton url={`/lens/host/${row['id']}`} navigate={navigate} />
             <DropdownButton
               title="More data"
               options={[

@@ -1,0 +1,69 @@
+pre.preformatted {
+    white-space: break-spaces;
+}
+
+.lens-host-overview,
+.lens-host-toc,
+.lens-host-hostnotes,
+.lens-host-services,
+.lens-host-vulns {
+    margin-bottom: 2em;
+}
+
+.lens-host-hostinfo,
+.lens-host-ports {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.lens-host-hostinfo table {
+    width: 100%;
+}
+
+.lens-host-hostinfo tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.lens-host-hostinfo th {
+    font-weight: normal;
+    width: 20%;
+    padding: 0.3em;
+    text-align: left;
+}
+
+.lens-host-hostinfo td {
+    font-weight: bolder;
+    width: 80%;
+    padding: 0.3em;
+}
+
+.lens-host-port-link {
+    display: inline-block;
+    color: white;
+    background-color: #2567af;
+    display: inline-block;
+    margin: 0.3em;
+    padding: 0.7em;
+    text-align: center;
+    vertical-align: middle;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+.lens-host-service,
+.lens-host-service-info {
+    margin-bottom: 1em;
+}
+
+.lens-service-notes-item {
+    border-top: 1px solid #ddd;
+    padding-top: 0.5em;
+}
+
+.lens-host-vuln {
+    margin-bottom: 1em;
+}
+
+.lens-host-service.card-header {
+    font-weight: bold;
+}

@@ -24,6 +24,7 @@ import HostEditPage from '@/routes/storage/host/edit'
 import HostListPage from '@/routes/storage/host/list'
 import HostLookupPage from '@/routes/storage/host/lookup'
 import HostViewPage from '@/routes/storage/host/view'
+import LensHostPage from '@/routes/lens/host'
 import NoteAddPage from '@/routes/storage/note/add'
 import NoteEditPage from '@/routes/storage/note/edit'
 import NoteGroupedPage from '@/routes/storage/note/grouped'
@@ -66,6 +67,14 @@ const requestDataHandler = async (url: string) => {
 export const routes = createRoutesFromElements(
   <Route path="/" element={<BaseLayout />}>
     <Route index element={<RootPage />} />
+
+    <Route element={<ProtectedRoute requiredRole="user" />}>
+      <Route
+        path="lens/host/:id"
+        element={<LensHostPage />}
+        loader={async ({ params: { id } }) => requestDataHandler(`/backend/lens/host/${id}.json`)}
+      />
+    </Route>
 
     <Route path="swagger" element={<SwaggerPage />} />
 

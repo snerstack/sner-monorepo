@@ -26,6 +26,7 @@ import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import ViewButton from '@/components/buttons/ViewButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import LensButton from '@/components/buttons/LensButton'
 
 const HostViewPage = () => {
   const [appConfig,] = useRecoilState(appConfigState)
@@ -633,6 +634,7 @@ const HostViewPage = () => {
               ]}
               small={false}
             />
+            <LensButton url={`/lens/host/${host.id}`} className="btn btn-outline-primary" navigate={navigate} />
             <Button title="Add service" name="+S" url={`/storage/service/add/${host.id}`} className="btn btn-outline-primary" />
             <Button title="Add vuln" name="+V" url={`/storage/vuln/add/host/${host.id}`} className="btn btn-outline-primary" />
             <Button title="Add note" name="+N" url={`/storage/note/add/host/${host.id}`} className="btn btn-outline-primary" />
