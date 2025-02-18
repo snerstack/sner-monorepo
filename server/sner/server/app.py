@@ -32,6 +32,7 @@ from sner.version import __version__
 from sner.server.api.views import blueprint as api_blueprint
 from sner.server.auth.views import blueprint as auth_blueprint
 from sner.server.frontend.views import blueprint as frontend_blueprint, pagenotfound_route
+from sner.server.lens.views import blueprint as lens_blueprint
 from sner.server.scheduler.views import blueprint as scheduler_blueprint
 from sner.server.storage.views import blueprint as storage_blueprint
 from sner.server.visuals.views import blueprint as visuals_blueprint
@@ -208,7 +209,7 @@ def configure_logging():
     })
 
 
-def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
+def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylint: disable=too-many-statements
     """flask application factory"""
 
     configure_logging()
@@ -264,6 +265,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):
     app.register_error_handler(404, pagenotfound_route)
 
     app.register_blueprint(auth_blueprint, url_prefix='/backend/auth')
+    app.register_blueprint(lens_blueprint, url_prefix='/backend/lens')
     app.register_blueprint(scheduler_blueprint, url_prefix='/backend/scheduler')
     app.register_blueprint(storage_blueprint, url_prefix='/backend/storage')
     app.register_blueprint(visuals_blueprint, url_prefix='/backend/visuals')
