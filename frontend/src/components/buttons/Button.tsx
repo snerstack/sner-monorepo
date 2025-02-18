@@ -4,18 +4,20 @@ const Button = ({
   name,
   title,
   url,
+  className = "btn btn-outline-secondary",
   // eslint-disable-next-line react-hooks/rules-of-hooks
   navigate = useNavigate(),
 }: {
   name: string
   title: string
   url: string
+  className?: string
   navigate?: NavigateFunction
 }) => {
   return (
     <a
       data-testid="btn"
-      className="btn btn-outline-secondary"
+      className={className}
       href={url}
       title={title}
       onClick={(e) => {
