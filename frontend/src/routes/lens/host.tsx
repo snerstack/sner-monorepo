@@ -81,7 +81,7 @@ const LensHostPage = () => {
       <Heading headings={['Lens', 'Host', host.address]} />
 
       <div className="lens-host-overview d-flex w-100">
-        <div className="lens-host-hostinfo card w-50 mr-2">
+        <div className="lens-host-hostinfo card w-50 mr-2" data-testid="lens-host-hostinfo">
           <div className="card-header">
             Host Info
             <Link to={`/storage/host/view/${host.id}`}>
