@@ -12,7 +12,7 @@ import Heading from '@/components/Heading'
 import TagsConfig from '@/components/TagsConfig'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
-import EditButton from '@/components/buttons/EditButton'
+import { EditButton } from '@/components/buttons/BasicButtons'
 
 const ProfilePage = () => {
   const profile = useLoaderData() as Profile

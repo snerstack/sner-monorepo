@@ -15,18 +15,18 @@ import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
-import Button from '@/components/buttons/Button'
+import { Button } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
-import EditButton from '@/components/buttons/EditButton'
-import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import { EditButton } from '@/components/buttons/BasicButtons'
+import { MultiCopyButton } from '@/components/buttons/BasicButtons'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
-import ViewButton from '@/components/buttons/ViewButton'
+import { ViewButton } from '@/components/buttons/BasicButtons'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
-import LensButton from '@/components/buttons/LensButton'
+import { LensButton } from '@/components/buttons/BasicButtons'
 
 const HostViewPage = () => {
   const [appConfig,] = useRecoilState(appConfigState)
@@ -149,8 +149,8 @@ const HostViewPage = () => {
                 },
               ]}
             />
-            <Button name="+V" title="Add vuln" url={`/storage/service/add/${row['id']}`} navigate={navigate} />
-            <Button name="+N" title="Add note" url={`/storage/vuln/add/host/${row['id']}`} navigate={navigate} />
+            <Button title="Add vuln" url={`/storage/service/add/${row['id']}`} navigate={navigate}>+V</Button>
+            <Button title="Add note" url={`/storage/vuln/add/host/${row['id']}`} navigate={navigate}>+N</Button>
             <EditButton url={`/storage/service/edit/${row['id']}`} navigate={navigate} />
             <DeleteButton url={urlFor(`/backend/storage/service/delete/${row['id']}`)} tableId="host_view_service_table" />
           </ButtonGroup>,
@@ -634,10 +634,10 @@ const HostViewPage = () => {
               ]}
               small={false}
             />
-            <LensButton url={`/lens/host/${host.id}`} className="btn btn-outline-primary" navigate={navigate} />
-            <Button title="Add service" name="+S" url={`/storage/service/add/${host.id}`} className="btn btn-outline-primary" />
-            <Button title="Add vuln" name="+V" url={`/storage/vuln/add/host/${host.id}`} className="btn btn-outline-primary" />
-            <Button title="Add note" name="+N" url={`/storage/note/add/host/${host.id}`} className="btn btn-outline-primary" />
+            <LensButton url={`/lens/host/${host.id}`} className="btn btn-outline-primary" />
+            <Button title="Add service" url={`/storage/service/add/${host.id}`} className="btn btn-outline-primary">+S</Button>
+            <Button title="Add vuln" url={`/storage/vuln/add/host/${host.id}`} className="btn btn-outline-primary">+V</Button>
+            <Button title="Add note" url={`/storage/note/add/host/${host.id}`} className="btn btn-outline-primary">+N</Button>
             <EditButton url={`/storage/host/edit/${host.id}`} className="btn btn-outline-primary" />
           </div>{' '}
           <DeleteButton url={urlFor(`/backend/storage/host/delete/${host.id}`)} />

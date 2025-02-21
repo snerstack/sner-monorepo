@@ -13,7 +13,7 @@ import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
-import EditButton from '@/components/buttons/EditButton'
+import { EditButton } from '@/components/buttons/BasicButtons'
 import ApikeyModal from '@/components/modals/ApikeyModal'
 
 const UserListPage = () => {

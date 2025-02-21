@@ -9,7 +9,7 @@ import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
-import EditButton from '@/components/buttons/EditButton'
+import { EditButton } from '@/components/buttons/BasicButtons'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import { DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage'
 

@@ -17,7 +17,7 @@ import Tag from '@/components/Tag'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
-import ViewButton from '@/components/buttons/ViewButton'
+import { ViewButton } from '@/components/buttons/BasicButtons'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
