@@ -17,9 +17,9 @@ from sner.server.utils import error_response
 blueprint = Blueprint('lens', __name__)  # pylint: disable=invalid-name
 
 
-@blueprint.route("/host/<host_id>.json")
+@blueprint.route("/host/view/<host_id>.json")
 @session_required("user")
-def host_json_route(host_id):
+def host_view_json_route(host_id):
     """lens host json data provider"""
 
     host = Host.query.get(host_id)

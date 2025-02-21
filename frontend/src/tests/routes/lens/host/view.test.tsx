@@ -1,4 +1,4 @@
-import LensHostPage from "@/routes/lens/host"
+import LensHostViewPage from "@/routes/lens/host/view"
 import { screen, waitFor, within } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
@@ -47,11 +47,11 @@ const loader = () =>
     vulns: []
   })
 
-describe("Lens host page", () => {
+describe("Lens host view page", () => {
   it("shows page", async () => {
     renderWithProviders({
-      element: <LensHostPage />,
-      path: "/lens/host/1",
+      element: <LensHostViewPage />,
+      path: "/lens/host/view/1",
       loader: loader,
     })
 

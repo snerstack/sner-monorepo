@@ -69,7 +69,7 @@ const VulnCard = ({ vuln }: { vuln: LensVuln }) => (
   </div>
 )
 
-const LensHostPage = () => {
+const LensHostViewPage = () => {
   const host = useLoaderData() as LensHost
   const hostNotesCount = host.notes.filter(note => note.service_id === null).length
 
@@ -170,4 +170,4 @@ const LensHostPage = () => {
   )
 }
 
-export default LensHostPage
+export default LensHostViewPage

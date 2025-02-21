@@ -102,7 +102,7 @@ const HostListPage = () => {
         renderElements(
           cell,
           <ButtonGroup>
-            <LensButton url={`/lens/host/${row['id']}`} title="Jump to host lens" navigate={navigate} />
+            <LensButton url={`/lens/host/view/${row['id']}`} title="Jump to host lens" navigate={navigate} />
             <DropdownButton
               title="More data"
               options={[

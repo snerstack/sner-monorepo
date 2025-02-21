@@ -26,7 +26,7 @@ type SubnavItem = { title: string; link: string }
   const navMenu: NavMenuConfig = {
     lens: {
       title: 'Lens',
-      icon: 'fas fa-eye',
+      icon: 'fas fa-street-view',
       link: '/lens',
       acl: 'user',
       subnav: [],

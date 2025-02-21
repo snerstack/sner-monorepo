@@ -634,7 +634,7 @@ const HostViewPage = () => {
               ]}
               small={false}
             />
-            <LensButton url={`/lens/host/${host.id}`} className="btn btn-outline-primary" />
+            <LensButton url={`/lens/host/view/${host.id}`} className="btn btn-outline-primary" />
             <Button title="Add service" url={`/storage/service/add/${host.id}`} className="btn btn-outline-primary">+S</Button>
             <Button title="Add vuln" url={`/storage/vuln/add/host/${host.id}`} className="btn btn-outline-primary">+V</Button>
             <Button title="Add note" url={`/storage/note/add/host/${host.id}`} className="btn btn-outline-primary">+N</Button>
