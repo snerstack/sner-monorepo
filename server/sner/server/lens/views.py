@@ -3,15 +3,19 @@
 lens views
 """
 
+import json
 from http import HTTPStatus
 from ipaddress import ip_address, ip_network
 
-from flask import Blueprint, jsonify
+from datatables import ColumnDT, DataTables
+from flask import Blueprint, jsonify, request, Response
 from flask_login import current_user
+from sqlalchemy import func, or_
 
 from sner.server.auth.core import session_required
-from sner.server.storage.models import Host
-from sner.server.utils import error_response
+from sner.server.extensions import db
+from sner.server.storage.models import Host, Service, Vuln
+from sner.server.utils import error_response, SnerJSONEncoder
 
 
 blueprint = Blueprint('lens', __name__)  # pylint: disable=invalid-name
@@ -113,3 +117,64 @@ def host_view_json_route(host_id):
         "notes": notes,
         "vulns": vulns,
     })
+
+
+@blueprint.route('/host/list.json', methods=['GET', 'POST'])
+@session_required('user')
+def host_list_json_route():
+    """list hosts, data endpoint"""
+
+    count_services = db.session.query(Service.host_id, func.count(Service.id).label('count')).group_by(Service.host_id).subquery()
+    count_vulns = db.session.query(Vuln.host_id, func.count(Vuln.id).label('count')).group_by(Vuln.host_id).subquery()
+    columns = [
+        ColumnDT(Host.id, mData='id'),
+        ColumnDT(Host.address, mData='address'),
+        ColumnDT(Host.hostname, mData='hostname'),
+        ColumnDT(func.coalesce(count_services.c.count, 0), mData='services', global_search=False),
+        ColumnDT(func.coalesce(count_vulns.c.count, 0), mData='vulns', global_search=False),
+        ColumnDT(Host.tags, mData='tags'),
+    ]
+
+    restrict = [Host.address.op('<<=')(net) for net in current_user.api_networks]
+    query = db.session.query().select_from(Host) \
+        .filter(or_(*restrict)) \
+        .outerjoin(count_services, Host.id == count_services.c.host_id) \
+        .outerjoin(count_vulns, Host.id == count_vulns.c.host_id) # \
+
+    #query = filter_query(query, request.values.get('filter'))
+
+    hosts = DataTables(request.values.to_dict(), query, columns).output_result()
+    return Response(json.dumps(hosts, cls=SnerJSONEncoder), mimetype='application/json')
+
+
+@blueprint.route('/service/list.json', methods=['GET', 'POST'])
+@session_required('user')
+def service_list_json_route():
+    """list services, data endpoint"""
+
+    columns = [
+        ColumnDT(Service.id, mData='id'),
+        ColumnDT(Host.id, mData='host_id'),
+        ColumnDT(Host.address, mData='host_address'),
+        ColumnDT(Host.hostname, mData='host_hostname'),
+        ColumnDT(Service.proto, mData='proto'),
+        ColumnDT(Service.port, mData='port'),
+        ColumnDT(Service.name, mData='name'),
+        ColumnDT(Service.state, mData='state'),
+        ColumnDT(Service.info, mData='info'),
+        ColumnDT(Service.tags, mData='tags'),
+        # ColumnDT(Service.created, mData='created'),
+        # ColumnDT(Service.modified, mData='modified'),
+        # ColumnDT(Service.rescan_time, mData='rescan_time'),
+        # ColumnDT(Service.import_time, mData='import_time'),
+    ]
+
+    restrict = [Host.address.op('<<=')(net) for net in current_user.api_networks]
+    query = db.session.query().select_from(Service) \
+        .outerjoin(Host) \
+        .filter(or_(*restrict))
+
+    #query = filter_query(query, request.values.get('filter'))
+
+    services = DataTables(request.values.to_dict(), query, columns).output_result()
+    return Response(json.dumps(services, cls=SnerJSONEncoder), mimetype='application/json')
