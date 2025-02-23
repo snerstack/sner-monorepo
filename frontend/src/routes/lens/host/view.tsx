@@ -76,7 +76,7 @@ const LensHostViewPage = () => {
   return (
     <div>
       <Helmet>
-        <title>Lens - SNER</title>
+        <title>Lens / Host - SNER</title>
       </Helmet>
       <Heading headings={['Lens', 'Host', host.address]} />
 

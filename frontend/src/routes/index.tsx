@@ -11,6 +11,11 @@ import UserAddPage from '@/routes/auth/user/add'
 import UserEditPage from '@/routes/auth/user/edit'
 import UserListPage from '@/routes/auth/user/list'
 import ForbiddenPage from '@/routes/forbidden'
+import LensPage from '@/routes/lens'
+import LensHostListPage from '@/routes/lens/host/list'
+import LensHostViewPage from '@/routes/lens/host/view'
+import LensServiceListPage from '@/routes/lens/service/list'
+import LensVulnListPage from '@/routes/lens/vuln/list'
 import NotFoundPage from '@/routes/notfound'
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import RootPage from '@/routes/root'
@@ -24,7 +29,6 @@ import HostEditPage from '@/routes/storage/host/edit'
 import HostListPage from '@/routes/storage/host/list'
 import HostLookupPage from '@/routes/storage/host/lookup'
 import HostViewPage from '@/routes/storage/host/view'
-import LensHostViewPage from '@/routes/lens/host/view'
 import NoteAddPage from '@/routes/storage/note/add'
 import NoteEditPage from '@/routes/storage/note/edit'
 import NoteGroupedPage from '@/routes/storage/note/grouped'
@@ -69,11 +73,15 @@ export const routes = createRoutesFromElements(
     <Route index element={<RootPage />} />
 
     <Route element={<ProtectedRoute requiredRole="user" />}>
+      <Route path="lens" element={<LensPage />} />
+      <Route path="lens/host/list" element={<LensHostListPage />} />
       <Route
         path="lens/host/view/:id"
         element={<LensHostViewPage />}
         loader={async ({ params: { id } }) => requestDataHandler(`/backend/lens/host/view/${id}.json`)}
       />
+      <Route path="lens/service/list" element={<LensServiceListPage />} />
+      <Route path="lens/vuln/list" element={<LensVulnListPage />} />
     </Route>
 
     <Route path="swagger" element={<SwaggerPage />} />

@@ -29,7 +29,11 @@ type SubnavItem = { title: string; link: string }
       icon: 'fas fa-street-view',
       link: '/lens',
       acl: 'user',
-      subnav: [],
+      subnav: [
+        { title: 'Hosts', link: '/lens/host/list' },
+        { title: 'Services', link: '/lens/service/list' },
+        { title: 'Vulnerabilities', link: '/lens/vuln/list' },
+      ],
     },
     swagger: {
       title: 'API',
