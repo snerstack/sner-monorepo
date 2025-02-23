@@ -24,7 +24,7 @@ def test_host_view_json_route(cl_user, host_permitted, host_denied):
 def test_host_list_json_route(cl_user, host_permitted, host_denied):
     """host list json route test"""
 
-    response = cl_user.post(url_for('lens.host_list_json_route'), {'draw': 1, 'start': 0, 'length': 100 })
+    response = cl_user.post(url_for('lens.host_list_json_route'), {'draw': 1, 'start': 0, 'length': 100})
     assert response.status_code == HTTPStatus.OK
 
     assert len(response.json['data']) == 1
@@ -35,10 +35,26 @@ def test_service_list_json_route(cl_user, host_permitted, host_denied, service_f
     """service list json route test"""
 
     service_permitted = service_factory.create(host=host_permitted, port=111)
-    service_denied = service_factory.create(host=host_denied, port=222)
+    service_factory.create(host=host_denied, port=222)
 
-    response = cl_user.post(url_for('lens.service_list_json_route'), {'draw': 1, 'start': 0, 'length': 100 })
+    response = cl_user.post(url_for('lens.service_list_json_route'), {'draw': 1, 'start': 0, 'length': 100})
     assert response.status_code == HTTPStatus.OK
 
     assert len(response.json['data']) == 1
     assert response.json['data'][0]['port'] == service_permitted.port
+
+
+def test_vuln_list_json_route(cl_user, host_permitted, host_denied, service_factory, vuln_factory):
+    """vuln list json route test"""
+
+    service_permitted = service_factory.create(host=host_permitted, port=111)
+    service_denied = service_factory.create(host=host_denied, port=222)
+
+    vuln_permitted = vuln_factory.create(host=host_permitted, service=service_permitted, name="vuln1")
+    vuln_factory.create(host=host_denied, service=service_denied, name="vuln2")
+
+    response = cl_user.post(url_for('lens.vuln_list_json_route'), {'draw': 1, 'start': 0, 'length': 100})
+    assert response.status_code == HTTPStatus.OK
+
+    assert len(response.json['data']) == 1
+    assert response.json['data'][0]['name'] == vuln_permitted.name

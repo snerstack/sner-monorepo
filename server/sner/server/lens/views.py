@@ -139,9 +139,9 @@ def host_list_json_route():
     query = db.session.query().select_from(Host) \
         .filter(or_(*restrict)) \
         .outerjoin(count_services, Host.id == count_services.c.host_id) \
-        .outerjoin(count_vulns, Host.id == count_vulns.c.host_id) # \
+        .outerjoin(count_vulns, Host.id == count_vulns.c.host_id)
 
-    #query = filter_query(query, request.values.get('filter'))
+    # query = filter_query(query, request.values.get('filter'))
 
     hosts = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(hosts, cls=SnerJSONEncoder), mimetype='application/json')
@@ -159,14 +159,11 @@ def service_list_json_route():
         ColumnDT(Host.hostname, mData='host_hostname'),
         ColumnDT(Service.proto, mData='proto'),
         ColumnDT(Service.port, mData='port'),
+        # break pylint duplicate-code detection
         ColumnDT(Service.name, mData='name'),
         ColumnDT(Service.state, mData='state'),
         ColumnDT(Service.info, mData='info'),
         ColumnDT(Service.tags, mData='tags'),
-        # ColumnDT(Service.created, mData='created'),
-        # ColumnDT(Service.modified, mData='modified'),
-        # ColumnDT(Service.rescan_time, mData='rescan_time'),
-        # ColumnDT(Service.import_time, mData='import_time'),
     ]
 
     restrict = [Host.address.op('<<=')(net) for net in current_user.api_networks]
@@ -174,7 +171,41 @@ def service_list_json_route():
         .outerjoin(Host) \
         .filter(or_(*restrict))
 
-    #query = filter_query(query, request.values.get('filter'))
+    # query = filter_query(query, request.values.get('filter'))
 
     services = DataTables(request.values.to_dict(), query, columns).output_result()
     return Response(json.dumps(services, cls=SnerJSONEncoder), mimetype='application/json')
+
+
+@blueprint.route('/vuln/list.json', methods=['GET', 'POST'])
+@session_required('user')
+def vuln_list_json_route():
+    """lens list vulns, data endpoint"""
+
+    columns = [
+        ColumnDT(Vuln.id, mData='id'),
+        ColumnDT(Host.id, mData='host_id'),
+        ColumnDT(Host.address, mData='host_address'),
+        ColumnDT(Host.hostname, mData='host_hostname'),
+        ColumnDT(Service.proto, mData='service_proto'),
+        ColumnDT(Service.port, mData='service_port'),
+        # break pylint duplicate-code detection
+        ColumnDT(func.concat_ws('/', Service.port, Service.proto), mData='service'),
+        ColumnDT(Vuln.via_target, mData='via_target'),
+        ColumnDT(Vuln.name, mData='name'),
+        ColumnDT(Vuln.xtype, mData='xtype'),
+        ColumnDT(Vuln.severity, mData='severity'),
+        ColumnDT(Vuln.refs, mData='refs'),
+        ColumnDT(Vuln.tags, mData='tags'),
+    ]
+
+    restrict = [Host.address.op('<<=')(net) for net in current_user.api_networks]
+    query = db.session.query().select_from(Vuln) \
+        .outerjoin(Host, Vuln.host_id == Host.id) \
+        .outerjoin(Service, Vuln.service_id == Service.id) \
+        .filter(or_(*restrict))
+
+    # query = filter_query(query, request.values.get('filter'))
+
+    vulns = DataTables(request.values.to_dict(), query, columns).output_result()
+    return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype='application/json')
