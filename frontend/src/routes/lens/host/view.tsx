@@ -1,7 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 import { Link, useLoaderData } from 'react-router-dom';
 
+import AnchorLinkJumpFix from '@/components/AnchorLinkJumpFix';
 import Heading from '@/components/Heading';
+
 import "@/styles/lens.css";
 
 const PreformattedData = ({ data }: { data: string }) => {
@@ -49,7 +51,12 @@ const ServiceCard = ({ service, allNotes }: { service: LensService, allNotes: Le
   const serviceNotes = allNotes.filter((note) => service._notes_ids.includes(note.id))
   return (
     <div id={`service-${service.id}`} className="lens-host-service card">
-      <div className="card-header">{service.port} / {service.proto} / {service.state}</div>
+      <div className="card-header d-flex justify-content-between">
+        <span>{service.port} / {service.proto} / {service.state}</span>
+        <Link to="#" className="text-primary">
+          <i className="fas fa-arrow-up"></i>
+        </Link>
+      </div>
       <div className="card-body">
         {service.info && <div className="lens-host-service-info">{service.info}</div>}
         {serviceNotes.length > 0 && <NotesFeed notes={serviceNotes} />}
@@ -75,6 +82,8 @@ const LensHostViewPage = () => {
 
   return (
     <div>
+      <AnchorLinkJumpFix />
+
       <Helmet>
         <title>Lens / Host - SNER</title>
       </Helmet>
@@ -108,9 +117,9 @@ const LensHostViewPage = () => {
           <div className="card-header">Ports</div>
           <div className="card-body">
             {host.services.map((service) => (
-              <a key={service.id} className="lens-host-port-link" href={`#service-${service.id}`}>
+              <Link key={service.id} to={`#service-${service.id}`} className="lens-host-port-link">
                 {service.port} / {service.proto}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -119,26 +128,26 @@ const LensHostViewPage = () => {
       <div className="lens-host-toc">
         <ul className="list-group mt-2">
           <li className="list-group-item">
-            <a href="#hostnotes">
+            <Link to="#hostnotes">
               Host notes
               <span className="badge badge-info ml-2">{hostNotesCount}</span>
-            </a>
+            </Link>
           </li>
           <li className="list-group-item">
-            <a href="#services">
+            <Link to="#services">
               Services
               <span className="badge badge-info ml-2">{host.services.length}</span>
-            </a>
+            </Link>
           </li>
           <li className="list-group-item">
-            <a href="#vulns">
+            <Link to="#vulns">
               Vulnerabilities
               <span className="badge badge-info ml-2">{host.vulns.length}</span>
-            </a>
+            </Link>
             <div>
               <ul>
                 {host.vulns.map((vuln) => (
-                  <li key={vuln.id}><a href={`#vuln-${vuln.id}`}>[ {vuln._service_ident} ] {vuln.name}</a></li>
+                  <li key={vuln.id}><Link to={`#vuln-${vuln.id}`}>[ {vuln._service_ident} ] {vuln.name}</Link></li>
                 ))}
               </ul>
             </div>
