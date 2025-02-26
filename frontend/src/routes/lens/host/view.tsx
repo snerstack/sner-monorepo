@@ -1,8 +1,10 @@
+import clsx from 'clsx';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLoaderData } from 'react-router-dom';
 
 import AnchorLinkJumpFix from '@/components/AnchorLinkJumpFix';
 import Heading from '@/components/Heading';
+import { getColorForSeverity } from '@/lib/sner/storage';
 
 import "@/styles/lens.css";
 
@@ -54,7 +56,7 @@ const ServiceCard = ({ service, allNotes }: { service: LensService, allNotes: Le
       <div className="card-header d-flex justify-content-between">
         <span>{service.port} / {service.proto} / {service.state}</span>
         <Link to="#" className="text-primary">
-          <i className="fas fa-arrow-up"></i>
+          <i className="fas fa-angle-double-up"></i>
         </Link>
       </div>
       <div className="card-body">
@@ -67,7 +69,11 @@ const ServiceCard = ({ service, allNotes }: { service: LensService, allNotes: Le
 
 const VulnCard = ({ vuln }: { vuln: LensVuln }) => (
   <div id={`vuln-${vuln.id}`} className="lens-host-vuln card">
-    <div className="card-header">[ {vuln._service_ident} ] {vuln.name} ({vuln.xtype})</div>
+    <div className="card-header">
+      [ {vuln._service_ident} ]
+      <span className={clsx('badge', getColorForSeverity(vuln.severity), 'mx-2')}>{vuln.severity}</span>
+      {vuln.name} ({vuln.xtype})
+    </div>
     <div className="card-body">
       <PreformattedData data={vuln.descr} />
       <hr />
@@ -93,9 +99,14 @@ const LensHostViewPage = () => {
         <div className="lens-host-hostinfo card w-50 mr-2" data-testid="lens-host-hostinfo">
           <div className="card-header">
             Host Info
-            <Link to={`/storage/host/view/${host.id}`}>
-              <i className="fas fa-database text-secondary float-right"></i>
-            </Link>
+            <div className="float-right">
+              <Link to="#hostnotes" title="Host notes" className="d-inline-block">
+                <span className="badge badge-info badge-pill">{hostNotesCount}</span>
+              </Link>
+              <Link to={`/storage/host/view/${host.id}`} title="Link to storage" className="d-inline-block ml-2">
+                <i className="fas fa-database text-secondary align-middle"></i>
+              </Link>
+            </div>
           </div>
           <div className="card-body">
             <table>
@@ -114,10 +125,20 @@ const LensHostViewPage = () => {
         </div>
 
         <div className="lens-host-ports card w-50 ml-2">
-          <div className="card-header">Ports</div>
+          <div className="card-header">
+            <Link to="#services">
+              Services
+              <span className="badge badge-info ml-2">{host.services.length}</span>
+            </Link>
+          </div>
           <div className="card-body">
             {host.services.map((service) => (
-              <Link key={service.id} to={`#service-${service.id}`} className="lens-host-port-link">
+              <Link
+                key={service.id}
+                to={`#service-${service.id}`}
+                className="lens-host-port-link"
+                title={`[${service.state}] ${service.info}`}
+              >
                 {service.port} / {service.proto}
               </Link>
             ))}
@@ -125,41 +146,32 @@ const LensHostViewPage = () => {
         </div>
       </div>
 
-      <div className="lens-host-toc">
-        <ul className="list-group mt-2">
-          <li className="list-group-item">
-            <Link to="#hostnotes">
-              Host notes
-              <span className="badge badge-info ml-2">{hostNotesCount}</span>
-            </Link>
-          </li>
-          <li className="list-group-item">
-            <Link to="#services">
-              Services
-              <span className="badge badge-info ml-2">{host.services.length}</span>
-            </Link>
-          </li>
-          <li className="list-group-item">
-            <Link to="#vulns">
-              Vulnerabilities
-              <span className="badge badge-info ml-2">{host.vulns.length}</span>
-            </Link>
-            <div>
-              <ul>
-                {host.vulns.map((vuln) => (
-                  <li key={vuln.id}><Link to={`#vuln-${vuln.id}`}>[ {vuln._service_ident} ] {vuln.name}</Link></li>
-                ))}
-              </ul>
-            </div>
-          </li>
-        </ul>
+      <div className="card lens-host-vulnstoc">
+        <div className="card-header">
+          <Link to="#vulns">
+            Vulnerabilities
+            <span className="badge badge-info ml-2">{host.vulns.length}</span>
+          </Link>
+        </div>
+        <div className="card-body">
+          <ul className="list-unstyled">
+            {host.vulns.map((vuln) => (
+              <li key={vuln.id} className="d-flex py-0 hover-bg">
+                <span className="text-monospace text-nowrap small col-1 text-right">[ {vuln._service_ident} ]</span>
+                <span className="col-1 text-center">
+                  <span className={clsx('badge', getColorForSeverity(vuln.severity), 'mx-3')}>{vuln.severity}</span>
+                </span>
+                <Link to={`#vuln-${vuln.id}`}>{vuln.name}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       <div className="lens-host-hostnotes">
         <h2 id="hostnotes">Host notes</h2>
         <HostNotesCard allNotes={host.notes} />
       </div>
-
 
       <div className="lens-host-services">
         <h2 id="services">Services</h2>

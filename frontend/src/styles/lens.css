@@ -2,10 +2,17 @@ pre.preformatted {
     white-space: break-spaces;
 }
 
+.hover-bg:hover {
+    background-color: #e4e4e4;
+}
+
 .lens-host-overview,
-.lens-host-toc,
+.lens-host-services {
+    margin-bottom: 1em;
+}
+
+.lens-host-vulnstoc,
 .lens-host-hostnotes,
-.lens-host-services,
 .lens-host-vulns {
     margin-bottom: 2em;
 }
@@ -48,6 +55,11 @@ pre.preformatted {
     vertical-align: middle;
     text-decoration: none;
     border-radius: 8px;
+}
+
+.lens-host-port-link:hover {
+    color: white;
+    text-decoration: none;
 }
 
 .lens-host-service,
