@@ -69,10 +69,15 @@ const ServiceCard = ({ service, allNotes }: { service: LensService, allNotes: Le
 
 const VulnCard = ({ vuln }: { vuln: LensVuln }) => (
   <div id={`vuln-${vuln.id}`} className="lens-host-vuln card">
-    <div className="card-header">
-      [ {vuln._service_ident} ]
-      <span className={clsx('badge', getColorForSeverity(vuln.severity), 'mx-2')}>{vuln.severity}</span>
-      {vuln.name} ({vuln.xtype})
+    <div className="card-header d-flex justify-content-between">
+      <span>
+        [ {vuln._service_ident} ]
+        <span className={clsx('badge', getColorForSeverity(vuln.severity), 'mx-2')}>{vuln.severity}</span>
+        {vuln.name} ({vuln.xtype})
+      </span>
+      <Link to="#" className="text-primary">
+        <i className="fas fa-angle-double-up"></i>
+      </Link>
     </div>
     <div className="card-body">
       <PreformattedData data={vuln.descr} />
@@ -161,7 +166,7 @@ const LensHostViewPage = () => {
                 <span className="col-1 text-center">
                   <span className={clsx('badge', getColorForSeverity(vuln.severity), 'mx-3')}>{vuln.severity}</span>
                 </span>
-                <Link to={`#vuln-${vuln.id}`}>{vuln.name}</Link>
+                <Link to={`#vuln-${vuln.id}`}>{vuln.name} ({vuln.xtype})</Link>
               </li>
             ))}
           </ul>

@@ -5,20 +5,27 @@ lens views
 
 import json
 from http import HTTPStatus
-from ipaddress import ip_address, ip_network
 
 from datatables import ColumnDT, DataTables
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, current_app, jsonify, request, Response
 from flask_login import current_user
 from sqlalchemy import func, or_
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.models import Host, Service, Vuln
-from sner.server.utils import error_response, SnerJSONEncoder
+from sner.server.utils import error_response, filter_query_jsonfilter, FilterQueryError, SnerJSONEncoder
 
 
 blueprint = Blueprint('lens', __name__)  # pylint: disable=invalid-name
+
+
+def check_dt_errors(resultset):
+    """check if dt output has/has not errors"""
+
+    if 'error' in resultset:
+        current_app.logger.error('DataTable query error: %s', resultset['error'])
+        raise FilterQueryError(resultset['error'].split('\n', maxsplit=1)[0])
 
 
 @blueprint.route("/host/view/<host_id>.json")
@@ -26,13 +33,10 @@ blueprint = Blueprint('lens', __name__)  # pylint: disable=invalid-name
 def host_view_json_route(host_id):
     """lens host json data provider"""
 
-    host = Host.query.get(host_id)
+    restrict = [Host.address.op('<<=')(net) for net in current_user.api_networks]
+    host = Host.query.filter(Host.id == host_id).filter(or_(*restrict)).one_or_none()
     if host is None:
         return error_response(message="Host not found.", code=HTTPStatus.NOT_FOUND)
-
-    addr = ip_address(host.address)
-    if not any((addr in net) for net in map(ip_network, current_user.api_networks)):
-        return error_response(message="Access forbidden.", code=HTTPStatus.FORBIDDEN)
 
     services = [
         {
@@ -141,9 +145,10 @@ def host_list_json_route():
         .outerjoin(count_services, Host.id == count_services.c.host_id) \
         .outerjoin(count_vulns, Host.id == count_vulns.c.host_id)
 
-    # query = filter_query(query, request.values.get('filter'))
-
+    query = filter_query_jsonfilter(query, request.values.get('jsonfilter'))
     hosts = DataTables(request.values.to_dict(), query, columns).output_result()
+    check_dt_errors(hosts)
+
     return Response(json.dumps(hosts, cls=SnerJSONEncoder), mimetype='application/json')
 
 
@@ -171,9 +176,10 @@ def service_list_json_route():
         .outerjoin(Host) \
         .filter(or_(*restrict))
 
-    # query = filter_query(query, request.values.get('filter'))
-
+    query = filter_query_jsonfilter(query, request.values.get('jsonfilter'))
     services = DataTables(request.values.to_dict(), query, columns).output_result()
+    check_dt_errors(services)
+
     return Response(json.dumps(services, cls=SnerJSONEncoder), mimetype='application/json')
 
 
@@ -205,7 +211,8 @@ def vuln_list_json_route():
         .outerjoin(Service, Vuln.service_id == Service.id) \
         .filter(or_(*restrict))
 
-    # query = filter_query(query, request.values.get('filter'))
-
+    query = filter_query_jsonfilter(query, request.values.get('jsonfilter'))
     vulns = DataTables(request.values.to_dict(), query, columns).output_result()
+    check_dt_errors(vulns)
+
     return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype='application/json')

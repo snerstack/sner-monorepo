@@ -12,15 +12,18 @@ import DataTableLink from '@/components/DataTableLink'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
+import { Field } from 'react-querybuilder'
+import RBQFilter from '@/components/RBQFilter'
 
 const LensVulnListPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const columns = [
+  const dtColumns = [
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
+      title: "Address",
       createdCell: (cell, data: string, row: VulnRow) =>
         renderElements(
           cell,
@@ -32,10 +35,11 @@ const LensVulnListPage = () => {
           </DataTableLink>
         ),
     }),
-    Column('host_hostname'),
+    Column('host_hostname', { title: "Hostname" }),
     Column('service_proto', { visible: false }),
     Column('service_port', { visible: false }),
     Column('service', {
+      title: "Service",
       className: 'service_endpoint_dropdown',
       createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
@@ -51,6 +55,7 @@ const LensVulnListPage = () => {
     }),
     Column('via_target', { visible: false, }),
     Column('name', {
+      title: "Name",
       createdCell: (cell, data: string, row: VulnRow) =>
         renderElements(
           cell,
@@ -64,6 +69,7 @@ const LensVulnListPage = () => {
     }),
     Column('xtype', { visible: false }),
     Column('severity', {
+      title: "Severity",
       createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
@@ -71,12 +77,13 @@ const LensVulnListPage = () => {
         ),
     }),
     Column('refs', {
+      title: "Refs",
       createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
           cell,
           <>
-            {row['refs'].map((ref) => (
-              <Fragment key={ref}>
+            {row['refs'].map((ref, index) => (
+              <Fragment key={index}>
                 <a rel="noreferrer" href={getUrlForRef(ref)}>
                   {getTextForRef(ref)}
                 </a>{' '}
@@ -86,6 +93,7 @@ const LensVulnListPage = () => {
         ),
     }),
     Column('tags', {
+      title: "Tags",
       className: 'abutton_annotate_dt',
       createdCell: (cell, _data: string[], row: VulnRow) => {
         renderElements(
@@ -102,17 +110,39 @@ const LensVulnListPage = () => {
     }),
   ]
 
+  const rbqFields: Field[] = [
+      { name: "Host.address", label: "Address" },
+      { name: "Host.hostname", label: "Hostname" },
+      { name: "Service.proto", label: "Proto" },
+      { name: "Service.port", label: "Port" },
+      { name: "Vuln.name", label: "Name" },
+      { name: "Vuln.severity", label: "Severity" },
+      { name: "Vuln.refs", label: "Refs[]" },
+      { name: "Vuln.tags", label: "Tags[]" },
+  ]
+
   return (
     <div>
       <Helmet>
         <title>Lens / Vulns / List - SNER</title>
       </Helmet>
 
-      <Heading headings={['Lens', 'Vulns']} />
+      <Heading headings={['Lens', 'Vulns']}>
+        <div className="breadcrumb-buttons pl-2">
+          <a
+            className="btn btn-outline-secondary"
+            href={`?jsonfilter=${JSON.stringify({combinator: "and", rules: [{field: "Vuln.severity", operator: ">=", value: "medium"}]})}`}
+          >
+            <i className="fas fa-greater-than-equal"></i> medium
+          </a>
+        </div>
+      </Heading>
+
+      <RBQFilter fields={rbqFields} />
 
       <DataTable
         id="vuln_list_table"
-        columns={columns}
+        columns={dtColumns}
         ajax_url={urlFor(`/backend/lens/vuln/list.json${toQueryString(searchParams)}`)}
         order={[[1, 'asc']]}
       />

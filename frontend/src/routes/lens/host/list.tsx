@@ -1,22 +1,25 @@
 import { Fragment } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { Field } from 'react-querybuilder'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Column, renderElements } from '@/lib/DataTables'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
-import Heading from '@/components/Heading'
-import Tag from '@/components/Tag'
 import DataTableLink from '@/components/DataTableLink'
+import Heading from '@/components/Heading'
+import RBQFilter from '@/components/RBQFilter'
+import Tag from '@/components/Tag'
 
 const LensHostListPage = () => {
     const [searchParams] = useSearchParams()
     const navigate = useNavigate()
 
-    const columns = [
+    const dtColumns = [
         Column('id', { visible: false }),
         Column('address', {
+            title: "Address",
             createdCell: (cell, data: string, row: HostRow) =>
                 renderElements(
                     cell,
@@ -25,10 +28,10 @@ const LensHostListPage = () => {
                     </DataTableLink>
                 ),
         }),
-        Column('hostname'),
-        Column('services'),
-        Column('vulns', { title: 'vulnerabilities' }),
-        Column('tags', {
+        Column('hostname', { title: "Hostname" }),
+        Column('services', { title: "Services" }),
+        Column('vulns', { title: 'Vulnerabilities' }),
+        Column('Tags', {
             createdCell: (cell, _data: string[], row: HostRow) => {
                 renderElements(
                     cell,
@@ -44,6 +47,12 @@ const LensHostListPage = () => {
         }),
     ]
 
+    const rbqFields: Field[] = [
+        { name: "Host.address", label: "Address" },
+        { name: "Host.hostname", label: "Hostname" },
+        { name: "Host.tags", label: "Tags[]" },
+    ]
+
     return (
         <div>
             <Helmet>
@@ -52,9 +61,11 @@ const LensHostListPage = () => {
 
             <Heading headings={['Hosts']} />
 
+            <RBQFilter fields={rbqFields} />
+
             <DataTable
                 id="host_list_table"
-                columns={columns}
+                columns={dtColumns}
                 ajax_url={urlFor(`/backend/lens/host/list.json${toQueryString(searchParams)}`)}
                 order={[[2, 'asc']]}
             />
