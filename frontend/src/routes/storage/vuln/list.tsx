@@ -99,8 +99,8 @@ const VulnListPage = () => {
         renderElements(
           cell,
           <>
-            {row['refs'].map((ref) => (
-              <Fragment key={ref}>
+            {row['refs'].map((ref, index) => (
+              <Fragment key={index}>
                 <a rel="noreferrer" href={getUrlForRef(ref)}>
                   {getTextForRef(ref)}
                 </a>{' '}
