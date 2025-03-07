@@ -3,9 +3,8 @@ import * as d3 from 'd3'
 import { useLayoutEffect, useRef } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
-import { toast } from 'react-toastify'
 
-import { httpClient } from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import FilterForm from '@/components/FilterForm'
@@ -93,13 +92,12 @@ const DnsTreePage = () => {
     )
     .then((response) => {
       const { nodes, links } = response.data;
-      update(nodes, links);
+      update(nodes, links)
     })
     .catch((error) => {
-      /* c8 ignore next 3 */
-      console.error(error)
-      toast.error('Error while fetching node and link data');
-    });
+      /* c8 ignore next 2 */
+      handleHttpClientError('Error while fetching node and link data', error)
+    })
 
     function update(nodes: D3Node[], links: D3Link[]) {
       linkElements = svg
