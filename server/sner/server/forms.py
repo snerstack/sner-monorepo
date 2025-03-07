@@ -5,7 +5,6 @@ shared forms objects
 
 import json
 
-from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField
 
 
@@ -46,10 +45,6 @@ class TextAreaNoneField(EmptyToNoneFieldMixin, TextAreaField):
         super().process_formdata(valuelist)
         if self.data:
             self.data = self.data.replace('\r\n', '\n')   # pylint: disable=attribute-defined-outside-init
-
-
-class ButtonForm(FlaskForm):
-    """generic button form"""
 
 
 class JSONField(StringField):

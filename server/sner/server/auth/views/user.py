@@ -15,7 +15,6 @@ from sner.server.auth.forms import UserForm
 from sner.server.auth.models import User
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db
-from sner.server.forms import ButtonForm
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 from sner.server.utils import filter_query, error_response
 
@@ -127,8 +126,7 @@ def user_apikey_route(user_id, action):
     """manage apikey for user"""
 
     user = User.query.get(user_id)
-    form = ButtonForm()
-    if user and form.validate_on_submit():
+    if user:
         if action == 'generate':
             apikey = UserManager.apikey_generate(user)
             return jsonify({'apikey': apikey}), HTTPStatus.OK
