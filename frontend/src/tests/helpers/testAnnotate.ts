@@ -1,7 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react'
 import { expect, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 export const testAnnotate = ({ tagsId, commentId }: { tagsId: string; commentId: string }) => {
   const tagsCell = screen.getAllByTestId(tagsId)[0]

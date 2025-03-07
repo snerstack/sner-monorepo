@@ -1,8 +1,8 @@
 import { Api } from 'datatables.net-bs4'
 import { toast } from 'react-toastify'
 
-import { getTableApi } from '../DataTables'
-import httpClient from '../httpClient'
+import { getTableApi } from '@/lib/DataTables'
+import { httpClient } from '@/lib/httpClient'
 
 export const getColorForSeverity = (severity: string): string => {
   switch (severity) {

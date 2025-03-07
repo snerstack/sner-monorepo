@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-import  httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import FilterForm from '@/components/FilterForm'

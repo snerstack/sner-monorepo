@@ -6,7 +6,7 @@ import { useRecoilState } from 'recoil'
 import { apikeyModalState } from '@/atoms/apikeyModalAtom'
 
 import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'

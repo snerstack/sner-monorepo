@@ -55,7 +55,7 @@ import PortinfosPage from '@/routes/visuals/portinfos'
 import PortmapPage from '@/routes/visuals/portmap'
 import { Route, createRoutesFromElements, redirect } from 'react-router-dom'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 const requestDataHandler = async (url: string) => {

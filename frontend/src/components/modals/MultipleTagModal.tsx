@@ -3,7 +3,7 @@ import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 
 import { getTableApi } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { DEFAULT_MULTIPLE_TAG_STATE, getSelectedIdsFormData } from '@/lib/sner/storage'
 
 import SubmitField from '../fields/SubmitField'

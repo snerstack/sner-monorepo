@@ -6,7 +6,7 @@ import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { getTableApi } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 import { DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage.ts'
 import SubmitField from '../fields/SubmitField'

@@ -3,7 +3,7 @@ import { useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "react-toastify"
 
-import httpClient from "@/lib/httpClient"
+import { handleHttpClientError, httpClient } from "@/lib/httpClient"
 import { toQueryString, urlFor } from "@/lib/urlHelper"
 
 /* vite devserver has issues with routing of '/uri/a.1', therefore get query args are used */

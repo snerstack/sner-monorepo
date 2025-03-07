@@ -1,5 +1,5 @@
-import httpClient from '@/lib/httpClient'
 import { AxiosError } from 'axios'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 

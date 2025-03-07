@@ -7,7 +7,7 @@ import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'

@@ -2,7 +2,7 @@ import { encode as cborEncode } from 'cbor-x'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import ProfilePage from '@/routes/auth/profile'
 import WebAuthnRegisterPage from '@/routes/auth/profile/webauthn/register'
 import { arrayBufferToBase64 } from '@/utils'

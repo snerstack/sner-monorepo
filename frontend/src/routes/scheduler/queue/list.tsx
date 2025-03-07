@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 
 import { urlFor } from '@/lib/urlHelper'
 import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 import CodeBlock from '@/components/CodeBlock'
 import DataTable from '@/components/DataTable'

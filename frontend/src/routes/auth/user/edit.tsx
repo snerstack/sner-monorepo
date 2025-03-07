@@ -4,7 +4,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import { urlFor } from '@/lib/urlHelper'
-import httpClient, { handleHttpClientError } from '@/lib/httpClient'
+import { httpClient, handleHttpClientError } from '@/lib/httpClient'
 
 import Heading from '@/components/Heading'
 import BooleanField from '@/components/fields/BooleanField'

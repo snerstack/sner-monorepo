@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 const ServiceAutocompleteField = ({

@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify'
 
 import { getTableApi } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 const RepeatButton = ({ url, tableId }: { url: string; tableId: string }) => {
   return (
