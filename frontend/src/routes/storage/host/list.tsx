@@ -9,20 +9,19 @@ import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, toolboxesVisible } from '@/lib/sner/storage'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
-import DataTable from '@/components/DataTable'
-import FilterForm from '@/components/FilterForm'
-import Heading from '@/components/Heading'
-import Tag from '@/components/Tag'
-import { Button } from '@/components/buttons/BasicButtons'
+import { Button, EditButton, LensButton } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
-import { EditButton } from '@/components/buttons/BasicButtons'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
+import DataTable from '@/components/DataTable'
+import DataTableLink from '@/components/DataTableLink'
+import FilterForm from '@/components/FilterForm'
+import Heading from '@/components/Heading'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
-import { LensButton } from '@/components/buttons/BasicButtons'
+import Tag from '@/components/Tag'
 
 const HostListPage = () => {
   const [appConfig, ] = useRecoilState(appConfigState)
@@ -39,15 +38,9 @@ const HostListPage = () => {
       createdCell: (cell, data: string, row: HostRow) =>
         renderElements(
           cell,
-          <a
-            onClick={(e) => {
-              e.preventDefault()
-              navigate(`/storage/host/view/${row['id']}`)
-            }}
-            href={`/storage/host/view/${row['id']}`}
-          >
+          <DataTableLink url={`/storage/host/view/${row['id']}`} navigate={navigate}>
             {data}
-          </a>,
+          </DataTableLink>
         ),
     }),
     Column('hostname'),
