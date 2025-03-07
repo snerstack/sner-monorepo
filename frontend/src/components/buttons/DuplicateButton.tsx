@@ -1,4 +1,3 @@
-import { AxiosError } from 'axios'
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -12,11 +11,9 @@ const DuplicateButton = ({ url, className }: { url: string, className?: string }
       const response = await httpClient.post<{ new_id: number }>(url)
       toast.success("Duplicated")
       navigate(`/storage/vuln/view/${response.data.new_id}`)
-      /* c8 ignore next 5 */
+      /* c8 ignore next 3 */
     } catch (err) {
-      console.error("Duplicate error", err)
-      const message = ((err as AxiosError).response?.data as ErrorResponse)?.error?.message ?? "Unknown error"
-      toast.error(`Duplicate error, ${message}`)
+      handleHttpClientError("Duplicate error", err)
     }
   }
 

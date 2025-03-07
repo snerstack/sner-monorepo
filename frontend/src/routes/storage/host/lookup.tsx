@@ -1,7 +1,5 @@
-import axios from "axios"
 import { useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { toast } from "react-toastify"
 
 import { handleHttpClientError, httpClient } from "@/lib/httpClient"
 import { toQueryString, urlFor } from "@/lib/urlHelper"
@@ -16,11 +14,9 @@ const HostLookupPage = () => {
             try {
                 const response = await httpClient.get<StorageHostLookupResponse>(urlFor(`/backend/storage/host/lookup${toQueryString(searchParams)}`))
                 navigate(response.data.url)
-            /* c8 ignore next 5 */
+            /* c8 ignore next 3 */
             } catch (err) {
-                console.error("Lookup error", err)
-                const message = axios.isAxiosError(err) ? (err.response?.data as ErrorResponse).error?.message : "Unknown error"
-                toast.error(`Lookup error, ${message}`)
+                handleHttpClientError('Lookup error', err)
             }
         }
 

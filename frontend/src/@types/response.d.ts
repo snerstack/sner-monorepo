@@ -2,8 +2,9 @@ interface StorageHostLookupResponse {
     url: string
 }
 
-interface ErrorResponse {
+interface BackendErrorResponse {
     error?: {
         message?: string
+        errors?: Record<string, string | string[]>;
     }
 }

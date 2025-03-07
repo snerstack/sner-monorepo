@@ -56,7 +56,7 @@ const UserEditPage = () => {
       toast.success(resp.data.message)
       navigate('/auth/user/list')
     } catch (err) {
-      handleHttpClientError(err)
+      handleHttpClientError("Error while editing a user", err)
     }
   }
 
