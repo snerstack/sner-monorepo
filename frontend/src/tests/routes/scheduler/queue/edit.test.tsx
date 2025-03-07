@@ -75,52 +75,6 @@ describe('Queue edit page', () => {
     })
   })
 
-  it('edits new queue (error)', async () => {
-    renderWithProviders({
-      element: <QueueEditPage />,
-      path: '/scheduler/queue/edit/1',
-      loader: () =>
-        Promise.resolve({
-          active: true,
-          config: 'module: nmap\nargs: -sS --top-ports 10000 -Pn --scanflags ECESYN',
-          group_size: 2,
-          id: 1,
-          name: 'sner.nmap.servicedisco',
-          priority: 10,
-          reqs: [],
-        }),
-    })
-
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(
-      errorResponse({
-        code: 400,
-        errors: {
-          name: ['This field is required.'],
-        },
-      }),
-    )
-
-    await waitFor(() => {
-      const nameInput = screen.getByLabelText('Name')
-      const configInput = screen.getByLabelText('Config')
-      const groupSizeInput = screen.getByLabelText('Group size')
-      const priorityInput = screen.getByLabelText('Priority')
-      const activeInput = screen.getByLabelText('Active')
-      const editButton = screen.getByRole('button', { name: 'Edit' })
-
-      fireEvent.change(nameInput, { target: { value: '' } })
-      fireEvent.change(configInput, { target: { value: 'module: nmap\nargs: -sS --top-ports 10000' } })
-      fireEvent.change(groupSizeInput, { target: { value: 10 } })
-      fireEvent.change(priorityInput, { target: { value: 3 } })
-      fireEvent.click(activeInput)
-      fireEvent.click(editButton)
-    })
-
-    await waitFor(() => {
-      expect(screen.getByText('This field is required.')).toBeInTheDocument()
-    })
-  })
-
   it('edits new queue (errors)', async () => {
     renderWithProviders({
       element: <QueueEditPage />,
@@ -140,6 +94,7 @@ describe('Queue edit page', () => {
     vi.spyOn(httpClient, 'post').mockRejectedValueOnce(
       errorResponse({
         code: 400,
+        message: "Invalid form",
         errors: {
           config: ["Invalid YAML: 'NoneType' object has no attribute 'read'"],
           group_size: ['Number must be at least 1.'],
@@ -160,8 +115,9 @@ describe('Queue edit page', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText("Invalid YAML: 'NoneType' object has no attribute 'read'")).toBeInTheDocument()
-      expect(screen.getByText('Number must be at least 1.')).toBeInTheDocument()
+      expect(screen.getByText("Invalid form")).toBeInTheDocument()
+      expect(screen.getByText(/Invalid YAML: 'NoneType' object has no attribute 'read'/)).toBeInTheDocument()
+      expect(screen.getByText(/Number must be at least 1./)).toBeInTheDocument()
     })
   })
 })

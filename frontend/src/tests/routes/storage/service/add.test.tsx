@@ -109,7 +109,7 @@ describe('Service add page', () => {
       loader: loader,
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       const protoInput = screen.getByLabelText('Proto')
@@ -118,6 +118,10 @@ describe('Service add page', () => {
       fireEvent.change(protoInput, { target: { value: 'tcp' } })
       fireEvent.change(portInput, { target: { value: '80' } })
       fireEvent.click(addButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })

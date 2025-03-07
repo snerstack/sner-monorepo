@@ -94,9 +94,9 @@ const DnsTreePage = () => {
       const { nodes, links } = response.data;
       update(nodes, links)
     })
+    /* c8 ignore next 3 */
     .catch((error) => {
-      /* c8 ignore next 2 */
-      handleHttpClientError('Error while fetching node and link data', error)
+      handleHttpClientError(error)
     })
 
     function update(nodes: D3Node[], links: D3Link[]) {

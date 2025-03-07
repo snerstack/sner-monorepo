@@ -27,7 +27,7 @@ describe('Change password page', () => {
     })
 
     vi.spyOn(httpClient, 'post').mockRejectedValueOnce(
-      errorResponse({ code: 400, message: 'Invalid current password.' }),
+      errorResponse({ code: 400, message: 'Invalid current password' }),
     )
 
     const currentPasswordInput = screen.getByLabelText('Current password')
@@ -42,7 +42,7 @@ describe('Change password page', () => {
     fireEvent.click(changePasswordButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid current password.')).toBeInTheDocument()
+      expect(screen.getByText('Invalid current password')).toBeInTheDocument()
     })
   })
 
@@ -68,7 +68,7 @@ describe('Change password page', () => {
     fireEvent.click(changePasswordButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Password too short. At least 10 characters required.')).toBeInTheDocument()
+      expect(screen.getByText(/Password too short. At least 10 characters required./)).toBeInTheDocument()
     })
   })
 

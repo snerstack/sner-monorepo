@@ -41,7 +41,7 @@ describe('TOTP page', () => {
         }),
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 400, message: 'Invalid code.' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 400, message: 'Invalid code' }))
 
     await waitFor(() => {
       const totpCodeInput = screen.getByLabelText('TOTP Code')
@@ -52,7 +52,7 @@ describe('TOTP page', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid code.')).toBeInTheDocument()
+      expect(screen.getByText('Invalid code')).toBeInTheDocument()
     })
   })
 

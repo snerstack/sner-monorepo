@@ -144,7 +144,7 @@ describe('Host edit page', () => {
         }),
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       const addressInput = screen.getByLabelText('Address')
@@ -155,7 +155,7 @@ describe('Host edit page', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Error while editing a host.')).toBeInTheDocument()
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })

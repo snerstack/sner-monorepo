@@ -207,7 +207,7 @@ describe('Vuln edit page', () => {
     })
 
     vi.spyOn(httpClient, 'get')
-      .mockRejectedValueOnce(errorResponse({ message: 'Server error' })) // focus
+      .mockRejectedValueOnce(errorResponse({ message: 'error message' })) // focus
       .mockResolvedValueOnce({data: [{label: 'dummy', value: '1'}]})  // input
 
     await waitFor(async () => {
@@ -221,7 +221,7 @@ describe('Vuln edit page', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Error while getting autocomplete suggestions.')).toBeInTheDocument()
+      expect(screen.getByText('error message')).toBeInTheDocument()
       expect(screen.getByText('dummy')).toBeInTheDocument()
     })
   })
@@ -268,7 +268,7 @@ describe('Vuln edit page', () => {
       loader: loader,
     })
 
-    vi.spyOn(httpClient, 'get').mockRejectedValueOnce(errorResponse({ message: 'Server error.' }))
+    vi.spyOn(httpClient, 'get').mockRejectedValueOnce(errorResponse({ message: 'error message' }))
 
     await waitFor(async () => {
       await user.click(screen.getByText('Host, Service'))
@@ -278,7 +278,7 @@ describe('Vuln edit page', () => {
     await user.type(serviceInput, '1')
 
     await waitFor(() => {
-      expect(screen.getByText('Error while getting autocomplete suggestions.')).toBeInTheDocument()
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })

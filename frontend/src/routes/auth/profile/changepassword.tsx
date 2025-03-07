@@ -1,10 +1,9 @@
-import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-import { httpClient } from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -37,24 +36,7 @@ const ChangePasswordPage = () => {
       toast.success(resp.data.message)
       navigate('/auth/profile')
     } catch (err) {
-      if (
-        isAxiosError<{
-          error: { code: number; message?: string; errors?: { current_password?: string[]; password1?: string[] } }
-        }>(err)
-      ) {
-        const errors = err.response?.data.error.errors
-
-        if (errors) {
-          if (errors.password1) {
-            setNewPasswordErrors(errors.password1)
-          }
-          return
-        }
-
-        const message = err.response?.data.error.message
-
-        toast.error(message)
-      }
+      handleHttpClientError(err)
     }
   }
 

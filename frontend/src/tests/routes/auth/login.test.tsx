@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { httpClient } from '@/lib/httpClient'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
+import { errorResponse } from '@/tests/utils/errorResponse'
 
 describe('Login page', () => {
   it('shows form', () => {
@@ -26,7 +27,7 @@ describe('Login page', () => {
       path: '/auth/login',
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce({ error: { code: 401, message: 'Invalid credentials.' } })
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 401, message: 'Invalid credentials' }))
 
     const usernameInput = screen.getByLabelText('Username')
     const passwordInput = screen.getByLabelText('Password')
@@ -37,7 +38,7 @@ describe('Login page', () => {
     fireEvent.click(loginButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid credentials.')).toBeInTheDocument()
+      expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
     })
   })
 

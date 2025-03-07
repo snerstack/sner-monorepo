@@ -11,9 +11,9 @@ const DuplicateButton = ({ url, className }: { url: string, className?: string }
       const response = await httpClient.post<{ new_id: number }>(url)
       toast.success("Duplicated")
       navigate(`/storage/vuln/view/${response.data.new_id}`)
-      /* c8 ignore next 3 */
+    /* c8 ignore next 3 */
     } catch (err) {
-      handleHttpClientError("Duplicate error", err)
+      handleHttpClientError(err)
     }
   }
 

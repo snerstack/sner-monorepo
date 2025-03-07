@@ -3,21 +3,16 @@ import { toast } from 'react-toastify'
 import { handleHttpClientError } from '@/lib/httpClient'
 
 describe('handleHttpClientError', () => {
-  const consoleErrorMock = vi.fn()
   const toastErrorMock = vi.fn()
-
   beforeEach(() => {
     vi.spyOn(toast, 'error').mockImplementation(toastErrorMock)
-    // not used in each test directly, but also silences errors on console during testing
-    vi.spyOn(console, 'error').mockImplementation(consoleErrorMock)
   })
 
   it('should call console.error and toast.error for generic errors', () => {
     const mockError = new Error('Test Error')
 
-    handleHttpClientError('Test Description', mockError)
+    handleHttpClientError(mockError)
 
-    expect(consoleErrorMock).toHaveBeenCalledWith('Test Description', mockError)
     expect(toastErrorMock).toHaveBeenCalledWith('An unexpected error occurred.')
   })
 
@@ -33,9 +28,9 @@ describe('handleHttpClientError', () => {
       },
     }
 
-    handleHttpClientError('Test Description', mockError)
+    handleHttpClientError(mockError)
 
-    expect(toastErrorMock).toHaveBeenCalledWith('Test Description, Test error message')
+    expect(toastErrorMock).toHaveBeenCalledWith('Test error message')
   })
 
   it('should handle axios error with field errors', () => {
@@ -54,10 +49,10 @@ describe('handleHttpClientError', () => {
       },
     }
 
-    handleHttpClientError('Test Description', mockError)
+    handleHttpClientError(mockError)
 
-    expect(toastErrorMock).toHaveBeenCalledWith('field1: Error message 1')
-    expect(toastErrorMock).toHaveBeenCalledWith('field2: Error message 2')
+    expect(toastErrorMock).toHaveBeenCalledWith('"field1" field error: Error message 1')
+    expect(toastErrorMock).toHaveBeenCalledWith('"field2" field error: Error message 2')
   })
 
   it('should handle axios error with no error message and no fields', () => {
@@ -70,7 +65,7 @@ describe('handleHttpClientError', () => {
       },
     }
 
-    handleHttpClientError('Test Description', mockError)
+    handleHttpClientError(mockError)
 
     expect(toastErrorMock).toHaveBeenCalledWith('An unexpected error occurred.')
   })

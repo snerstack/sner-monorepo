@@ -1,8 +1,7 @@
 import clsx from 'clsx'
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react'
-import { toast } from 'react-toastify'
 
-import { httpClient } from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 const ServiceAutocompleteField = ({
@@ -42,7 +41,7 @@ const ServiceAutocompleteField = ({
       setSuggestions(resp.data)
       setShowSuggestions(true)
     } catch (err) {
-      toast.error('Error while getting autocomplete suggestions.')
+      handleHttpClientError(err)
     }
   }
 

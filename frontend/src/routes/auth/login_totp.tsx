@@ -1,13 +1,11 @@
-import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
 
-import { httpClient } from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -30,9 +28,7 @@ const TOTPLoginPage = () => {
 
       navigate('/')
     } catch (err) {
-      if (isAxiosError<{ error: { message: string; code: number } }>(err)) {
-        toast.error(err.response?.data.error.message)
-      }
+      handleHttpClientError(err)
     }
   }
 

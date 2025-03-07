@@ -148,7 +148,7 @@ describe('Vuln multicopy page', () => {
       ],
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValue(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValue(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       // selects first row
@@ -160,7 +160,7 @@ describe('Vuln multicopy page', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Error while multicopying vulns.')).toBeInTheDocument()
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })

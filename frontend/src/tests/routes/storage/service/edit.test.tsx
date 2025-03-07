@@ -118,7 +118,7 @@ describe('Service edit page', () => {
       loader: loader,
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       const nameInput = screen.getByLabelText('Name')
@@ -126,6 +126,10 @@ describe('Service edit page', () => {
 
       fireEvent.change(nameInput, { target: { value: 'edited_name' } })
       fireEvent.click(editButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })

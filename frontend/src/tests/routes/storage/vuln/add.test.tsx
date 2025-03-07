@@ -246,7 +246,7 @@ describe('Vuln add page', () => {
       loader: hostLoader,
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       const nameInput = screen.getByLabelText('Name')
@@ -255,6 +255,10 @@ describe('Vuln add page', () => {
       fireEvent.change(nameInput, { target: { value: 'new_vuln_name' } })
       fireEvent.click(screen.getByLabelText('high'))
       fireEvent.click(addButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })

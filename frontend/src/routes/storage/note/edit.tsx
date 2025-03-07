@@ -6,7 +6,7 @@ import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import { httpClient } from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -50,7 +50,7 @@ const NoteEditPage = () => {
 
       toast.success(resp.data.message)
     } catch (err) {
-      toast.error('Error while editing a note.')
+      handleHttpClientError(err)
     }
   }
 

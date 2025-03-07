@@ -204,7 +204,7 @@ describe('Note add page', () => {
       loader: hostLoader,
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       const dataInput = screen.getByLabelText('Data')
@@ -212,6 +212,10 @@ describe('Note add page', () => {
 
       fireEvent.change(dataInput, { target: { value: 'new_data' } })
       fireEvent.click(addButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })

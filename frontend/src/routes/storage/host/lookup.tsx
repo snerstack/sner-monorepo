@@ -16,7 +16,7 @@ const HostLookupPage = () => {
                 navigate(response.data.url)
             /* c8 ignore next 3 */
             } catch (err) {
-                handleHttpClientError('Lookup error', err)
+                handleHttpClientError(err)
             }
         }
 

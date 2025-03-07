@@ -129,7 +129,7 @@ describe('Note edit page', () => {
       routes: [{ element: <NoteListPage />, path: '/storage/note/list' }],
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       const dataInput = screen.getByLabelText('Data')
@@ -137,6 +137,10 @@ describe('Note edit page', () => {
 
       fireEvent.change(dataInput, { target: { value: 'edited_data' } })
       fireEvent.click(editButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })
