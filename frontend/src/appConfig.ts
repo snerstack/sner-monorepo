@@ -6,7 +6,6 @@ export type AppConfig = {
         note: string[]
         annotate: string[]
         versioninfo: string[]
-        vulnsearch: string[]
         colors: {
             [tag: string]: string
         }
@@ -22,7 +21,6 @@ export const defaultAppConfig: AppConfig = {
         note: ['reviewed', 'todo'],
         annotate: ['sslhell'],
         versioninfo: ['reviewed', 'todo'],
-        vulnsearch: ['reviewed', 'todo'],
         colors: {
             todo: '#ffc107',
             report: '#dc3545',

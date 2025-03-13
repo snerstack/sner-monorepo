@@ -215,29 +215,3 @@ class PublicVersioninfoSchema(BaseSchema):
     # user data
     tags = fields.List(fields.String)
     comment = fields.String()
-
-
-class PublicVulnsearchSchema(BaseSchema):
-    """public vulnsearch schema"""
-
-    # endpoint data
-    host_address = fields.String()
-    host_hostname = fields.String()
-    service_proto = fields.String()
-    service_port = fields.Integer()
-    via_target = fields.String()
-
-    # vulnsearch data
-    cveid = fields.String()
-    name = fields.String()
-    description = fields.String()
-    cvss = fields.Float()
-    cvss3 = fields.Float()
-    attack_vector = fields.String()
-    data = fields.Dict()
-    cpe = fields.Dict()
-    cpe_full = fields.String()
-
-    # user data
-    tags = fields.List(fields.String)
-    comment = fields.String()

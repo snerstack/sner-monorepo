@@ -12,7 +12,7 @@ from sqlalchemy import func
 from sner.server.extensions import db
 
 from sner.server.scheduler.models import Heatmap, Job, Queue, Readynet, Target
-from sner.server.storage.models import Host, Note, Service, Versioninfo, Vuln, Vulnsearch
+from sner.server.storage.models import Host, Note, Service, Versioninfo, Vuln
 
 
 def get_metrics():
@@ -25,7 +25,6 @@ def get_metrics():
     metrics['sner_storage_vulns_total'] = Vuln.query.count()
     metrics['sner_storage_notes_total'] = Note.query.count()
     metrics['sner_storage_versioninfo_total'] = Versioninfo.query.count()
-    metrics['sner_storage_vulnsearch_total'] = Vulnsearch.query.count()
 
     targets = dict(db.session.query(Target.queue_id, func.count(Target.id)).group_by(Target.queue_id).all())
     for queue in Queue.query.all():

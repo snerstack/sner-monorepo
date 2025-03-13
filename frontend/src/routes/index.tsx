@@ -45,8 +45,6 @@ import VulnGroupedPage from '@/routes/storage/vuln/grouped'
 import VulnListPage from '@/routes/storage/vuln/list'
 import VulnMulticopyPage from '@/routes/storage/vuln/multicopy'
 import VulnViewPage from '@/routes/storage/vuln/view'
-import VulnSearchListPage from '@/routes/storage/vulnsearch/list'
-import VulnSearchViewPage from '@/routes/storage/vulnsearch/view'
 import SwaggerPage from '@/routes/swagger'
 import VisualsPage from '@/routes/visuals'
 import DnsTreePage from '@/routes/visuals/dnstree'
@@ -227,15 +225,6 @@ export const routes = createRoutesFromElements(
 
         <Route path="versioninfo">
           <Route path="list" element={<VersionInfosListPage />} />
-        </Route>
-
-        <Route path="vulnsearch">
-          <Route path="list" element={<VulnSearchListPage />} />
-          <Route
-            path="view/:id"
-            element={<VulnSearchViewPage />}
-            loader={async ({ params: { id } }) => requestDataHandler(`/backend/storage/vulnsearch/view/${id}.json`)}
-          />
         </Route>
       </Route>
     </Route>

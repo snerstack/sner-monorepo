@@ -16,16 +16,9 @@ from sner.server.extensions import db
 from sner.server.utils import FilterQueryError
 from sner.server.parser import REGISTERED_PARSERS
 from sner.server.storage.core import StorageManager, vuln_export, vuln_report
-from sner.server.storage.models import Host, Service, Versioninfo, Vulnsearch
+from sner.server.storage.models import Host, Service, Versioninfo
 from sner.server.storage.versioninfo import VersioninfoManager
-from sner.server.storage.vulnsearch import VulnsearchManager
 from sner.server.utils import filter_query
-
-
-def kwargs_or_config(kwargs, name):
-    """get key from kwargs or app.config"""
-
-    return kwargs.get(name) or current_app.config['SNER_VULNSEARCH'].get(name)
 
 
 @click.group(name='storage', help='sner.server storage management')
@@ -70,7 +63,6 @@ def storage_flush():
 
     db.session.query(Host).delete()
     db.session.query(Versioninfo).delete()
-    db.session.query(Vulnsearch).delete()
     db.session.commit()
 
 
@@ -133,46 +125,6 @@ def storage_service_list(**kwargs):
 
     for tmp in query.all():
         print(fmt.format(**get_data(tmp), host=get_host(tmp, kwargs['hostnames'])))
-
-
-@command.command(name='rebuild-vulnsearch-elastic', help='synchronize vulnsearch elk index')
-@with_appcontext
-@click.option('--cvesearch', help='cvesearch base url')
-@click.option('--esd', help='elasticsearch url')
-@click.option('--tlsauth_key', help='tlsauth key path')
-@click.option('--tlsauth_cert', help='tlsauth cert path')
-def storage_rebuild_vulnsearch_elastic(**kwargs):
-    """synchronize vulnsearch elk index"""
-
-    cvesearch = kwargs_or_config(kwargs, 'cvesearch')
-    esd = kwargs_or_config(kwargs, 'esd')
-    tlsauth_key = kwargs_or_config(kwargs, 'tlsauth_key')
-    tlsauth_cert = kwargs_or_config(kwargs, 'tlsauth_cert')
-
-    if not all([cvesearch, esd]):
-        current_app.logger.error('configuration required (config or cmdline)')
-        sys.exit(1)
-
-    VulnsearchManager(cvesearch, tlsauth_key, tlsauth_cert).rebuild_elastic(esd)
-
-
-@command.command(name='rebuild-vulnsearch-localdb', help='synchronize localdb vulnsearch')
-@with_appcontext
-@click.option('--cvesearch', help='cvesearch base url')
-@click.option('--tlsauth_key', help='tlsauth key path')
-@click.option('--tlsauth_cert', help='tlsauth cert path')
-def storage_rebuild_vulnsearch_localdb(**kwargs):
-    """synchronize vulnsearch elk index"""
-
-    cvesearch = kwargs_or_config(kwargs, 'cvesearch')
-    tlsauth_key = kwargs_or_config(kwargs, 'tlsauth_key')
-    tlsauth_cert = kwargs_or_config(kwargs, 'tlsauth_cert')
-
-    if not cvesearch:
-        current_app.logger.error('configuration required (config or cmdline)')
-        sys.exit(1)
-
-    VulnsearchManager(cvesearch, tlsauth_key, tlsauth_cert).rebuild_localdb()
 
 
 @command.command(name='rebuild-versioninfo', help='rebuild versioninfo map')

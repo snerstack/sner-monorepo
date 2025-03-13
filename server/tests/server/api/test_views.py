@@ -336,18 +336,3 @@ def test_v2_public_storage_versioninfo_route(api_user, versioninfo):  # pylint: 
 
     response = api_user.post_json(url_for('api.v2_public_storage_versioninfo_route'), {'product': 'dummy', 'versionspec': '<1.0'})
     assert len(response.json) == 0
-
-
-def test_v2_public_storage_vulnsearch_route_nonetworks(api_user_nonetworks, vulnsearch):  # pylint: disable=unused-argument
-    """test queries with user without any configured networks"""
-
-    response = api_user_nonetworks.post_json(url_for('api.v2_public_storage_vulnsearch_route'))
-    assert not response.json
-
-
-def test_v2_public_storage_vulnsearch_route(api_user, vulnsearch):  # pylint: disable=unused-argument
-    """test public vulnsearch query api"""
-
-    response = api_user.post_json(url_for('api.v2_public_storage_vulnsearch_route'))
-    assert api_schema.PublicVulnsearchSchema(many=True).load(response.json)
-    assert len(response.json) == 1

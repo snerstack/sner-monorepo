@@ -68,28 +68,6 @@ interface Note {
   comment: string
 }
 
-interface VulnSearch {
-  id: string
-  host_id: number
-  service_id: number
-  host_address: string
-  host_hostname: string
-  service_proto: string
-  service_port: number
-  via_target: string
-  cveid: string
-  name: string
-  description: string
-  cvss: string
-  cvss3: string
-  attack_vector: string
-  dara: string
-  cpe: string
-  cpe_full: string
-  tags: string[]
-  comment: string
-}
-
 interface Annotate {
   show: boolean
   tags: string[]
@@ -204,25 +182,6 @@ interface VersionInfoRow {
   product: string
   version: string
   extra: string
-  tags: string[]
-  comment: string | null
-}
-
-interface VulnSearchRow {
-  id: string
-  host_id: number
-  host_address: string
-  host_hostname: string
-  service_proto: string | null
-  service_port: number | null
-  service: string
-  via_target: string | null
-  cveid: string
-  name: string
-  cvss: string
-  cvss3: string
-  attack_vector: string
-  cpe_full: string | null
   tags: string[]
   comment: string | null
 }

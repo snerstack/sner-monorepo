@@ -182,29 +182,3 @@ class Versioninfo(StorageModelBase):
 
     tags = db.Column(postgresql.ARRAY(db.String, dimensions=1), nullable=False, default=[])
     comment = db.Column(db.Text)
-
-
-class Vulnsearch(StorageModelBase):
-    """vulnsearch model"""
-
-    id = db.Column(db.String(32), primary_key=True)
-    host_id = db.Column(db.Integer, nullable=False)
-    service_id = db.Column(db.Integer)
-    host_address = db.Column(postgresql.INET, nullable=False)
-    host_hostname = db.Column(db.String(256))
-    service_proto = db.Column(db.String(250))
-    service_port = db.Column(db.Integer)
-    via_target = db.Column(db.String(250))
-
-    cveid = db.Column(db.String(250))
-    name = db.Column(db.Text)
-    description = db.Column(db.Text)
-    cvss = db.Column(db.Float)
-    cvss3 = db.Column(db.Float)
-    attack_vector = db.Column(db.String(250))
-    data = db.Column(db.JSON)
-    cpe = db.Column(db.JSON)
-    cpe_full = db.Column(db.String(1000))
-
-    tags = db.Column(postgresql.ARRAY(db.String, dimensions=1), nullable=False, default=[])
-    comment = db.Column(db.Text)

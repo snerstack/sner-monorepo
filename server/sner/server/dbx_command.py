@@ -17,8 +17,7 @@ from sner.server.extensions import db
 from sner.server.scheduler.core import QueueManager
 from sner.server.scheduler.models import Queue
 from sner.server.storage.versioninfo import VersioninfoManager
-from sner.server.storage.vulnsearch import vulndata_docid
-from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln, Vulnsearch
+from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
 from sner.server.utils import yaml_dump
 
 
@@ -339,26 +338,6 @@ def initdata_dev():
         service=product_service,
         xtype='hostnames',
         data='["productdummy"]'
-    ))
-
-    _cveid = 'CVE-1900-0000'
-    db.session.add(Vulnsearch(
-        id=vulndata_docid(product_note.host.address, product_note.service.proto, product_note.service.port, _cveid),
-        host_id=product_note.host.id,
-        service_id=product_note.service.id,
-        host_address=product_note.host.address,
-        host_hostname=product_note.host.hostname,
-        service_proto=product_note.service.proto,
-        service_port=product_note.service.port,
-        via_target=product_note.via_target,
-        cveid=_cveid,
-        name='dummy cve',
-        description='dummy cve description',
-        cvss=1.3,
-        cvss3=2.4,
-        attack_vector='NETWORK',
-        data={'dummmy': 'data'},
-        cpe={'full': 'cpe:/a:apache:http_server:2.4.38'}
     ))
 
     VersioninfoManager.rebuild()

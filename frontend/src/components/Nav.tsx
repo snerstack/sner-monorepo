@@ -66,7 +66,6 @@ type SubnavItem = { title: string; link: string }
         { title: 'Notes', link: '/storage/note/list' },
         { title: 'Notes grouped', link: '/storage/note/grouped' },
         { title: 'Versioninfos', link: '/storage/versioninfo/list' },
-        { title: 'Vulnsearch', link: '/storage/vulnsearch/list' },
       ],
     },
     visuals: {

@@ -66,10 +66,6 @@ DEFAULT_CONFIG = {
     'SNER_SESSION_IDLETIME': 36000,
     'SNER_TRIM_REPORT_CELLS': 65000,
     'SNER_TRIM_NOTE_LIST_DATA': 4096,
-    'SNER_VULNSEARCH_NAMELEN': 100,
-    'SNER_VULNSEARCH_REBUILD_BUFLEN': 1000,
-    'SNER_VULNSEARCH_TIMEOUT': 60,
-    'SNER_ELASTICSTORAGE_REBUILD_BUFLEN': 100,
     'SNER_VULN_GROUP_IGNORE_TAG_PREFIX': "i:",
     'SNER_AUTOCOMPLETE_LIMIT': 10,
     'SNER_WEBAUTHN_RP_HOSTNAME': None,
@@ -82,7 +78,6 @@ DEFAULT_CONFIG = {
             "note": ["reviewed", "todo"],
             "annotate": ["sslhell"],
             "versioninfo": ["reviewed", "todo"],
-            "vulnsearch": ["reviewed", "todo"],
             "colors": {
                 "todo": "#ffc107",
                 "report": "#dc3545",
@@ -102,7 +97,6 @@ DEFAULT_CONFIG = {
 
     # other sner subsystems
     'SNER_PLANNER': {},
-    'SNER_VULNSEARCH': {},
     'SNER_METRICS_STALE_HORIZONT': '1day',
 
     # smorest api
@@ -317,7 +311,6 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
             'Service': storage_models.Service,
             'Versioninfo': storage_models.Versioninfo,
             'Vuln': storage_models.Vuln,
-            'Vulnsearch': storage_models.Vulnsearch,
 
             'User': auth_models.User,
             'WebauthnCredential': auth_models.WebauthnCredential,

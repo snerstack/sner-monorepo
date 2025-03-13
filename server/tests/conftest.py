@@ -27,7 +27,6 @@ from tests.server.storage.models import (
     ServiceFactory,
     VersioninfoFactory,
     VulnFactory,
-    VulnsearchFactory
 )
 
 
@@ -96,7 +95,6 @@ factoryboy_register(NoteFactory)
 factoryboy_register(ServiceFactory)
 factoryboy_register(VersioninfoFactory, 'versioninfo_dangling')
 factoryboy_register(VulnFactory)
-factoryboy_register(VulnsearchFactory, 'vulnsearch_dangling')
 
 
 @pytest.fixture
@@ -157,23 +155,4 @@ def versioninfo(service, versioninfo_factory):  # pylint: disable=redefined-oute
         host_hostname=service.host.hostname,
         service_proto=service.proto,
         service_port=service.port,
-    )
-
-
-@pytest.fixture
-def vulnsearch(service, vulnsearch_factory):
-    """
-    prepare vulnsearch
-
-    factory_boy cannot create model with multiple related subfactories, hence
-    the "proper" vulnsearch generation is done here by hand
-    """
-
-    yield vulnsearch_factory(
-        host_id=service.host.id,
-        service_id=service.id,
-        host_address=service.host.address,
-        host_hostname=service.host.hostname,
-        service_proto=service.proto,
-        service_port=service.port
     )

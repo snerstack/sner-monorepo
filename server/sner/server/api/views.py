@@ -18,7 +18,7 @@ from sner.server.auth.core import apikey_required
 from sner.server.extensions import db
 from sner.server.scheduler.core import SchedulerService, SchedulerServiceBusyException
 from sner.server.scheduler.models import Job
-from sner.server.storage.models import Host, Note, Service, Vuln, Versioninfo, Vulnsearch
+from sner.server.storage.models import Host, Note, Service, Vuln, Versioninfo
 from sner.server.storage.version_parser import is_in_version_range, parse as versionspec_parse
 from sner.server.utils import filter_query
 
@@ -284,22 +284,3 @@ def v2_public_storage_versioninfo_route(args):
 
     current_app.logger.info(f"api.public storage versioninfo {args}")
     return data
-
-
-@blueprint.route("/v2/public/storage/vulnsearch", methods=["POST"])
-@apikey_required("user")
-@blueprint.arguments(api_schema.PublicListArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schema.PublicVulnsearchSchema(many=True))
-@blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
-def v2_public_storage_vulnsearch_route(args):
-    """simple vulnsearch search (see sner.server.sqlafilter for syntax)"""
-
-    if not current_user.api_networks:
-        return []
-
-    restrict = [Vulnsearch.host_address.op("<<=")(net) for net in current_user.api_networks]
-    query = Vulnsearch.query.filter(or_(*restrict))
-    query = filter_query(query, args.get("filter"))
-
-    current_app.logger.info(f"api.public storage vulnsearch {args}")
-    return query

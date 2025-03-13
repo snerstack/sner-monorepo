@@ -6,9 +6,7 @@ storage.commands tests
 import csv
 import json
 from io import StringIO
-from unittest.mock import Mock, patch
 
-import sner.server.storage.elastic
 from sner.server.storage.commands import command
 from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
 
@@ -117,33 +115,6 @@ def test_service_list_command(runner, service):
 
     result = runner.invoke(command, ['service-list', '--filter', 'invalid'])
     assert result.exit_code == 1
-
-
-def test_rebuild_vulnsearch_elastic_command(runner):
-    """tests param/config handling"""
-
-    result = runner.invoke(command, ['rebuild-vulnsearch-elastic'])
-    assert result.exit_code == 1
-
-    update_alias_mock = Mock()
-    with (
-        patch.object(sner.server.storage.elastic.BulkIndexer, 'initialize', Mock()),
-        patch.object(sner.server.storage.elastic.BulkIndexer, 'update_alias', update_alias_mock)
-    ):
-        result = runner.invoke(command, ['rebuild-vulnsearch-elastic', '--cvesearch', 'http://dummy:80', '--esd', 'http://dummy:80'])
-
-    assert result.exit_code == 0
-    update_alias_mock.assert_called_once()
-
-
-def test_rebuild_vulnsearch_localdb_command(runner):
-    """tests rebuild vulnsearch localdb command"""
-
-    result = runner.invoke(command, ['rebuild-vulnsearch-localdb'])
-    assert result.exit_code == 1
-
-    result = runner.invoke(command, ['rebuild-vulnsearch-localdb', '--cvesearch', 'http://dummy:80'])
-    assert result.exit_code == 0
 
 
 def test_rebuild_versioninfo_command(runner):

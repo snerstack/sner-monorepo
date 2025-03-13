@@ -5,9 +5,8 @@ storage test models
 
 from factory import LazyAttribute, SubFactory
 
-from sner.server.storage.models import Host, Note, Service, SeverityEnum, Versioninfo, Vuln, Vulnsearch
+from sner.server.storage.models import Host, Note, Service, SeverityEnum, Versioninfo, Vuln
 from sner.server.storage.versioninfo import versioninfo_docid
-from sner.server.storage.vulnsearch import vulndata_docid
 from tests import BaseModelFactory
 
 
@@ -95,35 +94,6 @@ class VersioninfoFactory(BaseModelFactory):  # pylint: disable=too-few-public-me
     product = 'dummy product'
     version = '1.2.3'
     extra = {'flags': 'dummy_flag'}
-
-    tags = ['dummy']
-    comment = ['dummy comment']
-
-
-class VulnsearchFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
-    """test vulnsearch model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
-        """test vulnsearch model factory"""
-        model = Vulnsearch
-
-    id = LazyAttribute(lambda o: vulndata_docid(o.host_address, o.service_proto, o.service_port, o.cveid))
-    host_id = 400  # dangling id
-    service_id = 401  # dangling id
-    host_address = '127.2.0.1'
-    host_hostname = 'dummy.vulnsearch.test'
-    service_proto = 'tcp'
-    service_port = 11
-    via_target = 'virtualhost.vulnsearch.test'
-
-    cveid = 'CVE-1999-0000'
-    name = 'dummy vulnsearch name'
-    description = 'dummy description'
-    cvss = 3.3
-    cvss3 = 3.4
-    attack_vector = 'NETWORK'
-    data = {"dummy": "data"}
-    cpe = {'full': 'cpe:/a:apache:http_server:2.4.38'}
-    cpe_full = 'cpe:/a:apache:http_server:2.4.38'
 
     tags = ['dummy']
     comment = ['dummy comment']

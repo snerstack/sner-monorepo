@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.extensions import db
-from sner.server.storage.models import Host, Note, Service, Vuln, Versioninfo, Vulnsearch
+from sner.server.storage.models import Host, Note, Service, Vuln, Versioninfo
 from tests.selenium import dt_inrow_delete, dt_rendered, webdriver_waituntil, wait_for_js, frontend_url, toggle_dt_toolboxes
 from tests.selenium.storage import (
     check_annotate,
@@ -396,43 +396,3 @@ def test_host_view_route_versioninfo_list_freetag(frontend_server, sl_operator, 
     wait_for_js(sl_operator)
     check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{versioninfo_multiaction[0].host_id}'),
                              'host_view_versioninfo_table', Versioninfo, load_route=False)
-
-
-def test_host_view_route_vulnsearch_list(frontend_server, sl_operator, vulnsearch):  # pylint: disable=unused-argument
-    """host view tabbed vulnsearch"""
-
-    get_host_view_tab(sl_operator, vulnsearch.host_id, vulnsearch, 'name')
-
-
-def test_host_view_route_vulnsearch_list_selectrows(frontend_server, sl_operator, vulnsearch_multiaction):  # pylint: disable=unused-argument
-    """host view tabbed vulnsearch dt test; selections"""
-
-    get_host_view_tab(sl_operator, vulnsearch_multiaction[0].host_id, vulnsearch_multiaction[-1])
-    toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
-    check_dt_toolbox_select_rows(
-        sl_operator,
-        frontend_url(f'/storage/host/view/{vulnsearch_multiaction[0].host_id}'),
-        'host_view_vulnsearch_table',
-        load_route=False
-    )
-
-
-def test_host_view_route_vulnsearch_list_multiactions(frontend_server, sl_operator, vulnsearch_multiaction):  # pylint: disable=unused-argument
-    """host view tabbed vulnsearch dt test; multiactions"""
-
-    get_host_view_tab(sl_operator, vulnsearch_multiaction[0].host_id, vulnsearch_multiaction[-1])
-    toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
-    check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{vulnsearch_multiaction[0].host_id}'),
-                                  'host_view_vulnsearch_table', Vulnsearch, load_route=False, test_delete=False)
-
-
-def test_host_view_route_vulnsearch_list_freetag(frontend_server, sl_operator, vulnsearch_multiaction):  # pylint: disable=unused-argument
-    """host view tabbed vulnsearch dt test; freetag"""
-
-    get_host_view_tab(sl_operator, vulnsearch_multiaction[0].host_id, vulnsearch_multiaction[-1])
-    toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
-    check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{vulnsearch_multiaction[0].host_id}'),
-                             'host_view_vulnsearch_table', Vulnsearch, load_route=False)

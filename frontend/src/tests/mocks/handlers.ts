@@ -15,7 +15,6 @@ import { versioninfoListHandler } from '@/tests/mocks/handlers/storage/versionin
 import { vulnGroupedHandler } from '@/tests/mocks/handlers/storage/vuln/grouped'
 import { vulnListHandler } from '@/tests/mocks/handlers/storage/vuln/list'
 import { multicopyEndpointsHandler } from '@/tests/mocks/handlers/storage/vuln/multicopy_endpoints'
-import { vulnSearchListHandler } from '@/tests/mocks/handlers/storage/vulnsearch/list'
 import { dnsTreeHandler } from '@/tests/mocks/handlers/visuals/dnstree'
 
 export const handlers = [
@@ -35,7 +34,6 @@ export const handlers = [
   versioninfoListHandler,
   vulnGroupedHandler,
   vulnListHandler,
-  vulnSearchListHandler,
   webauthnListHandler,
   ...lensHandlers,
 ]

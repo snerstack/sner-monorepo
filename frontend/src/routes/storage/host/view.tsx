@@ -37,7 +37,6 @@ const HostViewPage = () => {
   const [hostComment, setHostComment] = useState(host.comment)
   const [activeTab, setActiveTab] = useLocalStorage('host_view_tabs_active')
   const [versionInfosCount, setVersionInfosCount] = useState<string>('?')
-  const [vulnSearchesCount, setVulnSearchesCount] = useState<string>('?')
 
   const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
   const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
@@ -475,97 +474,6 @@ const HostViewPage = () => {
     }),
   ]
 
-  const vulnsearchColumns = [
-    ColumnSelect({ visible: toolboxesVisible() }),
-    Column('id', { visible: false }),
-    Column('host_address', {
-      visible: false,
-    }),
-    Column('host_hostname', {
-      visible: false,
-    }),
-    Column('service_proto', { visible: false }),
-    Column('service_port', { visible: false }),
-    Column('service', {
-      className: 'service_endpoint_dropdown',
-      createdCell: (cell, _data: string, row: VulnSearchRow) =>
-        renderElements(
-          cell,
-          <ServiceEndpointDropdown
-            service={`${row['service_port']}/${row['service_proto']}`}
-            address={row['host_address']}
-            hostname={row['host_hostname']}
-            proto={row['service_proto']}
-            port={row['service_port']}
-          />,
-        ),
-    }),
-    Column('via_target', {
-      visible: viaTargetVisible(),
-    }),
-    Column('cveid', {
-      createdCell: (cell, data: string) => {
-        renderElements(cell, <a href={`https://cve.circl.lu/cve/${data}`}>{data}</a>)
-      },
-    }),
-    Column('cvss'),
-    Column('cvss3'),
-    Column('attack_vector'),
-    Column('cpe_full'),
-    Column('name'),
-    Column('tags', {
-      className: 'abutton_annotate_dt',
-      createdCell: (cell, _data: string[], row: VulnSearchRow) => {
-        const element = cell as HTMLTableCellElement
-        element.ondblclick = () => {
-          setAnnotate({
-            show: true,
-            tags: row['tags'],
-            comment: row['comment'] || '',
-            url: urlFor(`/backend/storage/vulnsearch/annotate/${row['id']}`),
-            tableId: 'host_view_vulnsearch_table',
-          })
-        }
-        renderElements(
-          cell,
-          <div data-testid="vulnsearch_tags_annotate">
-            {row['tags'].map((tag: string) => (
-              <Fragment key={tag}>
-                <Tag tag={tag} />{' '}
-              </Fragment>
-            ))}
-          </div>,
-        )
-      },
-    }),
-    Column('comment', {
-      className: 'abutton_annotate_dt forcewrap',
-      title: 'cmnt',
-      createdCell: (cell, _data: string, row: VulnSearchRow) => {
-        const element = cell as HTMLTableCellElement
-        element.ondblclick = () => {
-          setAnnotate({
-            show: true,
-            tags: row['tags'],
-            comment: row['comment'] || '',
-            url: urlFor(`/backend/storage/vulnsearch/annotate/${row['id']}`),
-            tableId: 'host_view_vulnsearch_table',
-          })
-        }
-        renderElements(cell, <div data-testid="vulnsearch_comment_annotate">{row['comment']}</div>)
-      },
-    }),
-    ColumnButtons({
-      createdCell: (cell, _data: string, row: VulnSearchRow) =>
-        renderElements(
-          cell,
-          <ButtonGroup>
-            <ViewButton url={`/storage/vulnsearch/view/${row['id']}`} navigate={navigate} />
-          </ButtonGroup>,
-        ),
-    }),
-  ]
-
   return (
     <div>
       <Helmet>
@@ -717,17 +625,6 @@ const HostViewPage = () => {
           >
             <i className="far fa-clock text-secondary" title="pre-computed data, host links might be dangling"></i>{' '}
             Versioninfos <span className="badge badge-pill badge-secondary">{versionInfosCount}</span>
-          </a>
-        </li>
-        <li className="nav-item">
-          <a
-            className={clsx('nav-link', activeTab === 'vulnsearch' && 'active')}
-            data-testid="vulnsearch_tab"
-            href="#"
-            onClick={() => setActiveTab('vulnsearch')}
-          >
-            <i className="far fa-clock text-secondary" title="pre-computed data, host links might be dangling"></i>{' '}
-            Vulnsearches <span className="badge badge-pill badge-secondary">{vulnSearchesCount}</span>
           </a>
         </li>
       </ul>
@@ -1151,109 +1048,6 @@ const HostViewPage = () => {
               select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
               drawCallback={(settings) => {
                 setVersionInfosCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
-              }}
-            />
-          </div>
-        </>
-        <>
-          <div id="host_view_vulnsearch_tab" className={clsx('tab-pane', activeTab === 'vulnsearch' && 'active')}>
-            <div id="host_view_vulnsearch_table_toolbar" className="dt_toolbar">
-              <div data-testid="host_view_vulnsearch_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
-                <div className="btn-group">
-                  <a className="btn btn-outline-secondary disabled">
-                    <i className="fas fa-check-square"></i>
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary"
-                    href="#"
-                    data-testid="host_view_vulnsearch_select_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_vulnsearch_table')
-                      dt.rows({ page: 'current' }).select()
-                    }}
-                  >
-                    All
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary abutton_selectnone"
-                    href="#"
-                    data-testid="host_view_vulnsearch_unselect_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_vulnsearch_table')
-                      dt.rows({ page: 'current' }).deselect()
-                    }}
-                  >
-                    None
-                  </a>
-                </div>{' '}
-                <div className="btn-group">
-                  <a
-                    className="btn btn-outline-secondary"
-                    href="#"
-                    data-testid="vulnsearch_set_multiple_tag"
-                    onClick={() =>
-                      setMultipleTag({
-                        show: true,
-                        action: 'set',
-                        url: urlFor('/backend/storage/vulnsearch/tag_multiid'),
-                        tableId: 'host_view_vulnsearch_table',
-                      })
-                    }
-                  >
-                    <i className="fas fa-tag"></i>
-                  </a>
-                  {appConfig.tags.versioninfo.map((tag) => (
-                    <TagButton
-                      tag={tag}
-                      key={tag}
-                      url={urlFor("/backend/storage/vulnsearch/tag_multiid")}
-                      tableId="host_view_vulnsearch_table"
-                    />
-                  ))}
-                </div>{' '}
-                <div className="btn-group">
-                  <a
-                    className="btn btn-outline-secondary"
-                    href="#"
-                    data-testid="vulnsearch_unset_multiple_tag"
-                    onClick={() =>
-                      setMultipleTag({
-                        show: true,
-                        action: 'unset',
-                        url: urlFor('/backend/storage/vulnsearch/tag_multiid'),
-                        tableId: 'host_view_vulnsearch_table',
-                      })
-                    }
-                  >
-                    <i className="fas fa-eraser"></i>
-                  </a>
-                  <div className="btn-group">
-                    <a
-                      className="btn btn-outline-secondary dropdown-toggle"
-                      data-toggle="dropdown"
-                      href="#"
-                      title="remove tag dropdown"
-                    >
-                      <i className="fas fa-remove-format"></i>
-                    </a>
-                    <TagsDropdownButton
-                      tags={appConfig.tags.versioninfo}
-                      url={urlFor("/backend/storage/vulnsearch/tag_multiid")}
-                      tableId="host_view_vulnsearch_table"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <DataTable
-              id="host_view_vulnsearch_table"
-              columns={vulnsearchColumns}
-              ajax_url={urlFor(`/backend/storage/vulnsearch/list.json?filter=Vulnsearch.host_id=="${host.id}"`)}
-              order={[[1, 'asc']]}
-              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
-              drawCallback={(settings) => {
-                setVulnSearchesCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
               }}
             />
           </div>

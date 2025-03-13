@@ -5,7 +5,6 @@ interface ImportMetaEnv {
   readonly VITE_NOTE_TAGS: string
   readonly VITE_ANNOTATE_TAGS: string
   readonly VITE_VERSIONINFO_TAGS: string
-  readonly VITE_VULNSEARCH_TAGS: string
 }
 
 interface ImportMeta {

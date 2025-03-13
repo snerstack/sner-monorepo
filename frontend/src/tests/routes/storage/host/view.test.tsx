@@ -231,21 +231,6 @@ describe('Host view page', () => {
     })
   })
 
-  it('annotates vulnsearch', async () => {
-    renderWithProviders({
-      element: <HostViewPage />,
-      path: '/storage/host/view/1',
-      loader: loader,
-    })
-
-    await waitFor(() => {
-      const vulnsearchesTab = screen.getByTestId('vulnsearch_tab')
-      fireEvent.click(vulnsearchesTab)
-
-      testAnnotate({ tagsId: 'vulnsearch_tags_annotate', commentId: 'vulnsearch_comment_annotate' })
-    })
-  })
-
   it('sets multiple service tags', async () => {
     renderWithProviders({
       element: <HostViewPage />,
@@ -390,42 +375,6 @@ describe('Host view page', () => {
     })
   })
 
-  it('sets multiple vulnsearch tags', async () => {
-    renderWithProviders({
-      element: <HostViewPage />,
-      path: '/storage/host/view/1',
-      loader: loader,
-    })
-
-    await waitFor(() => {
-      const vulnsearchesTab = screen.getByTestId('vulnsearch_tab')
-      const tagMultipleButton = screen.getByTestId('vulnsearch_set_multiple_tag')
-
-      fireEvent.click(vulnsearchesTab)
-      fireEvent.click(tagMultipleButton)
-
-      expect(screen.getByText('Tag multiple items')).toBeInTheDocument()
-    })
-  })
-
-  it('unsets multiple note tags', async () => {
-    renderWithProviders({
-      element: <HostViewPage />,
-      path: '/storage/host/view/1',
-      loader: loader,
-    })
-
-    await waitFor(() => {
-      const vulnsearchesTab = screen.getByTestId('vulnsearch_tab')
-      const tagMultipleButton = screen.getByTestId('vulnsearch_unset_multiple_tag')
-
-      fireEvent.click(vulnsearchesTab)
-      fireEvent.click(tagMultipleButton)
-
-      expect(screen.getByText('Untag multiple items')).toBeInTheDocument()
-    })
-  })
-
   it('selects and unselects all service rows', async () => {
     renderWithProviders({
       element: <HostViewPage />,
@@ -487,23 +436,6 @@ describe('Host view page', () => {
 
       testSelectAllRows({ buttonId: 'host_view_versioninfo_select_all' })
       testSelectNoneRows({ buttonId: 'host_view_versioninfo_unselect_all' })
-    })
-  })
-
-  it('selects and unselects all vulnsearch rows', async () => {
-    renderWithProviders({
-      element: <HostViewPage />,
-      path: '/storage/host/view/1',
-      loader: loader,
-    })
-
-    await waitFor(() => {
-      const vulnsearchesTab = screen.getByTestId('vulnsearch_tab')
-
-      fireEvent.click(vulnsearchesTab)
-
-      testSelectAllRows({ buttonId: 'host_view_vulnsearch_select_all' })
-      testSelectNoneRows({ buttonId: 'host_view_vulnsearch_unselect_all' })
     })
   })
 
