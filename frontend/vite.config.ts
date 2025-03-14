@@ -46,7 +46,10 @@ export default ({ mode }) => {
       minThreads: 2,
       maxThreads: 2,
       retry: 0,
-      reporters: ['hanging-process', 'verbose'],
+      reporters: [
+        'hanging-process',
+        ['verbose', { summary: false }]
+      ],
       coverage: {
         reporter: ['text', 'html'],
         provider: 'v8',
