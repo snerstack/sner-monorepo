@@ -15,7 +15,6 @@ import { Root, createRoot } from 'react-dom/client'
 export const getTableApi = (id: string) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const filteredTables = DataTable.tables().filter((dt) => dt.id === id)
-
   return new DataTable.Api(filteredTables[0] as Node)
 }
 

@@ -1,3 +1,4 @@
+import { default as DataTableLib } from "datatables.net-bs4"
 import { useState } from "react"
 import QueryBuilder, { Field, formatQuery, RuleGroupType } from "react-querybuilder"
 import { useSearchParams } from "react-router-dom"
@@ -64,7 +65,15 @@ const RBQFilter = ({ fields }: { fields: Field[] }) => {
 
     const applyFilter = () => {
         setSearchParams((params) => {
+            const oldParams = params.toString()
             params.set('jsonfilter', formatQuery(query, 'json_without_ids'))
+
+            if (oldParams == params.toString()) {
+                DataTableLib.tables().map((table) => {
+                    (new DataTableLib.Api(table as Node)).ajax.reload()
+                })
+            }
+
             return params
         })
     }
@@ -97,7 +106,7 @@ const RBQFilter = ({ fields }: { fields: Field[] }) => {
                     value: "form-control w-25",
                     removeRule: "btn btn-danger",
                     removeGroup: "btn btn-danger",
-                    notToggle:  "form-control",
+                    notToggle: "form-control",
                 }}
                 translations={{
                     shiftActionUp: { label: <i className="fa fa-chevron-up" /> },

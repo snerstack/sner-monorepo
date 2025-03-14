@@ -1,10 +1,18 @@
-import { render, screen, fireEvent } from "@testing-library/react"
-import { describe, it, expect, vi } from "vitest"
-import { MemoryRouter, URLSearchParamsInit } from "react-router-dom"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { default as DataTableLib } from "datatables.net-bs4"
 import * as reactrouterdom from "react-router-dom"
+import { MemoryRouter, URLSearchParamsInit } from "react-router-dom"
+import { describe, expect, it, vi } from "vitest"
 
+import DataTable from "@/components/DataTable"
 import RBQFilter from "@/components/RBQFilter"
-import userEvent from "@testing-library/user-event";
+import { Column } from "@/lib/DataTables"
+import { toQueryString, urlFor } from "@/lib/urlHelper"
+
+interface DataTableInstanceParams {
+    draw: number
+}
 
 describe("RBQFilterForm", () => {
     const mockFields = [
@@ -48,5 +56,43 @@ describe("RBQFilterForm", () => {
 
         fireEvent.click(screen.getByText("Clear"))
         expect(searchParamsMock.get("jsonfilter")).toBeNull()
+    })
+
+    it('applyFilter should reload DataTable if params remain the same', async () => {
+        // wrap DT because of useSearchParams hook which cannot be used/passed otherwise from vitest
+        const FilterableDataTable = () => {
+            const [searchParams] = reactrouterdom.useSearchParams()
+            const dtColumns = [Column('id'), Column('address')];
+            return (
+                <div>
+                    <RBQFilter fields={mockFields} />
+                    <DataTable
+                        id="dummy_data_table"
+                        columns={dtColumns}
+                        ajax_url={urlFor(`/backend/lens/host/list.json${toQueryString(searchParams)}`)}
+                    />
+                </div>
+            )
+        }
+
+        render(
+            <MemoryRouter initialEntries={["?jsonfilter=%7B%22combinator%22%3A%22and%22%2C%22rules%22%3A%5B%5D%7D"]}>
+                <FilterableDataTable />
+            </MemoryRouter>
+        )
+
+        const dtinstance = new DataTableLib.Api(DataTableLib.tables()[0] as Node)
+
+        await waitFor(() => {
+            expect(screen.getByText("127.3.5.6")).toBeInTheDocument()
+
+        })
+        expect((dtinstance.ajax.params() as DataTableInstanceParams).draw).equals(1)
+
+        fireEvent.click(screen.getByText("Filter"))
+        await waitFor(() => {
+            expect(screen.getByText("127.3.5.6")).toBeInTheDocument()
+            expect((dtinstance.ajax.params() as DataTableInstanceParams).draw).equals(2)
+        })
     })
 })
