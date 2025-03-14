@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -53,7 +53,7 @@ const UserAddPage = () => {
       toast.success(resp.data.message)
       navigate('/auth/user/list')
     } catch (err) {
-      toast.error('Error while adding a user.')
+      handleHttpClientError(err)
     }
   }
 

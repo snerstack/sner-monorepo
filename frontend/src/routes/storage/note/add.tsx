@@ -6,7 +6,7 @@ import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -70,7 +70,7 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
 
       toast.success('Note has been successfully added.')
     } catch (err) {
-      toast.error('Error while adding a note.')
+      handleHttpClientError(err)
     }
   }
 

@@ -2,7 +2,7 @@ import HostEditPage from '@/routes/storage/host/edit'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 import { errorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
@@ -144,7 +144,7 @@ describe('Host edit page', () => {
         }),
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       const addressInput = screen.getByLabelText('Address')
@@ -155,7 +155,7 @@ describe('Host edit page', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Error while editing a host.')).toBeInTheDocument()
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })

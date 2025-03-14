@@ -4,7 +4,7 @@ import { Link, useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -12,7 +12,7 @@ import Heading from '@/components/Heading'
 import TagsConfig from '@/components/TagsConfig'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
-import EditButton from '@/components/buttons/EditButton'
+import { EditButton } from '@/components/buttons/BasicButtons'
 
 const ProfilePage = () => {
   const profile = useLoaderData() as Profile

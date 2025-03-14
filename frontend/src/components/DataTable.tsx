@@ -102,7 +102,7 @@ const DataTable = ({ id, ...props }: TableConfig) => {
         error: (err: JQuery.jqXHR) => {
           console.log(tableProps.ajax)
           console.error("DT ajax error", err)
-          toast.error(`DT ajax error, ${(err.responseJSON as ErrorResponse)?.error?.message ?? err.statusText}`)
+          toast.error(`DT ajax error, ${(err.responseJSON as BackendErrorResponse)?.error?.message ?? err.statusText}`)
         }
       }
       delete tableProps.ajax_url

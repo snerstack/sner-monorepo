@@ -3,7 +3,7 @@ import QueueListPage from '@/routes/scheduler/queue/list'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 import { errorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
@@ -55,40 +55,6 @@ describe('Queue add page', () => {
     })
   })
 
-  it('adds new queue (error)', async () => {
-    renderWithProviders({
-      element: <QueueAddPage />,
-      path: '/scheduler/queue/add',
-    })
-
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(
-      errorResponse({
-        code: 400,
-        errors: {
-          name: ['This field is required.'],
-        },
-      }),
-    )
-
-    const nameInput = screen.getByLabelText('Name')
-    const configInput = screen.getByLabelText('Config')
-    const groupSizeInput = screen.getByLabelText('Group size')
-    const priorityInput = screen.getByLabelText('Priority')
-    const activeInput = screen.getByLabelText('Active')
-    const addButton = screen.getByRole('button', { name: 'Add' })
-
-    fireEvent.change(nameInput, { target: { value: '' } })
-    fireEvent.change(configInput, { target: { value: 'module: nmap\nargs: -sS --top-ports 10000' } })
-    fireEvent.change(groupSizeInput, { target: { value: 10 } })
-    fireEvent.change(priorityInput, { target: { value: 3 } })
-    fireEvent.click(activeInput)
-    fireEvent.click(addButton)
-
-    await waitFor(() => {
-      expect(screen.getByText('This field is required.')).toBeInTheDocument()
-    })
-  })
-
   it('adds new queue (errors)', async () => {
     renderWithProviders({
       element: <QueueAddPage />,
@@ -98,6 +64,7 @@ describe('Queue add page', () => {
     vi.spyOn(httpClient, 'post').mockRejectedValueOnce(
       errorResponse({
         code: 400,
+        message: "Invalid form",
         errors: {
           config: ["Invalid YAML: 'NoneType' object has no attribute 'read'"],
           group_size: ['Number must be at least 1.'],
@@ -116,8 +83,9 @@ describe('Queue add page', () => {
     fireEvent.click(addButton)
 
     await waitFor(() => {
-      expect(screen.getByText("Invalid YAML: 'NoneType' object has no attribute 'read'")).toBeInTheDocument()
-      expect(screen.getByText('Number must be at least 1.')).toBeInTheDocument()
+      expect(screen.getByText('Invalid form')).toBeInTheDocument()
+      expect(screen.getByText(/Invalid YAML: 'NoneType' object has no attribute 'read'/)).toBeInTheDocument()
+      expect(screen.getByText(/Number must be at least 1./)).toBeInTheDocument()
     })
   })
 })

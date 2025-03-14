@@ -8,7 +8,7 @@ import { routes } from './routes'
 import { AppConfig } from '@/appConfig'
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { userState } from '@/atoms/userAtom'
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { tagsConfigInitialize } from '@/lib/sner/tags'
 import { urlFor } from '@/lib/urlHelper'
 

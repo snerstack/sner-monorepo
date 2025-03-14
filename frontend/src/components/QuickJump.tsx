@@ -2,7 +2,7 @@ import { ChangeEvent, KeyboardEvent, MouseEvent, useEffect, useState } from 'rea
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 const QuickJump = () => {

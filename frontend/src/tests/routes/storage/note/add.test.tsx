@@ -3,7 +3,7 @@ import NoteAddPage from '@/routes/storage/note/add'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 import { errorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
@@ -204,7 +204,7 @@ describe('Note add page', () => {
       loader: hostLoader,
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       const dataInput = screen.getByLabelText('Data')
@@ -212,6 +212,10 @@ describe('Note add page', () => {
 
       fireEvent.change(dataInput, { target: { value: 'new_data' } })
       fireEvent.click(addButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 })

@@ -1,5 +1,31 @@
 # sner changelog
 
+## 1.1.1 - lens visibility
+
+### Changed
+
+* docker: allow gunicorn bind opt to be injected by environment
+* docker: compose volumes and service naming cleanup
+* docker: entrypoint.sh use exec (replace process)
+* docker: run server/planner as user
+* frontend: form error handling show server message (aka field errors)
+* misc internal refactoring
+
+### Fixed
+
+* server: fix error handling in server.sessions
+* server: security fix, do not log oidc token credentials (also other logging cosmetics)
+* frontend: shorten too long username in nav
+* github: fix image version used for testing (ubuntu-latest break things)
+* compose: fix, database mount point in compose
+
+### Added
+
+* server: auth oidc optional user creation (no roles)
+* server: add basic features for planner configuration based on agreegate api
+* frontend, server: basic lens functionality, users can view data in web UI respecting their api_networks restrictions
+
+
 ## 1.1.0 - into production [BC BREAK]
 
 ### Changed

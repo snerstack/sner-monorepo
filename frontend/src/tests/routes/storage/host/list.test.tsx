@@ -9,7 +9,7 @@ import { testSelectNoneRows } from '@/tests/helpers/testSelectNoneRows'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 import { errorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
@@ -148,7 +148,7 @@ describe('Host list page', () => {
       path: '/storage/host/list',
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValue(errorResponse({ code: 500, message: 'Internal Server Error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValue(errorResponse({ code: 500, message: 'error message' }))
 
     await waitFor(() => {
       const tagsCell = screen.getAllByTestId('host_tags_annotate')[0]
@@ -167,7 +167,7 @@ describe('Host list page', () => {
       fireEvent.change(commentInput, { target: { value: 'new_comment' } })
       fireEvent.click(saveButton)
 
-      expect(screen.getByText('Error while annotating')).toBeInTheDocument()
+      expect(screen.getByText('error message')).toBeInTheDocument()
     })
   })
 

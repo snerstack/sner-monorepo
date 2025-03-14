@@ -19,7 +19,6 @@ from sner.server.auth.forms import LoginForm, TotpCodeForm, WebauthnLoginForm
 from sner.server.auth.models import User
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db, oauth, webauthn
-from sner.server.forms import ButtonForm
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 from sner.server.utils import error_response
 
@@ -101,8 +100,7 @@ def login_webauthn_pkcro_route():
     """login webauthn pkcro route"""
 
     user = User.query.filter(User.active, User.id == session.get('webauthn_login_user_id')).one_or_none()
-    form = ButtonForm()
-    if user and form.validate_on_submit():
+    if user:
         pkcro, state = webauthn.authenticate_begin(webauthn_credentials(user))
         session['webauthn_login_state'] = state
         return Response(b64encode(cbor.encode(pkcro)).decode('utf-8'), mimetype='text/plain')

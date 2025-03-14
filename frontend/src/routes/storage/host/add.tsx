@@ -6,7 +6,7 @@ import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -44,7 +44,7 @@ const HostAddPage = () => {
 
       toast.success('Successfully added a new host.')
     } catch (err) {
-      toast.error('Error while adding a host.')
+      handleHttpClientError(err)
     }
   }
   return (

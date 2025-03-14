@@ -4,7 +4,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import { urlFor } from '@/lib/urlHelper'
-import httpClient from '@/lib/httpClient'
+import { httpClient, handleHttpClientError } from '@/lib/httpClient'
 
 import Heading from '@/components/Heading'
 import BooleanField from '@/components/fields/BooleanField'
@@ -56,7 +56,7 @@ const UserEditPage = () => {
       toast.success(resp.data.message)
       navigate('/auth/user/list')
     } catch (err) {
-      toast.error('Error while editing a user.')
+      handleHttpClientError(err)
     }
   }
 

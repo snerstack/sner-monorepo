@@ -2,12 +2,11 @@ import { unique } from '@/utils'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnSelect, getTableApi } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -56,7 +55,7 @@ const VulnMulticopyPage = () => {
 
       navigate(`/storage/vuln/list?filter=Vuln.id in ${resp.data.new_vulns}`)
     } catch (err) {
-      toast.error('Error while multicopying vulns.')
+      handleHttpClientError(err)
     }
   }
 

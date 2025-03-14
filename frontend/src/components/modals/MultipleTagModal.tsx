@@ -1,9 +1,8 @@
 import { Dispatch, SetStateAction, useState } from 'react'
 import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
-import { toast } from 'react-toastify'
 
 import { getTableApi } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { DEFAULT_MULTIPLE_TAG_STATE, getSelectedIdsFormData } from '@/lib/sner/storage'
 
 import SubmitField from '../fields/SubmitField'
@@ -33,8 +32,8 @@ const MultipleTagModal = ({
       setMultipleTag(DEFAULT_MULTIPLE_TAG_STATE)
       getTableApi(multipleTag.tableId).draw()
     /* c8 ignore next 3 */
-    } catch {
-      toast.error(`Error while ${multipleTag.action}ing tags`)
+    } catch (err) {
+      handleHttpClientError(err)
     }
   }
 

@@ -4,15 +4,15 @@ import { toast } from 'react-toastify'
 
 import { urlFor } from '@/lib/urlHelper'
 import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 import CodeBlock from '@/components/CodeBlock'
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
-import Button from '@/components/buttons/Button'
+import { Button } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
-import EditButton from '@/components/buttons/EditButton'
+import { EditButton } from '@/components/buttons/BasicButtons'
 
 const QueueListPage = () => {
   const navigate = useNavigate()
@@ -36,11 +36,12 @@ const QueueListPage = () => {
           <>
             <ButtonGroup>
               <Button
-                name="Enqueue"
-                title="Put targets to queue"
                 url={`/scheduler/queue/enqueue/${row['id']}`}
+                title="Put targets to queue"
                 navigate={navigate}
-              />
+              >
+                Enqueue
+              </Button>
               <a
                 className="btn btn-outline-secondary"
                 title="Flush all targets from queue"

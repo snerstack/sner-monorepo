@@ -1,7 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 export const testDeleteRow = ({ buttonId, confirm = true }: { buttonId: string; confirm?: boolean }) => {
   vi.stubGlobal('confirm', vi.fn().mockReturnValue(confirm))

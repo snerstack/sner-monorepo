@@ -1,17 +1,16 @@
 import { unique } from '@/utils'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
-import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { getTableApi } from '@/lib/DataTables'
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 
 import { DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage.ts'
-import SubmitField from '../fields/SubmitField'
-import TagsField from '../fields/TagsField'
-import TextAreaField from '../fields/TextAreaField'
+import SubmitField from '@/components/fields/SubmitField'
+import TagsField from '@/components/fields/TagsField'
+import TextAreaField from '@/components/fields/TextAreaField'
 
 const AnnotateModal = ({
   annotate,
@@ -40,8 +39,8 @@ const AnnotateModal = ({
       setAnnotate({ ...annotate, show: false })
       annotate.tableId && getTableApi(annotate.tableId).draw()
       annotate.refresh && annotate.refresh(tags, comment)
-    } catch (e) {
-      toast.error('Error while annotating')
+    } catch (err) {
+      handleHttpClientError(err)
     }
   }
 

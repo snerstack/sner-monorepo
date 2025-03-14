@@ -17,8 +17,8 @@ import Tag from '@/components/Tag'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
-import EditButton from '@/components/buttons/EditButton'
-import MultiCopyButton from '@/components/buttons/MultiCopyButton'
+import { EditButton } from '@/components/buttons/BasicButtons'
+import { MultiCopyButton } from '@/components/buttons/BasicButtons'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
@@ -99,8 +99,8 @@ const VulnListPage = () => {
         renderElements(
           cell,
           <>
-            {row['refs'].map((ref) => (
-              <Fragment key={ref}>
+            {row['refs'].map((ref, index) => (
+              <Fragment key={index}>
                 <a rel="noreferrer" href={getUrlForRef(ref)}>
                   {getTextForRef(ref)}
                 </a>{' '}

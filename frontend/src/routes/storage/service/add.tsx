@@ -5,7 +5,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 import { appConfigState } from '@/atoms/appConfigAtom'
 
@@ -52,7 +52,7 @@ const ServiceAddPage = () => {
 
       toast.success('Successfully added a new service.')
     } catch (err) {
-      toast.error('Error while editing a service.')
+      handleHttpClientError(err)
     }
   }
   return (

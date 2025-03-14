@@ -6,7 +6,7 @@ import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -83,7 +83,7 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
 
       toast.success('Vuln has been successfully added.')
     } catch (err) {
-      toast.error('Error while adding a vuln.')
+      handleHttpClientError(err)
     }
   }
 

@@ -3,7 +3,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 const loader = () =>
   Promise.resolve({

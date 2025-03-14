@@ -3,7 +3,7 @@ import HostViewPage from '@/routes/storage/host/view'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 import { errorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
@@ -72,24 +72,30 @@ describe('Host add page', () => {
     })
   })
 
-  it('adds new host (error)', () => {
+  it('adds new host (error)', async () => {
     renderWithProviders({
       element: <HostAddPage />,
       path: '/storage/host/add',
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'Internal server error' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 500, message: 'error message' }))
 
-    const addressInput = screen.getByLabelText('Address')
-    const hostnameInput = screen.getByLabelText('Hostname')
-    const osInput = screen.getByLabelText('Os')
-    const commentInput = screen.getByLabelText('Comment')
-    const addButton = screen.getByRole('button', { name: 'Add' })
+    await waitFor(() => {
+      const addressInput = screen.getByLabelText('Address')
+      const hostnameInput = screen.getByLabelText('Hostname')
+      const osInput = screen.getByLabelText('Os')
+      const commentInput = screen.getByLabelText('Comment')
+      const addButton = screen.getByRole('button', { name: 'Add' })
 
-    fireEvent.change(addressInput, { target: { value: '127.1.2.3' } })
-    fireEvent.change(hostnameInput, { target: { value: 'localhost' } })
-    fireEvent.change(osInput, { target: { value: 'linux' } })
-    fireEvent.change(commentInput, { target: { value: 'test comment' } })
-    fireEvent.click(addButton)
+      fireEvent.change(addressInput, { target: { value: '127.1.2.3' } })
+      fireEvent.change(hostnameInput, { target: { value: 'localhost' } })
+      fireEvent.change(osInput, { target: { value: 'linux' } })
+      fireEvent.change(commentInput, { target: { value: 'test comment' } })
+      fireEvent.click(addButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('error message')).toBeInTheDocument()
+    })
   })
 })

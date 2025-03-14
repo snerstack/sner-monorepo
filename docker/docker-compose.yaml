@@ -95,7 +95,7 @@ services:
     image: postgres:15-bookworm
     container_name: sner_database
     volumes:
-      - database_data:/var/lib/postgresql
+      - database_data:/var/lib/postgresql/data
     environment:
       SNER_SERVER_DB_PASSWORD:
 

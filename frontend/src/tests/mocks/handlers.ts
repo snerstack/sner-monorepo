@@ -1,6 +1,7 @@
 import { logoutHandler } from '@/tests/mocks/handlers/auth/logout'
 import { webauthnListHandler } from '@/tests/mocks/handlers/auth/profile/webauthn/list'
 import { userListHandler } from '@/tests/mocks/handlers/auth/user/list'
+import { lensHandlers } from '@/tests/mocks/handlers/lens'
 import { jobListHandler } from '@/tests/mocks/handlers/scheduler/job/list'
 import { queueListHandler } from '@/tests/mocks/handlers/scheduler/queue/list'
 import { hostListHandler } from '@/tests/mocks/handlers/storage/host/list'
@@ -36,4 +37,5 @@ export const handlers = [
   vulnListHandler,
   vulnSearchListHandler,
   webauthnListHandler,
+  ...lensHandlers,
 ]

@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { expect, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 export const testMultipleTags = async ({ action, testId }: { action: 'set' | 'unset'; testId: string }) => {
   await waitFor(() => {
