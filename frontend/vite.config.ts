@@ -42,9 +42,6 @@ export default ({ mode }) => {
       setupFiles: ['./src/tests/setup.ts'],
       exclude: [...configDefaults.exclude, 'src/tests/mocks', 'src/tests/utils'],
       testTimeout: 15000,
-      threads: true,
-      minThreads: 2,
-      maxThreads: 2,
       retry: 0,
       reporters: [
         'hanging-process',
@@ -53,10 +50,12 @@ export default ({ mode }) => {
       coverage: {
         reporter: ['text', 'html'],
         provider: 'v8',
-        lines: 100,
-        functions: 100,
-        branches: 100,
-        statements: 100,
+        thresholds: {
+          lines: 100,
+          functions: 100,
+          branches: 100,
+          statements: 100,
+        },
         include: ['src'],
         all: true,
         exclude: [
