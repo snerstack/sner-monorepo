@@ -62,8 +62,7 @@ export default ({ mode }) => {
           'src/tests',
           '**/*.cjs',
           '**/*.d.ts',
-          // cannot test with vitest+jsdom because of canvas package issues
-          // with vitest threads (required for majority of tests)
+          // cannot test with vitest+jsdom because of canvas API issues
           'src/routes/visuals/portinfos.tsx',
           // cannot test, vitest + swagger
           'src/routes/swagger.tsx',
