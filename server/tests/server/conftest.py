@@ -36,7 +36,7 @@ def client_in_roles(ufactory, clnt, roles):
     user = ufactory.create(username='pytest_user', password=PWS.hash(password), roles=roles)
 
     form_data = [('username', user.username), ('password', password)]
-    clnt.post(url_for('auth.login_route'), headers={'X-CSRF-TOKEN': get_csrf_token(clnt)}, params=form_data)
+    clnt.post(url_for('auth.login_route'), params=form_data)
 
     return clnt
 
