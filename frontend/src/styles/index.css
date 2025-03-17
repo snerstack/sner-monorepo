@@ -88,3 +88,14 @@ ul.multiple_checkbox_field li {
 .break-spaces {
 	white-space: break-spaces;
 }
+
+
+/* react-querybuilder overrides */
+.queryBuilder .ruleGroup-notToggle input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.queryBuilder .shiftActions button {
+  all: unset;
+  cursor: pointer;
+}

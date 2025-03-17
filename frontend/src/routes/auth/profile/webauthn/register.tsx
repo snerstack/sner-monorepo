@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-import httpClient from '@/lib/httpClient';
+import { handleHttpClientError, httpClient } from '@/lib/httpClient';
 import { urlFor } from '@/lib/urlHelper';
 
 import Heading from '@/components/Heading';
@@ -72,10 +72,9 @@ const WebAuthnRegisterPage = () => {
       )
       toast.success(resp.data.message)
       navigate('/auth/profile')
-    /* c8 ignore next 4 */
+    /* c8 ignore next 3 */
     } catch (err) {
-      console.error(err)
-      toast.error('Webauthn registration failed')
+      handleHttpClientError(err)
     }
   }
 

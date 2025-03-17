@@ -3,7 +3,7 @@ import TOTPPage from '@/routes/auth/profile/totp'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 
 import { errorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
@@ -41,7 +41,7 @@ describe('TOTP page', () => {
         }),
     })
 
-    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 400, message: 'Invalid code.' }))
+    vi.spyOn(httpClient, 'post').mockRejectedValueOnce(errorResponse({ code: 400, message: 'Invalid code' }))
 
     await waitFor(() => {
       const totpCodeInput = screen.getByLabelText('TOTP Code')
@@ -52,7 +52,7 @@ describe('TOTP page', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid code.')).toBeInTheDocument()
+      expect(screen.getByText('Invalid code')).toBeInTheDocument()
     })
   })
 

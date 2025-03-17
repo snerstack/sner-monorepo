@@ -11,6 +11,7 @@ import yaml
 from flask import current_app, jsonify
 from lark.exceptions import LarkError
 from sqlalchemy_filters import apply_filters
+from sqlalchemy_filters.exceptions import BadFilterFormat
 
 from sner.server.scheduler.core import ExclFamily
 from sner.server.sqlafilter import FILTER_PARSER
@@ -65,7 +66,7 @@ class FilterQueryError(Exception):
 
 
 def filter_query(query, qfilter):
-    """filter sqla query"""
+    """filter sqlalchemy query with string filter expression"""
 
     if not qfilter:
         return query
@@ -75,6 +76,58 @@ def filter_query(query, qfilter):
     except LarkError as exc:
         mesg = str(exc).split('\n', maxsplit=1)[0]
         current_app.logger.error('failed to parse filter: %s', mesg)
+        raise FilterQueryError(mesg) from None
+
+    return query
+
+
+def transform_to_sqlalchemy_filter(query):
+    """convert RBQ to sqlalchemy-filters"""
+
+    # Process RQB RuleType
+    if "field" in query:
+        model, attr = query["field"].split(".", maxsplit=1)
+        return {
+            "model": model,
+            "field": attr,
+            "op": query["operator"],
+            "value": query["value"]
+        }
+
+    # Process RQB RuleGroupType
+    if "combinator" in query:
+        if not query["rules"]:
+            return {}
+
+        if query.get("not", False) is True:
+            return {"not": [
+                {query["combinator"]: [transform_to_sqlalchemy_filter(item) for item in query["rules"]]}
+            ]}
+
+        return {query["combinator"]: [transform_to_sqlalchemy_filter(item) for item in query["rules"]]}
+
+    raise ValueError("Invalid filter")
+
+
+def filter_query_jsonfilter(query, jsonfilter):
+    """filter sqlalchemy query with sqlalchemy-filters expression"""
+
+    current_app.logger.debug("jsonfilter: %s", jsonfilter)
+    if not jsonfilter:  # pragma: nocover  ; won't test
+        return query
+
+    try:
+        transformed = transform_to_sqlalchemy_filter(json.loads(jsonfilter))
+        current_app.logger.debug("jsonfilter transformed: %s", transformed)
+
+        if not transformed:  # pragma: nocover  ; won't test
+            return query
+
+        query = apply_filters(query, transformed, do_auto_join=False)
+
+    except (json.JSONDecodeError, ValueError, BadFilterFormat) as exc:
+        mesg = str(exc).split('\n', maxsplit=1)[0]
+        current_app.logger.error('failed to apply jsonfilter: %s, %s', type(exc).__name__, mesg)
         raise FilterQueryError(mesg) from None
 
     return query

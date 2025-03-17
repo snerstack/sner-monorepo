@@ -18,10 +18,10 @@ import Tag from '@/components/Tag'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
-import EditButton from '@/components/buttons/EditButton'
+import { EditButton } from '@/components/buttons/BasicButtons'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
-import ViewButton from '@/components/buttons/ViewButton'
+import { ViewButton } from '@/components/buttons/BasicButtons'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
@@ -154,6 +154,7 @@ const NoteListPage = () => {
         ),
     }),
   ]
+
   return (
     <div>
       <Helmet>

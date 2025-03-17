@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import ProfilePage from '@/routes/auth/profile'
 import WebAuthnEditPage from '@/routes/auth/profile/webauthn/edit'
 

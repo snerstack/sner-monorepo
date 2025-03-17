@@ -7,7 +7,7 @@ import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
 
-import httpClient from '@/lib/httpClient'
+import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 import { toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 
@@ -24,6 +24,17 @@ type SubnavItem = { title: string; link: string }
   }
 
   const navMenu: NavMenuConfig = {
+    lens: {
+      title: 'Lens',
+      icon: 'fas fa-street-view',
+      link: '/lens',
+      acl: 'user',
+      subnav: [
+        { title: 'Hosts', link: '/lens/host/list' },
+        { title: 'Services', link: '/lens/service/list' },
+        { title: 'Vulnerabilities', link: '/lens/vuln/list' },
+      ],
+    },
     swagger: {
       title: 'API',
       icon: 'fas fa-paper-plane',

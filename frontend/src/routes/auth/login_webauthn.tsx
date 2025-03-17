@@ -7,7 +7,7 @@ import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
 
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 import { arrayBufferToBase64, base64ToArrayBuffer } from '@/utils'
 
@@ -52,8 +52,7 @@ const WebAuthnLoginPage = () => {
       await loginWebauthn(assertion)
       /* c8 ignore next 4 */
     } catch (err) {
-      console.error(err)
-      toast.error('Webauthn login failed')
+      handleHttpClientError(err)
     }
   }, [loginWebauthn])
 

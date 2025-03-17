@@ -1,11 +1,10 @@
-import { isAxiosError } from 'axios'
 import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-import httpClient from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -45,9 +44,7 @@ const TOTPPage = () => {
       toast.success(resp.data.message)
       navigate('/auth/profile')
     } catch (err) {
-      if (isAxiosError<{ error: { message: string; code: number } }>(err)) {
-        toast.error(err.response?.data.error.message)
-      }
+      handleHttpClientError(err)
     }
   }
 

@@ -1,9 +1,9 @@
-import { describe, expect, it, Mock, vi } from "vitest"
 import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { describe, expect, it, Mock, vi } from "vitest"
 
-import { renderWithProviders } from "@/tests/utils/renderWithProviders"
 import DuplicateButton from "@/components/buttons/DuplicateButton"
-import httpClient from "@/lib/httpClient"
+import { httpClient } from "@/lib/httpClient"
+import { renderWithProviders } from "@/tests/utils/renderWithProviders"
 
 const useNavigateMock: Mock = vi.fn()
 const mockNavigate = () => {
