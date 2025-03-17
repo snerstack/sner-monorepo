@@ -1,6 +1,6 @@
 import LensHostViewPage from "@/routes/lens/host/view"
 import { screen, waitFor, within } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { renderWithProviders } from "@/tests/utils/renderWithProviders"
 
@@ -49,6 +49,8 @@ const loader = () =>
 
 describe("Lens host view page", () => {
   it("shows page", async () => {
+    vi.spyOn(window, "scrollTo").mockImplementation(() => { })
+
     renderWithProviders({
       element: <LensHostViewPage />,
       path: "/lens/host/view/1",
