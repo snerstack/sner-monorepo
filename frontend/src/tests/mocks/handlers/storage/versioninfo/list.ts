@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 const data = {
   draw: '1',
@@ -72,13 +72,20 @@ const data = {
   ],
 }
 
-export const versioninfoListHandler = rest.post(
-  '/backend/storage/versioninfo/list.json',
-  (req, res, ctx) => {
-    if (req.url.searchParams.get('product') === 'apache' && req.url.searchParams.get('versionspec') === '<=2.0') {
-      return res(ctx.json({ draw: '1', recordsTotal: '4', recordsFiltered: '1', data: [data.data[0]] }))
+export const versioninfoListHandler = http.post('/backend/storage/versioninfo/list.json', ({ request }) => {
+    const url = new URL(request.url)
+    const product = url.searchParams.get('product')
+    const versionspec = url.searchParams.get('versionspec')
+
+    if ((product === 'apache') && (versionspec === '<=2.0')) {
+      return HttpResponse.json({
+        draw: '1',
+        recordsTotal: '4',
+        recordsFiltered: '1',
+        data: [data.data[0]]
+      })
     }
 
-    return res(ctx.json(data))
-  },
+    return HttpResponse.json(data)
+  }
 )

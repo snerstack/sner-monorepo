@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 const data = {
   draw: '1',
@@ -40,6 +40,6 @@ const data = {
   ],
 }
 
-export const jobListHandler = rest.post('/backend/scheduler/job/list.json', (_, res, ctx) => {
-  return res(ctx.json(data))
+export const jobListHandler = http.post('/backend/scheduler/job/list.json', () => {
+  return HttpResponse.json(data)
 })

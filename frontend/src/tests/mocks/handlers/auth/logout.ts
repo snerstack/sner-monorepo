@@ -1,7 +1,7 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 const data = {}
 
-export const logoutHandler = rest.get('/backend/auth/logout', (_, res, ctx) => {
-  return res(ctx.json(data))
+export const logoutHandler = http.get('/backend/auth/logout', () => {
+  return HttpResponse.json(data)
 })

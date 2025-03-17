@@ -1,4 +1,5 @@
-import { rest } from 'msw'
+import { getFilterQueryParam } from '@/tests/mocks/lib'
+import { http, HttpResponse } from 'msw'
 
 const data = {
   draw: '1',
@@ -53,10 +54,17 @@ const data = {
   ],
 }
 
-export const hostListHandler = rest.post('/backend/storage/host/list.json', (req, res, ctx) => {
-  if (req.url.searchParams.get('filter') === 'Host.address=="127.4.4.4"') {
-    return res(ctx.json({ draw: '1', recordsTotal: '1', recordsFiltered: '1', data: [data.data[0]] }))
+export const hostListHandler = http.post('/backend/storage/host/list.json', ({ request }) => {
+  const filter = getFilterQueryParam(request)
+
+  if (filter === 'Host.address=="127.4.4.4"') {
+    return HttpResponse.json({
+      draw: '1',
+      recordsTotal: '1',
+      recordsFiltered: '1',
+      data: [data.data[0]]
+    })
   }
 
-  return res(ctx.json(data))
+  return HttpResponse.json(data)
 })

@@ -1,5 +1,5 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
-export const hostLookupHandler = rest.get('/backend/storage/host/lookup', (_req, res, ctx) => {
-  return res(ctx.json({"url": "/storage/host/view/54"}))
+export const hostLookupHandler = http.get('/backend/storage/host/lookup', () => {
+  return HttpResponse.json({"url": "/storage/host/view/54"})
 })

@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 const data = {
   links: [
@@ -52,6 +52,6 @@ const data = {
   ],
 }
 
-export const dnsTreeHandler = rest.get('/backend/visuals/dnstree.json', (_, res, ctx) => {
-  return res(ctx.json(data))
+export const dnsTreeHandler = http.get('/backend/visuals/dnstree.json', () => {
+  return HttpResponse.json(data)
 })

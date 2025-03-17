@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 const data = {
   data: [
@@ -35,6 +35,6 @@ const data = {
   recordsTotal: '3',
 }
 
-export const userListHandler = rest.post('/backend/auth/user/list.json', (_, res, ctx) => {
-  return res(ctx.json(data))
+export const userListHandler = http.post('/backend/auth/user/list.json', () => {
+  return HttpResponse.json(data)
 })

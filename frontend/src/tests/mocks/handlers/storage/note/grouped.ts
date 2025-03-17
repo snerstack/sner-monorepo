@@ -1,4 +1,5 @@
-import { rest } from 'msw'
+import { getFilterQueryParam } from '@/tests/mocks/lib'
+import { http, HttpResponse } from 'msw'
 
 const data = {
   data: [
@@ -28,10 +29,17 @@ const data = {
   recordsTotal: '5',
 }
 
-export const noteGroupedHandler = rest.post('/backend/storage/note/grouped.json', (req, res, ctx) => {
-  if (req.url.searchParams.get('filter') === 'Note.xtype=="cpe"') {
-    return res(ctx.json({ draw: '1', recordsTotal: '1', recordsFiltered: '1', data: [data.data[0]] }))
+export const noteGroupedHandler = http.post('/backend/storage/note/grouped.json', ({ request }) => {
+  const filter = getFilterQueryParam(request)
+
+  if (filter === 'Note.xtype=="cpe"') {
+    return HttpResponse.json({
+      draw: '1',
+      recordsTotal: '1',
+      recordsFiltered: '1',
+      data: [data.data[0]]
+    })
   }
 
-  return res(ctx.json(data))
+  return HttpResponse.json(data)
 })

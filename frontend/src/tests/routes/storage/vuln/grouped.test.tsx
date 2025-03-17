@@ -8,7 +8,10 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Vuln grouped page', () => {
   it('shows grouped vulns ', async () => {
-    renderWithProviders({ element: <VulnGroupedPage />, path: '/storage/vuln/grouped' })
+    renderWithProviders({
+      element: <VulnGroupedPage />,
+      path: '/storage/vuln/grouped'
+    })
 
     const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
     expect(listItems.includes('Vulns')).toBeTruthy()

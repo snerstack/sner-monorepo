@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 const data = {
   data: [
@@ -45,6 +45,6 @@ const data = {
   recordsTotal: '3',
 }
 
-export const queueListHandler = rest.post('/backend/scheduler/queue/list.json', (_, res, ctx) => {
-  return res(ctx.json(data))
+export const queueListHandler = http.post('/backend/scheduler/queue/list.json', () => {
+  return HttpResponse.json(data)
 })

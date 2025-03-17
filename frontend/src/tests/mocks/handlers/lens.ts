@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 const hosts_data = {
     draw: "1",
@@ -60,15 +60,15 @@ const vulns_data = {
 }
 
 export const lensHandlers = [
-    rest.post("/backend/lens/host/list.json", (_req, res, ctx) => {
-        return res(ctx.json(hosts_data))
+    http.post("/backend/lens/host/list.json", () => {
+        return HttpResponse.json(hosts_data)
     }),
 
-    rest.post('/backend/lens/service/list.json', (_req, res, ctx) => {
-        return res(ctx.json(services_data))
+    http.post('/backend/lens/service/list.json', () => {
+        return HttpResponse.json(services_data)
     }),
 
-    rest.post('/backend/lens/vuln/list.json', (_req, res, ctx) => {
-        return res(ctx.json(vulns_data))
+    http.post('/backend/lens/vuln/list.json', () => {
+        return HttpResponse.json(vulns_data)
     }),
 ]

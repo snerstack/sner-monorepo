@@ -1,12 +1,12 @@
-import { server } from './mocks/server'
 import '@testing-library/jest-dom'
 import * as matchers from '@testing-library/jest-dom/matchers'
 import { act, cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, beforeEach, expect, vi } from 'vitest'
 
+import { cleanupElements as datatablesCleanup } from '@/lib/DataTables'
 import { LSKEY_TAG_COLORS } from '@/lib/sner/tags'
 
-import { cleanupElements as datatablesCleanup } from '@/lib/DataTables'
+import { server } from '@/tests/mocks/server'
 
 expect.extend(matchers)
 

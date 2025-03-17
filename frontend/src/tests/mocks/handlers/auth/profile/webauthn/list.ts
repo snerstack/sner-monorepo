@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 const data = {
   draw: '1',
@@ -13,9 +13,6 @@ const data = {
     },
   ],
 }
-export const webauthnListHandler = rest.post(
-  '/backend/auth/profile/webauthn/list.json',
-  (_, res, ctx) => {
-    return res(ctx.json(data))
-  },
-)
+export const webauthnListHandler = http.post('/backend/auth/profile/webauthn/list.json', () => {
+  return HttpResponse.json(data)
+})

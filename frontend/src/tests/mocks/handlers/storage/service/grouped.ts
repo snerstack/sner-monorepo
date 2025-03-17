@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 interface Data {
   data: DataItem[]
@@ -32,21 +32,25 @@ const data = {
   recordsTotal: '3',
 }
 
-export const serviceGroupedHandler = rest.post(
-  '/backend/storage/service/grouped.json',
-  (req, res, ctx) => {
-    if (!req.url.searchParams.keys()) {
-      return res(ctx.json(data))
+export const serviceGroupedHandler = http.post('/backend/storage/service/grouped.json', ({ request }) => {
+    const url = new URL(request.url)
+
+    // url.searchParams.size is undefined in nodejs
+    if (Array.from(url.searchParams).length === 0) {
+      return HttpResponse.json(data)
     }
 
+    const filter = url.searchParams.get('filter')
+    const crop = url.searchParams.get('crop')
+        
     const filtered = JSON.parse(JSON.stringify(data)) as Data
 
-    if (req.url.searchParams.get('filter') === 'Host.address=="127.4.4.4"') {
+    if (filter === 'Host.address=="127.4.4.4"') {
       filtered.data = filtered.data.slice(0, 2);
     }
 
-    if (req.url.searchParams.get('crop')) {
-      const cropLength = parseInt(req.url.searchParams.get('crop')!)
+    if (crop) {
+      const cropLength = parseInt(crop)
       filtered.data.forEach((item: DataItem) => {
         if (item.info) {
           item.info = item.info.split(' ').slice(0, cropLength).join(' ');
@@ -55,6 +59,6 @@ export const serviceGroupedHandler = rest.post(
     }
 
     filtered.recordsFiltered = filtered.data.length.toString()
-    return res(ctx.json(filtered))
-  },
+    return HttpResponse.json(filtered)
+  }
 )

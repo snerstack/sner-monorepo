@@ -8,7 +8,10 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Service grouped page', () => {
   it('shows grouped services ', async () => {
-    renderWithProviders({ element: <ServiceGroupedPage />, path: '/storage/service/grouped' })
+    renderWithProviders({
+      element: <ServiceGroupedPage />,
+      path: '/storage/service/grouped'
+    })
 
     const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
     expect(listItems.includes('Services')).toBeTruthy()

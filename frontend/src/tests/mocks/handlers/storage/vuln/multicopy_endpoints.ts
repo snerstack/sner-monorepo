@@ -1,4 +1,4 @@
-import { rest } from 'msw'
+import { http, HttpResponse } from 'msw'
 
 const data = {
   data: [
@@ -189,9 +189,7 @@ const data = {
   ],
 }
 
-export const multicopyEndpointsHandler = rest.post(
-  '/backend/storage/vuln/multicopy_endpoints.json',
-  (_, res, ctx) => {
-    return res(ctx.json(data))
-  },
+export const multicopyEndpointsHandler = http.post('/backend/storage/vuln/multicopy_endpoints.json', () => {
+    return HttpResponse.json(data)
+  }
 )
