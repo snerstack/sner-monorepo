@@ -13,7 +13,11 @@ from sner.lib import file_from_zip
 def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     """auror_hostnames module execution test"""
 
-    test_a = {"id": str(uuid4()), "config": {"module": "auror_hostnames", "args": "--static_assignment"}, "targets": ["target1"]}
+    test_a = {
+        "id": str(uuid4()),
+        "config": {"module": "auror_hostnames", "args": "--static_assignment", "git_key_path": "~/.ssh/key", "git_server": "git.example.com"},
+        "targets": ["target1"],
+    }
 
     result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
