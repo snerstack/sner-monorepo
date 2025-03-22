@@ -17,7 +17,7 @@ from uuid import uuid4
 
 import yaml
 from flask import current_app
-from sqlalchemy import cast, delete, distinct, func, select
+from sqlalchemy import cast, delete, distinct, func, select, text
 from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY, insert as pg_insert
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -368,7 +368,7 @@ class SchedulerService:
 
         try:
             db.session.execute(
-                'SET LOCAL lock_timeout=:timeout; SELECT pg_advisory_lock(:locknum);',
+                text('SET LOCAL lock_timeout=:timeout; SELECT pg_advisory_lock(:locknum);'),
                 {'timeout': timeout*100, 'locknum': SCHEDULER_LOCK_NUMBER}
             )
         except SQLAlchemyError:
@@ -380,7 +380,10 @@ class SchedulerService:
     def release_lock():
         """release scheduling lock"""
 
-        db.session.execute('SELECT pg_advisory_unlock(:locknum);', {'locknum': SCHEDULER_LOCK_NUMBER})
+        db.session.execute(
+            text('SELECT pg_advisory_unlock(:locknum);'),
+            {'locknum': SCHEDULER_LOCK_NUMBER}
+        )
 
     @staticmethod
     def hashval(value):

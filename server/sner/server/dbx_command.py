@@ -11,6 +11,7 @@ import shutil
 import click
 from flask import current_app
 from flask.cli import with_appcontext
+from sqlalchemy import text
 
 from sner.server.auth.models import User
 from sner.server.extensions import db
@@ -26,8 +27,8 @@ def db_remove():
 
     db.session.close()
     db.drop_all()
-    db.session.execute('DROP TABLE IF EXISTS alembic_version')
-    db.session.execute('DROP TYPE IF EXISTS severityenum')
+    db.session.execute(text('DROP TABLE IF EXISTS alembic_version'))
+    db.session.execute(text('DROP TYPE IF EXISTS severityenum'))
     db.session.commit()
 
     path = current_app.config['SNER_VAR']
