@@ -164,7 +164,10 @@ def vuln_report(qfilter=None, group_by_host=False):  # pylint: disable=too-many-
     vuln_severity = func.text(Vuln.severity)
     vuln_tags_query, vuln_tags_column = filtered_vuln_tags_query(current_app.config["SNER_VULN_GROUP_IGNORE_TAG_PREFIX"])
 
-    host_address_format = case([(func.family(Host.address) == 6, func.concat('[', func.host(Host.address), ']'))], else_=func.host(Host.address))
+    host_address_format = case(
+        (func.family(Host.address) == 6, func.concat('[', func.host(Host.address), ']')),
+        else_=func.host(Host.address)
+    )
     host_ident_format = coalesce(Vuln.via_target, Host.hostname, host_address_format)
 
     host_ident = func.array_agg(func.distinct(host_ident_format))
@@ -247,7 +250,10 @@ def vuln_report(qfilter=None, group_by_host=False):  # pylint: disable=too-many-
 def vuln_export(qfilter=None):
     """export all vulns in storage without aggregation"""
 
-    host_address_format = case([(func.family(Host.address) == 6, func.concat('[', func.host(Host.address), ']'))], else_=func.host(Host.address))
+    host_address_format = case(
+        (func.family(Host.address) == 6, func.concat('[', func.host(Host.address), ']')),
+        else_=func.host(Host.address)
+    )
     host_ident = coalesce(Vuln.via_target, Host.hostname, host_address_format)
     endpoint_address = func.concat_ws(':', host_address_format, Service.port)
     endpoint_hostname = func.concat_ws(':', host_ident, Service.port)
