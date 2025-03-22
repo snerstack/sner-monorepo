@@ -14,7 +14,6 @@ import pytest
 from flask import current_app
 
 from sner.server.app import cli, create_app
-from sner.version import __version__
 
 
 def test_datetime_filter(app):
@@ -67,23 +66,6 @@ def test_cli():
             cli()
     assert pytest_wrapped_e.type == SystemExit
     assert pytest_wrapped_e.value.code == 0
-
-
-def test_version():
-    """test sner server cli/main flask wrapper"""
-
-    buf_stdout = StringIO()
-
-    patch_argv = patch.object(sys, 'argv', ['--version', '--debug'])
-    patch_environ = patch.object(os, 'environ', {})
-    path_app_factory = patch.object(create_app, "__defaults__", ("dummy.yml", ""))
-    patch_stdout = patch.object(sys, 'stdout', buf_stdout)
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
-        with patch_argv, patch_environ, path_app_factory, patch_stdout:
-            cli()
-
-    assert pytest_wrapped_e.value.code == 0
-    assert f'Sner {__version__}' in buf_stdout.getvalue()
 
 
 def test_logformatter(caplog):

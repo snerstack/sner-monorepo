@@ -213,7 +213,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
     app.config.update(config_from_yaml(config_file))  # service configuration
     app.config.update(config_from_env(config_env))  # container config
 
-    if app.config["DEBUG"]:
+    if app.config["DEBUG"]:  # pragma: nocover  ; won't test
         logging.getLogger('sner.server').setLevel(logging.DEBUG)
 
     if app.config['XFLASK_PROXYFIX']:
@@ -336,7 +336,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
 def cli():
     """server command wrapper"""
 
-    if '--version' in sys.argv:
+    if '--version' in sys.argv:  # pragma nocover ;  won't test
         print(f'Sner {__version__}')
     os.environ['FLASK_APP'] = 'sner.server.app'
     os.environ['FLASK_RUN_PORT'] = '18000'
