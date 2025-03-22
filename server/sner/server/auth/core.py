@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.twofactor import InvalidToken as InvalidTOTP
 from cryptography.hazmat.primitives.twofactor.totp import TOTP
 from fido2 import cbor
 from fido2.webauthn import AttestedCredentialData
-from flask import _request_ctx_stack, current_app, g
+from flask import current_app, g, session
 from flask_login import current_user
 
 from sner.server.auth.models import User

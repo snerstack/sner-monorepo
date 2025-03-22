@@ -9,7 +9,7 @@ from http import HTTPStatus
 from authlib.common.errors import AuthlibBaseError
 from fido2 import cbor
 from fido2.webauthn import AuthenticatorData, CollectedClientData
-from flask import current_app, redirect, Response, session, url_for, jsonify
+from flask import current_app, g, redirect, Response, session, url_for, jsonify
 from flask_login import current_user, login_user, logout_user
 from requests.exceptions import HTTPError
 from sqlalchemy import func, or_
@@ -40,6 +40,7 @@ def login_route():
 
                     regenerate_session()
                     login_user(user)
+                    g.auth_method = 'session'
                     current_app.logger.info('auth.login password success, username=%s', user.username)
 
                     return jsonify({

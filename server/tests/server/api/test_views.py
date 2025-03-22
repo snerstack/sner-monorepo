@@ -19,7 +19,7 @@ from sner.server.scheduler.core import SchedulerService, SCHEDULER_LOCK_NUMBER
 from sner.server.scheduler.models import Heatmap, Job, Queue, Readynet, Target
 
 
-def test_v2_scheduler_job_assign_route(client, api_agent, target):
+def test_v2_scheduler_job_assign_route(api_agent, target):
     """job assign route test"""
 
     qname = target.queue.name
@@ -35,7 +35,11 @@ def test_v2_scheduler_job_assign_route(client, api_agent, target):
     assert response.status_code == HTTPStatus.OK
     assert not response.json
 
-    # # attempt without credentials
+
+def test_v2_scheduler_job_assign_route_unauthenticated(client, target):
+    """job assign route test"""
+
+    # attempt without credentials
     response = client.post_json(url_for('api.v2_scheduler_job_assign_route'), status='*')
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
