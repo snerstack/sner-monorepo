@@ -15,7 +15,7 @@ from requests.utils import dict_from_cookiejar
 def create_timedout_session(clnt):
     """creates timed out session"""
 
-    sid = clnt.app.session_interface._generate_sid()  # pylint: disable=protected-access
+    sid = clnt.app.session_interface.generate_sid()
     session_path = os.path.join(clnt.app.session_interface.storage, sid)
 
     os.makedirs(clnt.app.session_interface.storage)
@@ -41,7 +41,7 @@ def test_timedout_session(client):
 def test_notexist_session(client):
     """test non-existent session id handling"""
 
-    sid = client.app.session_interface._generate_sid()  # pylint: disable=protected-access
+    sid = client.app.session_interface.generate_sid()
     response = client.get(url_for('auth.user_me_route'), headers={'cookie': f'session={sid}'}, status='*')
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert sid != dict_from_cookiejar(client.cookiejar)['session']

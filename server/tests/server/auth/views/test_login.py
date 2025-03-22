@@ -30,10 +30,13 @@ def test_session_login(client, user_factory):
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json["error"]["message"] == "Invalid credentials."
 
+    before_login_session_id = client.cookies['session']
     form_data = [('username', user.username), ('password', password), ('csrf_token', get_csrf_token(client))]
     response = client.post(url_for('auth.login_route'), params=form_data)
+    after_login_session_id = client.cookies['session']
 
     assert response.status_code == HTTPStatus.OK
+    assert before_login_session_id != after_login_session_id
 
 
 def test_session_logout(cl_user):

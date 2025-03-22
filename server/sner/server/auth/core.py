@@ -26,7 +26,10 @@ from sner.server.password_supervisor import PasswordSupervisor as PWS
 def regenerate_session():
     """regenerate session"""
 
-    _request_ctx_stack.top.session = current_app.session_interface.new_session()
+    session.clear()
+    session.sid = current_app.session_interface.generate_sid()
+    session.modified = True
+    session.new = True
     if hasattr(g, 'csrf_token'):  # cleanup g, which is used by flask_wtf
         delattr(g, 'csrf_token')
 

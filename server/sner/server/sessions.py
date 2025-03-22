@@ -39,7 +39,7 @@ class FilesystemSessionInterface(SessionInterface):
         self.gc_probability = gc_probability
 
     @staticmethod
-    def _generate_sid():
+    def generate_sid():
         """generate sid; implementation taken from py36 secrets for py35 compatibility"""
         return hexlify(os.urandom(32)).decode('ascii')
 
@@ -62,16 +62,12 @@ class FilesystemSessionInterface(SessionInterface):
         except OSError:  # pragma: no cover  ; won't test
             pass
 
-    def new_session(self):
-        """create new session, used in open_session and during login"""
-        return Session(sid=self._generate_sid(), new=True)
-
     def open_session(self, app, request):
         """open existing or create new session"""
 
         self._gc_sessions()
 
-        sid = request.cookies.get(app.session_cookie_name)
+        sid = request.cookies.get(app.config['SESSION_COOKIE_NAME'])
         if self._validate_sid(sid):
             session_path = os.path.join(self.storage, sid)
             try:
@@ -83,7 +79,7 @@ class FilesystemSessionInterface(SessionInterface):
             except (OSError, json.decoder.JSONDecodeError):
                 pass
 
-        return self.new_session()
+        return Session(sid=self.generate_sid(), new=True)
 
     def save_session(self, app, session, response):
         """save session"""
@@ -95,7 +91,7 @@ class FilesystemSessionInterface(SessionInterface):
         # If the session is modified to be empty, remove the cookie. If the session is empty, return without setting the cookie.
         if not session:
             if session.modified:
-                response.delete_cookie(app.session_cookie_name, domain=domain, path=path)
+                response.delete_cookie(app.config['SESSION_COOKIE_NAME'], domain=domain, path=path)
                 self.delete_session(session)
             return
 
@@ -108,7 +104,7 @@ class FilesystemSessionInterface(SessionInterface):
 
         if session.new:
             response.set_cookie(
-                app.session_cookie_name,
+                app.config['SESSION_COOKIE_NAME'],
                 session.sid,
                 expires=self.get_expiration_time(app, session),
                 path=path,
