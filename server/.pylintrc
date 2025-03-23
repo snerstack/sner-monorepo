@@ -9,6 +9,3 @@ min-similarity-lines=8
 ignore-imports=yes
 ignore-comments=no
 
-[MESSAGES CONTROL]
-disable=
-    cyclic-import  # py 3.11 + pylint 3.1.0 > buggy cyclic imports detection
