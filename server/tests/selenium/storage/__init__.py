@@ -42,7 +42,14 @@ def check_dt_toolbox_select_rows(sclnt, route, dt_id, load_route=True):
     assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr[contains(@class, "selected")]')) == 0  # pylint: disable=len-as-condition
 
 
-def check_dt_toolbox_multiactions(sclnt, route, dt_id, model_class, load_route=True, test_delete=True):  # pylint: disable=too-many-arguments
+def check_dt_toolbox_multiactions(
+    sclnt,
+    route,
+    dt_id,
+    model_class,
+    load_route=True,
+    test_delete=True
+):  # pylint: disable=too-many-arguments,too-many-positional-arguments
     """check dt toolbar toolbox actions; there must be 2 rows to perform the test"""
 
     if load_route:

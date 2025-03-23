@@ -17,7 +17,15 @@ from sner.server.extensions import db
 from sner.server.storage.models import Host, Note, Service, Versioninfo
 
 
-def versioninfo_docid(host_id, host_address, host_hostname, service_proto, service_port, via_target, product):  # pylint: disable=too-many-arguments
+def versioninfo_docid(
+    host_id,
+    host_address,
+    host_hostname,
+    service_proto,
+    service_port,
+    via_target,
+    product
+):  # pylint: disable=too-many-arguments,too-many-positional-arguments
     """compute versioninfo docid"""
 
     keydata = '|'.join(map(str, [

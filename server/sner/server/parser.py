@@ -154,7 +154,16 @@ class ParsedItemsDb:
         self.services.insert(service)
         return service
 
-    def upsert_vuln(self, host_address, name, xtype, service_proto=None, service_port=None, via_target=None, **kwargs):  # noqa: E501  pylint: disable=too-many-arguments
+    def upsert_vuln(
+        self,
+        host_address,
+        name,
+        xtype,
+        service_proto=None,
+        service_port=None,
+        via_target=None,
+        **kwargs
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)
@@ -176,7 +185,15 @@ class ParsedItemsDb:
         self.vulns.insert(vuln)
         return vuln
 
-    def upsert_note(self, host_address, xtype, service_proto=None, service_port=None, via_target=None, **kwargs):  # noqa: E501  pylint: disable=too-many-arguments
+    def upsert_note(
+        self,
+        host_address,
+        xtype,
+        service_proto=None,
+        service_port=None,
+        via_target=None,
+        **kwargs
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)

@@ -312,7 +312,14 @@ def db_service(host_address, proto, port, flag_required=False):
     return query.one() if flag_required else query.one_or_none()
 
 
-def db_vuln(host_address, name, xtype, service_proto=None, service_port=None, via_target=None):  # pylint: disable=too-many-arguments
+def db_vuln(
+    host_address,
+    name,
+    xtype,
+    service_proto=None,
+    service_port=None,
+    via_target=None
+):  # pylint: disable=too-many-arguments,too-many-positional-arguments
     """query upsert vuln object"""
 
     query = Vuln.query.outerjoin(Host, Vuln.host_id == Host.id).outerjoin(Service, Vuln.service_id == Service.id).filter(

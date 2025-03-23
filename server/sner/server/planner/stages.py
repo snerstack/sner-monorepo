@@ -236,7 +236,15 @@ class StorageSixTargetlist(Schedule):  # pylint: disable=too-few-public-methods
 class StorageRescan(Schedule):  # pylint: disable=too-few-public-methods
     """storage rescan"""
 
-    def __init__(self, schedule, lockname, host_interval, servicedisco_stage, service_interval, servicescan_stages):  # noqa: E501  pylint: disable=too-many-arguments,line-too-long
+    def __init__(
+        self,
+        schedule,
+        lockname,
+        host_interval,
+        servicedisco_stage,
+        service_interval,
+        servicescan_stages
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
         super().__init__(schedule, lockname)
         self.host_interval = host_interval
         self.servicedisco_stage = servicedisco_stage
