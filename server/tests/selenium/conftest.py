@@ -13,6 +13,7 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.auth.models import User
@@ -75,7 +76,10 @@ def browser_instance():
     # # Disable captive portal detection
     options.set_preference("network.captive-portal-service.enabled", False)
 
-    driver = webdriver.Firefox(options=options, log_path="/tmp/geckodriver.log")
+    driver = webdriver.Firefox(
+        options=options,
+        service=Service(log_output="/tmp/geckodriver.log")
+    )
     yield driver
     driver.quit()
 

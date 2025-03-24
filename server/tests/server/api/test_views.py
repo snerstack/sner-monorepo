@@ -36,7 +36,7 @@ def test_v2_scheduler_job_assign_route(api_agent, target):
     assert not response.json
 
 
-def test_v2_scheduler_job_assign_route_unauthenticated(client, target):
+def test_v2_scheduler_job_assign_route_unauthenticated(client):
     """job assign route test"""
 
     # attempt without credentials
