@@ -90,7 +90,7 @@ def test_queue_edit_route(cl_operator, queue):
 def test_queue_enqueue_route(cl_operator, queue, target_factory):
     """queue enqueue route test"""
 
-    atarget = target_factory.build(queue=queue)
+    atarget = target_factory.build(queue=None)
 
     form_data = [('targets', f'{atarget.target}\n \n ')]
     response = cl_operator.post(url_for('scheduler.queue_enqueue_route', queue_id=queue.id), params=form_data)

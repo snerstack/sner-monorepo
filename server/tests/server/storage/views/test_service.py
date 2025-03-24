@@ -40,11 +40,11 @@ def test_service_list_json_route(cl_operator, service):
 def test_service_add_route(cl_operator, host, service_factory):
     """service add route test"""
 
-    aservice = service_factory.build(host=host)
+    aservice = service_factory.build(host=None)
 
     form_data = [('host_id', host.id), ('proto', aservice.proto), ('port', aservice.port), ('state', aservice.state),
                  ('name', aservice.name), ('info', aservice.info), ('comment', aservice.comment)]
-    response = cl_operator.post(url_for('storage.service_add_route', host_id=aservice.host.id), params=form_data)
+    response = cl_operator.post(url_for('storage.service_add_route', host_id=host.id), params=form_data)
     assert response.status_code == HTTPStatus.OK
 
     tservice = Service.query.filter(Service.info == aservice.info).one()

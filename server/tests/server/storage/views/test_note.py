@@ -33,11 +33,11 @@ def test_note_list_json_route(cl_operator, note):
 def test_note_add_route(cl_operator, host, service, note_factory):
     """note add route test"""
 
-    anote = note_factory.build(host=host, service=service)
+    anote = note_factory.build(host=None, service=None)
 
-    form_data = [('host_id', anote.host.id), ('service_id', anote.service.id), ('xtype', anote.xtype), ('data', anote.data),
+    form_data = [('host_id', host.id), ('service_id', service.id), ('xtype', anote.xtype), ('data', anote.data),
                  ('comment', anote.comment)]
-    response = cl_operator.post(url_for('storage.note_add_route', model_name='service', model_id=anote.service.id), params=form_data)
+    response = cl_operator.post(url_for('storage.note_add_route', model_name='service', model_id=service.id), params=form_data)
     assert response.status_code == HTTPStatus.OK
 
     tnote = Note.query.filter(Note.data == anote.data).one()
@@ -78,12 +78,10 @@ def test_note_view_json_route(cl_operator, note):
     assert response.json['hostname'] == 'localhost.localdomain'
 
 
-def test_note_invalid_add_request(cl_operator, host, service, note_factory):
+def test_note_invalid_add_request(cl_operator, service):
     """note invalid add request"""
 
-    anote = note_factory.build(host=host, service=service)
-
-    response = cl_operator.post(url_for('storage.note_add_route', model_name='service', model_id=anote.service.id), expect_errors=True)
+    response = cl_operator.post(url_for('storage.note_add_route', model_name='service', model_id=service.id), expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 

@@ -33,11 +33,11 @@ def test_vuln_list_json_route(cl_operator, vuln):
 def test_vuln_add_route(cl_operator, host, service, vuln_factory):
     """vuln add route test"""
 
-    avuln = vuln_factory.build(host=host, service=service)
+    avuln = vuln_factory.build(host=None, service=None)
 
-    form_data = [('host_id', avuln.host.id), ('name', avuln.name), ('xtype', avuln.xtype), ('severity', avuln.severity),
+    form_data = [('host_id', host.id), ('name', avuln.name), ('xtype', avuln.xtype), ('severity', avuln.severity),
                  ('descr', avuln.descr), ('data', avuln.data), ('refs', '\n'.join(avuln.refs)), ('tags', '\n'.join(avuln.tags))]
-    response = cl_operator.post(url_for('storage.vuln_add_route', model_name='service', model_id=avuln.service.id), params=form_data)
+    response = cl_operator.post(url_for('storage.vuln_add_route', model_name='service', model_id=service.id), params=form_data)
     assert response.status_code == HTTPStatus.OK
 
     tvuln = Vuln.query.filter(Vuln.name == avuln.name).one()
@@ -71,12 +71,10 @@ def test_vuln_delete_route(cl_operator, vuln):
     assert not db.session.get(Vuln, vuln.id)
 
 
-def test_vuln_invalid_add_request(cl_operator, host, service, vuln_factory):
+def test_vuln_invalid_add_request(cl_operator, service):
     """vuln invalid add request"""
 
-    avuln = vuln_factory.build(host=host, service=service)
-
-    response = cl_operator.post(url_for('storage.vuln_add_route', model_name='service', model_id=avuln.service.id), expect_errors=True)
+    response = cl_operator.post(url_for('storage.vuln_add_route', model_name='service', model_id=service.id), expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 

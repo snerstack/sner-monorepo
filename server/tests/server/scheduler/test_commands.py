@@ -42,7 +42,7 @@ def test_rangetocidr_command(runner):
 def test_queue_enqueue_command(runner, tmpworkdir, queue, target_factory):  # pylint: disable=unused-argument
     """queue enqueue command test"""
 
-    atarget = target_factory.build(queue=queue)
+    atarget = target_factory.build(queue=None)
     apath = Path('ips.txt')
     apath.write_text(f'{atarget.target}\n \n ', encoding='utf-8')
 
