@@ -6,3 +6,5 @@ min-similarity-lines=8
 ignore-imports=yes
 ignore-comments=no
 
+[MESSAGES CONTROL]
+disable=not-callable

@@ -153,7 +153,7 @@ def filtered_vuln_tags_query(prefix_filter):
         .group_by(tags_query.c.id)
         .subquery()
     )
-    tags_column = func.coalesce(filtered_tags_query.c.utags, cast([], pg_ARRAY(db.String)))
+    tags_column = func.coalesce(filtered_tags_query.c.utags, cast([], pg_ARRAY(db.String)))  # pylint: disable=assignment-from-no-return
 
     return filtered_tags_query, tags_column
 
