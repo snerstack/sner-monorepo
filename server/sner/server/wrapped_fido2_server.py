@@ -8,6 +8,9 @@ from socket import getfqdn
 from fido2.server import Fido2Server
 from fido2.webauthn import PublicKeyCredentialRpEntity
 
+import fido2.features
+fido2.features.webauthn_json_mapping.enabled = False
+
 
 class WrappedFido2Server(Fido2Server):
     """yubico fido2 server wrapped for flask factory pattern delayed configuration"""
