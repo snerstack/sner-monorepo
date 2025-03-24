@@ -14,7 +14,7 @@ flask-smorest
 flask-sqlalchemy
 flask-wtf
 gunicorn
-lark-parser
+lark
 littletable
 lxml
 packaging

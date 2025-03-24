@@ -81,4 +81,4 @@ class TreeToSAFilter(Transformer):
         return float(args[0])
 
 
-FILTER_PARSER = Lark(SEARCH_GRAMMAR, parser='lalr', lexer='standard', transformer=TreeToSAFilter())
+FILTER_PARSER = Lark(SEARCH_GRAMMAR, parser='lalr', lexer='basic', transformer=TreeToSAFilter())
