@@ -56,7 +56,7 @@ def note_list_json_route():
 def note_view_json_route(note_id):
     """view service"""
 
-    note = Note.query.get(note_id)
+    note = db.session.get(Note, note_id)
 
     if note is None:
         return error_response(message='Note not found.', code=HTTPStatus.NOT_FOUND)
@@ -103,7 +103,7 @@ def note_add_route(model_name, model_id):
 def note_edit_route(note_id):
     """edit note"""
 
-    note = Note.query.get(note_id)
+    note = db.session.get(Note, note_id)
     form = NoteForm(obj=note)
 
     if form.validate_on_submit():
@@ -119,7 +119,7 @@ def note_edit_route(note_id):
 def note_delete_route(note_id):
     """delete note"""
 
-    note = Note.query.get(note_id)
+    note = db.session.get(Note, note_id)
     db.session.delete(note)
     db.session.commit()
     return jsonify({'message': 'Note has been successfully deleted.'})

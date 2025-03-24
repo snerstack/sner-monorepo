@@ -5,6 +5,7 @@ auth.command tests
 
 from sner.server.auth.commands import command
 from sner.server.auth.models import User
+from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 
 
@@ -19,7 +20,7 @@ def test_resetpassword_command(runner, user):
     result = runner.invoke(command, ['reset-password', user.username])
     assert result.exit_code == 0
 
-    tuser = User.query.get(user.id)
+    tuser = db.session.get(User, user.id)
     assert tuser.password != old_password
 
 

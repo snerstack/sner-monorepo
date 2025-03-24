@@ -8,6 +8,7 @@ from http import HTTPStatus
 
 from flask import url_for
 
+from sner.server.extensions import db
 from sner.server.storage.models import Service
 from tests.server.storage.views import check_annotate, check_delete_multiid, check_tag_multiid
 
@@ -65,7 +66,7 @@ def test_service_edit_route(cl_operator, service):
 
     assert response.status_code == HTTPStatus.OK
 
-    tservice = Service.query.get(service.id)
+    tservice = db.session.get(Service, service.id)
     assert tservice.state == 'down'
     assert tservice.info == new_info
 
@@ -76,7 +77,7 @@ def test_service_delete_route(cl_operator, service):
     response = cl_operator.post(url_for('storage.service_delete_route', service_id=service.id))
     assert response.status_code == HTTPStatus.OK
 
-    assert not Service.query.get(service.id)
+    assert not db.session.get(Service, service.id)
 
 
 def test_service_invalid_form_requests(cl_operator, service):

@@ -8,6 +8,7 @@ from http import HTTPStatus
 
 from flask import url_for
 
+from sner.server.extensions import db
 from sner.server.storage.models import Host
 from tests.server.storage.views import check_annotate, check_delete_multiid, check_tag_multiid
 
@@ -56,7 +57,7 @@ def test_host_edit_route(cl_operator, host):
 
     assert response.status_code == HTTPStatus.OK
 
-    thost = Host.query.get(host.id)
+    thost = db.session.get(Host, host.id)
     assert thost.hostname == new_hostname
     assert thost.comment is None
 
@@ -67,7 +68,7 @@ def test_host_delete_route(cl_operator, host):
     response = cl_operator.post(url_for('storage.host_delete_route', host_id=host.id))
     assert response.status_code == HTTPStatus.OK
 
-    assert not Host.query.get(host.id)
+    assert not db.session.get(Host, host.id)
 
 
 def test_host_invalid_form_requests(cl_operator, host):

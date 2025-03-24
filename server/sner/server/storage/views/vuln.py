@@ -68,7 +68,7 @@ def vuln_list_json_route():
 def vuln_view_json_route(vuln_id):
     """view service"""
 
-    vuln = Vuln.query.get(vuln_id)
+    vuln = db.session.get(Vuln, vuln_id)
 
     if vuln is None:
         return error_response(message='Vuln not found.', code=HTTPStatus.NOT_FOUND)
@@ -120,7 +120,7 @@ def vuln_add_route(model_name, model_id):
 def vuln_edit_route(vuln_id):
     """edit vuln"""
 
-    vuln = Vuln.query.get(vuln_id)
+    vuln = db.session.get(Vuln, vuln_id)
     form = VulnForm(obj=vuln)
 
     if form.validate_on_submit():
@@ -135,7 +135,7 @@ def vuln_edit_route(vuln_id):
 def vuln_delete_route(vuln_id):
     """delete vuln"""
 
-    vuln = Vuln.query.get(vuln_id)
+    vuln = db.session.get(Vuln, vuln_id)
     db.session.delete(vuln)
     db.session.commit()
     return jsonify({'message': 'Vuln has been successfully deleted.'})
@@ -229,7 +229,7 @@ def vuln_export_route():
 def vuln_multicopy_json_route(vuln_id):
     """copu vuln"""
 
-    vuln = Vuln.query.get(vuln_id)
+    vuln = db.session.get(Vuln, vuln_id)
     form = VulnMulticopyForm(obj=vuln)
 
     if form.validate_on_submit():
@@ -371,7 +371,7 @@ def vuln_duplicate_route(vuln_id):
     such cases, operator should duplicate vulnerability and use the copy.
     """
 
-    vuln = Vuln.query.get(vuln_id)
+    vuln = db.session.get(Vuln, vuln_id)
     make_transient(vuln)
     vuln.xtype = f"duplicate.{vuln.xtype}"
     vuln.refs = vuln.refs + [f"SV-{vuln.id}"]

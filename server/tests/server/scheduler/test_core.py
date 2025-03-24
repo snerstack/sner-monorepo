@@ -141,11 +141,11 @@ def test_schedulerservice_morereadynetupdates(app, queue, target_factory):  # py
     assert len(assignment3['targets']) == 1
     assert Readynet.query.count() == 0
 
-    SchedulerService.job_output(Job.query.get(assignment3['id']), 0, b'')
+    SchedulerService.job_output(db.session.get(Job, assignment3['id']), 0, b'')
     assert Readynet.query.count() == 1
 
-    SchedulerService.job_output(Job.query.get(assignment2['id']), 0, b'')
-    SchedulerService.job_output(Job.query.get(assignment1['id']), 0, b'')
+    SchedulerService.job_output(db.session.get(Job, assignment2['id']), 0, b'')
+    SchedulerService.job_output(db.session.get(Job, assignment1['id']), 0, b'')
     assert Readynet.query.count() == 1
 
 

@@ -64,7 +64,7 @@ def service_list_json_route():
 def service_view_json_route(service_id):
     """view service"""
 
-    service = Service.query.get(service_id)
+    service = db.session.get(Service, service_id)
 
     if service is None:
         return error_response(message='Service not found.', code=HTTPStatus.NOT_FOUND)
@@ -106,7 +106,7 @@ def service_add_route(host_id):
 def service_edit_route(service_id):
     """edit service"""
 
-    service = Service.query.get(service_id)
+    service = db.session.get(Service, service_id)
     form = ServiceForm(obj=service)
 
     if form.validate_on_submit():
@@ -122,7 +122,7 @@ def service_edit_route(service_id):
 def service_delete_route(service_id):
     """delete service"""
 
-    service = Service.query.get(service_id)
+    service = db.session.get(Service, service_id)
     db.session.delete(service)
     db.session.commit()
     return jsonify({'message': 'Service has been successfully deleted.'})

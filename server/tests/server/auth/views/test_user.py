@@ -9,6 +9,7 @@ from http import HTTPStatus
 from flask import url_for
 
 from sner.server.auth.models import User
+from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 
 
@@ -126,11 +127,11 @@ def test_user_apikey_route(cl_admin, user):
 
     response = cl_admin.post(url_for('auth.user_apikey_route', user_id=user.id, action='generate'))
     assert response.status_code == HTTPStatus.OK
-    assert User.query.get(user.id).apikey
+    assert db.session.get(User, user.id).apikey
 
     response = cl_admin.post(url_for('auth.user_apikey_route', user_id=user.id, action='revoke'))
     assert response.status_code == HTTPStatus.OK
-    assert not User.query.get(user.id).apikey
+    assert not db.session.get(User, user.id).apikey
 
     response = cl_admin.post(url_for('auth.user_apikey_route', user_id=user.id, action='invalid'), status='*')
     assert response.status_code == HTTPStatus.BAD_REQUEST

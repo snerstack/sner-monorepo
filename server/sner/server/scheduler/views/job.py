@@ -47,7 +47,7 @@ def job_delete_route(job_id):
     """delete job"""
 
     try:
-        JobManager.delete(Job.query.get(job_id))
+        JobManager.delete(db.session.get(Job, job_id))
         return jsonify({'message': 'Job has been successfully deleted.'})
     except RuntimeError as exc:
         return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -59,7 +59,7 @@ def job_reconcile_route(job_id):
     """reconcile job"""
 
     try:
-        JobManager.reconcile(Job.query.get(job_id))
+        JobManager.reconcile(db.session.get(Job, job_id))
         return jsonify({'message': 'Job has been successfully reconciled.'})
     except RuntimeError as exc:
         return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -70,7 +70,7 @@ def job_reconcile_route(job_id):
 def job_repeat_route(job_id):
     """repeat job; requeues targets into same queue, used for rescheduling of failed jobs"""
 
-    JobManager.repeat(Job.query.get(job_id))
+    JobManager.repeat(db.session.get(Job, job_id))
     return jsonify({'message': 'Job has been successfully repeated.'})
 
 
@@ -79,5 +79,5 @@ def job_repeat_route(job_id):
 def job_download_route(job_id):
     """download job output"""
 
-    job = Job.query.get(job_id)
+    job = db.session.get(Job, job_id)
     return send_file(job.output_abspath, as_attachment=True, download_name=f"{job_id}.zip")

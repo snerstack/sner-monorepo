@@ -39,7 +39,7 @@ def test_service_list_route_inrow_delete(frontend_server, sl_operator, service):
     wait_for_js(sl_operator)
     dt_inrow_delete(sl_operator, 'service_list_table')
 
-    assert not Service.query.get(service_id)
+    assert not db.session.get(Service, service_id)
 
 
 def test_service_list_route_annotate(frontend_server, sl_operator, service):  # pylint: disable=unused-argument

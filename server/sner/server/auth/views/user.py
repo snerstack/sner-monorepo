@@ -60,7 +60,7 @@ def user_list_json_route():
 def user_json_route(user_id):
     """get user"""
 
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
 
     return jsonify({
         "id": user.id,
@@ -96,7 +96,7 @@ def user_add_route():
 def user_edit_route(user_id):
     """edit task"""
 
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     form = UserForm(obj=user)
 
     if form.validate_on_submit():
@@ -114,7 +114,7 @@ def user_edit_route(user_id):
 def user_delete_route(user_id):
     """delete user"""
 
-    db.session.delete(User.query.get(user_id))
+    db.session.delete(db.session.get(User, user_id))
     db.session.commit()
 
     return jsonify({"message": "User has been successfully deleted."})
@@ -125,7 +125,7 @@ def user_delete_route(user_id):
 def user_apikey_route(user_id, action):
     """manage apikey for user"""
 
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if user:
         if action == 'generate':
             apikey = UserManager.apikey_generate(user)

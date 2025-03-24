@@ -8,6 +8,7 @@ from http import HTTPStatus
 
 from flask import url_for
 
+from sner.server.extensions import db
 from sner.server.storage.models import Vuln
 from tests.server.storage.views import check_annotate, check_delete_multiid, check_tag_multiid
 
@@ -57,7 +58,7 @@ def test_vuln_edit_route(cl_operator, vuln):
     response = cl_operator.post(url_for('storage.vuln_edit_route', vuln_id=vuln.id), params=form_data)
     assert response.status_code == HTTPStatus.OK
 
-    tvuln = Vuln.query.get(vuln.id)
+    tvuln = db.session.get(Vuln, vuln.id)
     assert tvuln.name == new_name
     assert len(tvuln.tags) == 4
 
@@ -67,7 +68,7 @@ def test_vuln_delete_route(cl_operator, vuln):
 
     response = cl_operator.post(url_for('storage.vuln_delete_route', vuln_id=vuln.id))
     assert response.status_code == HTTPStatus.OK
-    assert not Vuln.query.get(vuln.id)
+    assert not db.session.get(Vuln, vuln.id)
 
 
 def test_vuln_invalid_add_request(cl_operator, host, service, vuln_factory):

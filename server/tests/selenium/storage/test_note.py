@@ -40,7 +40,7 @@ def test_note_list_route_inrow_delete(frontend_server, sl_operator, note):  # py
     wait_for_js(sl_operator)
     dt_inrow_delete(sl_operator, 'note_list_table')
 
-    assert not Note.query.get(note_id)
+    assert not db.session.get(Note, note_id)
 
 
 def test_note_list_route_annotate(frontend_server, sl_operator, note):  # pylint: disable=unused-argument

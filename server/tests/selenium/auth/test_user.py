@@ -29,7 +29,7 @@ def test_user_list_route_inrow_delete(frontend_server, sl_admin, user):  # pylin
     wait_for_js(sl_admin)
     # in this test-case there are multiple items in the table (current_user, test_user), hence index which to delete has to be used
     dt_inrow_delete(sl_admin, 'user_list_table', 1)
-    assert not User.query.get(user_id)
+    assert not db.session.get(User, user_id)
 
 
 def test_user_apikey_route(frontend_server, sl_admin, user):  # pylint: disable=unused-argument

@@ -9,6 +9,7 @@ from pathlib import Path
 
 from flask import url_for
 
+from sner.server.extensions import db
 from sner.server.scheduler.models import Heatmap, Job, Target
 
 
@@ -41,7 +42,7 @@ def test_job_delete_route(cl_operator, job_completed):
     response = cl_operator.post(url_for('scheduler.job_delete_route', job_id=job_completed.id))
     assert response.status_code == HTTPStatus.OK
 
-    assert not Job.query.get(job_completed_id)
+    assert not db.session.get(Job, job_completed_id)
     assert not Path(job_completed_output_abspath).exists()
 
 
@@ -51,7 +52,7 @@ def test_job_delete_route_runningjob(cl_operator, job):
     response = cl_operator.post(url_for('scheduler.job_delete_route', job_id=job.id), expect_errors=True)
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 
-    assert Job.query.get(job.id)
+    assert db.session.get(Job, job.id)
 
 
 def test_job_reconcile_route(cl_operator, job):

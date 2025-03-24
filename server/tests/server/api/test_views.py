@@ -74,8 +74,8 @@ def test_v2_scheduler_job_assign_route_priority(api_agent, queue_factory, target
     assert response.status_code == HTTPStatus.OK
     assert response.json
 
-    assert len(Queue.query.get(queue1.id).jobs) == 0
-    assert len(Queue.query.get(queue2.id).jobs) == 1
+    assert len(db.session.get(Queue, queue1.id).jobs) == 0
+    assert len(db.session.get(Queue, queue2.id).jobs) == 1
 
 
 def test_v2_scheduler_job_assign_route_exclusion(api_agent, queue, target_factory):

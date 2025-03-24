@@ -71,7 +71,7 @@ def profile_changepassword_route():
 def profile_totp_route():
     """user profile totp management route"""
 
-    user = User.query.get(current_user.id)
+    user = db.session.get(User, current_user.id)
     form = TotpCodeForm()
 
     if form.validate_on_submit():
@@ -155,7 +155,7 @@ def profile_webauthn_list_json_route():
 def profile_webauthn_pkcco_route():
     """get publicKeyCredentialCreationOptions"""
 
-    user = User.query.get(current_user.id)
+    user = db.session.get(User, current_user.id)
     user_handle = random_string()
     exclude_credentials = webauthn_credentials(user)
     pkcco, state = webauthn.register_begin(
@@ -171,7 +171,7 @@ def profile_webauthn_pkcco_route():
 def profile_webauthn_register_route():
     """register credential for current user"""
 
-    user = User.query.get(current_user.id)
+    user = db.session.get(User, current_user.id)
     form = WebauthnRegisterForm()
     if form.validate_on_submit():
         try:

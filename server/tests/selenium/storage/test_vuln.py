@@ -79,7 +79,7 @@ def test_vuln_list_route_inrow_delete(frontend_server, sl_operator, vuln):  # py
     wait_for_js(sl_operator)
     dt_inrow_delete(sl_operator, 'vuln_list_table')
 
-    assert not Vuln.query.get(vuln_id)
+    assert not db.session.get(Vuln, vuln_id)
 
 
 def test_vuln_list_route_annotate(frontend_server, sl_operator, vuln):  # pylint: disable=unused-argument
@@ -183,7 +183,7 @@ def test_vuln_view_route_tagging(frontend_server, sl_operator, vuln):  # pylint:
     )
 
     db.session.refresh(vuln)
-    assert 'info' in Vuln.query.get(vuln.id).tags
+    assert 'info' in db.session.get(Vuln, vuln.id).tags
 
 
 def test_vuln_view_route_annotate(frontend_server, sl_operator, vuln):  # pylint: disable=unused-argument

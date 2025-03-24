@@ -8,6 +8,7 @@ from http import HTTPStatus
 
 from flask import url_for
 
+from sner.server.extensions import db
 from sner.server.storage.models import Note
 from tests.server.storage.views import check_annotate, check_delete_multiid, check_tag_multiid
 
@@ -55,7 +56,7 @@ def test_note_edit_route(cl_operator, note):
 
     assert response.status_code == HTTPStatus.OK
 
-    tnote = Note.query.get(note.id)
+    tnote = db.session.get(Note, note.id)
     assert tnote.data == new_data
 
 
@@ -65,7 +66,7 @@ def test_note_delete_route(cl_operator, note):
     response = cl_operator.post(url_for('storage.note_delete_route', note_id=note.id))
     assert response.status_code == HTTPStatus.OK
 
-    assert not Note.query.get(note.id)
+    assert not db.session.get(Note, note.id)
 
 
 def test_note_view_json_route(cl_operator, note):

@@ -27,7 +27,7 @@ def test_queue_list_route_inrow_delete(frontend_server, sl_operator, queue):  # 
     sl_operator.get(frontend_url('/scheduler/queue/list'))
     wait_for_js(sl_operator)
     dt_inrow_delete(sl_operator, 'queue_list_table')
-    assert not Queue.query.get(queue_id)
+    assert not db.session.get(Queue, queue_id)
 
 
 def test_queue_list_route_inrow_flush(frontend_server, sl_operator, target):  # pylint: disable=unused-argument
@@ -42,4 +42,4 @@ def test_queue_list_route_inrow_flush(frontend_server, sl_operator, target):  # 
     sl_operator.find_element(By.ID, dt_id).find_element(By.XPATH, '//a[@data-testid="queue-flush"]').click()
     dt_wait_processing(sl_operator, dt_id)
 
-    assert not Queue.query.get(tqueue_id).targets
+    assert not db.session.get(Queue, tqueue_id).targets

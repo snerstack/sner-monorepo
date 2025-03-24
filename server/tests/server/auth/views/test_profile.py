@@ -178,7 +178,7 @@ def test_profile_webauthn_delete_route(cl_user, webauthn_credential_factory):
     response = cl_user.post(url_for('auth.profile_webauthn_delete_route', webauthn_id=wncred.id))
     assert response.status_code == HTTPStatus.OK
 
-    assert not WebauthnCredential.query.get(wncred.id)
+    assert not db.session.get(WebauthnCredential, wncred.id)
 
 
 def test_profile_apikey_route(cl_user):

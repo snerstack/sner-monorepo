@@ -51,7 +51,7 @@ def queue_list_json_route():
 def queue_json_route(queue_id):
     """get queue"""
 
-    queue = Queue.query.get(queue_id)
+    queue = db.session.get(Queue, queue_id)
 
     return jsonify({
         "id": queue.id,
@@ -86,7 +86,7 @@ def queue_add_route():
 def queue_edit_route(queue_id):
     """queue edit"""
 
-    queue = Queue.query.get(queue_id)
+    queue = db.session.get(Queue, queue_id)
     form = QueueForm(obj=queue)
 
     if form.validate_on_submit():
@@ -105,7 +105,7 @@ def queue_enqueue_route(queue_id):
     form = QueueEnqueueForm()
 
     if form.validate_on_submit():
-        QueueManager.enqueue(Queue.query.get(queue_id), form.data['targets'])
+        QueueManager.enqueue(db.session.get(Queue, queue_id), form.data['targets'])
         return jsonify({"message": "success"})
 
     return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)
@@ -116,7 +116,7 @@ def queue_enqueue_route(queue_id):
 def queue_flush_route(queue_id):
     """queue flush; flush all targets from queue"""
 
-    QueueManager.flush(Queue.query.get(queue_id))
+    QueueManager.flush(db.session.get(Queue, queue_id))
     return jsonify({'message': 'Queue has been successfully flushed.'})
 
 
@@ -126,7 +126,7 @@ def queue_prune_route(queue_id):
     """queue prune; delete all queue jobs"""
 
     try:
-        QueueManager.prune(Queue.query.get(queue_id))
+        QueueManager.prune(db.session.get(Queue, queue_id))
         return jsonify({'message': 'Queue has been successfully pruned.'})
     except RuntimeError as exc:
         return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)
@@ -138,7 +138,7 @@ def queue_delete_route(queue_id):
     """queue delete"""
 
     try:
-        QueueManager.delete(Queue.query.get(queue_id))
+        QueueManager.delete(db.session.get(Queue, queue_id))
         return jsonify({'message': 'Queue has been successfully deleted.'})
     except RuntimeError as exc:
         return error_response(message=f'Failed: {exc}', code=HTTPStatus.INTERNAL_SERVER_ERROR)

@@ -11,6 +11,7 @@ from flask import url_for
 
 from sner.agent.core import main as agent_main
 from sner.lib import file_from_zip
+from sner.server.extensions import db
 from sner.server.scheduler.models import Job, Queue
 
 
@@ -47,7 +48,7 @@ def test_run_with_liveserver(tmpworkdir, live_server, apikey_agent, dummy_target
     result = agent_main([
         '--server', url_for('frontend.index_route', _external=True),
         '--apikey', apikey_agent,
-        '--queue', Queue.query.get(dummy_target.queue_id).name,
+        '--queue', db.session.get(Queue, dummy_target.queue_id).name,
         '--caps', 'cap1', 'cap2',
         '--oneshot',
         '--debug',

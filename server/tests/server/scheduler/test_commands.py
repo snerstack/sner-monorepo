@@ -51,21 +51,21 @@ def test_queue_enqueue_command(runner, tmpworkdir, queue, target_factory):  # py
 
     result = runner.invoke(command, ['queue-enqueue', queue.name, atarget.target])
     assert result.exit_code == 0
-    assert Queue.query.get(queue.id).targets[0].target == atarget.target
+    assert db.session.get(Queue, queue.id).targets[0].target == atarget.target
 
     result = runner.invoke(command, ['queue-enqueue', queue.name, '--file', apath])
     assert result.exit_code == 0
-    assert len(Queue.query.get(queue.id).targets) == 2
+    assert len(db.session.get(Queue, queue.id).targets) == 2
 
     result = runner.invoke(command, ['queue-enqueue', queue.name], input='dummy\n')
     assert result.exit_code == 0
-    assert len(Queue.query.get(queue.id).targets) == 3
+    assert len(db.session.get(Queue, queue.id).targets) == 3
 
 
 def test_queue_flush_command(runner, target):
     """queue flush command test"""
 
-    tqueue = Queue.query.get(target.queue_id)
+    tqueue = db.session.get(Queue, target.queue_id)
 
     result = runner.invoke(command, ['queue-flush', 'notexist'])
     assert result.exit_code == 1
@@ -73,7 +73,7 @@ def test_queue_flush_command(runner, target):
     result = runner.invoke(command, ['queue-flush', tqueue.name])
     assert result.exit_code == 0
 
-    assert not Queue.query.get(tqueue.id).targets
+    assert not db.session.get(Queue, tqueue.id).targets
 
 
 def test_queue_prune_command(runner, job_completed):

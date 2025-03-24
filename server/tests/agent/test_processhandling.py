@@ -13,6 +13,7 @@ from uuid import uuid4
 from flask import url_for
 
 from sner.agent.core import main as agent_main
+from sner.server.extensions import db
 from sner.server.scheduler.models import Queue
 from tests.agent import xjsonify
 
@@ -44,7 +45,7 @@ def test_terminate_with_liveserver(tmpworkdir, live_server, apikey_agent, cleanu
         args=([
             '--server', url_for('frontend.index_route', _external=True),
             '--apikey', apikey_agent,
-            '--queue', Queue.query.get(longrun_target.queue_id).name,
+            '--queue', db.session.get(Queue, longrun_target.queue_id).name,
             '--oneshot',
             '--debug',
         ],)

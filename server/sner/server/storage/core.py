@@ -28,9 +28,9 @@ def get_related_models(model_name, model_id):
 
     host, service = None, None
     if model_name == 'host':
-        host = Host.query.get(model_id)
+        host = db.session.get(Host, model_id)
     elif model_name == 'service':
-        service = Service.query.get(model_id)
+        service = db.session.get(Service, model_id)
         host = service.host
     return host, service
 
@@ -38,7 +38,7 @@ def get_related_models(model_name, model_id):
 def model_annotate(model, model_id):
     """annotate model route"""
 
-    model = model.query.get(model_id)
+    model = db.session.get(model, model_id)
     form = AnnotateForm(obj=model)
 
     if form.validate_on_submit():
@@ -78,7 +78,11 @@ def model_tag_multiid(model_class, action, tag, ids):
 def model_delete_multiid(model_class, ids):
     """delete models by list of ids"""
 
-    model_class.query.filter(model_class.id.in_(ids)).delete(synchronize_session=False)
+    db.session.execute(
+        delete(model_class)
+        .filter(model_class.id.in_(ids))
+        .execution_options(synchronize_session=False)
+    )
     db.session.commit()
     db.session.expire_all()
 

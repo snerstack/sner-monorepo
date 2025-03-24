@@ -9,6 +9,7 @@ from pathlib import Path
 
 from flask import url_for
 
+from sner.server.extensions import db
 from sner.server.scheduler.models import Job, Queue
 
 
@@ -83,7 +84,7 @@ def test_queue_edit_route(cl_operator, queue):
 
     assert response.status_code == HTTPStatus.OK
 
-    assert Queue.query.get(queue.id).name == new_name
+    assert db.session.get(Queue, queue.id).name == new_name
 
 
 def test_queue_enqueue_route(cl_operator, queue, target_factory):
@@ -96,7 +97,7 @@ def test_queue_enqueue_route(cl_operator, queue, target_factory):
 
     assert response.status_code == HTTPStatus.OK
 
-    tqueue = Queue.query.get(queue.id)
+    tqueue = db.session.get(Queue, queue.id)
     assert len(tqueue.targets) == 1
     assert tqueue.targets[0].target == atarget.target
 
@@ -109,7 +110,7 @@ def test_queue_flush_route(cl_operator, target):
     response = cl_operator.post(url_for('scheduler.queue_flush_route', queue_id=target.queue_id))
     assert response.status_code == HTTPStatus.OK
 
-    assert not Queue.query.get(queue_id).targets
+    assert not db.session.get(Queue, queue_id).targets
 
 
 def test_queue_prune_route(cl_operator, job_completed):
@@ -134,13 +135,13 @@ def test_queue_prune_route_runningjob(cl_operator, job):
 def test_queue_delete_route(cl_operator, job_completed):
     """queue delete route test"""
 
-    tqueue = Queue.query.get(job_completed.queue_id)
+    tqueue = db.session.get(Queue, job_completed.queue_id)
     assert Path(tqueue.data_abspath)
 
     response = cl_operator.post(url_for('scheduler.queue_delete_route', queue_id=tqueue.id))
     assert response.status_code == HTTPStatus.OK
 
-    assert not Queue.query.get(tqueue.id)
+    assert not db.session.get(Queue, tqueue.id)
     assert not Path(tqueue.data_abspath).exists()
 
 

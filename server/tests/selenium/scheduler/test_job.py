@@ -29,7 +29,7 @@ def test_job_list_route_inrow_delete(frontend_server, sl_operator, job_completed
     sl_operator.get(frontend_url('/scheduler/job/list'))
     wait_for_js(sl_operator)
     dt_inrow_delete(sl_operator, 'job_list_table')
-    assert not Job.query.get(job_id)
+    assert not db.session.get(Job, job_id)
 
 
 def test_job_list_route_inrow_reconcile(frontend_server, sl_operator, job):  # pylint: disable=unused-argument

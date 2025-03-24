@@ -76,7 +76,7 @@ def host_add_route():
 def host_edit_route(host_id):
     """edit host"""
 
-    host = Host.query.get(host_id)
+    host = db.session.get(Host, host_id)
     form = HostForm(obj=host)
 
     if form.validate_on_submit():
@@ -92,7 +92,7 @@ def host_edit_route(host_id):
 def host_delete_route(host_id):
     """delete host"""
 
-    db.session.delete(Host.query.get(host_id))
+    db.session.delete(db.session.get(Host, host_id))
     db.session.commit()
     return jsonify({'message': 'Host has been successfully deleted.'})
 
@@ -109,7 +109,7 @@ def host_annotate_route(model_id):
 def host_view_json_route(host_id):
     """view host"""
 
-    host = Host.query.get(host_id)
+    host = db.session.get(Host, host_id)
 
     if host is None:
         return error_response(message='Host not found.', code=HTTPStatus.NOT_FOUND)

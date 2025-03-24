@@ -54,7 +54,7 @@ def test_host_list_route_inrow_delete(frontend_server, sl_operator, host):  # py
     wait_for_js(sl_operator)
     dt_inrow_delete(sl_operator, 'host_list_table')
 
-    assert not Host.query.get(host_id)
+    assert not db.session.get(Host, host_id)
 
 
 def test_host_list_route_annotate(frontend_server, sl_operator, host):  # pylint: disable=unused-argument
@@ -117,7 +117,7 @@ def test_host_edit_route_addtag(frontend_server, sl_operator, host):  # pylint: 
     sl_operator.find_element(By.XPATH, '//form//input[@type="submit"]').click()
 
     db.session.refresh(host)
-    assert 'todo' in Host.query.get(host.id).tags
+    assert 'todo' in db.session.get(Host, host.id).tags
 
 
 def test_host_view_route_annotate(frontend_server, sl_operator, host):  # pylint: disable=unused-argument
@@ -152,7 +152,7 @@ def test_host_view_route_services_list_inrow_delete(frontend_server, sl_operator
     get_host_view_tab(sl_operator, service.host_id, service)
     dt_inrow_delete(sl_operator, 'host_view_service_table', 1)
 
-    assert not Service.query.get(service_id)
+    assert not db.session.get(Service, service_id)
 
 
 def test_host_view_route_services_list_service_endpoint_dropdown(frontend_server, sl_operator, service):  # pylint: disable=unused-argument
@@ -220,7 +220,7 @@ def test_host_view_route_vulns_list_inrow_delete(frontend_server, sl_operator, v
     get_host_view_tab(sl_operator, vuln.host_id, vuln)
     dt_inrow_delete(sl_operator, 'host_view_vuln_table', 1)
 
-    assert not Vuln.query.get(vuln_id)
+    assert not db.session.get(Vuln, vuln_id)
 
 
 def test_host_view_route_vulns_list_service_endpoint_dropdown(frontend_server, sl_operator, vuln_factory, service):  # pylint: disable=unused-argument
@@ -294,7 +294,7 @@ def test_host_view_route_notes_list_inrow_delete(frontend_server, sl_operator, n
     get_host_view_tab(sl_operator, note.host_id, note)
     dt_inrow_delete(sl_operator, 'host_view_note_table', 1)
 
-    assert not Note.query.get(note_id)
+    assert not db.session.get(Note, note_id)
 
 
 def test_host_view_route_notes_list_service_endpoint_dropdown(frontend_server, sl_operator, note_factory, service):  # pylint: disable=unused-argument
