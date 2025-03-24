@@ -46,7 +46,7 @@ def browser_instance():
     """shared browser instance"""
 
     options = Options()
-    options.headless = True
+    options.add_argument("--headless")
 
     # Disable automatic updates
     options.set_preference("app.update.auto", False)
