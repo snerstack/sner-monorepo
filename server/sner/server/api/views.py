@@ -93,12 +93,6 @@ def v2_stats_prometheus_route():
 def v2_public_storage_host_route(args):
     """host data by address"""
 
-    return _storage_host_api(args)
-
-
-def _storage_host_api(args):
-    """storage host backward compatibility stub"""
-
     if not current_user.api_networks:
         return None
 
@@ -129,12 +123,6 @@ def _storage_host_api(args):
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
 def v2_public_storage_range_route(args):
     """list of hosts by cidr with simplified data"""
-
-    return _storage_range_api(args)
-
-
-def _storage_range_api(args):
-    """storage host backward compatibility stub"""
 
     if not current_user.api_networks:
         return []
