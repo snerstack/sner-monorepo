@@ -36,12 +36,12 @@ describe('Nav component', () => {
     renderWithProviders({ element: <Nav />, path: '/' })
 
     await waitFor(() => {
-      fireEvent.click(screen.getByText('Toggle via_target (false)'))
+      fireEvent.click(screen.getByText('UI: toggle via_target (false)'))
       expect(viaTargetVisible()).toBeTruthy()
     })
 
     await waitFor(() => {
-      fireEvent.click(screen.getByText('Toggle via_target (true)'))
+      fireEvent.click(screen.getByText('UI: toggle via_target (true)'))
       expect(viaTargetVisible()).toBeFalsy()
     })
   })
@@ -52,13 +52,27 @@ describe('Nav component', () => {
     renderWithProviders({ element: <Nav />, path: '/' })
 
     await waitFor(() => {
-      fireEvent.click(screen.getByText('Toggle DT toolboxes (false)'))
+      fireEvent.click(screen.getByText('UI: toggle DT toolboxes (false)'))
       expect(toolboxesVisible()).toBeTruthy()
     })
 
     await waitFor(() => {
-      fireEvent.click(screen.getByText('Toggle DT toolboxes (true)'))
+      fireEvent.click(screen.getByText('UI: toggle DT toolboxes (true)'))
       expect(toolboxesVisible()).toBeFalsy()
+    })
+  })
+
+  it('test copy username', async () => {
+    mockLoggedinUserState()
+
+    renderWithProviders({ element: <Nav />, path: '/' })
+
+    const clipboardMock = vi.fn()
+    vi.stubGlobal("navigator", { clipboard: { writeText: clipboardMock } })
+
+    await waitFor(() => {
+      fireEvent.click(screen.getByText('Copy username'))
+      expect(clipboardMock).toHaveBeenCalledWith("dummy")
     })
   })
 

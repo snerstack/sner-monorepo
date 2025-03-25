@@ -17,7 +17,7 @@ const Nav = () => {
   const navigate = useNavigate()
   const currentSubnav: string = pathname.split('/')[1]
 
-type SubnavItem = { title: string; link: string }
+  type SubnavItem = { title: string; link: string }
 
   type NavMenuConfig = {
     [key: string]: { title: string; icon: string; link: string; acl: string; subnav: SubnavItem[] }
@@ -154,6 +154,18 @@ type SubnavItem = { title: string; link: string }
     navigate(0)
   }
 
+  const handleCopyUsername = async (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    try {
+      await navigator.clipboard.writeText(currentUser.username)
+      toast.success('Username copied to clipboard')
+      /* c8 ignore next 4 */
+    } catch (err) {
+      console.log(err)
+      toast.error("Failed to copy username")
+    }
+  }
+
   const UserMenu = () => {
     return (
       <ul className="navbar-nav">
@@ -170,23 +182,28 @@ type SubnavItem = { title: string; link: string }
                 Manage users
               </Link>
             )}
-            <a className="dropdown-item" href="#" onClick={toggleViaTargetHandler}>
-              {`Toggle via_target (${viaTargetVisible()})`}
-            </a>
-            <a className="dropdown-item" href="#" onClick={toggleToolboxesHandler}>
-              {`Toggle DT toolboxes (${toolboxesVisible()})`}
-            </a>
             {currentUser.roles.includes('user') && (
-              <Link className="dropdown-item" to="/auth/profile">
-                Profile
-              </Link>
+              <>
+                <Link className="dropdown-item" to="/auth/profile">
+                  Profile
+                </Link>
+                <Link className="dropdown-item" to="/storage/host/lookup">
+                  Host lookup
+                </Link>
+                <Link className="dropdown-item" to="#" onClick={toggleViaTargetHandler}>
+                  {`UI: toggle via_target (${viaTargetVisible()})`}
+                </Link>
+                <Link className="dropdown-item" to="#" onClick={toggleToolboxesHandler}>
+                  {`UI: toggle DT toolboxes (${toolboxesVisible()})`}
+                </Link>
+              </>
             )}
-            <Link className="dropdown-item" to="/storage/host/lookup">
-              Host lookup
+            <Link className="dropdown-item" to="#" onClick={(e) => void handleCopyUsername(e)}>
+              Copy username
             </Link>
-            <a className="dropdown-item" href="#" onClick={logoutHandler}>
+            <Link className="dropdown-item" to="#" onClick={logoutHandler}>
               Logout
-            </a>
+            </Link>
           </div>
         </li>
       </ul>

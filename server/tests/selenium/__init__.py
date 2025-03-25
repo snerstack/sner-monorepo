@@ -83,7 +83,7 @@ def toggle_dt_toolboxes(sclnt):
     """toggle datatables toolboxes"""
 
     sclnt.find_element(By.XPATH, '//a[@id="dropdownUser"]').click()
-    sclnt.find_element(By.XPATH, '//a[contains(text(), "Toggle DT toolboxes")]').click()
+    sclnt.find_element(By.XPATH, '//a[contains(text(), "UI: toggle DT toolboxes")]').click()
 
 
 def frontend_url(route_path):
