@@ -302,5 +302,8 @@ class Planner(TerminateContextMixin):
             current_app.logger.error("failed to fetch agreegate netlists, %s", resp)
             return 1
 
-        self.agreegate_netlists_path.write_text(resp.text, encoding="utf-8")
+        self.agreegate_netlists_path.write_text(
+            json.dumps(resp.json(), indent=4),
+            encoding="utf-8"
+        )
         return 0

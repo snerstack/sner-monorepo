@@ -112,7 +112,7 @@ def test_planner_fetchagreegatenetlists(app, tmpworkdir):  # pylint: disable=unu
     mock_get = Mock()
     mock_get.return_value = Mock()
     mock_get.return_value.status_code = HTTPStatus.OK
-    mock_get.return_value.text = '{"sner/basic": ["127.6.6.0/24"]}'
+    mock_get.return_value.json = lambda: {"sner/basic": ["127.6.6.0/24"]}
 
     planner = Planner({})
     with patch.object(requests, "get", mock_get):
