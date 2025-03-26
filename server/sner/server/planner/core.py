@@ -108,7 +108,7 @@ class Planner(TerminateContextMixin):
         """load and merge netlists from agreegate file"""
 
         if self.agreegate_netlists_path.exists():
-            current_app.logger.info("merging agreegate netlists")
+            current_app.logger.debug("merging agreegate netlists")
             ag_netlists = json.loads(self.agreegate_netlists_path.read_text(encoding="utf-8"))
 
             ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/basic", []))
