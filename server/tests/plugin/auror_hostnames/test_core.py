@@ -3,9 +3,8 @@
 auror_hostnames plugin core tests
 """
 import pytest
-import shutil
 from pathlib import Path
-from unittest.mock import patch, call, mock_open
+from unittest.mock import patch, call
 
 import dns.zone
 
@@ -25,9 +24,10 @@ from sner.plugin.auror_hostnames.core import (
 dummy_repos = ["dummy_repo1", "dummy_repo2", "dummy_repo3"]
 key = "dummy_key"
 server = "dummy_domain.com"
-dns_zone_folder = "tests/server/data/dns-zones"
-zone_file_path1 = f"{dns_zone_folder}/dummy_repo1/zones/example.com.zone"
-zone_file_path2 = f"{dns_zone_folder}/dummy_repo2/zones/1.168.192.in-addr.arpa.zone"
+test_files_path = "tests/server/data/auror_hostnames-dns_zones"
+dns_zones_folder = "dns-zones"
+zone_file_path1 = f"{test_files_path}/{dns_zones_folder}/dummy_repo1/zones/example.com.zone"
+zone_file_path2 = f"{test_files_path}/{dns_zones_folder}/dummy_repo2/zones/1.168.192.in-addr.arpa.zone"
 
 
 def test_get_repos():
@@ -50,7 +50,7 @@ def test_clone_dns_repos():
         clone_dns_repos(dummy_git_server, dummy_repos, key)
 
         # Check if subprocess.run was called with the correct arguments
-        expected_calls = [call(["git", "clone", f"git@{dummy_git_server}:{repo}", f"dns-zones/{repo}"]) for repo in dummy_repos]
+        expected_calls = [call(["git", "clone", f"git@{dummy_git_server}:{repo}", f"{dns_zones_folder}/{repo}"]) for repo in dummy_repos]
         actual_calls = [call(*args) for args, _ in mock_run.call_args_list]
         assert actual_calls == expected_calls
 
@@ -58,13 +58,13 @@ def test_clone_dns_repos():
 def test_get_zone_file_paths():
     """Test getting zone file paths"""
 
-    with patch("sner.plugin.auror_hostnames.core.Path", return_value=Path(dns_zone_folder)):
+    with patch("sner.plugin.auror_hostnames.core.Path", return_value=Path(f"{test_files_path}/{dns_zones_folder}")):
         result = get_zone_file_paths()
 
     expected_result = {
-        "tests/server/data/dns-zones/dummy_repo1/zones/example.com.zone",
-        "tests/server/data/dns-zones/dummy_repo3/zones/8.b.d.0.1.0.0.2.ip6.arpa.zone",
-        "tests/server/data/dns-zones/dummy_repo2/zones/1.168.192.in-addr.arpa.zone",
+        f"{test_files_path}/{dns_zones_folder}/dummy_repo1/zones/example.com.zone",
+        f"{test_files_path}/{dns_zones_folder}/dummy_repo2/zones/1.168.192.in-addr.arpa.zone",
+        f"{test_files_path}/{dns_zones_folder}/dummy_repo3/zones/8.b.d.0.1.0.0.2.ip6.arpa.zone",
     }
     assert result == expected_result
 
