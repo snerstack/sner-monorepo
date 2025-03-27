@@ -5,11 +5,13 @@ auror_hostnames plugin agent tests
 
 import json
 from uuid import uuid4
+from unittest.mock import patch
 
 from sner.agent.core import main as agent_main
 from sner.lib import file_from_zip
 
 
+@patch("sner.plugin.auror_hostnames.core.run", return_value=0)
 def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     """auror_hostnames module execution test"""
 

@@ -2,7 +2,9 @@
 """Core functions for auror_hostnames plugin"""
 
 import ipaddress
+import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 from socket import getaddrinfo
@@ -71,26 +73,36 @@ def process_cnames(cnames, a_aaaa, ip_hostnames) -> dict:
 
     #  add IPs from A/AAAA records for aliases if its CNAME is among A/AAAA records
     for cname, aliases in cnames_rev.items():
-        if cname.endswith(".arpa") or "/" in cname:
-            continue
 
         if cname in a_aaaa:
             for alias in aliases:
-                if not alias.endswith(".arpa"):
-                    for ip in a_aaaa[cname]:
-                        ip_hostnames.setdefault(ip, set()).add(alias)
+                for ip in a_aaaa[cname]:
+                    ip_hostnames.setdefault(ip, set()).add(alias)
         else:
-            # what about cname? should I resolve it?
+            ips = resolve_hostname(cname)
+            for ip in ips:
+                ip_hostnames.setdefault(ip, set()).add(cname)
             for alias in aliases:
-                try:
-                    resolve = getaddrinfo(alias, None)
-                    ips = [ip[4][0] for ip in resolve]
-                    for ip in ips:
-                        ip_hostnames.setdefault(ip, set()).add(alias)
-                except OSError:
-                    continue
+                ips = resolve_hostname(alias)
+                for ip in ips:
+                    ip_hostnames.setdefault(ip, set()).add(alias)
 
     return ip_hostnames
+
+
+def resolve_hostname(hostname):
+    """Resolve hostname to IP address
+    Args:
+        hostname (str): hostname
+    Returns:
+        list: list of IP addresses
+    """
+    try:
+        result = getaddrinfo(hostname, None)
+        ips = [ip[4][0] for ip in result]
+    except OSError:
+        ips = []
+    return ips
 
 
 def process_ptrs(ptrs, ip_hostnames) -> dict:
@@ -104,19 +116,48 @@ def process_ptrs(ptrs, ip_hostnames) -> dict:
         dict: { IP: [hostname1, hostname2] }
     """
     for reverse, hostname in ptrs.items():
-        if "/" not in reverse and "*" not in reverse:
-            if reverse.endswith(".ip6.arpa"):
-                ip_int = int("".join(reversed(reverse[:-9].split("."))), 16)
-                ip_addr = ipaddress.IPv6Address(ip_int)
-                if not ip_addr.is_loopback:
-                    ip_hostnames.setdefault(format(ip_addr), set()).add(hostname[:-1])
+        if reverse.endswith(".ip6.arpa"):
+            ip_int = int("".join(reversed(reverse[:-9].split("."))), 16)
+            ip_addr = ipaddress.IPv6Address(ip_int)
+            if not ip_addr.is_loopback:
+                ip_hostnames.setdefault(format(ip_addr), set()).add(hostname[:-1])
 
-            elif reverse.endswith(".in-addr.arpa"):
-                ip_addr = ".".join(reversed(reverse[:-13].split(".")))
-                if ipaddress.IPv4Address(ip_addr) and not ipaddress.IPv4Address(ip_addr).is_loopback:
-                    ip_hostnames.setdefault(ip_addr, set()).add(hostname[:-1])
+        elif reverse.endswith(".in-addr.arpa"):
+            ip_addr = ".".join(reversed(reverse[:-13].split(".")))
+            if ipaddress.IPv4Address(ip_addr) and not ipaddress.IPv4Address(ip_addr).is_loopback:
+                ip_hostnames.setdefault(ip_addr, set()).add(hostname[:-1])
 
     return ip_hostnames
+
+
+def check_if_hostname(hostname):
+    """Check if hostname is valid
+
+    Args:
+        hostname (str): hostname
+    Returns:
+        bool: True if valid, False otherwise
+    """
+    symbols = ["@", "/", "*", "_"]
+    if any(symbol in hostname for symbol in symbols):
+        return False
+    return True
+
+
+def create_fqdn(record_string, origin):
+    """Create FQDN from record
+
+    Args:
+        record_string (str): record
+        origin (str): origin
+    Returns:
+        fqdn (str): FQDN
+    """
+    if record_string.endswith("."):
+        fqdn = record_string[:-1]
+    else:
+        fqdn = f"{record_string}.{origin}"
+    return fqdn
 
 
 def get_records(zone_file_path) -> list:
@@ -144,20 +185,63 @@ def get_records(zone_file_path) -> list:
     ptrs = {}
     ip_hostnames = {}
     for name, node in zone.nodes.items():
-        for rdataset in node.rdatasets:
-            rdatatype = rdataset.rdtype
-            for rdata in rdataset:
-                if "@" not in name.to_text() and "*" not in name.to_text():
-                    fqdn = f"{name.to_text()}.{origin}"
-                else:
-                    fqdn = origin
-                if rdatatype == dns.rdatatype.CNAME:
-                    # what about cnames which are not fqdn? and why? and how to fix it? should I rstrip here?
-                    cnames[fqdn] = rdata.to_text().rstrip(".")
-                elif rdatatype in (dns.rdatatype.A, dns.rdatatype.AAAA):
-                    ip_hostnames.setdefault(rdata.to_text(), set()).add(fqdn)
-                    a_aaaa.setdefault(fqdn, set()).add(rdata.to_text())
-                elif rdatatype == dns.rdatatype.PTR:
-                    ptrs[fqdn] = rdata.to_text()
+        name_string = name.to_text()
+        fqdn = create_fqdn(name_string, origin)
+        if check_if_hostname(fqdn):
+            for rdataset in node.rdatasets:
+                rdatatype = rdataset.rdtype
+                for rdata in rdataset:
+                    rdata_string = rdata.to_text()
+                    if check_if_hostname(rdata_string):
+                        if rdatatype == dns.rdatatype.CNAME:
+                            if not origin.endswith(".arpa"):
+                                cnames[fqdn] = create_fqdn(rdata_string, origin)
+                        elif rdatatype in (dns.rdatatype.A, dns.rdatatype.AAAA):
+                            ip_hostnames.setdefault(rdata_string, set()).add(fqdn)
+                            a_aaaa.setdefault(fqdn, set()).add(rdata_string)
+                        elif rdatatype == dns.rdatatype.PTR:
+                            ptrs[fqdn] = rdata_string
 
     return [cnames, a_aaaa, ptrs, ip_hostnames]
+
+
+def check_git_key_path(git_key_path):
+    """Check if git key path exists"""
+    if not os.path.exists(git_key_path):
+        return False
+    return True
+
+
+def run(assignment, logger):  # pragma: no cover
+    """Run auror_hostnames module"""
+
+    git_key_path = assignment["config"]["git_key_path"]
+    git_server = assignment["config"]["git_server"]
+
+    if check_git_key_path(git_key_path) is False:
+        logger.log.error("Git key file does not exist")
+        return 1
+
+    repos = get_repos(git_server, git_key_path)
+    clone_dns_repos(git_server, repos, git_key_path)
+    zone_file_paths = get_zone_file_paths()
+
+    cnames = {}
+    a_aaaa = {}
+    ptrs = {}
+    ip_hostnames = {}
+
+    for zone_file_path in zone_file_paths:
+        result = get_records(zone_file_path)
+        cnames.update(result[0])
+        a_aaaa.update(result[1])
+        ptrs.update(result[2])
+        ip_hostnames.update(result[3])
+
+    ip_hostnames = process_ptrs(ptrs, ip_hostnames)
+    ip_hostnames = process_cnames(cnames, a_aaaa, ip_hostnames)
+    ip_hostnames = {k: list(v) for k, v in ip_hostnames.items()}
+
+    shutil.rmtree("dns-zones")
+    Path("output.json").write_text(json.dumps(ip_hostnames), encoding="utf-8")
+    return 0
