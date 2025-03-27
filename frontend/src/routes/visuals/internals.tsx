@@ -29,7 +29,6 @@ const InternalsPage = () => {
       <CodeBlock language="language-yaml" data={metrics} />
 
       <h2>Exclusions</h2>
-
       <CodeBlock language="language-yaml" data={exclusions} />
 
       <h2>Planner</h2>

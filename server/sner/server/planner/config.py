@@ -4,7 +4,7 @@ planner config schema
 """
 
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 
 
 class StandaloneQueues(BaseModel):
@@ -100,6 +100,6 @@ class PlannerConfig(BaseModel):
     sportmap_nets_ipv4: List[str] = []
 
     agreegate_url: str = None
-    agreegate_apikey: str = None
+    agreegate_apikey: SecretStr = None
 
     pipelines: Optional[Pipelines] = None
