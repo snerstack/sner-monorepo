@@ -27,4 +27,4 @@ def internals_json_route():
         )),
         "metrics": get_metrics(),
         "heatmap_check": SchedulerService.heatmap_check()
-        })
+    })

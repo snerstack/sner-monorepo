@@ -7,7 +7,7 @@ import click
 from flask import current_app
 from flask.cli import with_appcontext
 
-from sner.server.planner.core import Planner
+from sner.server.planner.core import dump_targets, fetch_agreegate_netlists, Planner
 
 
 @click.group(name='planner', help='sner.server planner commands')
@@ -18,7 +18,7 @@ def command():
 @command.command(name='run', help='run planner daemon')
 @with_appcontext
 @click.option('--oneshot', is_flag=True)
-def run(**kwargs):
+def run_command(**kwargs):
     """run planner daemon"""
 
     Planner(current_app.config['SNER_PLANNER'], kwargs['oneshot']).run()
@@ -31,16 +31,16 @@ def run(**kwargs):
     type=click.Choice(['basic_nets_ipv4', 'nuclei_nets_ipv4'], case_sensitive=False),
     default="basic_nets_ipv4"
 )
-def dump_targets(netlist):
+def dump_targets_command(netlist):
     """dump all targets respecting exclusions"""
 
-    if targets := Planner(current_app.config['SNER_PLANNER']).dump_targets(netlist):
+    if targets := dump_targets(netlist):
         print("\n".join(targets))
 
 
 @command.command(name='fetch-agreegate-netlists', help='fetch networks to be scanned from agreegate API')
 @with_appcontext
-def fetch_agreegate_netlists():  # pragma nocover  ; won't test
+def fetch_agreegate_netlists_command():  # pragma nocover  ; won't test
     """fetch networks to be scanned from agreegate API"""
 
-    return Planner(current_app.config['SNER_PLANNER']).fetch_agreegate_netlists()
+    return fetch_agreegate_netlists()

@@ -23,6 +23,7 @@ from sner.agent.modules import load_agent_plugins
 from sner.lib import load_yaml
 from sner.server.extensions import api, db, migrate, login_manager, oauth, webauthn
 from sner.server.parser import load_parser_plugins
+from sner.server.planner.core import load_merge_agreegate_netlists
 from sner.server.scheduler.core import ExclMatcher
 from sner.server.sessions import FilesystemSessionInterface
 from sner.server.utils import error_response, FilterQueryError
@@ -246,6 +247,10 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
     # load sner.plugin components
     load_agent_plugins()
     load_parser_plugins()
+    # load agreegate external config
+    with app.app_context():
+        app.config['SNER_PLANNER'] = load_merge_agreegate_netlists(app.config['SNER_PLANNER'])
+
     # check exclusion matcher config
     ExclMatcher(app.config['SNER_EXCLUSIONS'])
 
