@@ -1,18 +1,19 @@
 import hljs from 'highlight.js'
-import 'highlight.js/styles/default.css'
 import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData } from 'react-router-dom'
+
+import 'highlight.js/styles/default.css'
 
 import CodeBlock from '@/components/CodeBlock'
 import Heading from '@/components/Heading'
 
 const InternalsPage = () => {
-  const { metrics, heatmap_check, exclusions, planner } = useLoaderData() as Internals
+  const { metrics, heatmap_check, exclusions, planner, lastruns } = useLoaderData() as Internals
 
   useEffect(() => {
     hljs.highlightAll()
-  }, [metrics, heatmap_check, exclusions, planner])
+  }, [metrics, heatmap_check, exclusions, planner, lastruns])
 
   return (
     <div>
@@ -33,6 +34,9 @@ const InternalsPage = () => {
 
       <h2>Planner</h2>
       <CodeBlock language="language-yaml" data={planner} />
+
+      <h2>Last runs</h2>
+      <CodeBlock language="language-yaml" data={lastruns} />
     </div>
   )
 }

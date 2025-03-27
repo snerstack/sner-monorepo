@@ -4,6 +4,8 @@ controller internals
 """
 
 import json
+from pathlib import Path
+
 from flask import jsonify, current_app
 import yaml
 
@@ -19,12 +21,18 @@ from sner.server.visuals.views import blueprint
 def internals_json_route():
     """show various internals"""
 
+    lastruns = {
+        item.name.removeprefix('lastrun.'): item.read_text(encoding="utf-8")
+        for item in Path(current_app.config['SNER_VAR']).glob("lastrun.*")
+    }
+
     return jsonify({
+        "heatmap_check": SchedulerService.heatmap_check(),
+        "metrics": get_metrics(),
         "exclusions": yaml.dump(current_app.config['SNER_EXCLUSIONS']),
         "planner": yaml.dump(json.loads(
             # use model which honors SecretStr sanitization during json serialization
             PlannerConfig(**current_app.config['SNER_PLANNER']).model_dump_json(exclude_unset=True)
         )),
-        "metrics": get_metrics(),
-        "heatmap_check": SchedulerService.heatmap_check()
+        "lastruns": yaml.dump(lastruns)
     })

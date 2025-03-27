@@ -51,6 +51,10 @@ const loaderData = {
   planner: dedent(`
     {}
   `),
+
+  lastruns: dedent(`
+    stagex: '2025-01-01T00:00:00.000000'
+  `),
 }
 
 describe('Internals page', () => {

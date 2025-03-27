@@ -12,4 +12,5 @@ interface Internals {
   metrics: string
   exclusions: string
   planner: string
+  lastruns: string
 }
