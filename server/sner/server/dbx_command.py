@@ -148,12 +148,14 @@ def initdata_prod():
             'config': {'module': 'nmap', 'args': '-sU -F -sV --version-intensity 0 -Pn --open --max-retries 1'},
             'group_size': 50,
             'priority': QueuePrio.HIGH,
+            'reqs': ['default'],
         },
         {
             'name': 'sner.quicmap',
             'config': {'module': 'quicmap', 'args': '--ports 1-1024'},
             'group_size': 50,
             'priority': QueuePrio.HIGH,
+            'reqs': ['default'],
         },
         {
             'name': 'pentest.nmap.fullsynscan',
@@ -163,6 +165,7 @@ def initdata_prod():
             },
             'group_size': 20,
             'priority': QueuePrio.NORMAL,
+            'reqs': ['default'],
         }
     ]
 
@@ -177,15 +180,18 @@ def initdata_prod():
 def initdata_dev():
     """initialize development data"""
 
-    queue = Queue(
-        name='dev.dummy',
-        config=yaml_dump({'module': 'dummy', 'args': '--dummyparam 1'}),
-        group_size=2,
-        priority=QueuePrio.NORMAL,
-        active=True
-    )
+    queue = Queue(**{
+        'name': 'dev.dummy',
+        'config': yaml_dump({
+            'module': 'dummy',
+            'args': '--dummyparam 1'
+        }),
+        'group_size': 2,
+        'priority': QueuePrio.NORMAL,
+        'reqs': [],
+    })
     db.session.add(queue)
-    db.session.commit()  # required to obtain queue.id
+    db.session.commit()
     QueueManager.enqueue(queue, ['1', '2', '3'])
 
     # storage test data host1

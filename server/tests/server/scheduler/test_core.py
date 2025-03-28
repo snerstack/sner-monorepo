@@ -244,6 +244,30 @@ def test_schedulerservice_capsrouting(app, queue_factory, target_factory):  # py
     assert assignment['targets'] == ['pool2']
 
 
+def test_schedulerservice_morecapsrouting(app, queue_factory, target_factory):  # pylint: disable=unused-argument
+    """more test scheduler service queue routing for agents with caps"""
+
+    # deployment check, default client can handle queue with no-reqs
+    queue1 = queue_factory.create(name="test1", reqs=[], priority=QueuePrio.NORMAL)
+    target_factory.create(queue=queue1, target='dummy1')
+
+    assignment = SchedulerService.job_assign(None, agent_caps=['default'])
+    assert assignment['targets'] == ['dummy1']
+
+    # deployment check, all-caps client can handle no-reqs queue
+    target_factory.create(queue=queue1, target='dummy2')
+
+    assignment = SchedulerService.job_assign(None, agent_caps=[])
+    assert assignment['targets'] == ['dummy2']
+
+    # deployment check, all-caps client can handle queue with reqs
+    queue3 = queue_factory.create(name="test3", reqs=['dummy'], priority=QueuePrio.NORMAL)
+    target_factory.create(queue=queue3, target='dummy3')
+
+    assignment = SchedulerService.job_assign(None, agent_caps=[])
+    assert assignment['targets'] == ['dummy3']
+
+
 def test_schedulerservice_repeatfailedjobs(app, queue, job_factory):  # pylint: disable=unused-argument
     """test scheduler service repeat_failed_jobs"""
 
