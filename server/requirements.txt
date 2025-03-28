@@ -3,6 +3,7 @@ coverage
 coverage-conditional-plugin
 cpe
 defusedxml
+dnspython
 elasticsearch
 fido2
 file-magic

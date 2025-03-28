@@ -1,0 +1,5 @@
+hello test, this is git@test running gitolite3 3.2.1 (Debian) on git 2.1.0
+
+ R  	dummy_repo1
+ R W	dummy_repo2
+ R  	dummy_repo3
