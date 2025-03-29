@@ -17,8 +17,10 @@ from sner.server.planner.core import (
     dump_targets,
     fetch_agreegate_netlists,
     load_merge_agreegate_netlists,
+    outofscope_check,
     Planner
 )
+from sner.server.storage.models import Host, Note, Vuln
 
 
 def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
@@ -93,7 +95,7 @@ filter_nets_ipv6: ['::1/128']
     assert len(dump_targets("basic_nets_ipv4")) == 1
 
 
-def test_fetchagreegatenetlists(app, tmpworkdir):  # pylint: disable=unused-argument
+def test_fetchagreegatenetlists(app):  # pylint: disable=unused-argument
     """test fetch agreegate netlists"""
 
     current_app.config["SNER_PLANNER"] = {
@@ -110,7 +112,7 @@ def test_fetchagreegatenetlists(app, tmpworkdir):  # pylint: disable=unused-argu
         assert fetch_agreegate_netlists() == 0
 
 
-def test_loadmergeagreegatenetlists(app, tmpworkdir):  # pylint: disable=unused-argument
+def test_loadmergeagreegatenetlists(app):  # pylint: disable=unused-argument
     """test load and merge agreegate configs"""
 
     Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}").write_text(
@@ -126,3 +128,28 @@ def test_loadmergeagreegatenetlists(app, tmpworkdir):  # pylint: disable=unused-
     config = load_merge_agreegate_netlists(config)
     assert len(config['basic_nets_ipv4']) == 2
     assert len(config['filter_nets_ipv6']) == 2
+
+
+def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pylint: disable=unused-argument
+    """test hosts_outside_scope"""
+
+    current_app.config['SNER_PLANNER'] = yaml.safe_load("""
+basic_nets_ipv4: ['127.0.0.11/32']
+filter_nets_ipv6: ['2001:db8::11/128']
+nuclei_nets_ipv4: ['127.3.3.0/24']
+sportmap_nets_ipv4: ['2001:db8:eeee::12/64']
+""")
+
+    host1 = host_factory.create(address="127.0.0.11")
+    host2 = host_factory.create(address="2001:db8::11")
+    host_factory.create(address="127.4.0.1")
+    host_factory.create(address="2001:db8:eeee::13")
+    host_factory.create(address="2001:db8:aaaa::6")
+
+    vuln_factory.create(host=host1, xtype="nuclei.test")
+    note_factory.create(host=host2, xtype="sportmap")
+
+    outofscope_check(prune=True)
+    assert Host.query.count() == 3
+    assert Vuln.query.count() == 0
+    assert Note.query.count() == 0

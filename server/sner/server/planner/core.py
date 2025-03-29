@@ -10,11 +10,13 @@ import ipaddress
 import json
 import logging
 from http import HTTPStatus
+from itertools import chain
 from pathlib import Path
 from time import sleep
 
 import requests
 from flask import current_app
+from sqlalchemy import delete, not_, or_, select
 
 from sner.lib import TerminateContextMixin
 from sner.server.extensions import db
@@ -35,6 +37,7 @@ from sner.server.planner.stages import (
 )
 from sner.server.scheduler.core import enumerate_network, ExclMatcher
 from sner.server.scheduler.models import Queue
+from sner.server.storage.models import Host, Note, Vuln
 
 
 AGREEGATE_NETLISTS_FILE = "agreegate_netlists.json"
@@ -140,6 +143,89 @@ def dump_targets(netlist):
                 addrs.append(addr)
 
     return addrs
+
+
+def outofscope_check(prune=False):
+    """handles data in storage that is outside the planner's scanning scope"""
+
+    # find hosts which are not in any scan scope
+    scope = list(chain.from_iterable(
+        current_app.config['SNER_PLANNER'].get(item, [])
+        for item in [
+            "basic_nets_ipv4",
+            "filter_nets_ipv6",
+            "nuclei_nets_ipv4",
+            "sportmap_nets_ipv4",
+        ]
+    ))
+    current_app.logger.debug("basic scan scope: %s", scope)
+    scope_query = [Host.address.op('<<=')(net) for net in scope]
+    query = select(Host.id).filter(not_(or_(*scope_query)))
+    outscope_host_ids = list(db.session.execute(query).scalars())
+
+    # find other objects which should be pruned from database (not in scope anymore)
+    # nuclei and sportmap shares agreegate scanning scope
+    scope = list(chain.from_iterable(
+        current_app.config['SNER_PLANNER'].get(item, [])
+        for item in [
+            "nuclei_nets_ipv4",
+            "sportmap_nets_ipv4",
+        ]
+    ))
+    current_app.logger.debug("vuln scan scope: %s", scope)
+    scope_query = [Host.address.op('<<=')(net) for net in scope]
+
+    query = select(Vuln.id).join(Host).filter(
+        Vuln.xtype.ilike("nuclei.%"),
+        not_(or_(*scope_query))
+    )
+    outscope_vuln_ids = list(db.session.execute(query).scalars())
+
+    query = select(Note.id).join(Host).filter(
+        Note.xtype == "sportmap",
+        not_(or_(*scope_query))
+    )
+    outscope_note_ids = list(db.session.execute(query).scalars())
+
+    if current_app.debug:  # pragma: nocover  ; won't test
+        for model, ids in [(Host, outscope_host_ids), (Vuln, outscope_vuln_ids), (Note, outscope_note_ids)]:
+            for item in db.session.execute(select(model).filter(model.id.in_(ids))).scalars():
+                current_app.logger.debug("out-of-scope object: %s", item)
+
+    outscope_counts = {
+        "hosts": len(outscope_host_ids),
+        "vulns": len(outscope_vuln_ids),
+        "notes": len(outscope_note_ids),
+    }
+    totals = {
+        "hosts": Host.query.count(),
+        "vulns": Vuln.query.count(),
+        "notes": Note.query.count(),
+    }
+    print(
+        "Out-of-scope objects\n"
+        f"  Hosts: {outscope_counts['hosts']:-6d} / {totals['hosts']} ({outscope_counts['hosts']/totals['hosts']:-.2%})\n"
+        f"  Vulns: {outscope_counts['vulns']:-6d} / {totals['vulns']} ({outscope_counts['vulns']/totals['vulns']:-.2%})\n"
+        f"  Notes: {outscope_counts['notes']:-6d} / {totals['notes']} ({outscope_counts['notes']/totals['notes']:-.2%})\n"
+    )
+
+    if prune:
+        db.session.execute(
+            delete(Note).filter(Note.id.in_(outscope_note_ids)),
+            execution_options={"synchronize_session": False}
+        )
+        db.session.execute(
+            delete(Vuln).filter(Vuln.id.in_(outscope_vuln_ids)),
+            execution_options={"synchronize_session": False}
+        )
+        db.session.execute(
+            delete(Host).filter(Host.id.in_(outscope_host_ids)),
+            execution_options={"synchronize_session": False}
+        )
+        db.session.commit()
+        db.session.expire_all()
+
+    return 0
 
 
 class Planner(TerminateContextMixin):

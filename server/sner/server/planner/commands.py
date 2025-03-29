@@ -7,7 +7,12 @@ import click
 from flask import current_app
 from flask.cli import with_appcontext
 
-from sner.server.planner.core import dump_targets, fetch_agreegate_netlists, Planner
+from sner.server.planner.core import (
+    dump_targets,
+    fetch_agreegate_netlists,
+    outofscope_check,
+    Planner
+)
 
 
 @click.group(name='planner', help='sner.server planner commands')
@@ -44,3 +49,12 @@ def fetch_agreegate_netlists_command():  # pragma nocover  ; won't test
     """fetch networks to be scanned from agreegate API"""
 
     return fetch_agreegate_netlists()
+
+
+@command.command(name='outofscope-check', help="handles data in storage that is outside the planner's scanning scope")
+@with_appcontext
+@click.option('--prune', is_flag=True)
+def outofscope_check_command(prune):  # pragma nocover  ; won't test
+    """fetch networks to be scanned from agreegate API"""
+
+    return outofscope_check(prune)
