@@ -482,18 +482,29 @@ class StorageManager:
         db.session.commit()
 
     @staticmethod
-    def get_all_six_address():
+    def get_all_six_address(filternets=None):
         """return all host ipv6 addresses"""
 
-        return db.session.connection().execute(select(Host.address).filter(func.family(Host.address) == 6)).scalars().all()
+        query = select(Host.address).filter(func.family(Host.address) == 6)
+        if filternets:
+            restrict = [Host.address.op('<<=')(net) for net in filternets]
+            query = query.filter(or_(*restrict))
+
+        return db.session.connection().execute(query).scalars().all()
 
     @staticmethod
-    def get_rescan_hosts(interval):
+    def get_rescan_hosts(interval, filternets=None):
         """rescan hosts from storage; discovers new services on hosts"""
 
         now = datetime.utcnow()
         rescan_horizont = now - timedelta(seconds=timeparse(interval))
-        query = Host.query.filter(or_(Host.rescan_time < rescan_horizont, Host.rescan_time == None))  # noqa: E501, E711  pylint: disable=singleton-comparison
+        query = (
+            Host.query
+            .filter(or_(Host.rescan_time < rescan_horizont, Host.rescan_time == None))  # noqa: E711  pylint: disable=singleton-comparison
+        )
+        if filternets:
+            restrict = [Host.address.op('<<=')(net) for net in filternets]
+            query = query.filter(or_(*restrict))
 
         rescan, ids = [], []
         for host in windowed_query(query, Host.id):
@@ -508,12 +519,20 @@ class StorageManager:
         return rescan
 
     @staticmethod
-    def get_rescan_services(interval):
+    def get_rescan_services(interval, filternets=None):
         """rescan services from storage; update known services info"""
+
+        if filternets is None:  # pragma: nocover  ; won't test
+            filternets = []
 
         now = datetime.utcnow()
         rescan_horizont = now - timedelta(seconds=timeparse(interval))
-        query = Service.query.filter(or_(Service.rescan_time < rescan_horizont, Service.rescan_time == None))  # noqa: E501,E711  pylint: disable=singleton-comparison
+        restrict = [Host.address.op('<<=')(net) for net in filternets]
+        query = (
+            Service.query.join(Host)
+            .filter(or_(*restrict))
+            .filter(or_(Service.rescan_time < rescan_horizont, Service.rescan_time == None))  # noqa: E711  pylint: disable=singleton-comparison
+        )
 
         rescan, ids = [], []
         for service in windowed_query(query, Service.id):

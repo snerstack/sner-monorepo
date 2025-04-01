@@ -17,7 +17,7 @@ from sner.server.planner.stages import (
     DummyStage,
     filter_external_hosts,
     filter_tarpits,
-    NetlistEnum,
+    Netlist,
     project_hosts,
     project_services,
     project_sixenum_targets,
@@ -29,6 +29,7 @@ from sner.server.planner.stages import (
     StorageLoaderSportmap,
     StorageRescan,
     StorageSixTargetlist,
+    StorageSixEnumTargetlist,
     StorageTestsslTargetlist,
 )
 from sner.server.scheduler.core import SchedulerService
@@ -73,13 +74,13 @@ def test_filter_tarpits(sample_pidb):
     assert len(pidb.services) == 1
 
 
-def test_netlistenum(app):  # pylint: disable=unused-argument
-    """test NetlistEnum"""
+def test_netlist(app):  # pylint: disable=unused-argument
+    """test Netlist"""
 
     dummy = DummyStage()
-    NetlistEnum(schedule='600s', lockname='dummylock', netlist=['127.0.0.0/31'], next_stages=[dummy]).run()
+    Netlist(schedule='600s', lockname='dummylock', netlist=['127.0.0.0/31'], next_stages=[dummy]).run()
     # trigger schedule timing code, must not affect output stages
-    NetlistEnum(schedule='600s', lockname='dummylock', netlist=['127.0.0.0/31'], next_stages=[dummy]).run()
+    Netlist(schedule='600s', lockname='dummylock', netlist=['127.0.0.0/31'], next_stages=[dummy]).run()
 
     assert dummy.task_count == 1
     assert dummy.task_args == ['127.0.0.0', '127.0.0.1']
@@ -88,10 +89,32 @@ def test_netlistenum(app):  # pylint: disable=unused-argument
 def test_storagesixtargetlist(app, host_factory):  # pylint: disable=unused-argument
     """test StorageSixTargetlist"""
 
-    host_factory.create(address='2001:DB8:aa::')
-    host_factory.create(address='2001:DB8:bb::')
+    host_factory.create(address='2001:db8:aa::1')
+    host_factory.create(address='2001:db8:bb::1')
     dummy = DummyStage()
-    StorageSixTargetlist(schedule='0s', lockname='dummylock', next_stage=dummy).run()
+    StorageSixTargetlist(
+        schedule='0s',
+        lockname='dummylock',
+        filternets=['2001:db8:aa::0/64'],
+        next_stage=dummy
+    ).run()
+
+    expected = ['[2001:db8:aa::1]']
+    assert sorted(dummy.task_args) == sorted(expected)
+
+
+def test_storagesixenumtargetlist(app, host_factory):  # pylint: disable=unused-argument
+    """test StorageSixEnumTargetlist"""
+
+    host_factory.create(address='2001:db8:aa::')
+    host_factory.create(address='2001:db8:bb::')
+    dummy = DummyStage()
+    StorageSixEnumTargetlist(
+        schedule='0s',
+        lockname='dummylock',
+        filternets=['::/0'],
+        next_stage=dummy
+    ).run()
 
     expected = ['sixenum://2001:0db8:00aa:0000:0000:0000:0000:0-ffff', 'sixenum://2001:0db8:00bb:0000:0000:0000:0000:0-ffff']
     assert sorted(dummy.task_args) == sorted(expected)
@@ -110,7 +133,8 @@ def test_storagerescan(app, host_factory, service_factory, queue_factory):  # py
         host_interval='0s',
         servicedisco_stage=sdisco_dummy,
         service_interval='0s',
-        servicescan_stages=[sscan_dummy]
+        servicescan_stages=[sscan_dummy],
+        filternets=["127.0.0.0/8", "::1/128"]
     ).run()
 
     assert len(sdisco_dummy.task_args) == 2
@@ -224,7 +248,8 @@ def test_storagerescan_largedataset(runner, queue_factory, host_factory):  # pyl
         host_interval='0s',
         servicedisco_stage=dummy,
         service_interval='0s',
-        servicescan_stages=[dummy]
+        servicescan_stages=[dummy],
+        filternets=["0.0.0.0/0", "::/0"]
     ).run()
 
     assert Target.query.count() == existing_targets_count + Service.query.count()

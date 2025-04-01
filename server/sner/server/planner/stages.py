@@ -183,7 +183,7 @@ class DummyStage(Stage):  # pylint: disable=too-few-public-methods
         """dummy impl"""
 
 
-class NetlistEnum(Schedule):  # pylint: disable=too-few-public-methods
+class Netlist(Schedule):  # pylint: disable=too-few-public-methods
     """periodic host discovery via list of ipv4 networks"""
 
     def __init__(self, schedule, lockname, netlist, next_stages):
@@ -202,7 +202,7 @@ class NetlistEnum(Schedule):  # pylint: disable=too-few-public-methods
             stage.task(hosts)
 
 
-class NetlistTargets(Schedule):  # pylint: disable=too-few-public-methods
+class Targetlist(Schedule):  # pylint: disable=too-few-public-methods
     """periodic emit targets from simple list"""
 
     def __init__(self, schedule, lockname, targets, next_stages):
@@ -219,16 +219,33 @@ class NetlistTargets(Schedule):  # pylint: disable=too-few-public-methods
 
 
 class StorageSixTargetlist(Schedule):  # pylint: disable=too-few-public-methods
-    """enumerates v6 networks from storage data"""
+    """generates filtered ipv6 host addresses for scans"""
 
-    def __init__(self, schedule, lockname, next_stage):
+    def __init__(self, schedule, lockname, next_stage, filternets=None):
         super().__init__(schedule, lockname)
         self.next_stage = next_stage
+        self.filternets = filternets
 
     def _run(self):
         """run"""
 
-        targets = project_sixenum_targets(StorageManager.get_all_six_address())
+        targets = [f"[{item}]" for item in StorageManager.get_all_six_address(self.filternets)]
+        current_app.logger.info(f'{self.__class__.__name__} enumerated {len(targets)} targets')
+        self.next_stage.task(targets)
+
+
+class StorageSixEnumTargetlist(Schedule):  # pylint: disable=too-few-public-methods
+    """generates target for six_enum_discovery module"""
+
+    def __init__(self, schedule, lockname, next_stage, filternets=None):
+        super().__init__(schedule, lockname)
+        self.next_stage = next_stage
+        self.filternets = filternets
+
+    def _run(self):
+        """run"""
+
+        targets = project_sixenum_targets(StorageManager.get_all_six_address(self.filternets))
         current_app.logger.info(f'{self.__class__.__name__} projected {len(targets)} targets')
         self.next_stage.task(targets)
 
@@ -243,19 +260,21 @@ class StorageRescan(Schedule):  # pylint: disable=too-few-public-methods
         host_interval,
         servicedisco_stage,
         service_interval,
-        servicescan_stages
+        servicescan_stages,
+        filternets,
     ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
         super().__init__(schedule, lockname)
         self.host_interval = host_interval
         self.servicedisco_stage = servicedisco_stage
         self.service_interval = service_interval
         self.servicescan_stages = servicescan_stages
+        self.filternets = filternets
 
     def _run(self):
         """run"""
 
-        hosts = StorageManager.get_rescan_hosts(self.host_interval)
-        services = StorageManager.get_rescan_services(self.service_interval)
+        hosts = StorageManager.get_rescan_hosts(self.host_interval, self.filternets)
+        services = StorageManager.get_rescan_services(self.service_interval, self.filternets)
         current_app.logger.info(f'{self.__class__.__name__} rescaning {len(hosts)} hosts {len(services)} services')
         self.servicedisco_stage.task(hosts)
         for stage in self.servicescan_stages:

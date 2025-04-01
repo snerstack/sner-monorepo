@@ -43,15 +43,17 @@
 #planner:
 #  # basic&testssl scan ranges
 #  basic_nets_ipv4: []
+#  basic_nets_ipv6: ['::1/128']
 #  basic_targets: []
-#  filter_nets_ipv6: ['::1/128']
 #
 #  # vulnerability scan ranges
 #  nuclei_nets_ipv4: []
+#  nuclei_nets_ipv6: []
 #  nuclei_targets: []
 #
 #  # fixed source port scan ranges
 #  sportmap_nets_ipv4: []
+#  sportmap_nets_ipv6: []
 #  sportmap_targets: []
 #
 #  # dynamic netlists configuration
@@ -67,9 +69,8 @@
 #        - sner.sportmap
 #    
 #    basic_scan:
-#      netlist_schedule: 5days
+#      schedule: 5days
 #      service_disco_queue: sner.nmap.servicedisco
-#      six_dns_disco_queue: sner.six_dns_discover
 #      service_scan_queues:
 #        - sner.nmap.serviceversion
 #        - sner.jarm
@@ -80,21 +81,22 @@
 #      host_interval: 3days
 #      service_interval: 2days
 #
-#    storage_six_enum:
+#    six_disco:
 #      schedule: 2days
-#      queue: sner.six_enum_discover
+#      dns_disco_queue: sner.six_dns_discover
+#      storage_enum_queue: sner.six_enum_discover
 #
 #    nuclei_scan:
-#      netlist_schedule: 7days
-#      queue: sner.nuclei.rolling
-#
-#    testssl_scan:
 #      schedule: 7days
-#      queue: sner.testssl
+#      queue: sner.nuclei.rolling
 #
 #    sportmap_scan:
 #      schedule: 7days
 #      queue: sner.sportmap.rolling
+#
+#    testssl_scan:
+#      schedule: 7days
+#      queue: sner.testssl
 #
 #    storage_cleanup:
 #      enabled: true
