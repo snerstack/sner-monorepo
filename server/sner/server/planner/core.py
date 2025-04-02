@@ -25,6 +25,7 @@ from sner.server.planner.stages import (
     Netlist,
     Targetlist,
     RebuildVersioninfoMap,
+    Schedule,
     ServiceDisco,
     SixDisco,
     StorageCleanup,
@@ -37,7 +38,6 @@ from sner.server.planner.stages import (
     StorageTestsslTargetlist,
 )
 from sner.server.scheduler.core import enumerate_network, ExclMatcher
-from sner.server.scheduler.models import Queue
 from sner.server.storage.models import Host, Note, Vuln
 
 
@@ -48,25 +48,25 @@ def configure_logging():
     """configure server/app logging"""
 
     logging.config.dictConfig({
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'formatter_planner': {
-                'format': 'sner.planner [%(asctime)s] %(levelname)s %(message)s',
-                'datefmt': '%d/%b/%Y:%H:%M:%S %z'
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "formatter_planner": {
+                "format": "sner.planner [%(asctime)s] %(levelname)s %(message)s",
+                "datefmt": "%d/%b/%Y:%H:%M:%S %z"
             }
         },
-        'handlers': {
-            'console_planner': {
-                'class': 'logging.StreamHandler',
-                'stream': 'ext://sys.stdout',
-                'formatter': 'formatter_planner'
+        "handlers": {
+            "console_planner": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stdout",
+                "formatter": "formatter_planner"
             }
         },
-        'loggers': {
-            'sner.server': {
-                'level': 'INFO',
-                'handlers': ['console_planner']
+        "loggers": {
+            "sner.server": {
+                "level": "INFO",
+                "handlers": ["console_planner"]
             }
         }
     })
@@ -77,11 +77,11 @@ def fetch_agreegate_netlists():
 
     resp = requests.get(
         f"{current_app.config['SNER_PLANNER']['agreegate_url']}/api/v1/networks/aggregated?output=json",
-        headers={"X-API-KEY": current_app.config['SNER_PLANNER']['agreegate_apikey']},
+        headers={"X-API-KEY": current_app.config["SNER_PLANNER"]["agreegate_apikey"]},
         timeout=60
     )
 
-    if resp.status_code != HTTPStatus.OK:  # pragma nocover  ; won't test
+    if resp.status_code != HTTPStatus.OK:  # pragma nocover  ; won"t test
         current_app.logger.error("failed to fetch agreegate netlists, %s", resp)
         return 1
 
@@ -137,10 +137,10 @@ def load_merge_agreegate_netlists(config):
 def dump_targets(netlist):
     """dump all available targets, helper for manual sweeps"""
 
-    blacklist = ExclMatcher(current_app.config['SNER_EXCLUSIONS'])
+    blacklist = ExclMatcher(current_app.config["SNER_EXCLUSIONS"])
 
     addrs = []
-    for net in current_app.config['SNER_PLANNER'][netlist]:
+    for net in current_app.config["SNER_PLANNER"][netlist]:
         for addr in enumerate_network(net):
             if not blacklist.match(addr):
                 addrs.append(addr)
@@ -149,11 +149,11 @@ def dump_targets(netlist):
 
 
 def outofscope_check(prune=False):
-    """handles data in storage that is outside the planner's scanning scope"""
+    """handles data in storage that is outside the planner"s scanning scope"""
 
     # find hosts which are not in any scan scope
     scope = list(chain.from_iterable(
-        current_app.config['SNER_PLANNER'].get(item, [])
+        current_app.config["SNER_PLANNER"].get(item, [])
         for item in [
             "basic_nets_ipv4",
             "basic_nets_ipv6",
@@ -164,14 +164,14 @@ def outofscope_check(prune=False):
         ]
     ))
     current_app.logger.debug("basic scan scope: %s", scope)
-    scope_query = [Host.address.op('<<=')(net) for net in scope]
+    scope_query = [Host.address.op("<<=")(net) for net in scope]
     query = select(Host.id).filter(not_(or_(*scope_query)))
     outscope_host_ids = list(db.session.execute(query).scalars())
 
     # find other objects which should be pruned from database (not in scope anymore)
     # nuclei and sportmap shares agreegate scanning scope
     scope = list(chain.from_iterable(
-        current_app.config['SNER_PLANNER'].get(item, [])
+        current_app.config["SNER_PLANNER"].get(item, [])
         for item in [
             "nuclei_nets_ipv4",
             "nuclei_nets_ipv6",
@@ -180,7 +180,7 @@ def outofscope_check(prune=False):
         ]
     ))
     current_app.logger.debug("vuln scan scope: %s", scope)
-    scope_query = [Host.address.op('<<=')(net) for net in scope]
+    scope_query = [Host.address.op("<<=")(net) for net in scope]
 
     query = select(Vuln.id).join(Host).filter(
         Vuln.xtype.ilike("nuclei.%"),
@@ -194,7 +194,7 @@ def outofscope_check(prune=False):
     )
     outscope_note_ids = list(db.session.execute(query).scalars())
 
-    if current_app.debug:  # pragma: nocover  ; won't test
+    if current_app.debug:  # pragma: nocover  ; won"t test
         for model, ids in [(Host, outscope_host_ids), (Vuln, outscope_vuln_ids), (Note, outscope_note_ids)]:
             for item in db.session.execute(select(model).filter(model.id.in_(ids))).scalars():
                 current_app.logger.debug("out-of-scope object: %s", item)
@@ -243,7 +243,7 @@ class Planner(TerminateContextMixin):
     def __init__(self, config=None, oneshot=False):
         configure_logging()
         self.log = current_app.logger
-        self.log.setLevel(logging.DEBUG if current_app.config['DEBUG'] else logging.INFO)
+        self.log.setLevel(logging.DEBUG if current_app.config["DEBUG"] else logging.INFO)
 
         self.original_signal_handlers = {}
         self.loop = None
@@ -252,6 +252,14 @@ class Planner(TerminateContextMixin):
 
         self.config = PlannerConfig(**config)
         self._setup_stages()
+
+    def _add_stage(self, name, stage_cls, **kwargs):
+        """add stage to planner helper"""
+
+        if issubclass(stage_cls, Schedule) and ("lockname" not in kwargs):
+            kwargs["lockname"] = name
+        self.stages[name] = stage_cls(**kwargs)
+        return self.stages[name]
 
     def _setup_stages(self):
         """setup planner stages/pipelines"""
@@ -263,43 +271,50 @@ class Planner(TerminateContextMixin):
         # loads standalone queues
         if plines.standalone_queues:
             for qname in plines.standalone_queues.queues:
-                queue = Queue.query.filter_by(name=qname).one()
-                self.stages[f'standalone_queue:{queue.name}'] = StorageLoader(queue_name=qname)
+                self._add_stage(
+                    f"standalone_queue:{qname}",
+                    StorageLoader,
+                    queue_name=qname
+                )
 
         # basic discovery and version scanning
         if plines.basic_scan:
-            basic_servicescan_stages = []
-            for sscan_qname in plines.basic_scan.service_scan_queues:
-                stage = StorageLoader(queue_name=sscan_qname)
-                self.stages[f"basic_scan:{sscan_qname}"] = stage
-                basic_servicescan_stages.append(stage)
+            basic_servicescan_stages = [
+                self._add_stage(f"basic_scan:{sscan_qname}", StorageLoader, queue_name=sscan_qname)
+                for sscan_qname in plines.basic_scan.service_scan_queues
+            ]
 
-            self.stages['basic_scan:service_disco'] = ServiceDisco(
+            basic_servicedisco_stage = self._add_stage(
+                "basic_scan:service_disco",
+                ServiceDisco,
                 queue_name=plines.basic_scan.service_disco_queue,
                 next_stages=basic_servicescan_stages
             )
 
-            self.stages['basic_scan:netlist'] = Netlist(
+            self._add_stage(
+                "basic_scan:netlist",
+                Netlist,
                 schedule=plines.basic_scan.schedule,
-                lockname="basic_scan__netlist",
                 netlist=self.config.basic_nets_ipv4,
-                next_stages=[self.stages['basic_scan:service_disco']]
+                next_stages=[basic_servicedisco_stage]
             )
 
-            self.stages['basic_scan:targetlist'] = Targetlist(
+            self._add_stage(
+                "basic_scan:targetlist",
+                Targetlist,
                 schedule=plines.basic_scan.schedule,
-                lockname="basic_scan__targetlist",
                 targets=self.config.basic_targets,
-                next_stages=[self.stages['basic_scan:service_disco']]
+                next_stages=[basic_servicedisco_stage]
             )
 
         # basic rescan of hosts and services in storage
         if plines.basic_rescan:
-            self.stages['basic_rescan'] = StorageRescan(
+            self._add_stage(
+                "basic_rescan",
+                StorageRescan,
                 schedule=plines.basic_rescan.schedule,
-                lockname='basic_rescan',
                 host_interval=plines.basic_rescan.host_interval,
-                servicedisco_stage=self.stages['basic_scan:service_disco'],
+                servicedisco_stage=basic_servicedisco_stage,
                 service_interval=plines.basic_rescan.service_interval,
                 servicescan_stages=basic_servicescan_stages,
                 filternets=self.config.basic_nets_ipv6,
@@ -307,116 +322,139 @@ class Planner(TerminateContextMixin):
 
         # six discovery, DNS and neighbors of known six hosts for basic scanned nets
         if plines.six_disco:
-            self.stages['six_disco:dns_disco'] = SixDisco(
+            six_disco_dns_stage = self._add_stage(
+                "six_disco:dns_disco",
+                SixDisco,
                 queue_name=plines.six_disco.dns_disco_queue,
                 filternets=self.config.basic_nets_ipv6,
-                next_stage=self.stages['basic_scan:service_disco']
+                next_stage=basic_servicedisco_stage
             )
 
-            self.stages['six_disco:dns_netlist'] = Netlist(
+            self._add_stage(
+                "six_disco:dns_netlist",
+                Netlist,
                 schedule=plines.six_disco.schedule,
-                lockname='six_disco__dns_netlist',
                 netlist=self.config.basic_nets_ipv4,
-                next_stages=[self.stages['six_disco:dns_disco']]
+                next_stages=[six_disco_dns_stage]
             )
 
-            self.stages['six_disco:storage_enum'] = SixDisco(
+            six_disco_enum_stage = self._add_stage(
+                "six_disco:storage_enum",
+                SixDisco,
                 queue_name=plines.six_disco.storage_enum_queue,
                 filternets=self.config.basic_nets_ipv6,
-                next_stage=self.stages['basic_scan:service_disco']
+                next_stage=basic_servicedisco_stage
             )
 
-            self.stages['six_disco:storage_six_enum_targetlist'] = StorageSixEnumTargetlist(
+            self._add_stage(
+                "six_disco:storage_six_enum_targetlist",
+                StorageSixEnumTargetlist,
                 schedule=plines.six_disco.schedule,
-                lockname='six_disco__storage_six_enum_targetlist',
                 filternets=self.config.basic_nets_ipv6,
-                next_stage=self.stages['six_disco:storage_enum']
+                next_stage=six_disco_enum_stage
             )
 
         # nuclei scan
         if plines.nuclei_scan:
-            self.stages['nuclei_scan:load'] = StorageLoaderNuclei(queue_name=plines.nuclei_scan.queue)
+            nuclei_load_stage = self._add_stage(
+                "nuclei_scan:load",
+                StorageLoaderNuclei,
+                queue_name=plines.nuclei_scan.queue
+            )
 
-            self.stages['nuclei_scan:netlist'] = Netlist(
+            self._add_stage(
+                "nuclei_scan:netlist",
+                Netlist,
                 schedule=plines.nuclei_scan.schedule,
-                lockname='nuclei_scan__netlist',
                 netlist=self.config.nuclei_nets_ipv4,
-                next_stages=[self.stages['nuclei_scan:load']]
+                next_stages=[nuclei_load_stage]
             )
 
-            self.stages['nuclei_scan:targetlist'] = Targetlist(
+            self._add_stage(
+                "nuclei_scan:targetlist",
+                Targetlist,
                 schedule=plines.nuclei_scan.schedule,
-                lockname='nuclei_scan__targetlist',
                 targets=self.config.nuclei_targets,
-                next_stages=[self.stages['nuclei_scan:load']]
+                next_stages=[nuclei_load_stage]
             )
 
-            self.stages['nuclei_scan:storage_six_targetlist'] = StorageSixTargetlist(
+            self._add_stage(
+                "nuclei_scan:storage_six_targetlist",
+                StorageSixTargetlist,
                 schedule=plines.nuclei_scan.schedule,
-                lockname='nuclei_scan__storage_six_targetlist',
                 filternets=self.config.nuclei_nets_ipv6,
-                next_stage=self.stages['nuclei_scan:load']
+                next_stage=nuclei_load_stage
             )
 
         # sportmap scan
         if plines.sportmap_scan:
-            self.stages['sportmap_scan:load'] = StorageLoaderSportmap(queue_name=plines.sportmap_scan.queue)
-
-            self.stages['sportmap_scan:netlist'] = Netlist(
-                schedule=plines.sportmap_scan.schedule,
-                lockname='sportmap_scan__netlist',
-                netlist=self.config.sportmap_nets_ipv4,
-                next_stages=[self.stages['sportmap_scan:load']]
+            sportmap_load_stage = self._add_stage(
+                "sportmap_scan:load", StorageLoaderSportmap, queue_name=plines.sportmap_scan.queue
             )
 
-            self.stages['sportmap_scan:storage_six_targetlist'] = StorageSixTargetlist(
+            self._add_stage(
+                "sportmap_scan:netlist",
+                Netlist,
                 schedule=plines.sportmap_scan.schedule,
-                lockname='sportmap_scan__storage_six_targetlist',
+                netlist=self.config.sportmap_nets_ipv4,
+                next_stages=[sportmap_load_stage]
+            )
+
+            self._add_stage(
+                "sportmap_scan:storage_six_targetlist",
+                StorageSixTargetlist,
+                schedule=plines.sportmap_scan.schedule,
                 filternets=self.config.sportmap_nets_ipv6,
-                next_stage=self.stages['sportmap_scan:load']
+                next_stage=sportmap_load_stage
             )
 
         # testssl scan
         if plines.testssl_scan:
-            self.stages['testssl_scan:load'] = StorageLoader(queue_name=plines.testssl_scan.queue)
+            testssl_load_stage = self._add_stage(
+                "testssl_scan:load",
+                StorageLoader,
+                queue_name=plines.testssl_scan.queue
+            )
 
-            self.stages['testssl_scan:targetlist'] = StorageTestsslTargetlist(
+            self._add_stage(
+                "testssl_scan:targetlist",
+                StorageTestsslTargetlist,
                 schedule=plines.testssl_scan.schedule,
-                lockname='testssl_scan__targetlist',
-                next_stage=self.stages['testssl_scan:load']
+                next_stage=testssl_load_stage
             )
 
         # storage cleanup
         if plines.storage_cleanup and plines.storage_cleanup.enabled:
-            self.stages['storage_cleanup'] = StorageCleanup()
+            self._add_stage("storage_cleanup", StorageCleanup)
 
         # rebuild versioninfo
         if plines.rebuild_versioninfo_map:
-            self.stages['rebuild_versioninfo_map'] = RebuildVersioninfoMap(
-                schedule=plines.rebuild_versioninfo_map.schedule,
-                lockname='rebuild_versioninfo_map'
+            self._add_stage(
+                "rebuild_versioninfo_map",
+                RebuildVersioninfoMap,
+                schedule=plines.rebuild_versioninfo_map.schedule
             )
 
     def terminate(self, signum=None, frame=None):  # pragma: no cover  pylint: disable=unused-argument  ; running over multiprocessing
         """terminate at once"""
 
-        self.log.info('received terminate')
+        self.log.info("received terminate")
         self.loop = False
 
     def run(self):
         """run planner loop"""
 
-        self.log.info(f'startup, {len(self.stages)} configured stages')
+        self.log.info(f"startup, {len(self.stages)} configured stages")
         self.loop = True
 
         with self.terminate_context():
             while self.loop:
                 for name, stage in self.stages.items():
                     try:
-                        current_app.logger.debug(f'stage run {name} {stage}')
+                        current_app.logger.debug(f"stage run {name} {stage}")
                         stage.run()
                     except Exception as exc:  # pragma: no cover  ; pylint: disable=broad-except
-                        current_app.logger.error(f'stage failed, {name} {stage}, {exc}', exc_info=True)
+                        current_app.logger.error(f"stage failed, {name} {stage}, {exc}", exc_info=True)
                         db.session.rollback()
 
                 if self.oneshot:
@@ -427,5 +465,5 @@ class Planner(TerminateContextMixin):
                         if self.loop:
                             sleep(1)
 
-        self.log.info('exit')
+        self.log.info("exit")
         return 0
