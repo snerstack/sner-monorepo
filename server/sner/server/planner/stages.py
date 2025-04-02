@@ -250,35 +250,23 @@ class StorageSixEnumTargetlist(Schedule):  # pylint: disable=too-few-public-meth
         self.next_stage.task(targets)
 
 
-class StorageRescan(Schedule):  # pylint: disable=too-few-public-methods
-    """storage rescan"""
+class StorageTestsslTargetlist(Schedule):  # pylint: disable=too-few-public-methods
+    """enumerates testssl targets from storage data"""
 
-    def __init__(
-        self,
-        schedule,
-        lockname,
-        host_interval,
-        servicedisco_stage,
-        service_interval,
-        servicescan_stages,
-        filternets,
-    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    def __init__(self, schedule, lockname, next_stage):
         super().__init__(schedule, lockname)
-        self.host_interval = host_interval
-        self.servicedisco_stage = servicedisco_stage
-        self.service_interval = service_interval
-        self.servicescan_stages = servicescan_stages
-        self.filternets = filternets
+        self.next_stage = next_stage
 
     def _run(self):
         """run"""
 
-        hosts = StorageManager.get_rescan_hosts(self.host_interval, self.filternets)
-        services = StorageManager.get_rescan_services(self.service_interval, self.filternets)
-        current_app.logger.info(f'{self.__class__.__name__} rescaning {len(hosts)} hosts {len(services)} services')
-        self.servicedisco_stage.task(hosts)
-        for stage in self.servicescan_stages:
-            stage.task(services)
+        targets = [
+            f"{svc.proto}://{format_host_address(svc.host.address)}:{svc.port}"
+            for svc in
+            Service.query.filter(Service.proto == "tcp", Service.port == 443, Service.state.ilike("open:%")).all()
+        ]
+        current_app.logger.info(f'{self.__class__.__name__} projected {len(targets)} targets')
+        self.next_stage.task(targets)
 
 
 class SixDisco(QueueHandler):
@@ -319,6 +307,37 @@ class ServiceDisco(QueueHandler):
                 stage.task(services)
 
 
+class StorageRescan(Schedule):  # pylint: disable=too-few-public-methods
+    """storage rescan"""
+
+    def __init__(
+        self,
+        schedule,
+        lockname,
+        host_interval,
+        servicedisco_stage,
+        service_interval,
+        servicescan_stages,
+        filternets,
+    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+        super().__init__(schedule, lockname)
+        self.host_interval = host_interval
+        self.servicedisco_stage = servicedisco_stage
+        self.service_interval = service_interval
+        self.servicescan_stages = servicescan_stages
+        self.filternets = filternets
+
+    def _run(self):
+        """run"""
+
+        hosts = StorageManager.get_rescan_hosts(self.host_interval, self.filternets)
+        services = StorageManager.get_rescan_services(self.service_interval, self.filternets)
+        current_app.logger.info(f'{self.__class__.__name__} rescaning {len(hosts)} hosts {len(services)} services')
+        self.servicedisco_stage.task(hosts)
+        for stage in self.servicescan_stages:
+            stage.task(services)
+
+
 class StorageLoader(QueueHandler):
     """load queues to storage"""
 
@@ -341,16 +360,6 @@ class StorageCleanup(Stage):  # pylint: disable=too-few-public-methods
 
         StorageManager.cleanup_storage()
         current_app.logger.debug(f'{self.__class__.__name__} finished')
-
-
-class RebuildVersioninfoMap(Schedule):  # pylint: disable=too-few-public-methods
-    """recount versioninfo map"""
-
-    def _run(self):
-        """run"""
-
-        VersioninfoManager.rebuild()
-        current_app.logger.info(f'{self.__class__.__name__} finished')
 
 
 class StorageLoaderNuclei(QueueHandler):
@@ -421,25 +430,6 @@ class StorageLoaderNuclei(QueueHandler):
             current_app.logger.info(f'{self.__class__.__name__} prunned {prune_count} old vulns')
 
 
-class StorageTestsslTargetlist(Schedule):  # pylint: disable=too-few-public-methods
-    """enumerates testssl targets from storage data"""
-
-    def __init__(self, schedule, lockname, next_stage):
-        super().__init__(schedule, lockname)
-        self.next_stage = next_stage
-
-    def _run(self):
-        """run"""
-
-        targets = [
-            f"{svc.proto}://{format_host_address(svc.host.address)}:{svc.port}"
-            for svc in
-            Service.query.filter(Service.proto == "tcp", Service.port == 443, Service.state.ilike("open:%")).all()
-        ]
-        current_app.logger.info(f'{self.__class__.__name__} projected {len(targets)} targets')
-        self.next_stage.task(targets)
-
-
 class StorageLoaderSportmap(QueueHandler):
     """load nuclei queue to storage"""
 
@@ -467,3 +457,13 @@ class StorageLoaderSportmap(QueueHandler):
             current_app.logger.info(f'{self.__class__.__name__} prunned {affected_rows} old notes')
             db.session.commit()
             db.session.expire_all()
+
+
+class RebuildVersioninfoMap(Schedule):  # pylint: disable=too-few-public-methods
+    """recount versioninfo map"""
+
+    def _run(self):
+        """run"""
+
+        VersioninfoManager.rebuild()
+        current_app.logger.info(f'{self.__class__.__name__} finished')
