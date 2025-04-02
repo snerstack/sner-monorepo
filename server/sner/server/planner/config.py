@@ -51,6 +51,12 @@ class TestsslScan(BaseModel):
     queue: str
 
 
+class AurorScan(BaseModel):
+    """testssl scan"""
+    hostnames_schedule: str
+    hostnames_queue: str
+
+
 class StorageCleanup(BaseModel):
     """storage cleanup"""
     enabled: bool
@@ -70,6 +76,7 @@ class Pipelines(BaseModel):
     nuclei_scan: Optional[NucleiScan] = None
     sportmap_scan: Optional[SportmapScan] = None
     testssl_scan: Optional[TestsslScan] = None
+    auror_scan: Optional[AurorScan] = None
     storage_cleanup: Optional[StorageCleanup] = StorageCleanup(enabled=True)
     rebuild_versioninfo_map: Optional[RebuildVersionInfoMap] = None
 
@@ -82,13 +89,17 @@ class PlannerConfig(BaseModel):
         basic_nets_ipv4: List of IPv4 networks to scan.
         basic_nets_ipv6: List of IPv6 networks to scan.
         basic_targets: List of targets to scan, list not enumerated.
+
         nuclei_nets_ipv4: List of IPv4 networks to scan; nuclei pipeline
         nuclei_nets_ipv6: List of IPv6 networks to scan; nuclei pipeline
         nuclei_targets: List of targets to scan, list, not enumerated; nuclei pipeline
+
         sportmap_nets_ipv4: List of IPv4 networks to scan; sportmap pipeline
         sportmap_nets_ipv6: List of IPv6 networks to scan; sportmap pipeline
+
         agreegate_url: agreegate base url (system for managing scanned networks)
         agreegate_apikey: agreegate apikey
+
         pipelines: Pipelines configuration, if any.
     """
 

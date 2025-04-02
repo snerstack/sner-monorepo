@@ -30,6 +30,7 @@ from sner.server.planner.stages import (
     SixDisco,
     StorageCleanup,
     StorageLoader,
+    StorageLoaderAurorHostnames,
     StorageLoaderNuclei,
     StorageLoaderSportmap,
     StorageRescan,
@@ -421,6 +422,22 @@ class Planner(TerminateContextMixin):
                 StorageTestsslTargetlist,
                 schedule=plines.testssl_scan.schedule,
                 next_stage=testssl_load_stage
+            )
+
+        # auror scan
+        if plines.auror_scan:
+            auror_hostnames_stage = self._add_stage(
+                "auror:hostnames",
+                StorageLoaderAurorHostnames,
+                queue_name=plines.auror_scan.hostnames_queue
+            )
+
+            self._add_stage(
+                "auror:hostnames_targetlist",
+                Targetlist,
+                schedule=plines.auror_scan.hostnames_schedule,
+                targets=["trigger"],
+                next_stages=[auror_hostnames_stage]
             )
 
         # storage cleanup

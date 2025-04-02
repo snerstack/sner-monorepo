@@ -166,6 +166,17 @@ def initdata_prod():
             'group_size': 20,
             'priority': QueuePrio.NORMAL,
             'reqs': ['default'],
+        },
+        {
+            'name': 'auror.hostnames',
+            'config': {
+                'module': 'auror_hostnames',
+                'git_key_path': '/absolute/file/path',
+                'git_server': 'server.hostname',
+            },
+            'group_size': 1,
+            'priority': QueuePrio.NORMAL,
+            'reqs': ['auror'],
         }
     ]
 

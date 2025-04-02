@@ -34,6 +34,7 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     queue_factory.create(name="sner.nuclei.rolling")
     queue_factory.create(name="sner.testssl")
     queue_factory.create(name="sner.sportmap.rolling")
+    queue_factory.create(name="auror.hostnames")
 
     config = yaml.safe_load(
         """
@@ -73,6 +74,10 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
           sportmap_scan:
             schedule: 13days
             queue: sner.sportmap.rolling
+
+          auror_scan:
+            hostnames_schedule: 1day
+            hostnames_queue: auror.hostnames
 
           storage_cleanup:
             enabled: true

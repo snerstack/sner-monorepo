@@ -5,6 +5,7 @@ planner stages
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime
 from ipaddress import ip_address, ip_network, IPv6Address
 from pathlib import Path
@@ -12,7 +13,7 @@ from pathlib import Path
 from flask import current_app
 from littletable import Table
 from pytimeparse import parse as timeparse
-from sqlalchemy import select, tuple_
+from sqlalchemy import and_, select, tuple_
 from sqlalchemy.orm.exc import NoResultFound
 from sner.lib import format_host_address
 from sner.server.extensions import db
@@ -457,6 +458,76 @@ class StorageLoaderSportmap(QueueHandler):
             current_app.logger.info(f'{self.__class__.__name__} prunned {affected_rows} old notes')
             db.session.commit()
             db.session.expire_all()
+
+
+class StorageLoaderAurorHostnames(QueueHandler):
+    """load auror.hostnames queue to storage"""
+
+    @dataclass
+    class NoteMapItem:
+        """helper class"""
+        host_id: int
+        note_id: int
+
+    def run(self):
+        """run"""
+
+        for pidb in self._drain():
+            current_app.logger.info(
+                f'{self.__class__.__name__} loading {len(pidb.hosts)} '
+                f'hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes'
+            )
+
+            # Fetch existing host-note mappings
+            existing_notes = db.session.execute(
+                select(Host.address, Host.id, Note.id)
+                .outerjoin(Note, and_(Note.host_id == Host.id, Note.xtype == "auror.hostnames"))
+            ).all()
+
+            notes_map = {
+                address: self.NoteMapItem(host_id, note_id)
+                for address, host_id, note_id in existing_notes
+            }
+
+            # Prepare and do batch updates and inserts
+            updated_host_ids = set()
+            note_updates = []
+            note_inserts = []
+
+            for note in pidb.notes:
+                if host_item := notes_map.get(pidb.hosts[note.host_iid].address):
+                    updated_host_ids.add(host_item.host_id)
+
+                    if host_item.note_id:
+                        note_updates.append({
+                            "id": host_item.note_id,
+                            "data": note.data,
+                            "import_time": datetime.utcnow()
+                        })
+                    else:
+                        note_inserts.append({
+                            "host_id": host_item.host_id,
+                            "xtype": "auror.hostnames",
+                            "data": note.data,
+                            "import_time": datetime.utcnow()
+                        })
+
+            if note_updates:
+                db.session.bulk_update_mappings(Note, note_updates)
+            if note_inserts:
+                db.session.bulk_insert_mappings(Note, note_inserts)
+
+            # Prune old notes
+            affected_rows = db.session.query(Note).filter(
+                Note.xtype == 'auror.hostnames',
+                Note.host_id.notin_(updated_host_ids)
+            ).delete(synchronize_session=False)
+
+            db.session.commit()
+            db.session.expire_all()
+            current_app.logger.info(
+                f'{self.__class__.__name__} updated {len(updated_host_ids)} hosts, pruned {affected_rows} notes'
+            )
 
 
 class RebuildVersioninfoMap(Schedule):  # pylint: disable=too-few-public-methods
