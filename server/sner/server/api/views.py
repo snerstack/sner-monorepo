@@ -4,13 +4,15 @@ apiv2 controller
 """
 
 import binascii
+import json
 from base64 import b64decode
+from dataclasses import dataclass
 from http import HTTPStatus
 
 from flask import current_app, jsonify, Response
 from flask_login import current_user
 from flask_smorest import Blueprint, Page
-from sqlalchemy import or_
+from sqlalchemy import and_, or_, select
 
 import sner.server.api.schema as api_schema
 from sner.server.api.core import get_metrics
@@ -271,3 +273,58 @@ def v2_public_storage_versioninfo_route(args):
 
     current_app.logger.info(f"api.public storage versioninfo {args}")
     return data
+
+
+@blueprint.route('/v2/public/storage/auror', methods=['POST'])
+@apikey_required('auror')
+@blueprint.response(HTTPStatus.OK, api_schema.PublicAurorSchema(many=True))
+def v2_public_storage_auror_route():
+    """internal endpoint; get hostnames and port for auror"""
+
+    @dataclass
+    class HostMapItem:
+        """helper class"""
+        address: str
+        hostnames: set
+        os: str
+
+    # fetch host-auror_hostnames map, so it's over-fetched with ORM later
+    storage_data = db.session.execute(
+        select(Host.id, Host.address, Host.hostname, Host.os, Note.data)
+        .outerjoin(Note, and_(Note.host_id == Host.id, Note.xtype == "auror.hostnames"))
+    ).all()
+
+    host_map = {}
+    for host_id, host_address, host_hostname, host_os, auror_hostnames in storage_data:
+        hostnames = set()
+
+        if auror_hostnames:
+            hostnames.update(json.loads(auror_hostnames))
+        if host_hostname:
+            hostnames.add(host_hostname)
+        if not hostnames:
+            hostnames.add(host_address)
+
+        host_map[host_id] = HostMapItem(host_address, hostnames, host_os)
+
+    # dump all services along with hostnames for auror
+    services = db.session.execute(select(Service.host_id, Service.proto, Service.port, Service.state)).all()
+    response = []
+    for host_id, proto, port, state in services:
+        for hostname in host_map[host_id].hostnames:
+            response.append({
+                "input": {
+                    "hostname": hostname,
+                    "ip": host_map[host_id].address,
+                    "port": port,
+                    "proto": proto,
+                },
+                "port_scan": {
+                    "port": port,
+                    "proto": proto,
+                    "port_state": state.split(":")[0],
+                    "os": host_map[host_id].os
+                }
+            })
+
+    return response

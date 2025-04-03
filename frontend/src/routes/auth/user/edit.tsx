@@ -25,6 +25,7 @@ const UserEditPage = () => {
     { name: 'agent', checked: user.roles.includes('agent') },
     { name: 'operator', checked: user.roles.includes('operator') },
     { name: 'user', checked: user.roles.includes('user') },
+    { name: 'auror', checked: user.roles.includes('auror') },
   ])
   const [active, setActive] = useState<boolean>(user.active)
   const [password, setPassword] = useState<string>('')

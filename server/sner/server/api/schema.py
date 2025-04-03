@@ -215,3 +215,28 @@ class PublicVersioninfoSchema(BaseSchema):
     # user data
     tags = fields.List(fields.String)
     comment = fields.String()
+
+
+class PublicAurorInputSchema(BaseSchema):
+    """public auror input schema"""
+
+    hostname = fields.String(required=True)
+    ip = fields.String(required=True)
+    port = fields.Integer(required=True)
+    proto = fields.String(required=True)
+
+
+class PublicAurorPortScanSchema(BaseSchema):
+    """public auror port scan schema"""
+
+    proto = fields.String(required=True)
+    port = fields.Integer(required=True)
+    port_state = fields.String(required=True)
+    os = fields.String(required=True)
+
+
+class PublicAurorSchema(BaseSchema):
+    """public auror schema"""
+
+    input = fields.Nested(PublicAurorInputSchema, required=True)
+    port_scan = fields.Nested(PublicAurorPortScanSchema, required=True)

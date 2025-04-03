@@ -9,6 +9,7 @@ from webtest import TestApp
 
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 from tests.server import get_csrf_token
+from tests.conftest import apikey_in_roles
 
 
 @pytest.fixture
@@ -129,6 +130,16 @@ def api_user(app, apikey_user):  # pylint: disable=redefined-outer-name
     """create webtest testapp client"""
 
     return TestAppApi(app, apikey_user)
+
+
+@pytest.fixture
+def api_user_auror(app, user_factory):  # pylint: disable=redefined-outer-name
+    """create webtest testapp client"""
+
+    return TestAppApi(
+        app,
+        apikey_in_roles(user_factory, ['user', 'auror'])
+    )
 
 
 @pytest.fixture

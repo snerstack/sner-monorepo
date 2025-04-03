@@ -340,3 +340,22 @@ def test_v2_public_storage_versioninfo_route(api_user, versioninfo):  # pylint: 
 
     response = api_user.post_json(url_for('api.v2_public_storage_versioninfo_route'), {'product': 'dummy', 'versionspec': '<1.0'})
     assert len(response.json) == 0
+
+
+def test_v2_public_storage_auror_route(api_user_auror, host_factory, service_factory, note_factory):  # pylint: disable=unused-argument
+    """test public auror api"""
+
+    host1 = host_factory.create(address="127.8.1.11")
+    service_factory.create(host=host1, proto="tcp", port=1111, state="open:testing")
+    note_factory.create(host=host1, xtype="auror.hostnames", data='["phony.hostname"]')
+
+    host2 = host_factory.create(address="127.8.1.12", hostname=None)
+    service_factory.create(host=host2, proto="tcp", port=2222, state="closed:testing")
+
+    response = api_user_auror.post_json(url_for('api.v2_public_storage_auror_route'))
+    assert len(response.json) == 3
+
+    hostnames = list(x["input"]["hostname"] for x in response.json)
+    assert "localhost.localdomain" in hostnames
+    assert "phony.hostname" in hostnames
+    assert "127.8.1.12" in hostnames

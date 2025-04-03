@@ -63,7 +63,7 @@ DEFAULT_CONFIG = {
 
     # sner web server
     'SNER_VAR': '/var/lib/sner',
-    'SNER_AUTH_ROLES': ['admin', 'agent', 'operator', 'user'],
+    'SNER_AUTH_ROLES': ['admin', 'agent', 'operator', 'user', 'auror'],
     'SNER_SESSION_IDLETIME': 36000,
     'SNER_TRIM_REPORT_CELLS': 65000,
     'SNER_TRIM_NOTE_LIST_DATA': 4096,
