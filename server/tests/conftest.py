@@ -71,14 +71,14 @@ def apikey_in_roles(ufactory, roles):
 
 @pytest.fixture
 def apikey_agent(user_factory):
-    """crete user apikey agent"""
+    """create user apikey agent"""
 
     return apikey_in_roles(user_factory, ['agent'])
 
 
 @pytest.fixture
 def apikey_user(user_factory):
-    """crete user apikey user"""
+    """create user apikey user"""
 
     return apikey_in_roles(user_factory, ['user'])
 
