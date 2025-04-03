@@ -320,7 +320,7 @@ const HostViewPage = () => {
         ),
     }),
     Column('via_target', { visible: viaTargetVisible() }),
-    Column('xtype', { visible: false }),
+    Column('xtype'),
     Column('data', {
       className: 'forcewrap',
       render: (data: string) => {
