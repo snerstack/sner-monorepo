@@ -210,12 +210,13 @@ def outofscope_check(prune=False):
         "vulns": Vuln.query.count(),
         "notes": Note.query.count(),
     }
-    print(
-        "Out-of-scope objects\n"
-        f"  Hosts: {outscope_counts['hosts']:-6d} / {totals['hosts']} ({outscope_counts['hosts']/totals['hosts']:-.2%})\n"
-        f"  Vulns: {outscope_counts['vulns']:-6d} / {totals['vulns']} ({outscope_counts['vulns']/totals['vulns']:-.2%})\n"
-        f"  Notes: {outscope_counts['notes']:-6d} / {totals['notes']} ({outscope_counts['notes']/totals['notes']:-.2%})\n"
-    )
+    if any(outscope_counts.values()) or current_app.debug:
+        print(
+            "Out-of-scope objects\n"
+            f"  Hosts: {outscope_counts['hosts']:-6d} / {totals['hosts']} ({outscope_counts['hosts']/totals['hosts']:-.2%})\n"
+            f"  Vulns: {outscope_counts['vulns']:-6d} / {totals['vulns']} ({outscope_counts['vulns']/totals['vulns']:-.2%})\n"
+            f"  Notes: {outscope_counts['notes']:-6d} / {totals['notes']} ({outscope_counts['notes']/totals['notes']:-.2%})\n"
+        )
 
     if prune:
         db.session.execute(
