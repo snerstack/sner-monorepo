@@ -22,11 +22,11 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
         pidb = ParsedItemsDb()
 
         if is_zip(path):
-            data = file_from_zip(path, "results.json")
+            data = file_from_zip(path, "output.json")
         else:
             data = Path(path).read_text(encoding="utf-8")
 
-        # results.json = {"IP": [hostname1, hostname2]}
+        # output.json = {"IP": [hostname1, hostname2]}
         results = json.loads(data)
         for address, hostnames in results.items():
             pidb.upsert_note(address, xtype="auror.hostnames", data=json.dumps(hostnames))

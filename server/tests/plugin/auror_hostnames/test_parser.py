@@ -10,8 +10,8 @@ def test_host_list():
     """check host list extraction"""
 
     expected_hosts = ["127.0.0.1", "::1"]
-    json_file_path = "tests/server/data/parser-auror_hostnames-results.json"
-    zip_file_path = "tests/server/data/parser-auror_hostnames-results-job.zip"
+    json_file_path = "tests/server/data/parser-auror_hostnames-output.json"
+    zip_file_path = "tests/server/data/parser-auror_hostnames-job.zip"
 
     pidb = ParserModule.parse_path(json_file_path)
 

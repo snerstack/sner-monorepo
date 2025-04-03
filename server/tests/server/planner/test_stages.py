@@ -334,7 +334,7 @@ def test_storage_loader_auror_hostnames(app, queue_factory, job_completed_factor
     )
     job_completed_factory.create(
         queue=queue,
-        make_output=Path('tests/server/data/parser-auror_hostnames-results-job.zip').read_bytes()
+        make_output=Path('tests/server/data/parser-auror_hostnames-job.zip').read_bytes()
     )
 
     StorageLoaderAurorHostnames(queue_name=queue.name).run()
