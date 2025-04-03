@@ -3,16 +3,18 @@
 
 import ipaddress
 import json
+import logging
 import os
 import shutil
 import subprocess
 from pathlib import Path
 from socket import getaddrinfo
 
-import dns.exception
 import dns.zone
-import dns.rdataclass
 import dns.rdatatype
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_repos(git_server, git_key_path) -> list:
@@ -72,20 +74,30 @@ def process_cnames(cnames, a_aaaa, ip_hostnames) -> dict:
         cnames_rev.setdefault(cname, set()).add(alias)
 
     #  add IPs from A/AAAA records for aliases if its CNAME is among A/AAAA records
+    cnames_in_a_aaaa = 0
+    resolved_cnames = 0
+    resolve_aliases = 0
     for cname, aliases in cnames_rev.items():
 
         if cname in a_aaaa:
             for alias in aliases:
                 for ip in a_aaaa[cname]:
                     ip_hostnames.setdefault(ip, set()).add(alias)
+                    cnames_in_a_aaaa += 1
         else:
             ips = resolve_hostname(cname)
+            resolved_cnames += 1
             for ip in ips:
                 ip_hostnames.setdefault(ip, set()).add(cname)
             for alias in aliases:
+                resolve_aliases += 1
                 ips = resolve_hostname(alias)
                 for ip in ips:
                     ip_hostnames.setdefault(ip, set()).add(alias)
+
+    logger.info("Found %s CNAMEs in A/AAAA records", cnames_in_a_aaaa)
+    logger.info("Resolved %s CNAMEs to IPs", resolved_cnames)
+    logger.info("Resolved %s aliases to IPs", resolve_aliases)
 
     return ip_hostnames
 
@@ -102,6 +114,7 @@ def resolve_hostname(hostname):
         ips = [ip[4][0] for ip in result]
     except OSError:
         ips = []
+        logger.info("Hostname %s cannot be resolved", hostname)
     return ips
 
 
@@ -174,10 +187,10 @@ def get_records(zone_file_path) -> list:  # pylint: disable=too-many-locals
             try:
                 zone = dns.zone.from_file(zone_file, origin)
             except Exception as error:  # pylint: disable=broad-exception-caught
-                print(f"Exception occurred during parsing zone file {zone_file_path}: {error}")
+                logger.error("Exception occurred during parsing zone file %s: %s}", zone_file_path, error)
                 return [{}, {}, {}, {}]
         except Exception as error:  # pylint: disable=broad-exception-caught
-            print(f"Exception occurred during parsing zone file {zone_file_path}: {error}")
+            logger.error("Exception occurred during parsing zone file %s: %s}", zone_file_path, error)
             return [{}, {}, {}, {}]
 
     cnames = {}
@@ -212,7 +225,7 @@ def check_git_key_path(git_key_path):
     return True
 
 
-def run(assignment, logger):  # pragma: no cover
+def run(assignment):  # pragma: no cover
     """Run auror_hostnames module"""
 
     git_key_path = assignment["config"]["git_key_path"]
@@ -238,9 +251,15 @@ def run(assignment, logger):  # pragma: no cover
         ptrs.update(result[2])
         ip_hostnames.update(result[3])
 
+    logger.info("Found %s CNAME records", len(cnames))
+    logger.info("Found %s A/AAAA records", len(a_aaaa))
+    logger.info("Found %s PTR records", len(ptrs))
+
     ip_hostnames = process_ptrs(ptrs, ip_hostnames)
     ip_hostnames = process_cnames(cnames, a_aaaa, ip_hostnames)
     ip_hostnames = {k: list(v) for k, v in ip_hostnames.items()}
+
+    logger.info("Found hostnames for %s IP addresses", len(ip_hostnames))
 
     shutil.rmtree("dns-zones")
     Path("output.json").write_text(json.dumps(ip_hostnames, indent=4), encoding="utf-8")
