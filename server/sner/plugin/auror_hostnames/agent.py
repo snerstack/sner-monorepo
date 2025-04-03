@@ -26,7 +26,7 @@ class AgentModule(ModuleBase):
 
         super().run(assignment)
 
-        return core.run(assignment, self.log)
+        return core.run(assignment)
 
     def terminate(self):
         """nothing to be done for auror_hostnames terminate"""
