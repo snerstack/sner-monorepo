@@ -10,9 +10,17 @@ jobs:
     uses: ./.github/workflows/server.yml
 
   selenium:
+    if: |
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/devel' ||
+      startsWith(github.ref, 'refs/heads/release-')
     needs: [frontend, server]
     uses: ./.github/workflows/selenium.yml
 
   semgrep:
+    if: |
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/devel' ||
+      startsWith(github.ref, 'refs/heads/release-')
     needs: [selenium]
     uses: ./.github/workflows/semgrep.yml
