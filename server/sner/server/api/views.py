@@ -322,7 +322,7 @@ def v2_public_storage_auror_route():
                 "port_scan": {
                     "port": port,
                     "proto": proto,
-                    "port_state": state.split(":")[0],
+                    "port_state": state,
                     "os": host_map[host_id].os
                 }
             })
