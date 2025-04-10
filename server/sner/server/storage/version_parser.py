@@ -7,6 +7,7 @@ version parser, pulled from 713/logs/va2am
 import re
 from typing import List
 from packaging.specifiers import SpecifierSet, InvalidSpecifier
+from packaging.version import InvalidVersion
 
 
 class InvalidFormatException(Exception):
@@ -74,6 +75,9 @@ def is_in_version_range(version: str, specifiers: List[SpecifierSet]) -> bool:
     version = version.split(" ")[0]
 
     for specifier in specifiers:
-        if version in specifier:
-            return True
+        try:
+            if version in specifier:
+                return True
+        except InvalidVersion:
+            return False
     return False

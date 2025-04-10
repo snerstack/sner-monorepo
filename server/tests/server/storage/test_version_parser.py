@@ -53,6 +53,9 @@ def test_is_in_version_range():
     assert not is_in_version_range("1.3.5", version_spec)
     assert not is_in_version_range("4.2", version_spec)
 
+    # should not raise exception on invalid version string
+    assert not is_in_version_range("for_Windows_9.5", version_spec)
+
     # Debian patches.
     version_spec = parse(">4.0")
     assert is_in_version_range("4.0p1", version_spec)
