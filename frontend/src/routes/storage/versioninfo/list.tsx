@@ -29,8 +29,8 @@ const VersionInfosListPage = () => {
   const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
   const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
-  const [product, setProduct] = useState<string>('')
-  const [versionspec, setVersionspec] = useState<string>('')
+  const [product, setProduct] = useState<string>(searchParams.get('product') || '')
+  const [versionspec, setVersionspec] = useState<string>(searchParams.get('versionspec') || '')
 
   const queryHandler = () => {
     setSearchParams((params) => {

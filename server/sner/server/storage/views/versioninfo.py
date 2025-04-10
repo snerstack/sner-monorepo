@@ -15,9 +15,9 @@ from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_tag_multiid
 from sner.server.storage.forms import TagMultiidStringyForm
 from sner.server.storage.models import Versioninfo
-from sner.server.storage.version_parser import is_in_version_range, parse as versionspec_parse
+from sner.server.storage.version_parser import InvalidFormatException, is_in_version_range, parse as versionspec_parse
 from sner.server.storage.views import blueprint
-from sner.server.utils import filter_query, SnerJSONEncoder
+from sner.server.utils import error_response, filter_query, SnerJSONEncoder
 
 
 @blueprint.route('/versioninfo/list.json', methods=['GET', 'POST'])
@@ -58,7 +58,11 @@ def versioninfo_list_json_route():
     versioninfos = DataTables(request_values, query, columns).output_result()
 
     if request_values.get('versionspec'):
-        parsed_version_specifier = versionspec_parse(request_values.get('versionspec'))
+        try:
+            parsed_version_specifier = versionspec_parse(request_values.get('versionspec'))
+        except InvalidFormatException as exc:
+            return error_response(message=str(exc), code=HTTPStatus.BAD_REQUEST)
+
         versioninfos["data"] = list(filter(
             lambda item: is_in_version_range(item["version"], parsed_version_specifier),
             versioninfos["data"]

@@ -86,6 +86,21 @@ def test_versioninfo_list_json_route_query_form(cl_operator, service_factory, ve
     assert response_data['data'][0]['version'] == '1.2'
 
 
+def test_versioninfo_list_json_route_errorhandling(cl_operator):
+    """versioninfo list_json error handling route test"""
+
+    response = cl_operator.post(
+        url_for(
+            'storage.versioninfo_list_json_route',
+            product='dummy',
+            versionspec='invalid'
+        ),
+        {'draw': 1, 'start': 1, 'length': 100},
+        status='*'
+    )
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+
+
 def test_versioninfo_tag_multiid_route(cl_operator, versioninfo):
     """versioninfo multi tag route for ajaxed toolbars test"""
 
