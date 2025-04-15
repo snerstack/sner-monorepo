@@ -123,14 +123,14 @@ def load_merge_agreegate_netlists(config):
         ag_netlists = json.loads(agreegate_netlists_path.read_text(encoding="utf-8"))
 
         ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/basic", []))
-        config["basic_nets_ipv4"] = list(set(config.get("basic_nets_ipv4", []) + ipv4_networks))
-        config["basic_nets_ipv6"] = list(set(config.get("basic_nets_ipv6", []) + ipv6_networks))
+        config["basic_nets_ipv4"] = sorted(list(set(config.get("basic_nets_ipv4", []) + ipv4_networks)))
+        config["basic_nets_ipv6"] = sorted(list(set(config.get("basic_nets_ipv6", []) + ipv6_networks)))
 
         ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/nuclei", []))
-        config["nuclei_nets_ipv4"] = list(set(config.get("nuclei_nets_ipv4", []) + ipv4_networks))
-        config["nuclei_nets_ipv6"] = list(set(config.get("nuclei_nets_ipv6", []) + ipv6_networks))
-        config["sportmap_nets_ipv4"] = list(set(config.get("sportmap_nets_ipv4", []) + ipv4_networks))
-        config["sportmap_nets_ipv6"] = list(set(config.get("sportmap_nets_ipv6", []) + ipv6_networks))
+        config["nuclei_nets_ipv4"] = sorted(list(set(config.get("nuclei_nets_ipv4", []) + ipv4_networks)))
+        config["nuclei_nets_ipv6"] = sorted(list(set(config.get("nuclei_nets_ipv6", []) + ipv6_networks)))
+        config["sportmap_nets_ipv4"] = sorted(list(set(config.get("sportmap_nets_ipv4", []) + ipv4_networks)))
+        config["sportmap_nets_ipv6"] = sorted(list(set(config.get("sportmap_nets_ipv6", []) + ipv6_networks)))
 
     return config
 
