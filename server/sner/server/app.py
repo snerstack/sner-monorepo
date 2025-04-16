@@ -99,6 +99,8 @@ DEFAULT_CONFIG = {
     # other sner subsystems
     'SNER_PLANNER': {},
     'SNER_METRICS_STALE_HORIZONT': '1day',
+    'SNER_AGREEGATE_URL': None,
+    'SNER_AGREEGATE_APIKEY': None,
 
     # smorest api
     'API_TITLE': 'sner4 api',

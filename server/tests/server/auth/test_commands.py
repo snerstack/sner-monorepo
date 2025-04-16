@@ -3,6 +3,9 @@
 auth.command tests
 """
 
+from unittest.mock import patch
+
+import sner.server.auth.commands
 from sner.server.auth.commands import command
 from sner.server.auth.models import User
 from sner.server.extensions import db
@@ -39,3 +42,22 @@ def test_adduser_command(runner):
     result = runner.invoke(command, ['add-user', 'userx', 'test@email'])
     assert result.exit_code == 0
     assert User.query.first().email == 'test@email'
+
+
+def test_sync_agreegate_allowed_networks_command(runner, user_factory):
+    """test sync_agreegate_allowed_networks command"""
+
+    def agreegate_apicall_mock(_, url):
+        if url == "/api/v1/groups":
+            return [{"name": "group1", "allowed_networks": ["127.0.0.0/8"]}]
+        if url == "/api/v1/usergroups":
+            return [{"username": "testuser", "roles": ["user"], "groups": ["group1"]}]
+        return None
+
+    user_factory.create(username="testuser", roles=["user"])
+
+    with patch.object(sner.server.auth.commands, 'agreegate_apicall', agreegate_apicall_mock):
+        result = runner.invoke(command, ['sync-agreegate-allowed-networks'])
+
+    assert result.exit_code == 0
+    assert User.query.first().api_networks == ["127.0.0.0/8"]

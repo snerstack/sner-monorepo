@@ -9,12 +9,10 @@ and requirements so they can be handled by pools of agents with respective capab
 import ipaddress
 import json
 import logging
-from http import HTTPStatus
 from itertools import chain
 from pathlib import Path
 from time import sleep
 
-import requests
 from flask import current_app
 from sqlalchemy import delete, not_, or_, select
 
@@ -40,6 +38,7 @@ from sner.server.planner.stages import (
 )
 from sner.server.scheduler.core import enumerate_network, ExclMatcher
 from sner.server.storage.models import Host, Note, Vuln
+from sner.server.utils import agreegate_apicall, AgreegateApiError
 
 
 AGREEGATE_NETLISTS_FILE = "agreegate_netlists.json"
@@ -76,19 +75,15 @@ def configure_logging():
 def fetch_agreegate_netlists():
     """fetch networks to be scanned from agreegate API"""
 
-    resp = requests.get(
-        f"{current_app.config['SNER_PLANNER']['agreegate_url']}/api/v1/networks/aggregated?output=json",
-        headers={"X-API-KEY": current_app.config["SNER_PLANNER"]["agreegate_apikey"]},
-        timeout=60
-    )
-
-    if resp.status_code != HTTPStatus.OK:  # pragma nocover  ; won"t test
-        current_app.logger.error("failed to fetch agreegate netlists, %s", resp)
+    try:
+        netlists_json = agreegate_apicall("GET", "/api/v1/networks/aggregated?output=json")
+    except AgreegateApiError:  # pragma: nocover  ; won't test
+        current_app.logger.error("failed to fetch agreegate netlists")
         return 1
 
     agreegate_netlists_path = Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}")
     agreegate_netlists_path.write_text(
-        json.dumps(resp.json(), indent=4),
+        json.dumps(netlists_json, indent=4),
         encoding="utf-8"
     )
     return 0

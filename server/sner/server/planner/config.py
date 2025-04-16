@@ -4,7 +4,7 @@ planner config schema
 """
 
 from typing import List, Optional
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel
 
 
 class StandaloneQueues(BaseModel):
@@ -97,9 +97,6 @@ class PlannerConfig(BaseModel):
         sportmap_nets_ipv4: List of IPv4 networks to scan; sportmap pipeline
         sportmap_nets_ipv6: List of IPv6 networks to scan; sportmap pipeline
 
-        agreegate_url: agreegate base url (system for managing scanned networks)
-        agreegate_apikey: agreegate apikey
-
         pipelines: Pipelines configuration, if any.
     """
 
@@ -113,8 +110,5 @@ class PlannerConfig(BaseModel):
 
     sportmap_nets_ipv4: List[str] = []
     sportmap_nets_ipv6: List[str] = []
-
-    agreegate_url: str = None
-    agreegate_apikey: SecretStr = None
 
     pipelines: Optional[Pipelines] = None

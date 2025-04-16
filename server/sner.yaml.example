@@ -19,6 +19,8 @@
 #  sner_exclusions:
 #    - [regex, '^tcp://.*:22$']
 #    - [network, '127.66.66.0/26']
+#  sner_agreegate_url: https://...
+#  sner_agreegate_apikey: apikey
 #
 #  oidc_name: 'OIDC_DEFAULT'
 #  oidc_create_user: true
@@ -55,10 +57,6 @@
 #  sportmap_nets_ipv4: []
 #  sportmap_nets_ipv6: []
 #  sportmap_targets: []
-#
-#  # dynamic netlists configuration
-#  agreegate_url: null
-#  agreegate_apikey: null
 #
 #  # execution pipelines
 #  pipelines:

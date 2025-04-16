@@ -4,14 +4,13 @@ planner core tests
 """
 
 import json
-from http import HTTPStatus
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import requests
 import yaml
 from flask import current_app
 
+import sner.server.planner.core
 from sner.server.planner.core import (
     AGREEGATE_NETLISTS_FILE,
     dump_targets,
@@ -107,17 +106,8 @@ def test_dumptargets(app):  # pylint: disable=unused-argument
 def test_fetchagreegatenetlists(app):  # pylint: disable=unused-argument
     """test fetch agreegate netlists"""
 
-    current_app.config["SNER_PLANNER"] = {
-        "agreegate_url": "dummy",
-        "agreegate_apikey": "dummy",
-    }
-
-    mock_get = Mock()
-    mock_get.return_value = Mock()
-    mock_get.return_value.status_code = HTTPStatus.OK
-    mock_get.return_value.json = lambda: {"sner/basic": ["127.6.6.0/24"]}
-
-    with patch.object(requests, "get", mock_get):
+    mock_response = Mock(return_value={"sner/basic": ["127.6.6.0/24"]})
+    with patch.object(sner.server.planner.core, 'agreegate_apicall', mock_response):
         assert fetch_agreegate_netlists() == 0
 
 
