@@ -7,7 +7,6 @@ import datetime
 import json
 from http import HTTPStatus
 
-import requests
 import yaml
 from flask import current_app, jsonify
 from lark.exceptions import LarkError
@@ -153,26 +152,3 @@ def error_response(message, errors=None, code=HTTPStatus.BAD_REQUEST):
             'message': message
         }
     }), code
-
-
-class AgreegateApiError(Exception):
-    """agreegate api call error"""
-
-
-def agreegate_apicall(method, url, **kwargs):
-    """make agreegate api call"""
-
-    resp = requests.request(
-        method,
-        f"{current_app.config['SNER_AGREEGATE_URL']}{url}",
-        headers={"X-API-KEY": current_app.config["SNER_AGREEGATE_APIKEY"]},
-        timeout=60,
-        **kwargs
-    )
-    current_app.logger.debug("apicall, %s", resp)
-
-    if resp.status_code != HTTPStatus.OK:
-        current_app.logger.error("agreegate apicall failed, %s", resp.text)
-        raise AgreegateApiError("agreegate apicall failed")
-
-    return resp.json()

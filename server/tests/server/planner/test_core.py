@@ -3,19 +3,11 @@
 planner core tests
 """
 
-import json
-from pathlib import Path
-from unittest.mock import Mock, patch
-
 import yaml
 from flask import current_app
 
-import sner.server.planner.core
 from sner.server.planner.core import (
-    AGREEGATE_NETLISTS_FILE,
     dump_targets,
-    fetch_agreegate_netlists,
-    load_merge_agreegate_netlists,
     outofscope_check,
     Planner,
 )
@@ -101,34 +93,6 @@ def test_dumptargets(app):  # pylint: disable=unused-argument
     )
 
     assert len(dump_targets("basic_nets_ipv4")) == 1
-
-
-def test_fetchagreegatenetlists(app):  # pylint: disable=unused-argument
-    """test fetch agreegate netlists"""
-
-    mock_response = Mock(return_value={"sner/basic": ["127.6.6.0/24"]})
-    with patch.object(sner.server.planner.core, 'agreegate_apicall', mock_response):
-        assert fetch_agreegate_netlists() == 0
-
-
-def test_loadmergeagreegatenetlists(app):  # pylint: disable=unused-argument
-    """test load and merge agreegate configs"""
-
-    Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}").write_text(
-        json.dumps({"sner/basic": ["127.6.6.0/24", "2001:db8::11/128", "invalid"]}),
-        encoding="utf-8",
-    )
-
-    config = yaml.safe_load(
-        """
-      basic_nets_ipv4: ['127.0.0.11/32']
-      basic_nets_ipv6: ['::1/128']
-    """
-    )
-
-    config = load_merge_agreegate_netlists(config)
-    assert len(config["basic_nets_ipv4"]) == 2
-    assert len(config["basic_nets_ipv6"]) == 2
 
 
 def test_outofscopecheck(

@@ -14,7 +14,7 @@ from flask.cli import with_appcontext
 from sner.server.auth.models import User
 from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.utils import agreegate_apicall
+from sner.server.agreegate import agreegate_apicall
 
 
 @click.group(name='auth', help='sner.server auth management')

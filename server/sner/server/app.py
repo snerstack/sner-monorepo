@@ -21,9 +21,9 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from sner.agent.modules import load_agent_plugins
 from sner.lib import load_yaml
+from sner.server.agreegate import load_merge_agreegate_netlists
 from sner.server.extensions import api, db, migrate, login_manager, oauth, webauthn
 from sner.server.parser import load_parser_plugins
-from sner.server.planner.core import load_merge_agreegate_netlists
 from sner.server.scheduler.core import ExclMatcher
 from sner.server.sessions import FilesystemSessionInterface
 from sner.server.utils import error_response, FilterQueryError

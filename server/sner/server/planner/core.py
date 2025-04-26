@@ -6,11 +6,8 @@ planner handles processing of queues acording to defined pipelines. queues has s
 and requirements so they can be handled by pools of agents with respective capabilities
 """
 
-import ipaddress
-import json
 import logging
 from itertools import chain
-from pathlib import Path
 from time import sleep
 
 from flask import current_app
@@ -38,10 +35,6 @@ from sner.server.planner.stages import (
 )
 from sner.server.scheduler.core import enumerate_network, ExclMatcher
 from sner.server.storage.models import Host, Note, Vuln
-from sner.server.utils import agreegate_apicall, AgreegateApiError
-
-
-AGREEGATE_NETLISTS_FILE = "agreegate_netlists.json"
 
 
 def configure_logging():
@@ -70,64 +63,6 @@ def configure_logging():
             }
         }
     })
-
-
-def fetch_agreegate_netlists():
-    """fetch networks to be scanned from agreegate API"""
-
-    try:
-        netlists_json = agreegate_apicall("GET", "/api/v1/networks/aggregated?output=json")
-    except AgreegateApiError:  # pragma: nocover  ; won't test
-        current_app.logger.error("failed to fetch agreegate netlists")
-        return 1
-
-    agreegate_netlists_path = Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}")
-    agreegate_netlists_path.write_text(
-        json.dumps(netlists_json, indent=4),
-        encoding="utf-8"
-    )
-    return 0
-
-
-def split_ip_networks(networks):
-    """split ipv4/ipv6 addrs helper"""
-
-    ipv4_networks = []
-    ipv6_networks = []
-
-    for net in networks:
-        try:
-            ip_net = ipaddress.ip_network(net, strict=False)
-            if ip_net.version == 4:
-                ipv4_networks.append(net)
-            else:
-                ipv6_networks.append(net)
-        except ValueError:
-            current_app.logger.error("Invalid network: %s", net)
-
-    return ipv4_networks, ipv6_networks
-
-
-def load_merge_agreegate_netlists(config):
-    """load and merge netlists from agreegate file into planner config dict"""
-
-    agreegate_netlists_path = Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}")
-
-    if agreegate_netlists_path.exists():
-        current_app.logger.debug("merging agreegate netlists")
-        ag_netlists = json.loads(agreegate_netlists_path.read_text(encoding="utf-8"))
-
-        ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/basic", []))
-        config["basic_nets_ipv4"] = sorted(list(set(config.get("basic_nets_ipv4", []) + ipv4_networks)))
-        config["basic_nets_ipv6"] = sorted(list(set(config.get("basic_nets_ipv6", []) + ipv6_networks)))
-
-        ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/nuclei", []))
-        config["nuclei_nets_ipv4"] = sorted(list(set(config.get("nuclei_nets_ipv4", []) + ipv4_networks)))
-        config["nuclei_nets_ipv6"] = sorted(list(set(config.get("nuclei_nets_ipv6", []) + ipv6_networks)))
-        config["sportmap_nets_ipv4"] = sorted(list(set(config.get("sportmap_nets_ipv4", []) + ipv4_networks)))
-        config["sportmap_nets_ipv6"] = sorted(list(set(config.get("sportmap_nets_ipv6", []) + ipv6_networks)))
-
-    return config
 
 
 def dump_targets(netlist):
