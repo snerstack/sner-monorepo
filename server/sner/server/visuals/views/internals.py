@@ -15,7 +15,7 @@ from sner.server.visuals.views import blueprint
 
 
 @blueprint.route('/internals.json')
-@session_required('admin')
+@session_required('operator')
 def internals_json_route():
     """show various internals"""
 

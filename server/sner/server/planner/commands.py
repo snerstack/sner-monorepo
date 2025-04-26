@@ -51,7 +51,7 @@ def fetch_agreegate_netlists_command():  # pragma nocover  ; won't test
     return fetch_agreegate_netlists()
 
 
-@command.command(name='outofscope-check', help="handles data in storage that is outside the planner's scanning scope")
+@command.command(name='outofscope-check', help="check for storage objects which are outside the planner's current scanning scope")
 @with_appcontext
 @click.option('--prune', is_flag=True)
 def outofscope_check_command(prune):  # pragma nocover  ; won't test

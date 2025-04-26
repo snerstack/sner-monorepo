@@ -79,7 +79,7 @@ def add_user(username, email, **kwargs):
     print(f'new user {user.username}')
 
 
-@command.command(name='sync-agreegate-allowed-networks', help='sync agreegate allowed groups to sner users')
+@command.command(name='sync-agreegate-allowed-networks', help='sync agreegate allowed networks to sner users')
 @with_appcontext
 def sync_agreegate_allowed_networks_command():
     """sync allowed_networks for users from agreegate"""
