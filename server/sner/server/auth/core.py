@@ -145,3 +145,14 @@ class UserManager:
 
         user.apikey = None
         db.session.commit()
+
+    @staticmethod
+    def ensure_user(username, email, roles):
+        """ensure user created with attributes"""
+
+        user = User.query.filter_by(username=username).one_or_none()
+        if not user:
+            user = User(username=username, email=email, roles=roles, active=True)
+            db.session.add(user)
+            db.session.commit()
+        return user

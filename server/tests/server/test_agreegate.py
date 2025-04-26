@@ -20,7 +20,9 @@ from sner.server.agreegate import (
     AgreegateApiError,
     fetch_agreegate_netlists,
     load_merge_agreegate_netlists,
+    sync_agreegate_allowed_networks,
 )
+from sner.server.auth.models import User
 
 
 def test_aggregate_apicall_success(app):  # pylint: disable=unused-argument
@@ -78,3 +80,41 @@ def test_loadmergeagreegatenetlists(app):  # pylint: disable=unused-argument
     config = load_merge_agreegate_netlists(config)
     assert len(config["basic_nets_ipv4"]) == 2
     assert len(config["basic_nets_ipv6"]) == 2
+
+
+def test_sync_agreegate_allowed_networks(app, user_factory):  # pylint: disable=unused-argument
+    """test sync_agreegate_allowed_networks"""
+
+    def agreegate_apicall_mock(_, url):
+        groups = [{"name": "group1", "allowed_networks": ["127.0.0.0/8"]}]
+        users = [
+            {
+                "username": "nonepui",
+                "email": "dummy",
+                "roles": ["user"],
+                "groups": ["group1"],
+            },
+            {
+                "username": "testmain@einfra.cesnet.cz",
+                "email": "dummy",
+                "roles": ["maintainer"],
+                "groups": [["group2"]],
+            },
+            {
+                "username": "testuser@einfra.cesnet.cz",
+                "email": "dummy",
+                "roles": ["user"],
+                "groups": ["group1"],
+            },
+        ]
+
+        if url == "/api/v1/groups":
+            return groups
+        if url == "/api/v1/usergroups":
+            return users
+        return None
+
+    with patch.object(sner.server.agreegate, 'agreegate_apicall', agreegate_apicall_mock):
+        assert sync_agreegate_allowed_networks() == 0
+
+    assert User.query.filter_by(username="testuser@einfra.cesnet.cz").one().api_networks == ["127.0.0.0/8"]

@@ -3,7 +3,6 @@
 auth commands
 """
 
-import itertools
 import sys
 from uuid import uuid4
 
@@ -11,10 +10,10 @@ import click
 from flask import current_app
 from flask.cli import with_appcontext
 
+from sner.server.agreegate import sync_agreegate_allowed_networks
 from sner.server.auth.models import User
 from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.agreegate import agreegate_apicall
 
 
 @click.group(name='auth', help='sner.server auth management')
@@ -81,22 +80,7 @@ def add_user(username, email, **kwargs):
 
 @command.command(name='sync-agreegate-allowed-networks', help='sync agreegate allowed networks to sner users')
 @with_appcontext
-def sync_agreegate_allowed_networks_command():
+def sync_agreegate_allowed_networks_command():  # pragma nocover  ; won't test
     """sync allowed_networks for users from agreegate"""
 
-    ag_groups = agreegate_apicall("GET", "/api/v1/groups")
-    ag_users = agreegate_apicall("GET", "/api/v1/usergroups")
-
-    for ag_user in ag_users:
-        sner_user = User.query.filter_by(username=ag_user["username"]).one_or_none()
-        if (
-            ag_user["roles"] == ["user"]
-            and sner_user
-            and sner_user.roles == ["user"]
-        ):
-            current_app.logger.debug("syncing api_networks for %s", sner_user.username)
-
-            sync_groups = [group for group in ag_groups if group['name'] in ag_user["groups"]]
-            groups_networks = itertools.chain.from_iterable(group["allowed_networks"] for group in sync_groups)
-            sner_user.api_networks = groups_networks
-            db.session.commit()
+    return sync_agreegate_allowed_networks()

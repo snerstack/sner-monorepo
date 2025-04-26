@@ -4,12 +4,18 @@ agreegate related functions
 """
 
 import ipaddress
+import itertools
 import json
+import re
 from http import HTTPStatus
 from pathlib import Path
+from types import SimpleNamespace
 
 import requests
 from flask import current_app
+
+from sner.server.auth.core import UserManager
+from sner.server.extensions import db
 
 
 AGREEGATE_NETLISTS_FILE = "agreegate_netlists.json"
@@ -94,3 +100,47 @@ def load_merge_agreegate_netlists(config):
         config["sportmap_nets_ipv6"] = sorted(list(set(config.get("sportmap_nets_ipv6", []) + ipv6_networks)))
 
     return config
+
+
+def sync_agreegate_allowed_networks():
+    """
+    sync user/groups allowed_networks from agreegate
+
+    * ensure users by EINFRA AAI EPUI (ag > sner), will allow user registration in one system only
+      making AgreeGate kind of IDP+authz source
+
+    * set wildcard api_networks for users in ag.roles maintainer, observer
+
+    * set api_network as coresponding groups allowed_networks for ag user roles of user, viewer, editor
+    """
+
+    def objectify(data):
+        return [SimpleNamespace(**item) for item in data]
+
+    epui_regexp = re.compile(r"^[a-zA-Z0-9]+@einfra.cesnet.cz$")
+    ag_groups = objectify(agreegate_apicall("GET", "/api/v1/groups"))
+    ag_users = objectify(agreegate_apicall("GET", "/api/v1/usergroups"))
+
+    for ag_user in ag_users:
+        if not epui_regexp.match(ag_user.username):
+            current_app.logger.debug(f"user {ag_user.username}, skipping not einfra aai")
+            continue
+
+        if ("maintainer" in ag_user.roles) or ("observer" in ag_user.roles):
+            current_app.logger.debug(f"user {ag_user.username}, synced with all networks")
+            sner_user = UserManager.ensure_user(ag_user.username, ag_user.email, ["user"])
+
+            sner_user.api_networks = ["0.0.0.0/0", "::/0"]
+            db.session.commit()
+            continue
+
+        if ("user" in ag_user.roles) or ("viewer" in ag_user.roles) or ("editor" in ag_user.roles):
+            current_app.logger.debug(f"user {ag_user.username}, synced with groups allowed_networks")
+            sner_user = UserManager.ensure_user(ag_user.username, ag_user.email, ["user"])
+
+            sync_groups = [group for group in ag_groups if group.name in ag_user.groups]
+            groups_networks = itertools.chain.from_iterable(group.allowed_networks for group in sync_groups)
+            sner_user.api_networks = groups_networks
+            db.session.commit()
+
+    return 0
