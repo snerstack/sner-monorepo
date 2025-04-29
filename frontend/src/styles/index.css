@@ -64,8 +64,6 @@ td.service_endpoint_dropdown:hover {
 
 table.auth-user-profile th {
   font-weight: bold;
-  text-align: right;
-  vertical-align: middle;
 }
 
 ul.multiple_checkbox_field {

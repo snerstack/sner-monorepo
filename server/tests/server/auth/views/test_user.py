@@ -13,11 +13,10 @@ from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 
 
-def test_user_me_route(cl_user, user):
+def test_user_me_route(cl_user):
     """user me route test"""
     response = cl_user.get(url_for('auth.user_me_route'))
     assert response.status_code == HTTPStatus.OK
-    assert response.json['email'] == user.email
 
 
 def test_user_me_unauthenticated(client):

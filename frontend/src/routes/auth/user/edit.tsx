@@ -20,6 +20,7 @@ const UserEditPage = () => {
 
   const [username, setUsername] = useState<string>(user.username)
   const [email, setEmail] = useState<string>(user.email || '')
+  const [fullName, setFullName] = useState<string>(user.full_name || '')
   const [roles, setRoles] = useState<{ name: string; checked: boolean }[]>([
     { name: 'admin', checked: user.roles.includes('admin') },
     { name: 'agent', checked: user.roles.includes('agent') },
@@ -39,6 +40,7 @@ const UserEditPage = () => {
     const formData = new FormData()
     formData.append('username', username)
     formData.append('email', email)
+    formData.append('full_name', fullName)
     formData.append('new_password', password)
     roles.forEach((role) => {
       if (role.checked) {
@@ -82,6 +84,7 @@ const UserEditPage = () => {
           errors={usernameErrors}
         />
         <TextField name="email" label="Email" placeholder="Email" _state={email} _setState={setEmail} />
+        <TextField name="full_name" label="Full name" placeholder="Full name" _state={fullName} _setState={setFullName} />
         <MultiCheckboxField name="roles" label="Roles" _state={roles} _setState={setRoles} />
         <BooleanField name="active" label="Active" _state={active} _setState={setActive} />
         <PasswordField

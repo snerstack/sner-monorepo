@@ -64,6 +64,7 @@ class UserForm(FlaskForm):
 
     username = StringNoneField('Username', [InputRequired(), Length(min=1, max=250)])
     email = StringNoneField('Email', [Length(max=250)])
+    full_name = StringNoneField('Full name', [Length(max=250)])
     active = BooleanField('Active')
     roles = MultiCheckboxField('Roles')
     new_password = PasswordField('Password', [Optional(), strong_password])

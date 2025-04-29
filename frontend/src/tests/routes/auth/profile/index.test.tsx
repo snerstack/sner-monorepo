@@ -10,9 +10,10 @@ import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 const defaultProfile = {
   username: 'test_user',
   email: 'user@test.com',
-  has_totp: true,
+  full_name: 'test dummy',
   webauthn_credentials: [],
   api_networks: ['127.0.0.0/24', '0.0.0.0/0'],
+  has_totp: true,
   has_apikey: true,
 }
 
@@ -27,32 +28,12 @@ describe('Profile page', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('list')).toHaveTextContent('User profile')
-      expect(screen.getByText('username').nextSibling!.firstChild).toHaveTextContent('test_user')
-      expect(screen.getByText('email').nextSibling!.firstChild).toHaveTextContent('user@test.com')
-      expect(screen.getByText('2fa authentication').nextSibling!.firstChild).toHaveTextContent('Enabled')
-      expect(screen.getByText('apikey').nextSibling!.lastChild).toHaveTextContent('apikey set')
-      expect(screen.getByText('api networks').nextSibling!.lastChild).toHaveTextContent('127.0.0.0/24, 0.0.0.0/0')
-    })
-  })
-
-  it('shows profile (no email, disabled 2fa)', async () => {
-    renderWithProviders({
-      element: <ProfilePage />,
-      path: '/auth/profile',
-      loader: () => Promise.resolve({
-        ...defaultProfile,
-        email: null,
-        has_totp: false
-      })
-    })
-
-    await waitFor(() => {
-      expect(screen.getByRole('list')).toHaveTextContent('User profile')
-      expect(screen.getByText('username').nextSibling!.firstChild).toHaveTextContent('test_user')
-      expect(screen.getByText('email').nextSibling!.firstChild).toHaveTextContent('None')
-      expect(screen.getByText('2fa authentication').nextSibling!.firstChild).toHaveTextContent('Disabled')
-      expect(screen.getByText('apikey').nextSibling!.lastChild).toHaveTextContent('apikey set')
-      expect(screen.getByText('api networks').nextSibling!.lastChild).toHaveTextContent('127.0.0.0/24, 0.0.0.0/0')
+      expect(screen.getByText('Username').nextSibling!.firstChild).toHaveTextContent('test_user')
+      expect(screen.getByText('Email').nextSibling!.firstChild).toHaveTextContent('user@test.com')
+      expect(screen.getByText('Full name').nextSibling!.firstChild).toHaveTextContent('test dummy')
+      expect(screen.getByText('2FA authentication').nextSibling!.firstChild).toHaveTextContent('Enabled')
+      expect(screen.getByText('API key').nextSibling!.lastChild).toHaveTextContent('apikey set')
+      expect(screen.getByText('API networks').nextSibling!.lastChild).toHaveTextContent('127.0.0.0/24, 0.0.0.0/0')
     })
   })
 

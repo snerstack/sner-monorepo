@@ -24,6 +24,7 @@ const UserListPage = () => {
     Column('id'),
     Column('username'),
     Column('email'),
+    Column('full_name'),
     Column('apikey', {
       createdCell: (cell, _data: string, row: UserListRow) => {
         renderElements(

@@ -90,19 +90,22 @@ def test_sync_agreegate_allowed_networks(app, user_factory):  # pylint: disable=
         users = [
             {
                 "username": "nonepui",
-                "email": "dummy",
+                "email": "nonepui@dummy",
+                "full_name": None,
                 "roles": ["user"],
                 "groups": ["group1"],
             },
             {
                 "username": "testmain@einfra.cesnet.cz",
-                "email": "dummy",
+                "email": "testmain@dummy",
+                "full_name": None,
                 "roles": ["maintainer"],
                 "groups": [["group2"]],
             },
             {
                 "username": "testuser@einfra.cesnet.cz",
-                "email": "dummy",
+                "email": "testuser@dummy",
+                "full_name": None,
                 "roles": ["user"],
                 "groups": ["group1"],
             },

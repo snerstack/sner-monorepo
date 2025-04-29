@@ -43,6 +43,7 @@ def user_list_json_route():
         ColumnDT(User.id, mData='id'),
         ColumnDT(User.username, mData='username'),
         ColumnDT(User.email, mData='email'),
+        ColumnDT(User.full_name, mData='full_name'),
         ColumnDT(User.apikey.isnot(None), mData='apikey'),  # pylint: disable=no-member
         ColumnDT(User.roles, mData='roles'),
         ColumnDT(User.active, mData='active'),
@@ -66,10 +67,11 @@ def user_json_route(user_id):
         "id": user.id,
         "username": user.username,
         "email": user.email,
+        "full_name": user.full_name,
         "roles": user.roles,
         "api_networks": user.api_networks,
         "active": user.active
-        })
+    })
 
 
 @blueprint.route('/user/add', methods=['POST'])

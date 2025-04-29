@@ -39,10 +39,11 @@ def profile_json_route():
     return jsonify({
         "username": current_user.username,
         "email": current_user.email,
+        "full_name": current_user.full_name,
         "api_networks": current_user.api_networks,
         "has_apikey": current_user.apikey is not None,
         "has_totp": current_user.totp is not None
-        })
+    })
 
 
 @blueprint.route('/profile/changepassword', methods=['GET', 'POST'])
@@ -160,7 +161,8 @@ def profile_webauthn_pkcco_route():
     exclude_credentials = webauthn_credentials(user)
     pkcco, state = webauthn.register_begin(
         {'id': user_handle.encode('utf-8'), 'name': user.username, 'displayName': user.username},
-        exclude_credentials)
+        exclude_credentials
+    )
     session['webauthn_register_user_handle'] = user_handle
     session['webauthn_register_state'] = state
     return Response(b64encode(cbor.encode(pkcco)).decode('utf-8'), mimetype='text/plain')
@@ -179,7 +181,8 @@ def profile_webauthn_register_route():
             auth_data = webauthn.register_complete(
                 session.pop('webauthn_register_state'),
                 CollectedClientData(attestation['clientDataJSON']),
-                AttestationObject(attestation['attestationObject']))
+                AttestationObject(attestation['attestationObject'])
+            )
 
             db.session.add(WebauthnCredential(
                 user_id=user.id,
@@ -229,7 +232,8 @@ def profile_webauthn_delete_route(webauthn_id):
     """delete registered credential"""
 
     db.session.delete(
-        WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one())
+        WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one()
+    )
     db.session.commit()
     current_app.logger.info('auth.profile webauthn credential deleted')
     return jsonify({'message': 'Webauthn credential has been successfully deleted.'})

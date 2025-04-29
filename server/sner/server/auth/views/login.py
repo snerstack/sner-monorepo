@@ -23,6 +23,17 @@ from sner.server.password_supervisor import PasswordSupervisor as PWS
 from sner.server.utils import error_response
 
 
+def user_auth_dict(user):
+    """return user dict for FE"""
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "full_name": user.full_name,
+        "roles": user.roles,
+    }
+
+
 @blueprint.route('/login', methods=['POST'])
 def login_route():
     """login route"""
@@ -41,14 +52,9 @@ def login_route():
                     regenerate_session()
                     login_user(user)
                     g.auth_method = 'session'
-                    current_app.logger.info('auth.login password success, username=%s', user.username)
 
-                    return jsonify({
-                        "id": user.id,
-                        "username": user.username,
-                        "email": user.email,
-                        "roles": user.roles
-                    })
+                    current_app.logger.info('auth.login password success, username=%s', user.username)
+                    return jsonify(user_auth_dict(user))
             else:
                 if user.webauthn_credentials:
                     session['webauthn_login_user_id'] = user.id
@@ -81,13 +87,10 @@ def login_totp_route():
         if TOTPImpl(user.totp).verify_code(form.code.data):
             regenerate_session()
             login_user(user)
+            g.auth_method = 'session'
+
             current_app.logger.info('auth.login totp success, username=%s', user.username)
-            return jsonify({
-                        "id": user.id,
-                        "username": user.username,
-                        "email": user.email,
-                        "roles": user.roles
-            })
+            return jsonify(user_auth_dict(user))
 
         current_app.logger.info("auth.login password failed code, username=%s", user.username)
         return error_response(message='Invalid code.', code=HTTPStatus.BAD_REQUEST)
@@ -127,17 +130,14 @@ def login_webauthn_route():
                 assertion['credentialRawId'],
                 CollectedClientData(assertion['clientDataJSON']),
                 AuthenticatorData(assertion['authenticatorData']),
-                assertion['signature'])
+                assertion['signature']
+            )
             regenerate_session()
             login_user(user)
-            current_app.logger.info('auth.login webauthn success, username=%s', user.username)
+            g.auth_method = 'session'
 
-            return jsonify({
-                        "id": user.id,
-                        "username": user.username,
-                        "email": user.email,
-                        "roles": user.roles
-            })
+            current_app.logger.info('auth.login webauthn success, username=%s', user.username)
+            return jsonify(user_auth_dict(user))
 
         except (KeyError, ValueError) as exc:
             current_app.logger.exception(exc)
@@ -190,7 +190,7 @@ def login_oidc_callback_route():
         ).one_or_none()
 
         if (not user) and current_app.config['OIDC_CREATE_USER']:
-            user = User(username=userinfo['sub'], email=userinfo['email'], roles=[], active=True)
+            user = User(username=userinfo['sub'], email=userinfo['email'], full_name=userinfo.get('name'), roles=[], active=True)
             current_app.logger.info('auth.login oidc user created, username=%s, email=%s', user.username, user.email)
             db.session.add(user)
             db.session.commit()
@@ -198,6 +198,8 @@ def login_oidc_callback_route():
         if user:
             regenerate_session()
             login_user(user)
+            g.auth_method = 'session'
+
             current_app.logger.info('auth.login oidc success, username=%s, email=%s', user.username, user.email)
             return redirect(url_for('frontend.index_route'))
 

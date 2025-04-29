@@ -13,8 +13,9 @@ from types import SimpleNamespace
 
 import requests
 from flask import current_app
+from sqlalchemy import func, or_
 
-from sner.server.auth.core import UserManager
+from sner.server.auth.models import User
 from sner.server.extensions import db
 
 
@@ -102,6 +103,28 @@ def load_merge_agreegate_netlists(config):
     return config
 
 
+def ensure_user(username, email, full_name, roles):
+    """ensure user created with attributes"""
+
+    user = User.query.filter(
+        or_(
+            func.lower(User.username) == username,
+            func.lower(User.email) == email  # DEPRECATED: remove in the future
+        )
+    ).one_or_none()
+    if not user:
+        user = User(username=username, email=email, full_name=full_name, roles=roles, active=True)
+        db.session.add(user)
+        db.session.commit()
+
+    # DEPRECATED: remove in the future
+    if not user.full_name:
+        user.full_name = full_name
+
+    db.session.commit()
+    return user
+
+
 def sync_agreegate_allowed_networks():
     """
     sync user/groups allowed_networks from agreegate
@@ -123,20 +146,20 @@ def sync_agreegate_allowed_networks():
 
     for ag_user in ag_users:
         if not epui_regexp.match(ag_user.username):
-            current_app.logger.debug(f"user {ag_user.username}, skipping not einfra aai")
+            current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, skipping not einfra aai")
             continue
 
         if ("maintainer" in ag_user.roles) or ("observer" in ag_user.roles):
-            current_app.logger.debug(f"user {ag_user.username}, synced with all networks")
-            sner_user = UserManager.ensure_user(ag_user.username, ag_user.email, ["user"])
+            current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, synced with all networks")
+            sner_user = ensure_user(ag_user.username, ag_user.email, ag_user.full_name, ["user"])
 
             sner_user.api_networks = ["0.0.0.0/0", "::/0"]
             db.session.commit()
             continue
 
         if ("user" in ag_user.roles) or ("viewer" in ag_user.roles) or ("editor" in ag_user.roles):
-            current_app.logger.debug(f"user {ag_user.username}, synced with groups allowed_networks")
-            sner_user = UserManager.ensure_user(ag_user.username, ag_user.email, ["user"])
+            current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, synced with groups allowed_networks")
+            sner_user = ensure_user(ag_user.username, ag_user.email, ag_user.full_name, ["user"])
 
             sync_groups = [group for group in ag_groups if group.name in ag_user.groups]
             groups_networks = itertools.chain.from_iterable(group.allowed_networks for group in sync_groups)

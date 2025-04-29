@@ -34,7 +34,12 @@ def client_in_roles(ufactory, clnt, roles):
     """create user role and login client to role(s)"""
 
     password = PWS.generate()
-    user = ufactory.create(username='pytest_user', password=PWS.hash(password), roles=roles)
+    user = ufactory.create(
+        username='pytest_user',
+        password=PWS.hash(password),
+        email=None,
+        roles=roles
+    )
 
     form_data = [('username', user.username), ('password', password)]
     clnt.post(url_for('auth.login_route'), params=form_data)
