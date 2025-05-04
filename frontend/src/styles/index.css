@@ -16,6 +16,11 @@ body {
   top: 3rem;
 }
 
+/* federated login page */
+.disclaimer-card {
+  background-color: #dfdfdf;
+}
+
 /* required items on forms */
 div.form-group.required label:not(.form-check-label):after {
   content: '*';

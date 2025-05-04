@@ -71,22 +71,8 @@ DEFAULT_CONFIG = {
     'SNER_AUTOCOMPLETE_LIMIT': 10,
     'SNER_WEBAUTHN_RP_HOSTNAME': None,
 
-    'SNER_FRONTEND_CONFIG': {
-        "tags": {
-            "host": ["reviewed", "todo"],
-            "service": ["reviewed", "todo"],
-            "vuln": ["info", "report", "report:data", "todo", "falsepositive"],
-            "note": ["reviewed", "todo"],
-            "annotate": ["sslhell"],
-            "versioninfo": ["reviewed", "todo"],
-            "colors": {
-                "todo": "#ffc107",
-                "report": "#dc3545",
-                "report:": "#dc3545",
-            },
-        },
-        "oidc_enabled": False
-    },
+    # frontend appConfig overrides, see frontend/src/appConfig.ts
+    'SNER_FRONTEND_CONFIG': {},
 
     # sner server scheduler
     'SNER_MAINTENANCE': False,

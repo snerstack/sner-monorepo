@@ -1,9 +1,9 @@
 import axios from 'axios'
 import jQuery from 'jquery'
+import * as lodash from 'lodash'
 import { useEffect, useState } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
-import { routes } from './routes'
 
 import { AppConfig } from '@/appConfig'
 import { appConfigState } from '@/atoms/appConfigAtom'
@@ -11,6 +11,20 @@ import { userState } from '@/atoms/userAtom'
 import { httpClient } from '@/lib/httpClient'
 import { tagsConfigInitialize } from '@/lib/sner/tags'
 import { urlFor } from '@/lib/urlHelper'
+import { routes } from '@/routes'
+
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+}
+
+const merger = <T, S>(objValue: T, srcValue: S): T | S | undefined => {
+  if (Array.isArray(objValue) && Array.isArray(srcValue)) {
+    // Replace arrays instead of merging
+    return srcValue
+  }
+  // Let lodash handle everything else (objects, primitives)
+  return undefined
+}
 
 const App = () => {
   const [, setUser] = useRecoilState(userState)
@@ -29,8 +43,8 @@ const App = () => {
   const bootApp = async (): Promise<void> => {
     try {
       // msw mock is missing for this route, but App.tsx test is also missing
-      const configResp = await httpClient.get<AppConfig>(urlFor('/backend/frontend_config'))
-      setAppConfig({ ...appConfig, ...configResp.data })
+      const configResp = await httpClient.get<DeepPartial<AppConfig>>(urlFor('/backend/frontend_config'))
+      setAppConfig(lodash.mergeWith({}, appConfig, configResp.data, merger))
       tagsConfigInitialize(appConfig)
     } catch (error) {
       console.error('Boot config failed', error)

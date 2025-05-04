@@ -5,11 +5,13 @@ const SubmitField = ({
   name = '',
   errors = [],
   horizontal = true,
+  className = '',
   handler,
 }: {
   name: string
   errors?: string[]
   horizontal?: boolean
+  className?: string
   handler: () => void | Promise<void> | Promise<unknown>
 }) => {
   const HorizontalParent = horizontal ? 'div' : Fragment
@@ -17,7 +19,7 @@ const SubmitField = ({
     <div className={clsx('form-group', horizontal && 'row')}>
       <HorizontalParent {...(horizontal ? { className: 'col-sm-10 offset-sm-2' } : {})}>
         <input
-          className={clsx('btn btn-primary', errors && 'is-invalid')}
+          className={clsx('btn btn-primary', className, errors && 'is-invalid')}
           type="submit"
           name="submit"
           id={name}

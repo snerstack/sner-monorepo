@@ -11,6 +11,10 @@ export type AppConfig = {
         }
     },
     oidc_enabled: boolean
+    oidc_display_name: string
+    docs_link: string
+    tos_link: string
+    pdp_link: string
 }
 
 export const defaultAppConfig: AppConfig = {
@@ -27,5 +31,9 @@ export const defaultAppConfig: AppConfig = {
             'report:': '#dc3545',
         },
     },
-    oidc_enabled: false
+    oidc_enabled: false,
+    oidc_display_name: 'Federated login',
+    docs_link: 'https://github.com/snerstack',
+    tos_link: '#',
+    pdp_link: '#',
 }

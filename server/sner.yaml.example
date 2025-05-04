@@ -29,6 +29,9 @@
 #  oidc_default_client_secret: 'dummy'
 #  oidc_default_redirect_uri: 'https://external_hostname/path/auth/login_oidc_callback'
 #
+#  sner_frontend_config:
+#    oidc_display_name: "My federation provider"
+#    docs_link: https://servicex.myorg.example
 #
 #agent:
 #  server: 'http://localhost:18000'
