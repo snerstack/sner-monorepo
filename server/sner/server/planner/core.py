@@ -82,6 +82,10 @@ def dump_targets(netlist):
 def outofscope_check(prune=False):
     """handles data in storage that is outside the planner"s scanning scope"""
 
+    def percent(value: int, total: int) -> str:
+        """Return a formatted percentage string or 'N/A' if total is zero."""
+        return f"{(value / total) * 100:.2f}%" if total else "N/A"
+
     # find hosts which are not in any scan scope
     scope = list(chain.from_iterable(
         current_app.config["SNER_PLANNER"].get(item, [])
@@ -143,9 +147,9 @@ def outofscope_check(prune=False):
     if any(outscope_counts.values()) or current_app.debug:
         print(
             "Out-of-scope objects\n"
-            f"  Hosts: {outscope_counts['hosts']:-6d} / {totals['hosts']} ({outscope_counts['hosts']/totals['hosts']:-.2%})\n"
-            f"  Vulns: {outscope_counts['vulns']:-6d} / {totals['vulns']} ({outscope_counts['vulns']/totals['vulns']:-.2%})\n"
-            f"  Notes: {outscope_counts['notes']:-6d} / {totals['notes']} ({outscope_counts['notes']/totals['notes']:-.2%})\n"
+            f"  Hosts: {outscope_counts['hosts']:-6d} / {totals['hosts']} ({percent(outscope_counts['hosts'], totals['hosts'])})\n"
+            f"  Vulns: {outscope_counts['vulns']:-6d} / {totals['vulns']} ({percent(outscope_counts['vulns'], totals['vulns'])})\n"
+            f"  Notes: {outscope_counts['notes']:-6d} / {totals['notes']} ({percent(outscope_counts['notes'], totals['notes'])})\n"
         )
 
     if prune:
