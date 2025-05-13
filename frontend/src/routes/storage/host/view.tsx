@@ -148,8 +148,8 @@ const HostViewPage = () => {
                 },
               ]}
             />
-            <Button title="Add vuln" url={`/storage/service/add/${row['id']}`} navigate={navigate}>+V</Button>
-            <Button title="Add note" url={`/storage/vuln/add/host/${row['id']}`} navigate={navigate}>+N</Button>
+            <Button title="Add vuln" url={`/storage/vuln/add/service/${row['id']}`} navigate={navigate}>+V</Button>
+            <Button title="Add note" url={`/storage/note/add/service/${row['id']}`} navigate={navigate}>+N</Button>
             <EditButton url={`/storage/service/edit/${row['id']}`} navigate={navigate} />
             <DeleteButton url={urlFor(`/backend/storage/service/delete/${row['id']}`)} tableId="host_view_service_table" />
           </ButtonGroup>,
