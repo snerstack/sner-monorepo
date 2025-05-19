@@ -253,7 +253,7 @@ class Planner(TerminateContextMixin):
                 servicedisco_stage=basic_servicedisco_stage,
                 service_interval=plines.basic_rescan.service_interval,
                 servicescan_stages=basic_servicescan_stages,
-                filternets=self.config.basic_nets_ipv6,
+                filternets=self.config.basic_nets_ipv4 + self.config.basic_nets_ipv6,
             )
 
         # six discovery, DNS and neighbors of known six hosts for basic scanned nets
