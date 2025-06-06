@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import requests
 from flask import current_app
-from sqlalchemy import func, or_
+from sqlalchemy import func
 
 from sner.server.auth.models import User
 from sner.server.extensions import db
@@ -103,23 +103,22 @@ def load_merge_agreegate_netlists(config):
     return config
 
 
-def ensure_user(username, email, full_name, roles):
+def ensure_user(username, email, full_name, ensure_roles):
     """ensure user created with attributes"""
 
-    user = User.query.filter(
-        or_(
-            func.lower(User.username) == username,
-            func.lower(User.email) == email  # DEPRECATED: remove in the future
-        )
-    ).one_or_none()
+    user = User.query.filter(func.lower(User.username) == username).one_or_none()
     if not user:
-        user = User(username=username, email=email, full_name=full_name, roles=roles, active=True)
+        user = User(username=username, email=email, full_name=full_name, roles=ensure_roles, active=True)
         db.session.add(user)
         db.session.commit()
 
-    # DEPRECATED: remove in the future
+    # TRANSITION: remove in the future
     if not user.full_name:
         user.full_name = full_name
+
+    # handle situation where user account is autocreated from OIDC before is synced from agreegate
+    if not all(role in user.roles for role in ensure_roles):
+        user.roles = list(set(user.roles + ensure_roles))
 
     db.session.commit()
     return user
@@ -157,7 +156,7 @@ def sync_agreegate_allowed_networks():
             db.session.commit()
             continue
 
-        if ("user" in ag_user.roles) or ("viewer" in ag_user.roles) or ("editor" in ag_user.roles):
+        if ("viewer" in ag_user.roles) or ("editor" in ag_user.roles):
             current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, synced with groups allowed_networks")
             sner_user = ensure_user(ag_user.username, ag_user.email, ag_user.full_name, ["user"])
 

@@ -105,8 +105,8 @@ def test_sync_agreegate_allowed_networks(app, user_factory):  # pylint: disable=
             {
                 "username": "testuser@einfra.cesnet.cz",
                 "email": "testuser@dummy",
-                "full_name": None,
-                "roles": ["user"],
+                "full_name": "full dummy name",
+                "roles": ["viewer"],
                 "groups": ["group1"],
             },
         ]
@@ -117,7 +117,12 @@ def test_sync_agreegate_allowed_networks(app, user_factory):  # pylint: disable=
             return users
         return None
 
+    # test adding "user" role if user account gets autocreated directly in sner with oidc (eg. no roles)
+    user_factory.create(username="testuser@einfra.cesnet.cz", roles=[])
+
     with patch.object(sner.server.agreegate, 'agreegate_apicall', agreegate_apicall_mock):
         assert sync_agreegate_allowed_networks() == 0
 
-    assert User.query.filter_by(username="testuser@einfra.cesnet.cz").one().api_networks == ["127.0.0.0/8"]
+    testuser = User.query.filter_by(username="testuser@einfra.cesnet.cz").one()
+    assert "user" in testuser.roles
+    assert testuser.api_networks == ["127.0.0.0/8"]
