@@ -123,3 +123,12 @@ def repeat_failed_jobs_command():
 
     SchedulerService.repeat_failed_jobs()
     sys.exit(0)
+
+
+@command.command(name='recover-heatmap', help='recover inconsistent heatmap state (deployment helper)')
+@with_appcontext
+def recover_heatmap_command():
+    """recover heatmap"""
+
+    SchedulerService.recover_heatmap()
+    sys.exit(0)

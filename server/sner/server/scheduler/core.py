@@ -17,7 +17,7 @@ from uuid import uuid4
 
 import yaml
 from flask import current_app
-from sqlalchemy import cast, delete, distinct, func, select, text
+from sqlalchemy import and_, cast, delete, distinct, func, or_, select, text
 from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY, insert as pg_insert
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -673,3 +673,35 @@ class SchedulerService:
             count += 1
         cls.release_lock()
         current_app.logger.info(f"SchedulerService repeat_failed_jobs, {count} jobs repeated")
+
+    @classmethod
+    def recover_heatmap(cls):
+        """
+        reconcile and repeat all jobs except sucessfuly finished and planner failed jobs
+        and cleanup heatmap. this is used when all agents are explicitly stopped to recover
+        from inconsistent heatmap state
+        """
+
+        cls.get_lock()
+        count = 0
+        for job in Job.query.filter(
+            or_(
+                Job.retval == None,  # noqa: E711  pylint: disable=singleton-comparison  ; do repeat "running" jobs
+                and_(
+                    Job.retval != 0,  # do not repeat finished jobs
+                    Job.retval < 1000  # do not repeat planner failed jobs
+                )
+            )
+        ).all():
+            if job.retval is None:
+                JobManager.reconcile(job)
+            JobManager.repeat(job)
+            JobManager.delete(job)
+            count += 1
+
+        Heatmap.query.delete()
+        db.session.commit()
+        cls.readynet_recount()
+
+        cls.release_lock()
+        current_app.logger.info("SchedulerService recover_heatmap")

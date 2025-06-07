@@ -114,3 +114,10 @@ def test_repeat_failed_jobs_command(runner):
 
     result = runner.invoke(command, ['repeat-failed-jobs'])
     assert result.exit_code == 0
+
+
+def test_recover_heatmap_command(runner):
+    """test recover-heatmap command"""
+
+    result = runner.invoke(command, ['recover-heatmap'])
+    assert result.exit_code == 0
