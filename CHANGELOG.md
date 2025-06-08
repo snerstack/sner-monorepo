@@ -1,5 +1,42 @@
 # sner changelog
 
+## 1.2.0 - on the road [BC BREAK]
+
+### Changed
+
+* misc bumps of libraries used
+* server: refactor planner config handling so full config is shown in internals
+* all queues has requirements (default is default), auror integration
+* planner: major refactoring of pipelines
+* frontend: storage/host/view note list tab make xtype visible
+* github: limit selenium and semgrep to run only on "main branches"
+* server: agreegate, extract function to separate module
+* server: user.email unique, add user.full_name (MIGRATION)
+* frontend, server: index and login page cosmetics towards service documentation
+* agreegate: ensure all roles for sync user and oidc request profile scope by default
+
+### Fixed
+
+* frontend: RBQFilter, reload all page tables on Filter button even if params does not change (eg. refresh search)
+* server: fix, handle exception on invalid version comparsion
+* server: planner, outofscope_check prevent division by zero
+* frontend: fix vuln/note management links from host services view
+* server: planner basic rescan uses wrong filternets
+
+### Added
+
+* plugin: auror_hostnames, initial implementation
+* server, frontend: add lastruns to visuals/internals
+* server: add out-of-scope check to facilitate database pruning on agreegate scopes change
+* server: auth, sync user.api_networks from agreegate group.allowed_users
+* server: add scheduler recover-heatmap command
+
+### Removed
+
+* removed vulnsearch (MIGRATION)
+* removed deprecated prometheus api endpoint
+
+
 ## 1.1.1 - lens visibility
 
 ### Changed
