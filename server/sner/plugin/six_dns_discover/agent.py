@@ -8,7 +8,7 @@ from pathlib import Path
 from socket import AF_INET6, getaddrinfo, gethostbyaddr
 from time import sleep
 
-from schema import Schema
+from schema import Or, Schema
 
 from sner.agent.modules import ModuleBase
 
@@ -23,7 +23,7 @@ class AgentModule(ModuleBase):
 
     CONFIG_SCHEMA = Schema({
         'module': 'six_dns_discover',
-        'delay': int
+        'delay': Or(int, float)
     })
 
     def __init__(self):
