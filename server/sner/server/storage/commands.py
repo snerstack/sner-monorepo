@@ -110,8 +110,9 @@ def storage_service_list(**kwargs):
         current_app.logger.error('--short and --long are mutualy exclusive options')
         sys.exit(1)
 
+    query = Service.query.outerjoin(Host)
     try:
-        query = filter_query(Service.query, kwargs.get('filter'))
+        query = filter_query(query, kwargs.get('filter'))
     except FilterQueryError:
         sys.exit(1)
 
