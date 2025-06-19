@@ -2,6 +2,7 @@
 """
 planner stages
 """
+import json
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -251,6 +252,47 @@ class StorageSixEnumTargetlist(Schedule):  # pylint: disable=too-few-public-meth
         self.next_stage.task(targets)
 
 
+class StorageAurorTestsslTargetlist(Schedule):  # pylint: disable=too-few-public-methods
+    """enumerates auror_testssl targets from storage data"""
+
+    def __init__(self, schedule, lockname, next_stage, ports_starttls):
+        super().__init__(schedule, lockname)
+        self.next_stage = next_stage
+        self.ports_starttls = ports_starttls
+
+    def _get_hostnames(self, host):
+        """get hostnames from host notes"""
+        hostnames = set()
+        for note in host.notes:
+            if note.xtype == "auror.hostnames":
+                hostnames.update(json.loads(note.data))
+
+        if not hostnames:
+            if host.hostname:
+                hostnames.add(host.hostname)
+            else:
+                hostnames.add(format_host_address(host.address))
+        return hostnames
+
+    def _run(self):
+        """run"""
+        targets = []
+
+        for note in (
+            Note.query.join(Service, Note.service_id == Service.id)
+            .filter(Note.xtype == "nmap.ssl-cert", Service.proto == "tcp", Service.state.ilike("open:%"))
+            .all()
+        ):
+            hostnames = self._get_hostnames(note.host)
+            for hostname in hostnames:
+                targets.append(f"{hostname};{note.host.address};{note.service.port};False")
+                if note.service.name in self.ports_starttls.values():
+                    targets.append(f"{hostname};{note.host.address};{note.service.port};True")
+
+        current_app.logger.info(f"{self.__class__.__name__} projected {len(targets)} targets")
+        self.next_stage.task(targets)
+
+
 class StorageTestsslTargetlist(Schedule):  # pylint: disable=too-few-public-methods
     """enumerates testssl targets from storage data"""
 
@@ -466,6 +508,7 @@ class StorageLoaderAurorHostnames(QueueHandler):
     @dataclass
     class NoteMapItem:
         """helper class"""
+
         host_id: int
         note_id: int
 
