@@ -9,6 +9,7 @@ import socket
 from schema import Schema
 
 from sner.agent.modules import ModuleBase
+from sner.version import __version__ as sner_version
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
     auror_testssl module implementation
 
     ## target specification
-    target = service-target
+    hostname;ip_address;port;explicit
     """
 
     CONFIG_SCHEMA = Schema({"module": "auror_testssl"})
@@ -90,7 +91,7 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
                 "--hints",
                 "--overwrite",
                 "--user-agent",
-                "Mozilla/5.0 (compatible; sner/1.0; +https://sner-hub.cesnet.cz)",
+                f"Mozilla/5.0 (compatible; sner/{sner_version}; +https://sner-hub.flab.cesnet.cz)",
             ]
             if self.is_ipv6(address):
                 params.append("-6")
