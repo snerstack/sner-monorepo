@@ -34,7 +34,6 @@ from sner.server.planner.stages import (
     StorageTestsslTargetlist,
     StorageAurorTestsslTargetlist,
 )
-from sner.server.planner import config
 from sner.server.scheduler.core import SchedulerService
 from sner.server.scheduler.models import Job, Target
 from sner.server.storage.models import Host, Note, Service, Vuln
@@ -281,38 +280,37 @@ def test_storage_auror_testssl_targetlist(app, host_factory, note_factory, servi
     service3 = service_factory.create(host=host3, proto="tcp", port=80, name="http", state="open:")
     host4 = host_factory.create(address="8.8.8.8", hostname="dns.google.com")
     service4 = service_factory.create(host=host4, proto="tcp", port=853, name="domain-s", state="open:")
-    [
-        note_factory.create(
-            host=host1,
-            service=service1,
-            xtype="nmap.ssl-cert",
-            data='{"random data": "random"}',
-        ),
-        note_factory.create(
-            host=host2,
-            service=service2,
-            xtype="nmap.ssl-cert",
-            data='{"random data": "random"}',
-        ),
-        note_factory.create(
-            host=host3,
-            service=service3,
-            xtype="nmap.ssl-cert",
-            data='{"random data": "random"}',
-        ),
-        note_factory.create(
-            host=host3,
-            service=service3,
-            xtype="auror.hostnames",
-            data='["localhost.localdomain", "localhost.localdomain"]',
-        ),
-        note_factory.create(
-            host=host4,
-            service=service4,
-            xtype="nmap.ssl-cert",
-            data='{"random data": "random"}',
-        ),
-    ]
+
+    note_factory.create(
+        host=host1,
+        service=service1,
+        xtype="nmap.ssl-cert",
+        data='{"random data": "random"}',
+    )
+    note_factory.create(
+        host=host2,
+        service=service2,
+        xtype="nmap.ssl-cert",
+        data='{"random data": "random"}',
+    )
+    note_factory.create(
+        host=host3,
+        service=service3,
+        xtype="nmap.ssl-cert",
+        data='{"random data": "random"}',
+    )
+    note_factory.create(
+        host=host3,
+        service=service3,
+        xtype="auror.hostnames",
+        data='["localhost.localdomain", "localhost.localdomain"]',
+    )
+    note_factory.create(
+        host=host4,
+        service=service4,
+        xtype="nmap.ssl-cert",
+        data='{"random data": "random"}',
+    )
     dummy = DummyStage()
     StorageAurorTestsslTargetlist("1d", "dummylock", dummy, {25: "smtp"}).run()
 

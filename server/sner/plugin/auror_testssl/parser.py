@@ -18,6 +18,20 @@ from sner.server.parser import ParsedItemsDb, ParserBase
 
 logger = logging.getLogger(__name__)
 
+SECTIONS = [
+    "pretest",
+    "protocols",
+    "grease",
+    "ciphers",
+    "serverPreferences",
+    "fs",
+    "serverDefaults",
+    "headerResponse",
+    "vulnerabilities",
+    "browserSimulations",
+    "rating",
+]
+
 
 class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
     """auror_testssl parser"""
@@ -86,19 +100,6 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
         Returns:
             dict: The processed testssl.sh result in a format that can be used by the plugin.
         """
-        SECTIONS = [
-            "pretest",
-            "protocols",
-            "grease",
-            "ciphers",
-            "serverPreferences",
-            "fs",
-            "serverDefaults",
-            "headerResponse",
-            "vulnerabilities",
-            "browserSimulations",
-            "rating",
-        ]
 
         processed_testssl_result = {}
 
@@ -117,12 +118,9 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
                 if finding := testssl_result["scanResult"][0].get("finding", False):
                     processed_testssl_result["result_desc"] = finding
                     return processed_testssl_result
-                else:
-                    processed_testssl_result["result_desc"] = "testssl.sh success"
+                processed_testssl_result["result_desc"] = "testssl.sh success"
             else:
-                processed_testssl_result["result_desc"] = testssl_result["scanResult"][0].get(
-                    "finding", "No findings found"
-                )
+                processed_testssl_result["result_desc"] = testssl_result["scanResult"][0].get("finding", "No findings found")
 
             scan_result = testssl_result["scanResult"][len(testssl_result["scanResult"]) - 1]
             processed_testssl_result["ip"] = scan_result["ip"]
@@ -147,7 +145,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _process_cert(raw_cert):
-        """ Decode a raw certificate using OpenSSL.
+        """Decode a raw certificate using OpenSSL.
         Args:
             raw_cert (str): The raw certificate data.
         Returns:

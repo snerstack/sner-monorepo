@@ -21,16 +21,13 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
     target = service-target
     """
 
-    CONFIG_SCHEMA = Schema(
-        {
-            "module": "auror_testssl"
-        }
-    )
+    CONFIG_SCHEMA = Schema({"module": "auror_testssl"})
 
     def __init__(self):
         super().__init__()
         self.loop = True
 
+    # pylint: disable=duplicate-code
     def _filter_exit_codes(self, value):  # pragma: nocover  ; won't test
         """cope with testssl return values, not all !=0 values means job really failed
         https://github.com/drwetter/testssl.sh/blob/3.2/doc/testssl.1.md#exit-status
@@ -48,7 +45,10 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
 
         return value
 
+    # pylint: enable=duplicate-code
+
     def is_ipv6(self, address):
+        """check if address is IPv6"""
         try:
             return isinstance(ipaddress.ip_address(address), ipaddress.IPv6Address)
         except ValueError:
@@ -63,11 +63,11 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
         :rtype: (idx, host, ip, port, explicit)
         """
         for idx, target in enumerate(targets):
-            targets = target.split(';')
+            targets = target.split(";")
             host = targets[0]
             address = targets[1]
             port = int(targets[2])
-            explicit = True if targets[3] == 'True' else False
+            explicit = targets[3] == "True"
             yield idx, host, address, port, explicit
 
     def run(self, assignment):
