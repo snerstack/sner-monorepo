@@ -66,9 +66,13 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
             schedule: 13days
             queue: sner.sportmap.rolling
 
-          auror_scan:
+          auror_hostnames:
             hostnames_schedule: 1day
             hostnames_queue: auror.hostnames
+
+          auror_testssl:
+            schedule: 1day
+            queue: auror.testssl
 
           storage_cleanup:
             enabled: true

@@ -9,11 +9,13 @@ from pydantic import BaseModel
 
 class StandaloneQueues(BaseModel):
     """standalone queues"""
+
     queues: List[str]
 
 
 class BasicScan(BaseModel):
     """basic scan"""
+
     schedule: str
     service_disco_queue: str
     service_scan_queues: List[str]
@@ -21,6 +23,7 @@ class BasicScan(BaseModel):
 
 class BasicRescan(BaseModel):
     """basic storage rescan"""
+
     schedule: str
     host_interval: str
     service_interval: str
@@ -28,6 +31,7 @@ class BasicRescan(BaseModel):
 
 class SixDisco(BaseModel):
     """six disco config"""
+
     schedule: str
     dns_disco_queue: str
     storage_enum_queue: str
@@ -35,40 +39,72 @@ class SixDisco(BaseModel):
 
 class NucleiScan(BaseModel):
     """nuclei scan"""
+
     schedule: str
     queue: str
 
 
 class SportmapScan(BaseModel):
     """sportmap scan"""
+
     schedule: str
     queue: str
 
 
 class TestsslScan(BaseModel):
     """testssl scan"""
+
     schedule: str
     queue: str
 
 
-class AurorScan(BaseModel):
-    """testssl scan"""
+class AurorHostnames(BaseModel):
+    """auror hostnames import"""
+
     hostnames_schedule: str
     hostnames_queue: str
 
 
+class AurorTestsslScan(BaseModel):
+    """auror testssl scan"""
+
+    schedule: str
+    queue: str
+    ports_starttls: dict = {
+        21: "ftp",
+        23: "telnet",
+        24: "lmtp",
+        25: "smtp",
+        110: "pop3",
+        119: "nntp",
+        143: "imap",
+        389: "ldap",
+        587: "smtp",
+        # 674: "acap",
+        3306: "mysql",
+        4190: "sieve",
+        5222: "xmpp",
+        5269: "xmpp-server",
+        5432: "postgres",
+        6667: "irc",
+    }
+
+
 class StorageCleanup(BaseModel):
     """storage cleanup"""
+
     enabled: bool
 
 
 class RebuildVersionInfoMap(BaseModel):
     """rebuild versioninfomap"""
+
     schedule: str
 
 
 class Pipelines(BaseModel):
     """pipelines"""
+
     standalone_queues: Optional[StandaloneQueues] = None
     basic_scan: Optional[BasicScan] = None
     basic_rescan: Optional[BasicRescan] = None
@@ -76,7 +112,8 @@ class Pipelines(BaseModel):
     nuclei_scan: Optional[NucleiScan] = None
     sportmap_scan: Optional[SportmapScan] = None
     testssl_scan: Optional[TestsslScan] = None
-    auror_scan: Optional[AurorScan] = None
+    auror_hostnames: Optional[AurorHostnames] = None
+    auror_testssl: Optional[AurorTestsslScan] = None
     storage_cleanup: Optional[StorageCleanup] = StorageCleanup(enabled=True)
     rebuild_versioninfo_map: Optional[RebuildVersionInfoMap] = None
 
