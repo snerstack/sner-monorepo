@@ -5,13 +5,16 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
 import { userState } from '@/atoms/userAtom'
 
 import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 import { toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 
+
 const Nav = () => {
+  const [appConfig,] = useRecoilState(appConfigState)
   const [currentUser, setCurrentUser] = useRecoilState(userState)
   const { pathname } = useLocation()
   const navigate = useNavigate()
@@ -169,6 +172,9 @@ const Nav = () => {
   const UserMenu = () => {
     return (
       <ul className="navbar-nav">
+        {appConfig.maintenance && (
+          <li className="nav-link"><span className="text-warning">maintenance</span></li>
+        )}
         <li className="nav-item dropdown">
           <a className="nav-link dropdown-toggle" href="#" id="dropdownUser" data-toggle="dropdown">
             {

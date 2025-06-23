@@ -15,6 +15,7 @@ export type AppConfig = {
     docs_link: string
     tos_link: string
     pdp_link: string
+    maintenance: boolean
 }
 
 export const defaultAppConfig: AppConfig = {
@@ -36,4 +37,5 @@ export const defaultAppConfig: AppConfig = {
     docs_link: 'https://github.com/snerstack',
     tos_link: '#',
     pdp_link: '#',
+    maintenance: false,
 }

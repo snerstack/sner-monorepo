@@ -232,6 +232,8 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
         app.config['SNER_FRONTEND_CONFIG']['oidc_enabled'] = True
     webauthn.init_app(app)
 
+    app.config['SNER_FRONTEND_CONFIG']['maintenance'] = app.config["SNER_MAINTENANCE"]
+
     # load sner.plugin components
     load_agent_plugins()
     load_parser_plugins()
