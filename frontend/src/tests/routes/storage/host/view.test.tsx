@@ -4,7 +4,7 @@ import { testAnnotate } from '@/tests/helpers/testAnnotate'
 import { testDeleteRow } from '@/tests/helpers/testDeleteRow'
 import { testSelectAllRows } from '@/tests/helpers/testSelectAllRows'
 import { testSelectNoneRows } from '@/tests/helpers/testSelectNoneRows'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { httpClient } from '@/lib/httpClient'
@@ -40,6 +40,31 @@ describe('Host view page', () => {
       const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
       expect(listItems.includes('Host')).toBeTruthy()
       expect(listItems.includes('127.4.4.4 testhost.testdomain.test<script>alert(1);</script>')).toBeTruthy()
+    })
+  })
+
+  it('host view is re-rendered properly', async () => {
+    let loaderData = { ...testHostData, comment: "xdummy1" }
+
+    const { router } = renderWithProviders({
+      element: <HostViewPage />,
+      path: '/storage/host/view/1',
+      loader: () => Promise.resolve(loaderData),
+    })
+
+    await waitFor(() => {
+      const commentElement = screen.getByTestId('host_comment_annotate')
+      expect(commentElement).toHaveTextContent('xdummy1')
+    })
+
+    loaderData = { ...testHostData, comment: "xdummy2" }
+    await act(async () => {
+      await router.navigate(0)
+    })
+
+    await waitFor(() => {
+      const commentElement = screen.getByTestId('host_comment_annotate')
+      expect(commentElement).toHaveTextContent('xdummy2')
     })
   })
 

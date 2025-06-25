@@ -1,6 +1,7 @@
 import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
-import { Fragment, useState } from 'react'
+import { default as DataTableLib } from "datatables.net-bs4"
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
@@ -36,6 +37,24 @@ const HostViewPage = () => {
 
   const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
   const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
+
+  const isFirstRender = useRef(true)
+
+  /**
+   * On subsequent renders triggered by host data changes (e.g. quickjump navigation),
+   * update local states and reload DataTables ajax.
+   * First render initialization is handled by initial states and DataTables startup code.
+   */
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
+    setHostTags(host.tags)
+    setHostComment(host.comment)
+    DataTableLib.tables().map((table) => { (new DataTableLib.Api(table as Node)).ajax.reload() })
+  }, [host])
 
   const refreshAnnotations = (newTags: string[], newComment: string): void => {
     setHostTags(newTags)

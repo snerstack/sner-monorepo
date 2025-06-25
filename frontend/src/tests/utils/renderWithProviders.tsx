@@ -42,5 +42,6 @@ export function renderWithProviders({
         </HelmetProvider>
       </RecoilRoot>,
     ),
+    router,
   }
 }
