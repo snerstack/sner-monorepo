@@ -1,7 +1,8 @@
-import { default as DataTableLib } from "datatables.net-bs4"
 import { useState } from "react"
 import QueryBuilder, { Field, formatQuery, RuleGroupType } from "react-querybuilder"
 import { useSearchParams } from "react-router-dom"
+
+import { reloadAllTables } from '@/lib/DataTables'
 
 import "react-querybuilder/dist/query-builder-layout.css"
 
@@ -68,10 +69,10 @@ const RBQFilter = ({ fields }: { fields: Field[] }) => {
             const oldParams = params.toString()
             params.set('jsonfilter', formatQuery(query, 'json_without_ids'))
 
+            // if params changes the re-render is implicit, but if user just clicks
+            // filter again we must trigger reload by hand
             if (oldParams == params.toString()) {
-                DataTableLib.tables().map((table) => {
-                    (new DataTableLib.Api(table as Node)).ajax.reload()
-                })
+                reloadAllTables()
             }
 
             return params

@@ -1,6 +1,5 @@
 import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
-import { default as DataTableLib } from "datatables.net-bs4"
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
@@ -8,7 +7,7 @@ import { useLocalStorage } from 'react-use'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
+import { Column, ColumnButtons, ColumnSelect, getTableApi, reloadAllTables, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -53,7 +52,7 @@ const HostViewPage = () => {
 
     setHostTags(host.tags)
     setHostComment(host.comment)
-    DataTableLib.tables().map((table) => { (new DataTableLib.Api(table as Node)).ajax.reload() })
+    reloadAllTables()
   }, [host])
 
   const refreshAnnotations = (newTags: string[], newComment: string): void => {

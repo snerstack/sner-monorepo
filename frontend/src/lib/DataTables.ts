@@ -49,6 +49,17 @@ export const cleanupElements = () => {
   roots.length = 0
 }
 
+
+/**
+ * reload all datatables on current page
+ */
+export const reloadAllTables = () => {
+  const tables = DataTable.tables()
+  /* c8 ignore next 1 */
+  const tableList = Array.isArray(tables) ? tables : [tables]
+  tableList.forEach(table => new DataTable.Api(table).ajax.reload())
+}
+
 export const Column = (name: string, extra?: ConfigColumns) => {
   return {
     data: name,
