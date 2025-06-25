@@ -11,21 +11,22 @@ import { httpClient } from '@/lib/httpClient'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
-const loader = () =>
-  Promise.resolve({
-    address: '127.4.4.4',
-    comment: '',
-    created: 'Mon, 17 Jul 2023 20:01:09 GMT',
-    hostname: 'testhost.testdomain.test<script>alert(1);</script>',
-    id: 1,
-    modified: 'Fri, 01 Sep 2023 12:01:37 GMT',
-    notesCount: 3,
-    os: 'Test Linux 1',
-    rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
-    servicesCount: 1,
-    tags: ['reviewed'],
-    vulnsCount: 12,
-  })
+const testHostData = {
+  address: '127.4.4.4',
+  comment: '',
+  created: 'Mon, 17 Jul 2023 20:01:09 GMT',
+  hostname: 'testhost.testdomain.test<script>alert(1);</script>',
+  id: 1,
+  modified: 'Fri, 01 Sep 2023 12:01:37 GMT',
+  notesCount: 3,
+  os: 'Test Linux 1',
+  rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
+  servicesCount: 1,
+  tags: ['reviewed'],
+  vulnsCount: 12,
+}
+
+const loader = () => Promise.resolve(testHostData)
 
 describe('Host view page', () => {
   it('shows host', async () => {
@@ -65,21 +66,7 @@ describe('Host view page', () => {
     renderWithProviders({
       element: <HostViewPage />,
       path: '/storage/host/view/1',
-      loader: () =>
-        Promise.resolve({
-          address: '127.4.4.4',
-          comment: '',
-          created: 'Mon, 17 Jul 2023 20:01:09 GMT',
-          hostname: '',
-          id: 1,
-          modified: 'Fri, 01 Sep 2023 12:01:37 GMT',
-          notesCount: 3,
-          os: 'Test Linux 1',
-          rescan_time: 'Mon, 17 Jul 2023 20:01:09 GMT',
-          servicesCount: 1,
-          tags: ['reviewed'],
-          vulnsCount: 12,
-        }),
+      loader: () => Promise.resolve({...testHostData, hostname: ''})
     })
 
     await waitFor(() => {
