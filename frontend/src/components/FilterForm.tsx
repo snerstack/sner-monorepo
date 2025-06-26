@@ -2,6 +2,17 @@ import clsx from 'clsx'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
+const ToggleFilterFormButton = () => (
+  <a
+    className="btn btn-outline-secondary"
+    title="Toggle filter form"
+    data-toggle="collapse"
+    data-target="#filter_form"
+  >
+    <i className="fas fa-filter"></i>
+  </a>
+)
+
 const FilterForm = ({ url }: { url: string }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [filter, setFilter] = useState<string>('')
@@ -67,4 +78,4 @@ const FilterForm = ({ url }: { url: string }) => {
     </form>
   )
 }
-export default FilterForm
+export { FilterForm, ToggleFilterFormButton }

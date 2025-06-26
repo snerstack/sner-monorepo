@@ -52,26 +52,26 @@ const BaseButton = ({
     )
 }
 
-const LensButton = (props: BaseButtonProps) => (
-    <BaseButton {...props} testId="lens-btn">
+const LensButton = ({ title = "Lens", ...props }: BaseButtonProps) => (
+    <BaseButton {...props} title={title} testId="lens-btn">
         <i className="fas fa-street-view"></i>
     </BaseButton>
 )
 
-const ViewButton = (props: BaseButtonProps) => (
-    <BaseButton {...props} testId="view-btn">
+const ViewButton = ({ title = "View", ...props }: BaseButtonProps) => (
+    <BaseButton {...props} title={title} testId="view-btn">
         <i className="fas fa-eye"></i>
     </BaseButton>
 )
 
-const EditButton = (props: BaseButtonProps) => (
-    <BaseButton {...props} testId="edit-btn">
+const EditButton = ({ title = "Edit", ...props }: BaseButtonProps) => (
+    <BaseButton {...props}  title={title} testId="edit-btn">
         <i className="fas fa-edit"></i>
     </BaseButton>
 )
 
-const MultiCopyButton = (props: BaseButtonProps) => (
-    <BaseButton {...props} testId="multicopy-btn">
+const MultiCopyButton = ({ title = "Multicopy", ...props }: BaseButtonProps) => (
+    <BaseButton {...props} title={title} testId="multicopy-btn">
         <i className="far fa-copy"></i>
     </BaseButton>
 )

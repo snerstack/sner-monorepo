@@ -7,7 +7,7 @@ import { useSearchParams } from 'react-router-dom'
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
-import FilterForm from '@/components/FilterForm'
+import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 
 import '../../styles/dnstree.css'
@@ -191,9 +191,7 @@ const DnsTreePage = () => {
       </Helmet>
       <Heading headings={['Visuals', 'DNS Tree']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
-            <i className="fas fa-filter"></i>
-          </a>
+          <ToggleFilterFormButton />
         </div>
       </Heading>
 

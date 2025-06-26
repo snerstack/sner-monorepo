@@ -23,7 +23,7 @@ const TagButton = ({
       data-testid="tag-btn"
       className={className ? className : 'btn btn-outline-secondary'}
       href="#"
-      title={`add tag ${tag}`}
+      title={`Add tag "${tag}"`}
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       onClick={async (e) => {
         e.preventDefault()

@@ -3,12 +3,21 @@ import { toast } from 'react-toastify'
 import { getTableApi } from '@/lib/DataTables'
 import { httpClient } from '@/lib/httpClient'
 
-const DeleteButton = ({ url, tableId, className }: { url: string; tableId?: string; className?: string }) => {
+const DeleteButton = ({
+  url,
+  tableId,
+  className
+}: {
+  url: string;
+  tableId?: string;
+  className?: string
+}) => {
   return (
     <a
       data-testid="delete-btn"
       className={className ? className : 'btn btn-outline-secondary'}
       href={url}
+      title="Delete"
       onClick={(e) => {
         e.preventDefault()
 

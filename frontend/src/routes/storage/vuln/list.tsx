@@ -10,7 +10,7 @@ import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColor
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
-import FilterForm from '@/components/FilterForm'
+import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
@@ -25,7 +25,7 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
 const VulnListPage = () => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig,] = useRecoilState(appConfigState)
 
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -191,21 +191,34 @@ const VulnListPage = () => {
       </Helmet>
       <Heading headings={['Vulns']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-primary" href={urlFor('/backend/storage/vuln/report')}>
+          <a
+            className="btn btn-outline-primary"
+            href={urlFor('/backend/storage/vuln/report')}
+            title="Generate standard report with vulnerabilities groupped by name and tags."
+          >
             Report
-          </a>{' '}
+          </a>
+          {' '}
           <a
             className="btn btn-outline-primary"
             href={urlFor('/backend/storage/vuln/report?group_by_host=True')}
+            title={
+              "Generate standard report AND also aggregate vulnerabilities by host identifier " +
+              "to eliminate duplicates caused by scans from multiple perspectives or DNS views."
+            }
           >
             Report by host
-          </a>{' '}
-          <a className="btn btn-outline-primary" href={urlFor('/backend/storage/vuln/export')}>
-            Export
-          </a>{' '}
-          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
-            <i className="fas fa-filter"></i>
           </a>
+          {' '}
+          <a
+            className="btn btn-outline-primary"
+            href={urlFor('/backend/storage/vuln/export')}
+            title="Export all vulnerabilities without any aggregation."
+          >
+            Export
+          </a>
+          {' '}
+          <ToggleFilterFormButton />
         </div>
       </Heading>
 

@@ -10,7 +10,7 @@ import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, toolboxe
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
-import FilterForm from '@/components/FilterForm'
+import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
@@ -154,9 +154,7 @@ const ServiceListPage = () => {
       </Helmet>
       <Heading headings={['Services']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
-            <i className="fas fa-filter"></i>
-          </a>
+          <ToggleFilterFormButton />
         </div>
       </Heading>
 

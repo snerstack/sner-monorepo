@@ -90,9 +90,7 @@ const QueueListPage = () => {
 
       <Heading headings={['Queues']}>
         <div className="breadcrumb-buttons pl-2">
-          <Link className="btn btn-outline-primary" to="/scheduler/queue/add">
-            Add
-          </Link>
+          <Link className="btn btn-outline-primary" to="/scheduler/queue/add" title="Add queue">Add</Link>
         </div>
       </Heading>
 

@@ -17,14 +17,14 @@ import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import DataTable from '@/components/DataTable'
 import DataTableLink from '@/components/DataTableLink'
-import FilterForm from '@/components/FilterForm'
+import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import Tag from '@/components/Tag'
 
 const HostListPage = () => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig,] = useRecoilState(appConfigState)
 
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -131,12 +131,9 @@ const HostListPage = () => {
 
       <Heading headings={['Hosts']}>
         <div className="breadcrumb-buttons pl-2">
-          <Link className="btn btn-outline-primary" to="/storage/host/add">
-            Add
-          </Link>{' '}
-          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
-            <i className="fas fa-filter"></i>
-          </a>
+          <Link className="btn btn-outline-primary" to="/storage/host/add" title="Add host">Add</Link>
+          {' '}
+          <ToggleFilterFormButton />
         </div>
       </Heading>
 

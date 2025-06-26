@@ -6,7 +6,7 @@ import { toast } from 'react-toastify'
 import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
-import FilterForm from '@/components/FilterForm'
+import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 
 const PortmapPage = () => {
@@ -31,9 +31,7 @@ const PortmapPage = () => {
 
       <Heading headings={['Visuals', 'Portmap']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
-            <i className="fas fa-filter"></i>
-          </a>
+          <ToggleFilterFormButton />
         </div>
       </Heading>
 

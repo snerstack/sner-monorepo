@@ -5,7 +5,7 @@ import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
-import FilterForm from '@/components/FilterForm'
+import { FilterForm } from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'

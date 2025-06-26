@@ -8,7 +8,7 @@ import { getColorForSeverity, getVulnFilterName } from '@/lib/sner/storage'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
-import FilterForm from '@/components/FilterForm'
+import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import Tag from '@/components/Tag'
 
@@ -62,9 +62,7 @@ const VulnGroupedPage = () => {
       </Helmet>
       <Heading headings={['Vulns', 'Grouped']}>
         <div className="breadcrumb-buttons pl-2">
-          <a className="btn btn-outline-secondary" data-toggle="collapse" data-target="#filter_form">
-            <i className="fas fa-filter"></i>
-          </a>
+          <ToggleFilterFormButton />
         </div>
       </Heading>
 
