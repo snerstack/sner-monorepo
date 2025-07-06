@@ -53,7 +53,7 @@ def check_dt_toolbox_multiactions(
     """check dt toolbar toolbox actions; there must be 2 rows to perform the test"""
 
     if load_route:
-        # in case of mai data tables, toggle visibility, load page and test
+        # in case of main data tables, toggle visibility, load page and test
         # in host view vuln tab data table is page already prepared by callee
         sclnt.get(route)
         wait_for_js(sclnt)

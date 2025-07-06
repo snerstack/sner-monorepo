@@ -88,6 +88,7 @@ def browser_instance():
 def shared_browser(browser_instance):  # pylint: disable=redefined-outer-name
     """clean shared browser"""
 
+    browser_instance.get("about:blank")
     browser_instance.delete_all_cookies()
     browser_instance.get(frontend_url("/backend/reset_browser_storage"))
     wait_for_js(browser_instance)
