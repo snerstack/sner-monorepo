@@ -54,11 +54,11 @@ const DataTable = ({ id, ...props }: TableConfig) => {
     stateSaveCallback: function (settings, data) {
       sessionStorage.setItem(
         'DataTables_' +
-          (settings as { sInstance: string }).sInstance +
-          '_' +
-          window.location.pathname +
-          '_' +
-          window.location.search,
+        (settings as { sInstance: string }).sInstance +
+        '_' +
+        window.location.pathname +
+        '_' +
+        window.location.search,
         JSON.stringify(data),
       )
     },
@@ -67,11 +67,11 @@ const DataTable = ({ id, ...props }: TableConfig) => {
       return JSON.parse(
         sessionStorage.getItem(
           'DataTables_' +
-            (settings as { sInstance: string }).sInstance +
-            '_' +
-            location.pathname +
-            '_' +
-            location.search,
+          (settings as { sInstance: string }).sInstance +
+          '_' +
+          location.pathname +
+          '_' +
+          location.search,
         ) ?? '{}',
       )
     },
@@ -113,7 +113,7 @@ const DataTable = ({ id, ...props }: TableConfig) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const addSortingXhr = (dt: Api<any>): void => {
     dt.on('preXhr.dt', (_event, settings, data: AjaxData) => {
-      const idColumnIndex = findIdColumnIndex((settings as {aoColumns: Column[]}).aoColumns)
+      const idColumnIndex = findIdColumnIndex((settings as { aoColumns: Column[] }).aoColumns)
       if (idColumnIndex !== -1) {
         data.order.push({ 'column': idColumnIndex, 'dir': 'asc' })
       }
