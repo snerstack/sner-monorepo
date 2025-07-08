@@ -7,7 +7,7 @@ import { useLocalStorage } from 'react-use'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import { Column, ColumnButtons, ColumnSelect, getTableApi, reloadAllTables, renderElements } from '@/lib/DataTables'
+import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -41,8 +41,7 @@ const HostViewPage = () => {
 
   /**
    * On subsequent renders triggered by host data changes (e.g. quickjump navigation),
-   * update local states and reload DataTables ajax.
-   * First render initialization is handled by initial states and DataTables startup code.
+   * update local states. First render initialization is handled by initial states.
    */
   useEffect(() => {
     if (isFirstRender.current) {
@@ -52,7 +51,6 @@ const HostViewPage = () => {
 
     setHostTags(host.tags)
     setHostComment(host.comment)
-    reloadAllTables()
   }, [host])
 
   const refreshAnnotations = (newTags: string[], newComment: string): void => {

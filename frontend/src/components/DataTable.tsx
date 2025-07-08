@@ -2,7 +2,7 @@ import DataTables, { AjaxData, Api, Config } from 'datatables.net-bs4'
 import 'datatables.net-select-bs4'
 import { useCookie } from 'react-use'
 import { useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 
 import { observeElements } from '@/lib/DataTables'
 import { csrfTokenHeaderName } from '@/lib/httpClient'
@@ -23,6 +23,7 @@ interface Column {
 const DataTable = ({ id, ...props }: TableConfig) => {
   const tableRef = useRef<HTMLTableElement>(null)
   const [searchParams] = useSearchParams()
+  const location = useLocation()
   const [csrfToken] = useCookie('tokencsrf')
 
   const DEFAULT_CONFIG: TableConfig = {
@@ -132,8 +133,14 @@ const DataTable = ({ id, ...props }: TableConfig) => {
     return () => {
       dt.destroy()
     }
+
+    /**
+     * Dependencies:
+     * - searchParams: triggers table reload on filter change
+     * - location: for tabbed views in host page
+     */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+  }, [searchParams, location])
 
   return <table ref={tableRef} id={id} className="table table-hover table-sm" width="100%"></table>
 }
