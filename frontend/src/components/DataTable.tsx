@@ -1,4 +1,4 @@
-import DataTables, { AjaxData, Api, Config } from 'datatables.net-bs4'
+import DataTables, { Config } from 'datatables.net-bs4'
 import 'datatables.net-select-bs4'
 import { useCookie } from 'react-use'
 import { useEffect, useRef } from 'react'
@@ -82,51 +82,67 @@ const DataTable = ({ id, ...props }: TableConfig) => {
     return columns.findIndex(column => column.name === 'id')
   }
 
-  // adds ID column sorting (initial setup)
-  const addSortingProps = (tableProps: TableConfig): void => {
+  /**
+   * adds ID column sorting (initial setup)
+   */
+  const addSortingProps = (tableProps: TableConfig): TableConfig => {
     const idColumnIndex = findIdColumnIndex(tableProps.columns as Column[])
-    if (idColumnIndex !== -1) {
-      tableProps.order = tableProps.order || []
-      tableProps.order.push([idColumnIndex, 'asc']);
+
+    if (idColumnIndex === -1) {
+      return { ...tableProps }
+    }
+
+    const existingOrder = tableProps.order ?? []
+    return {
+      ...tableProps,
+      order: [...existingOrder, [idColumnIndex, 'asc']],
     }
   }
 
-  // add request type and csrf handling if called with ajax_url prop
-  const makeAjax = (tableProps: TableConfig): void => {
-    if ('ajax_url' in tableProps) {
-      tableProps.ajax = {
-        url: tableProps.ajax_url,
+  /**
+   * add request type and csrf handling if called with ajax_url prop
+   */
+  const makeAjax = (tableProps: TableConfig): TableConfig => {
+    /* c8 ignore next 3 */
+    if (!('ajax_url' in tableProps)) {
+      return { ...tableProps }
+    }
+
+    const { ajax_url, ...rest } = tableProps
+    return {
+      ...rest,
+      ajax: {
+        url: ajax_url,
         type: "POST",
         xhrFields: { withCredentials: true },
         beforeSend: (req) => req.setRequestHeader(csrfTokenHeaderName, csrfToken!),
         /* c8 ignore next 5 */
         error: (err: JQuery.jqXHR) => {
-          console.log(tableProps.ajax)
+          console.log(ajax_url)
           console.error("DT ajax error", err)
           toast.error(`DT ajax error, ${(err.responseJSON as BackendErrorResponse)?.error?.message ?? err.statusText}`)
         }
       }
-      delete tableProps.ajax_url
     }
   }
 
-  // adds ID column sorting (on every request)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const addSortingXhr = (dt: Api<any>): void => {
-    dt.on('preXhr.dt', (_event, settings, data: AjaxData) => {
-      const idColumnIndex = findIdColumnIndex((settings as { aoColumns: Column[] }).aoColumns)
-      if (idColumnIndex !== -1) {
-        data.order.push({ 'column': idColumnIndex, 'dir': 'asc' })
-      }
-    })
+  /**
+   * adds ID column sorting (on every request)
+   */
+  const sortingXhrHandler = (_event: object, settings: DataTables.Settings, data: DataTables.AjaxDataRequest): void => {
+    const idColumnIndex = findIdColumnIndex((settings as { aoColumns: Column[] }).aoColumns)
+    if (idColumnIndex !== -1) {
+      data.order.push({ column: idColumnIndex, dir: 'asc' })
+    }
   }
 
   useEffect(() => {
-    const tableProps = { ...DEFAULT_CONFIG, ...props }
-    makeAjax(tableProps)
-    addSortingProps(tableProps)
+    let tableProps = { ...DEFAULT_CONFIG, ...props }
+    tableProps = makeAjax(tableProps)
+    tableProps = addSortingProps(tableProps)
+
     const dt = new DataTables(tableRef.current!, tableProps)
-    addSortingXhr(dt)
+    dt.on('preXhr.dt', sortingXhrHandler)
 
     observeElements()
 
