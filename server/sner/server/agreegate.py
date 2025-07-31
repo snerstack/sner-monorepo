@@ -148,7 +148,7 @@ def sync_agreegate_allowed_networks():
             current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, skipping not einfra aai")
             continue
 
-        if ("maintainer" in ag_user.roles) or ("observer" in ag_user.roles):
+        if ag_user.role in ["maintainer", "observer+editor", "observer"]:
             current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, synced with all networks")
             sner_user = ensure_user(ag_user.username, ag_user.email, ag_user.full_name, ["user"])
 
@@ -156,7 +156,7 @@ def sync_agreegate_allowed_networks():
             db.session.commit()
             continue
 
-        if ("viewer" in ag_user.roles) or ("editor" in ag_user.roles):
+        if ag_user.role in ["viewer", "editor"]:
             current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, synced with groups allowed_networks")
             sner_user = ensure_user(ag_user.username, ag_user.email, ag_user.full_name, ["user"])
 
