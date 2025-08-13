@@ -74,6 +74,9 @@ def test_excl_matcher(app):  # pylint: disable=unused-argument
     # test value outsite matcher
     assert not matcher.match('sixenum://2001:db8:aa:300::0-ffff')
 
+    # test auror_testssl
+    assert matcher.match('hostname;127.66.66.2;11;I')
+
     for item in matcher.excls:
         repr(item)
 
@@ -99,6 +102,7 @@ def test_schedulerservice_hashval():
     assert SchedulerService.hashval('tcp://[::1]:11') == '::/48'
     assert SchedulerService.hashval('sixenum://2001:db8:aa::1:2:3:11') == '2001:db8:aa::/48'
     assert SchedulerService.hashval('sixenum://2001:db8:bb::1:2:3:0-ffff') == '2001:db8:bb::/48'
+    assert SchedulerService.hashval('hostname;127.0.0.1;11;I') == '127.0.0.0/24'
 
 
 def test_schedulerservice_readynetupdates(app, queue, target_factory):  # pylint: disable=unused-argument
