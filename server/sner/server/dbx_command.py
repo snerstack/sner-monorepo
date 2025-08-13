@@ -61,14 +61,14 @@ def initdata_prod():
         },
         {
             'name': 'sner.testssl',
-            'config': {'module': 'testssl', 'delay': 1},
+            'config': {'module': 'testssl', 'delay': 0},
             'group_size': 1,
             'priority': QueuePrio.LOW,
             'reqs': ['testssl'],
         },
         {
             'name': 'sner.sportmap',
-            'config': {'module': 'sportmap', 'delay': 1},
+            'config': {'module': 'sportmap', 'delay': 0},
             'group_size': 1,
             'priority': QueuePrio.NORMAL,
             'reqs': ['sportmap'],
@@ -91,15 +91,15 @@ def initdata_prod():
         },
         {
             'name': 'sner.nmap.serviceversion',
-            'config': {'module': 'manymap', 'args': '-sV --version-intensity 4 -O -Pn', 'delay': 1},
-            'group_size': 50,
+            'config': {'module': 'manymap', 'args': '-sV --version-intensity 4 -O -Pn', 'delay': 0},
+            'group_size': 10,
             'priority': QueuePrio.HIGH,
             'reqs': ['default'],
         },
         {
             'name': 'sner.jarm',
-            'config': {'module': 'jarm', 'delay': 1},
-            'group_size': 50,
+            'config': {'module': 'jarm', 'delay': 0},
+            'group_size': 10,
             'priority': QueuePrio.HIGH,
             'reqs': ['default'],
         },
@@ -108,9 +108,9 @@ def initdata_prod():
             'config': {
                 'module': 'manymap',
                 'args': '-sS --script default,http-headers,ldap-rootdse,ssl-enum-ciphers,ssh-auth-methods --script-timeout 10m -Pn',
-                'delay': 5
+                'delay': 0
             },
-            'group_size': 50,
+            'group_size': 1,
             'priority': QueuePrio.HIGH,
             'reqs': ['default'],
         },
@@ -127,16 +127,16 @@ def initdata_prod():
         # nuclei_scan
         {
             'name': 'sner.nuclei.rolling',
-            'config': {'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'},
-            'group_size': 5,
-            'priority': QueuePrio.NORMAL,
-            'reqs': ['default'],
+            'config': {'module': 'nuclei', 'args': '-rate-limit 20 -disable-unsigned-templates'},
+            'group_size': 1,
+            'priority': QueuePrio.HIGH,
+            'reqs': ['nuclei'],
         },
 
         # sportmap_scan
         {
             'name': 'sner.sportmap.rolling',
-            'config': {'module': 'sportmap', 'delay': 1},
+            'config': {'module': 'sportmap', 'delay': 0},
             'group_size': 1,
             'priority': QueuePrio.LOW,
             'reqs': ['sportmap'],
