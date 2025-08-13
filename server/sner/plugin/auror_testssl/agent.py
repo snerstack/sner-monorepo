@@ -14,6 +14,9 @@ from sner.version import __version__ as sner_version
 logger = logging.getLogger(__name__)
 
 
+AUROR_TESTSSL_TARGET_REGEXP = r'[0-9a-zA-Z\.\-]{1,256};(?P<address>[0-9\.]{7,15}|[0-9a-fA-F:]{3,45});[0-9]{1,5};(I|E)'
+
+
 class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
     """
     auror_testssl module implementation
@@ -37,7 +40,9 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
         CONFIG_SCHEMA (Schema): The configuration schema for the module.
     """
 
-    CONFIG_SCHEMA = Schema({"module": "auror_testssl"})
+    CONFIG_SCHEMA = Schema({
+        "module": "auror_testssl"
+    })
 
     def __init__(self):
         super().__init__()

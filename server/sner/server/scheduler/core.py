@@ -22,6 +22,7 @@ from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY, insert as pg_inser
 from sqlalchemy.exc import SQLAlchemyError
 
 from sner.agent.modules import SERVICE_TARGET_REGEXP
+from sner.plugin.auror_testssl.agent import AUROR_TESTSSL_TARGET_REGEXP
 from sner.plugin.six_enum_discover.agent import SIXENUM_TARGET_REGEXP
 from sner.server.extensions import db
 from sner.server.parser import REGISTERED_PARSERS
@@ -161,6 +162,10 @@ class NetworkExclMatcher(ExclMatcherImplBase):  # pylint: disable=too-few-public
                 and ((first <= self.match_to.network_address <= last) or (first <= self.match_to.broadcast_address <= last))
             ):
                 return True
+
+        # test value as auror_testssl target
+        if mtmp := re.match(AUROR_TESTSSL_TARGET_REGEXP, value):
+            return self._test_addr(mtmp.group('address'))
 
         return False
 
@@ -396,6 +401,9 @@ class SchedulerService:
 
         if mtmp := re.match(SIXENUM_TARGET_REGEXP, value):
             value = mtmp.group('scan6dst').split('-')[0]
+
+        if mtmp := re.match(AUROR_TESTSSL_TARGET_REGEXP, value):
+            value = mtmp.group('address')
 
         try:
             addr = ip_address(value)
