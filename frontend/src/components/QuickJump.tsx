@@ -15,7 +15,7 @@ const QuickJump = () => {
   const [resultsIndex, setResultsIndex] = useState<number>(-1)
 
   useEffect(() => {
-    hooveringHandler(resultsIndex)
+    hoveringHandler(resultsIndex)
   }, [resultsIndex])
 
   const autocompleteHandler = (e: ChangeEvent<HTMLInputElement>) => {
@@ -79,7 +79,7 @@ const QuickJump = () => {
 
   // wont test mouse events
   /* c8 ignore start */
-  const hooveringHandler = (currentIndex: number) => {
+  const hoveringHandler = (currentIndex: number) => {
     const items = document.getElementById('quickjump-form')!.querySelectorAll('li')
     items.forEach((item, index) => {
       if (index === currentIndex) {
