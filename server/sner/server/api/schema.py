@@ -61,12 +61,6 @@ class JobOutputSchema(BaseSchema):
     output = fields.String()
 
 
-class PublicHostArgsSchema(BaseSchema):
-    """public host args schema"""
-
-    address = fields.IP(required=True)
-
-
 class PublicNoteSchema(BaseSchema):
     """public note schema"""
 
@@ -94,6 +88,12 @@ class PublicServiceSchema(BaseSchema):
     rescan_time = fields.DateTime()
     import_time = fields.DateTime()
     notes = fields.List(fields.Nested(PublicNoteSchema))
+
+
+class PublicHostArgsSchema(BaseSchema):
+    """public host args schema"""
+
+    address = fields.IP(required=True)
 
 
 class PublicHostSchema(BaseSchema):
@@ -124,6 +124,9 @@ class PublicRangeServiceSchema(BaseSchema):
     port = fields.Integer(required=True)
     state = fields.String()
     info = fields.String()
+    created = fields.DateTime()
+    modified = fields.DateTime()
+    import_time = fields.DateTime()
 
 
 class PublicRangeSchema(BaseSchema):
@@ -132,6 +135,9 @@ class PublicRangeSchema(BaseSchema):
     address = fields.String(required=True)
     hostname = fields.String()
     os = fields.String()
+    created = fields.DateTime()
+    modified = fields.DateTime()
+    rescan_time = fields.DateTime()
     services = fields.List(fields.Nested(PublicRangeServiceSchema))
 
 
@@ -150,6 +156,10 @@ class PublicServicelistSchema(BaseSchema):
     port = fields.Integer()
     state = fields.String()
     info = fields.String()
+    created = fields.DateTime()
+    modified = fields.DateTime()
+    rescan_time = fields.DateTime()
+    import_time = fields.DateTime()
 
 
 class PublicVulnlistSchema(BaseSchema):

@@ -4,6 +4,7 @@ api.views tests
 """
 
 import base64
+from datetime import datetime
 from http import HTTPStatus
 from ipaddress import ip_network
 from pathlib import Path
@@ -250,12 +251,13 @@ def test_v2_public_storage_range_route_nonetworks(api_user_nonetworks, host):  #
 def test_v2_public_storage_range_route(api_user, host_factory):
     """test public range api"""
 
-    host_factory.create(address='127.0.1.1')
-    host_factory.create(address='127.0.2.1')
+    host_factory.create(address='127.0.1.1', rescan_time=datetime(1900, 1, 1, 0, 0))
+    host_factory.create(address='127.0.2.1', rescan_time=datetime(1900, 1, 1, 0, 0))
 
     response = api_user.post_json(url_for('api.v2_public_storage_range_route'), {'cidr': '127.0.0.0/8'})
     assert api_schema.PublicRangeSchema(many=True).load(response.json)
     assert len(response.json) == 2
+    assert response.json[0]["rescan_time"] == "1900-01-01T00:00:00"
 
 
 def test_v2_public_storage_servicelist_route_nonetworks(api_user_nonetworks, service):  # pylint: disable=unused-argument
