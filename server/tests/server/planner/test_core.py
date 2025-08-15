@@ -95,9 +95,7 @@ def test_dumptargets(app):  # pylint: disable=unused-argument
     assert len(dump_targets("basic_nets_ipv4")) == 1
 
 
-def test_outofscopecheck(
-    app, host_factory, note_factory, vuln_factory
-):  # pylint: disable=unused-argument
+def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pylint: disable=unused-argument
     """test hosts_outside_scope"""
 
     current_app.config["SNER_PLANNER"] = yaml.safe_load(
@@ -122,3 +120,9 @@ def test_outofscopecheck(
     assert Host.query.count() == 3
     assert Vuln.query.count() == 0
     assert Note.query.count() == 0
+
+
+def test_outofscopecheck_emptyscope(app):  # pylint: disable=unused-argument
+    """test hosts_outside_scope with empty scope"""
+
+    assert outofscope_check(prune=False) == 0
