@@ -117,16 +117,14 @@ def outofscope_check(prune=False):
     current_app.logger.debug("vuln scan scope: %s", scope)
     scope_query = [Host.address.op("<<=")(net) for net in scope]
 
-    query = select(Vuln.id).join(Host).filter(
-        Vuln.xtype.ilike("nuclei.%"),
-        not_(or_(*scope_query))
-    )
+    query = select(Vuln.id).join(Host).filter(Vuln.xtype.ilike("nuclei.%"))
+    if scope_query:
+        query = query.filter(not_(or_(*scope_query)))
     outscope_vuln_ids = list(db.session.execute(query).scalars())
 
-    query = select(Note.id).join(Host).filter(
-        Note.xtype == "sportmap",
-        not_(or_(*scope_query))
-    )
+    query = select(Note.id).join(Host).filter(Note.xtype == "sportmap")
+    if scope_query:
+        query = query.filter(not_(or_(*scope_query)))
     outscope_note_ids = list(db.session.execute(query).scalars())
 
     if current_app.debug:  # pragma: nocover  ; won"t test
