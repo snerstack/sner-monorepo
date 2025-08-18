@@ -337,11 +337,11 @@ def test_storage_auror_testssl_targetlist(app, host_factory, note_factory, servi
     StorageAurorTestsslTargetlist("1d", "dummylock", dummy, {25: "smtp"}).run()
 
     assert dummy.task_args == [
-        "127.0.0.1;127.0.0.1;443;False",
-        "localhost.localdomain;::1;25;False",
-        "localhost.localdomain;::1;25;True",
-        "localhost.localdomain;127.0.0.3;80;False",
-        "dns.google.com;8.8.8.8;853;False",
+        "127.0.0.1;127.0.0.1;443;I",
+        "localhost.localdomain;::1;25;I",
+        "localhost.localdomain;::1;25;E",
+        "localhost.localdomain;127.0.0.3;80;I",
+        "dns.google.com;8.8.8.8;853;I",
     ]
 
 

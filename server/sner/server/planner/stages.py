@@ -255,10 +255,12 @@ class StorageSixEnumTargetlist(Schedule):  # pylint: disable=too-few-public-meth
 class StorageAurorTestsslTargetlist(Schedule):  # pylint: disable=too-few-public-methods
     """enumerates auror_testssl targets from storage data"""
 
-    def __init__(self, schedule, lockname, next_stage, ports_starttls):
+    def __init__(self, schedule, lockname, next_stage, ports_starttls, filternets=None):
+        # pylint: disable=too-many-arguments, too-many-positional-arguments
         super().__init__(schedule, lockname)
         self.next_stage = next_stage
         self.ports_starttls = ports_starttls
+        self.filternets = filternets
 
     def _get_hostnames(self, host):
         """get hostnames from host notes"""
@@ -285,9 +287,9 @@ class StorageAurorTestsslTargetlist(Schedule):  # pylint: disable=too-few-public
         ):
             hostnames = self._get_hostnames(note.host)
             for hostname in hostnames:
-                targets.append(f"{hostname};{note.host.address};{note.service.port};False")
+                targets.append(f"{hostname};{note.host.address};{note.service.port};I")
                 if note.service.name in self.ports_starttls.values():
-                    targets.append(f"{hostname};{note.host.address};{note.service.port};True")
+                    targets.append(f"{hostname};{note.host.address};{note.service.port};E")
 
         current_app.logger.info(f"{self.__class__.__name__} projected {len(targets)} targets")
         self.next_stage.task(targets)
