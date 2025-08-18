@@ -285,9 +285,9 @@ class StorageAurorTestsslTargetlist(Schedule):  # pylint: disable=too-few-public
         ):
             hostnames = self._get_hostnames(note.host)
             for hostname in hostnames:
-                targets.append(f"{hostname};{note.host.address};{note.service.port};False")
+                targets.append(f"{hostname};{note.host.address};{note.service.port};I")
                 if note.service.name in self.ports_starttls.values():
-                    targets.append(f"{hostname};{note.host.address};{note.service.port};True")
+                    targets.append(f"{hostname};{note.host.address};{note.service.port};E")
 
         current_app.logger.info(f"{self.__class__.__name__} projected {len(targets)} targets")
         self.next_stage.task(targets)
