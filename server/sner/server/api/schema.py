@@ -253,3 +253,4 @@ class PublicAurorSchema(BaseSchema):
 
     input = fields.Nested(PublicAurorInputSchema, required=True)
     port_scan = fields.Nested(PublicAurorPortScanSchema, required=True)
+    tls_scan = fields.String(required=True, allow_none=True)
