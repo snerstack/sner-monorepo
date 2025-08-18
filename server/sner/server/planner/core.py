@@ -26,6 +26,7 @@ from sner.server.planner.stages import (
     StorageCleanup,
     StorageLoader,
     StorageLoaderAurorHostnames,
+    StorageAurorTestsslTargetlist,
     StorageLoaderNuclei,
     StorageLoaderSportmap,
     StorageRescan,
@@ -195,7 +196,7 @@ class Planner(TerminateContextMixin):
         self.stages[name] = stage_cls(**kwargs)
         return self.stages[name]
 
-    def _setup_stages(self):
+    def _setup_stages(self):  # pylint: disable=too-many-branches
         """setup planner stages/pipelines"""
 
         if not self.config.pipelines:
@@ -371,6 +372,23 @@ class Planner(TerminateContextMixin):
                 schedule=plines.auror_hostnames.schedule,
                 targets=["trigger"],
                 next_stages=[auror_hostnames_stage]
+            )
+
+        # auror testssl
+        if plines.auror_testssl:
+            auror_testssl_load_stage = self._add_stage(
+                "auror_testssl:load",
+                StorageLoader,
+                queue_name=plines.auror_testssl.queue
+            )
+
+            self._add_stage(
+                "auror_testssl:targetlist",
+                StorageAurorTestsslTargetlist,
+                schedule=plines.auror_testssl.schedule,
+                next_stage=auror_testssl_load_stage,
+                ports_starttls=plines.auror_testssl.ports_starttls,
+                filternets=self.config.auror_testssl_ips
             )
 
         # storage cleanup

@@ -143,6 +143,8 @@ class PlannerConfig(BaseModel):
     basic_nets_ipv6: List[str] = []
     basic_targets: List[str] = []
 
+    auror_testssl_ips: List[str] = []
+
     nuclei_nets_ipv4: List[str] = []
     nuclei_nets_ipv6: List[str] = []
     nuclei_targets: List[str] = []
