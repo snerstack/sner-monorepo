@@ -97,7 +97,7 @@ def host_view_json_route(host_id):
         in sorted(
             host.vulns,
             key=lambda x: (
-                (x.service.port, x.service.proto) if x.service else None,
+                (x.service.port, x.service.proto) if x.service else tuple(),
                 x.name,
                 x.xtype,
                 x.id
