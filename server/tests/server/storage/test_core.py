@@ -93,6 +93,8 @@ def test_vuln_report(app, host_factory, service_factory, vuln_factory):  # pylin
     service2 = service_factory.create(host=host2)
     vuln2 = vuln_factory.create(host=host2, service=service2, **aggregable_vuln_data)
 
+    vuln_factory.create(host=host2, service=service2, name='no descr vulns', descr=None, data='data', tags=['report:data'])
+
     output = vuln_report()
 
     assert f',"{vuln_name}",' in output

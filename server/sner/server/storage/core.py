@@ -228,15 +228,19 @@ def vuln_report(qfilter=None, group_by_host=False):  # pylint: disable=too-many-
             rdata['asset'] = rdata['host_ident'][0] if len(rdata['endpoint_address']) == 1 else 'misc'
 
         if 'report:data' in rdata['tags']:
+            if not rdata['description']:  # pragma: nocover  ; wont test
+                rdata['description'] = ''
+
             query = Vuln.query.filter(Vuln.id.in_(rdata['vuln_ids']))
             for vdata in query.all():
-                data_ident = ', '.join(filter(lambda x: x is not None, [
+                idents = [
                     f'IP: {vdata.host.address}',
                     f'Proto: {vdata.service.proto}, Port: {vdata.service.port}' if vdata.service else None,
                     f'Hostname: {vdata.host.hostname}' if vdata.host.hostname else None,
                     f'Via-target: {vdata.via_target}' if vdata.via_target else None
-                ]))
-                rdata['description'] += f'\n\n## Data {data_ident}\n{vdata.data}'
+                ]
+                data_ident = ', '.join(filter(lambda x: x is not None, idents))
+                rdata['description'] += f"\n\n## Data {data_ident}\n{vdata.data}"
 
         for col in ['endpoint_address', 'endpoint_hostname', 'tags', 'xtype']:
             rdata[col] = list_to_lines(rdata[col])
