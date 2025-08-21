@@ -51,6 +51,11 @@ td.dt-nowrap {
   white-space: nowrap;
 }
 
+th.dt-right,
+td.dt-right {
+  text-align: right;
+}
+
 /* other */
 .striked {
   text-decoration: line-through !important;

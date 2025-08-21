@@ -3,14 +3,16 @@ import clsx from 'clsx'
 const DropdownButton = ({
   title,
   options,
+  className = 'btn-group dropdown dropleft',
   small = true,
 }: {
   title: string
   options: { name: string; data: string }[]
   small?: boolean
+  className?: string
 }) => {
   return (
-    <div className={clsx('btn-group dropdown dropleft', small && 'btn-group-sm')}>
+    <div className={clsx(className, small && 'btn-group-sm')}>
       <a
         className={clsx('btn font-weight-bold', small ? 'btn-outline-secondary' : 'btn-outline-primary')}
         data-toggle="dropdown"

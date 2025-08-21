@@ -74,10 +74,10 @@ export const Column = (name: string, extra?: ConfigColumns) => {
 export const ColumnButtons = (extra?: ConfigColumns) => {
   return {
     data: '_buttons',
-    title: '_buttons',
+    title: '',
     name: '_buttons',
     orderable: false,
-    className: 'dt-nowrap',
+    className: 'dt-nowrap dt-right',
     ...extra,
   }
 }
