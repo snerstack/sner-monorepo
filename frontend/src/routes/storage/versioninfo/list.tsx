@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import { Column, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
+import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
@@ -14,6 +14,8 @@ import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
+import ButtonGroup from '@/components/buttons/ButtonGroup'
+import DropdownButton from '@/components/buttons/DropdownButton'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
 import SubmitField from '@/components/fields/SubmitField'
@@ -22,7 +24,7 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
 const VersionInfosListPage = () => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig,] = useRecoilState(appConfigState)
 
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -125,6 +127,24 @@ const VersionInfosListPage = () => {
         renderElements(cell, <div data-testid="versioninfo_comment_annotate">{row['comment']}</div>)
       },
     }),
+    ColumnButtons({
+      createdCell: (cell, _data: string, row: VersionInfoRow) =>
+        renderElements(
+          cell,
+          <ButtonGroup>
+            <DropdownButton
+              title="More data"
+              className="dropdown dropleft"
+              options={[
+                {
+                  name: 'timestamp',
+                  data: row['timestamp'],
+                },
+              ]}
+            />
+          </ButtonGroup>,
+        ),
+    })
   ]
   return (
     <div>

@@ -184,6 +184,7 @@ interface VersionInfoRow {
   extra: string
   tags: string[]
   comment: string | null
+  timestamp: string
 }
 
 interface QuickJumpSuggestions {

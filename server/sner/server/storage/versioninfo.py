@@ -6,6 +6,7 @@ storage version info map functions
 import json
 import re
 from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from hashlib import md5
 
 from cpe import CPE
@@ -60,6 +61,7 @@ class VMapItem:
     via_target: str
     product: str
     version: str
+    timestamp: datetime
     extra: dict = field(default_factory=dict)
 
     def __post_init__(self):
@@ -139,7 +141,8 @@ class VersioninfoManager:
                 Service.proto.label('service_proto'),
                 Service.port.label('service_port'),
                 Note.via_target,
-                Note.data
+                Note.data,
+                Note.import_time.label('timestamp'),
             )
         )
 

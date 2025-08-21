@@ -3,6 +3,8 @@
 storage test models
 """
 
+from datetime import datetime
+
 from factory import LazyAttribute, SubFactory
 
 from sner.server.storage.models import Host, Note, Service, SeverityEnum, Versioninfo, Vuln
@@ -97,3 +99,4 @@ class VersioninfoFactory(BaseModelFactory):  # pylint: disable=too-few-public-me
 
     tags = ['dummy']
     comment = ['dummy comment']
+    timestamp = datetime(1900, 1, 1, 0, 0)

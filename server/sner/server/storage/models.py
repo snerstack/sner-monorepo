@@ -179,6 +179,7 @@ class Versioninfo(StorageModelBase):
     product = db.Column(db.String(250))
     version = db.Column(db.String(250))
     extra = db.Column(db.JSON)
+    timestamp = db.Column(db.DateTime)
 
     tags = db.Column(postgresql.ARRAY(db.String, dimensions=1), nullable=False, default=[])
     comment = db.Column(db.Text)

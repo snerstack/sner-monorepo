@@ -57,7 +57,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
 
             for osmatch in [item for item in ihost.os_match_probabilities() if item.accuracy == 100]:
                 host_data['os'] = osmatch.name
-                pidb.upsert_note(ihost.address, 'cpe', data=json.dumps(osmatch.get_cpe()))
+                pidb.upsert_note(ihost.address, 'cpe', data=json.dumps(osmatch.get_cpe()), import_time=import_time)
 
             pidb.upsert_host(ihost.address, **host_data)
 

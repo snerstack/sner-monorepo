@@ -225,6 +225,8 @@ class PublicVersioninfoSchema(BaseSchema):
     # user data
     tags = fields.List(fields.String)
     comment = fields.String()
+    # metadata
+    timestamp = fields.DateTime()
 
 
 class PublicAurorInputSchema(BaseSchema):

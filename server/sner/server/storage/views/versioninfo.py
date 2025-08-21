@@ -42,6 +42,8 @@ def versioninfo_list_json_route():
         ColumnDT(func.text(Versioninfo.extra), mData='extra'),
         ColumnDT(Versioninfo.tags, mData='tags'),
         ColumnDT(Versioninfo.comment, mData='comment'),
+        ColumnDT(Versioninfo.timestamp, mData='timestamp'),
+        ColumnDT(literal_column('1'), mData='_buttons', search_method='none', global_search=False)
     ]
     query = db.session.query().select_from(Versioninfo)
     query = filter_query(query, request.values.get('filter'))

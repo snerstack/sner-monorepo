@@ -339,6 +339,7 @@ def test_v2_public_storage_versioninfo_route(api_user, versioninfo):  # pylint: 
     assert api_schema.PublicVersioninfoSchema(many=True).load(response.json)
     assert len(response.json) == 1
     assert response.json[0]["product"] == "dummy product"
+    assert response.json[0]["timestamp"]
 
     response = api_user.post_json(url_for('api.v2_public_storage_versioninfo_route'), {'product': 'dummy', 'versionspec': '<1.0'})
     assert len(response.json) == 0

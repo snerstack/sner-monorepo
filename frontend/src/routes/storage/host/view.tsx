@@ -484,6 +484,24 @@ const HostViewPage = () => {
         renderElements(cell, <div data-testid="versioninfo_comment_annotate">{row['comment']}</div>)
       },
     }),
+    ColumnButtons({
+      createdCell: (cell, _data: string, row: VersionInfoRow) =>
+        renderElements(
+          cell,
+          <ButtonGroup>
+            <DropdownButton
+              title="More data"
+              className="dropdown dropleft"
+              options={[
+                {
+                  name: 'timestamp',
+                  data: row['timestamp'],
+                },
+              ]}
+            />
+          </ButtonGroup>,
+        ),
+    })
   ]
 
   return (

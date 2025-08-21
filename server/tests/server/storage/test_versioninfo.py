@@ -3,6 +3,8 @@
 storage.versioninfo_map functions tests
 """
 
+from datetime import datetime
+
 from sner.server.storage.models import Versioninfo
 from sner.server.storage.versioninfo import ExtractedVersion, VMap, VersioninfoManager
 
@@ -19,6 +21,7 @@ def test_vmap_aggregation():
         'via_target': 'localhostx.localdomain',
         'product': 'dummy',
         'version': '0.1',
+        'timestamp': datetime(1900, 1, 1, 0, 0)
     }
 
     vmap = VMap()
