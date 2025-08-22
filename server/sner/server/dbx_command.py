@@ -177,6 +177,15 @@ def initdata_prod():
             'group_size': 1,
             'priority': QueuePrio.NORMAL,
             'reqs': ['auror'],
+        },
+        {
+            'name': 'auror.testssl',
+            'config': {
+                'module': 'auror_testssl',
+            },
+            'group_size': 1,
+            'priority': QueuePrio.NORMAL,
+            'reqs': ['auror'],
         }
     ]
 
