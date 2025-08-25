@@ -5,20 +5,27 @@ import { Link, useLoaderData } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
+
 import { DEFAULT_ANNOTATE_STATE, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import CodeBlock from '@/components/CodeBlock'
 import Heading from '@/components/Heading'
+import NucleiTemplateRow from '@/components/NucleiTemplateRow'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
-import DeleteButton from '@/components/buttons/DeleteButton'
-import DropdownButton from '@/components/buttons/DropdownButton'
 import { EditButton } from '@/components/buttons/BasicButtons'
 import { MultiCopyButton } from '@/components/buttons/BasicButtons'
+import DeleteButton from '@/components/buttons/DeleteButton'
+import DropdownButton from '@/components/buttons/DropdownButton'
+import DuplicateButton from '@/components/buttons/DuplicateButton'
 import TagButton from '@/components/buttons/TagButton'
 import AnnotateModal from '@/components/modals/AnnotateModal'
-import DuplicateButton from '@/components/buttons/DuplicateButton'
+
+interface NucleiData {
+  "template-path": string
+  [key: string]: unknown
+}
 
 const vulnDataElement = (vulnData: string) => {
   try {
@@ -31,7 +38,7 @@ const vulnDataElement = (vulnData: string) => {
 }
 
 const VulnViewPage = () => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig] = useRecoilState(appConfigState)
 
   const vuln = useLoaderData() as Vuln
   const [vulnTags, setVulnTags] = useState(vuln.tags)
@@ -197,6 +204,11 @@ const VulnViewPage = () => {
               {vulnComment}
             </td>
           </tr>
+          {vuln.xtype && vuln.xtype.startsWith("nuclei.") && (() => {
+            const parsed = JSON.parse(vuln.data) as Partial<NucleiData>
+            return parsed["template-path"] &&
+              <NucleiTemplateRow templateUrl={parsed["template-path"]} />
+          })()}
         </tbody>
       </table>
       <h2>Description</h2>
