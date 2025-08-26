@@ -9,11 +9,13 @@ from pydantic import BaseModel
 
 class StandaloneQueues(BaseModel):
     """standalone queues"""
+
     queues: List[str]
 
 
 class BasicScan(BaseModel):
     """basic scan"""
+
     schedule: str
     service_disco_queue: str
     service_scan_queues: List[str]
@@ -21,6 +23,7 @@ class BasicScan(BaseModel):
 
 class BasicRescan(BaseModel):
     """basic storage rescan"""
+
     schedule: str
     host_interval: str
     service_interval: str
@@ -28,6 +31,7 @@ class BasicRescan(BaseModel):
 
 class SixDisco(BaseModel):
     """six disco config"""
+
     schedule: str
     dns_disco_queue: str
     storage_enum_queue: str
@@ -35,18 +39,21 @@ class SixDisco(BaseModel):
 
 class NucleiScan(BaseModel):
     """nuclei scan"""
+
     schedule: str
     queue: str
 
 
 class SportmapScan(BaseModel):
     """sportmap scan"""
+
     schedule: str
     queue: str
 
 
 class TestsslScan(BaseModel):
     """testssl scan"""
+
     schedule: str
     queue: str
 
@@ -59,16 +66,19 @@ class AurorScan(BaseModel):
 
 class StorageCleanup(BaseModel):
     """storage cleanup"""
+
     enabled: bool
 
 
 class RebuildVersionInfoMap(BaseModel):
     """rebuild versioninfomap"""
+
     schedule: str
 
 
 class Pipelines(BaseModel):
     """pipelines"""
+
     standalone_queues: Optional[StandaloneQueues] = None
     basic_scan: Optional[BasicScan] = None
     basic_rescan: Optional[BasicRescan] = None
