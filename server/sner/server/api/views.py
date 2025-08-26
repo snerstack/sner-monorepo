@@ -6,6 +6,7 @@ apiv2 controller
 import binascii
 import json
 from base64 import b64decode
+from collections import defaultdict
 from dataclasses import dataclass
 from http import HTTPStatus
 
@@ -275,21 +276,18 @@ def v2_public_storage_versioninfo_route(args):
     return data
 
 
-@blueprint.route('/v2/public/storage/auror', methods=['POST'])
-@apikey_required('auror')
-@blueprint.response(HTTPStatus.OK, api_schema.PublicAurorSchema(many=True))
-def v2_public_storage_auror_route():
-    """internal endpoint; get hostnames and port for auror"""
+@dataclass
+class HostMapItem:
+    """helper class"""
 
-    @dataclass
-    class HostMapItem:
-        """helper class"""
+    address: str
+    hostnames: set
+    os: str
 
-        address: str
-        hostnames: set
-        os: str
 
-    # fetch host-auror_hostnames map, so it's over-fetched with ORM later
+def _prefetch_hostmap():
+    """prefetch host - auror_hostnames map sfrom storage"""
+
     storage_data = db.session.execute(
         select(Host.id, Host.address, Host.hostname, Host.os, Note.data).outerjoin(
             Note, and_(Note.host_id == Host.id, Note.xtype == "auror.hostnames")
@@ -309,49 +307,57 @@ def v2_public_storage_auror_route():
 
         host_map[host_id] = HostMapItem(host_address, hostnames, host_os)
 
-    # dump all services along with hostnames for auror
-    services = db.session.execute(select(Service.id, Service.host_id, Service.proto, Service.port, Service.state)).all()
+    return host_map
+
+
+def _prefetch_notesmap():
+    """prefetch auror_testssl scan notes to map"""
+
     all_tls_notes = db.session.execute(
-        select(Note.host_id, Note.service_id, Note.via_target, Note.xtype, Note.data).where(Note.xtype.like("auror.testssl%"))
+        select(Note.host_id, Note.service_id, Note.via_target, Note.xtype, Note.data).where(
+            Note.xtype.like("auror.testssl%")
+        )
     ).all()
 
-    notes_map = {}
+    notes_map = defaultdict(list)
     for note in all_tls_notes:
         key = (note.host_id, note.service_id, note.via_target)
-        notes_map.setdefault(key, []).append(note)
+        notes_map[key].append(note)
+
+    return notes_map
+
+
+@blueprint.route("/v2/public/storage/auror", methods=["POST"])
+@apikey_required("auror")
+@blueprint.response(HTTPStatus.OK, api_schema.PublicAurorSchema(many=True))
+def v2_public_storage_auror_route():
+    """internal endpoint; get hostnames and port for auror"""
+
+    host_map = _prefetch_hostmap()
+    notes_map = _prefetch_notesmap()
+    services = db.session.execute(select(Service.id, Service.host_id, Service.proto, Service.port, Service.state)).all()
 
     response = []
     for service_id, host_id, proto, port, state in services:
         for hostname in host_map[host_id].hostnames:
+            base_item = {
+                "input": {
+                    "hostname": hostname,
+                    "ip": host_map[host_id].address,
+                    "port": port,
+                    "proto": proto,
+                },
+                "port_scan": {"port": port, "proto": proto, "port_state": state, "os": host_map[host_id].os},
+                "tls_scan": None,
+            }
+
             key = (host_id, service_id, hostname)
-            notes = notes_map.get(key, [])
+            notes = notes_map[key]
             if notes:
                 for note in notes:
                     tls_result = json.loads(note.data).get("auror_data", None)
-                    response.append(
-                        {
-                            "input": {
-                                "hostname": hostname,
-                                "ip": host_map[host_id].address,
-                                "port": port,
-                                "proto": proto,
-                            },
-                            "port_scan": {"port": port, "proto": proto, "port_state": state, "os": host_map[host_id].os},
-                            "tls_scan": tls_result,
-                        }
-                    )
+                    response.append({**base_item, "tls_scan": tls_result})
             else:
-                response.append(
-                    {
-                        "input": {
-                            "hostname": hostname,
-                            "ip": host_map[host_id].address,
-                            "port": port,
-                            "proto": proto,
-                        },
-                        "port_scan": {"port": port, "proto": proto, "port_state": state, "os": host_map[host_id].os},
-                        "tls_scan": None,
-                    }
-                )
+                response.append(base_item)
 
     return response
