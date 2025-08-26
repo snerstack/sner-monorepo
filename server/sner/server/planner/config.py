@@ -58,10 +58,38 @@ class TestsslScan(BaseModel):
     queue: str
 
 
-class AurorScan(BaseModel):
-    """testssl scan"""
-    hostnames_schedule: str
-    hostnames_queue: str
+class AurorHostnames(BaseModel):
+    """auror hostnames import"""
+
+    schedule: str
+    queue: str
+
+
+class AurorTestsslScan(BaseModel):
+    """auror testssl scan"""
+
+    schedule: str
+    queue: str
+    connect_timeout: int = 5
+    openssl_timeout: int = 5
+    ports_starttls: dict = {
+        21: "ftp",
+        23: "telnet",
+        24: "lmtp",
+        25: "smtp",
+        110: "pop3",
+        119: "nntp",
+        143: "imap",
+        389: "ldap",
+        587: "smtp",
+        # 674: "acap",
+        3306: "mysql",
+        4190: "sieve",
+        5222: "xmpp",
+        5269: "xmpp-server",
+        5432: "postgres",
+        6667: "irc",
+    }
 
 
 class StorageCleanup(BaseModel):
@@ -86,7 +114,8 @@ class Pipelines(BaseModel):
     nuclei_scan: Optional[NucleiScan] = None
     sportmap_scan: Optional[SportmapScan] = None
     testssl_scan: Optional[TestsslScan] = None
-    auror_scan: Optional[AurorScan] = None
+    auror_hostnames: Optional[AurorHostnames] = None
+    auror_testssl: Optional[AurorTestsslScan] = None
     storage_cleanup: Optional[StorageCleanup] = StorageCleanup(enabled=True)
     rebuild_versioninfo_map: Optional[RebuildVersionInfoMap] = None
 
