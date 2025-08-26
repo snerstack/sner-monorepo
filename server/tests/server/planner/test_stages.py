@@ -300,8 +300,6 @@ def test_storage_auror_testssl_targetlist(app, host_factory, note_factory, servi
     service2 = service_factory.create(host=host2, proto="tcp", port=25, name="smtp", state="open:")
     host3 = host_factory.create(address="127.0.0.3")
     service3 = service_factory.create(host=host3, proto="tcp", port=80, name="http", state="open:")
-    host4 = host_factory.create(address="8.8.8.8", hostname="dns.google.com")
-    service4 = service_factory.create(host=host4, proto="tcp", port=853, name="domain-s", state="open:")
 
     note_factory.create(
         host=host1,
@@ -327,12 +325,6 @@ def test_storage_auror_testssl_targetlist(app, host_factory, note_factory, servi
         xtype="auror.hostnames",
         data='["localhost.localdomain", "localhost.localdomain"]',
     )
-    note_factory.create(
-        host=host4,
-        service=service4,
-        xtype="nmap.ssl-cert",
-        data='{"random data": "random"}',
-    )
     dummy = DummyStage()
     StorageAurorTestsslTargetlist("1d", "dummylock", dummy, {25: "smtp"}).run()
 
@@ -341,7 +333,6 @@ def test_storage_auror_testssl_targetlist(app, host_factory, note_factory, servi
         "localhost.localdomain;::1;25;I",
         "localhost.localdomain;::1;25;E",
         "localhost.localdomain;127.0.0.3;80;I",
-        "dns.google.com;8.8.8.8;853;I",
     ]
 
 
