@@ -14,7 +14,7 @@ from pathlib import Path
 from flask import current_app
 from littletable import Table
 from pytimeparse import parse as timeparse
-from sqlalchemy import and_, select, tuple_
+from sqlalchemy import and_, or_, select, tuple_
 from sqlalchemy.orm.exc import NoResultFound
 
 from sner.lib import format_host_address
@@ -281,11 +281,15 @@ class StorageAurorTestsslTargetlist(Schedule):  # pylint: disable=too-few-public
         """run"""
         targets = []
 
-        for note in (
+        query = (
             Note.query.join(Service, Note.service_id == Service.id)
             .filter(Note.xtype == "nmap.ssl-cert", Service.proto == "tcp", Service.state.ilike("open:%"))
-            .all()
-        ):
+        )
+        if self.filternets:
+            restrict = [Host.address.op('<<=')(net) for net in self.filternets]
+            query = query.filter(or_(*restrict))
+
+        for note in query.all():
             hostnames = self._get_hostnames(note.host)
             for hostname in hostnames:
                 targets.append(f"{hostname};{note.host.address};{note.service.port};I")

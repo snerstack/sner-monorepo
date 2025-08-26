@@ -326,7 +326,13 @@ def test_storage_auror_testssl_targetlist(app, host_factory, note_factory, servi
         data='["localhost.localdomain", "localhost.localdomain"]',
     )
     dummy = DummyStage()
-    StorageAurorTestsslTargetlist("1d", "dummylock", dummy, {25: "smtp"}).run()
+    StorageAurorTestsslTargetlist(
+        schedule="1d",
+        lockname="dummylock",
+        next_stage=dummy,
+        ports_starttls={25: "smtp"},
+        filternets=["127.0.0.0/8", "::1"],
+    ).run()
 
     assert dummy.task_args == [
         "127.0.0.1;127.0.0.1;443;I",
