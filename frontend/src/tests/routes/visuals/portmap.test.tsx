@@ -137,4 +137,68 @@ describe('Portmap page', () => {
       expect(screen.queryByText('serverz.localhost')).toBeNull()
     })
   })
+
+  it('does not refetch when hovering the same port again', async () => {
+    renderWithProviders({
+      element: <PortmapPage />,
+      path: '/visuals/portmap',
+      loader: portmapLoader,
+    })
+
+    const spy = vi.spyOn(httpClient, 'get').mockResolvedValue({
+      data: { port: 22, portname: 'ssh', comments: [], hosts: [], infos: [], stats: [] },
+    })
+
+    const portLink = await screen.findByRole('link', { name: '22' })
+
+    fireEvent.mouseEnter(portLink)
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(1))
+
+    fireEvent.mouseEnter(portLink)
+    await waitFor(() => expect(spy).toHaveBeenCalledTimes(1))
+  })
+
+  it('ignores stale response when quickly switching ports', async () => {
+    renderWithProviders({
+      element: <PortmapPage />,
+      path: '/visuals/portmap',
+      loader: portmapLoader,
+    })
+
+    const spy = vi.spyOn(httpClient, 'get')
+
+    // first hovered port 22 (slower response)
+    let resolveFirst!: (value: { data: PortDetails }) => void
+    const firstPromise = new Promise<{ data: PortDetails }>((resolve) => {
+      resolveFirst = resolve
+    })
+    spy.mockReturnValueOnce(firstPromise)
+
+    // second hovered port 443 (faster response)
+    spy.mockResolvedValueOnce({
+      data: { port: 443, portname: 'https', comments: [], hosts: [], infos: [], stats: [] },
+    })
+
+    const port22 = await screen.findByRole('link', { name: '22' })
+    const port443 = screen.getByRole('link', { name: '443' })
+
+    fireEvent.mouseEnter(port22)
+    fireEvent.mouseEnter(port443)
+
+    // info about port 443 should appear
+    await waitFor(() => {
+      expect(screen.getByText(/Port 443/)).toBeInTheDocument()
+    })
+
+    // the response about port 22 arrives later
+    resolveFirst({
+      data: { port: 22, portname: 'ssh', comments: [], hosts: [], infos: [], stats: [] },
+    })
+
+    // info should remain about port 443
+    await waitFor(() => {
+      expect(screen.getByText(/Port 443/)).toBeInTheDocument()
+      expect(screen.queryByText(/Port 22/)).toBeNull()
+    })
+  })
 })
