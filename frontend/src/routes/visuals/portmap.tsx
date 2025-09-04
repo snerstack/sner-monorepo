@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link, useLoaderData } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -12,7 +12,7 @@ import Heading from '@/components/Heading'
 const PortmapPage = () => {
   const { portstates, portmap } = useLoaderData() as {
     portstates: { count: number; state: string }[]
-    portmap: { count: number; port: string; size: number }[]
+    portmap: { count: number; port: number; size: number }[]
   }
   const [portDetails, setPortDetails] = useState<PortDetails>({
     port: 0,
@@ -22,6 +22,7 @@ const PortmapPage = () => {
     hosts: [],
     comments: [],
   })
+  const hoveredPortRef = useRef<number | null>(null)
 
   return (
     <div>
@@ -83,9 +84,17 @@ const PortmapPage = () => {
                 style={{ fontSize: `${size}px` }}
                 to={`/storage/service/list?filter=Service.port=="${port}"`}
                 onMouseEnter={() => {
+                  if (hoveredPortRef.current === port) return
+
+                  hoveredPortRef.current = port
+
                   httpClient
                     .get<PortDetails>(urlFor(`/backend/visuals/portmap_portstat/${port}.json`))
-                    .then((resp) => setPortDetails(resp.data))
+                    .then((resp) => {
+                      if (hoveredPortRef.current !== port) return
+
+                      setPortDetails(resp.data)
+                    })
                     .catch(() => toast.error('Error while fetching data.'))
                 }}
               >

@@ -29,4 +29,4 @@ def test_portmap_portstat_route(cl_operator, service):
 
     response = cl_operator.get(url_for('visuals.portmap_portstat_json_route', port=0))
     assert response.status_code == HTTPStatus.OK
-    assert response.json['port'] == '0'
+    assert response.json['port'] == 0
