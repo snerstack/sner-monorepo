@@ -75,7 +75,7 @@ def portmap_portstat_json_route(port):
         portname = ''
 
     return jsonify({
-        "port": port,
+        "port": int(port),
         "portname": portname,
         "stats": [{"proto": proto, "count": count} for proto, count in stats.all()],
         "infos": [{"info": info, "count": count} for info, count in infos.all()],
