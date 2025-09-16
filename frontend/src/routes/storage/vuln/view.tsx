@@ -41,8 +41,9 @@ const VulnViewPage = () => {
   const [appConfig] = useRecoilState(appConfigState)
 
   const vuln = useLoaderData() as Vuln
+
   const [vulnTags, setVulnTags] = useState(vuln.tags)
-  const [vulnComment, setVulnComment] = useState(vuln.comment)
+  const [vulnComment, setVulnComment] = useState(vuln.comment ?? '')
   const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
 
   const refreshAnnotations = (newTags: string[], newComment: string): void => {
