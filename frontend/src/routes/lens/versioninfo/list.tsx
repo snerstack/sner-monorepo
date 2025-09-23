@@ -1,8 +1,9 @@
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { Field } from 'react-querybuilder'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { Column, renderElements } from '@/lib/DataTables'
+import { Column, getTableApi, renderElements } from '@/lib/DataTables'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -11,38 +12,45 @@ import Heading from '@/components/Heading'
 import RBQFilter from '@/components/RBQFilter'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
-import { Field } from 'react-querybuilder'
-import TextField from '@/components/fields/TextField'
 import SubmitField from '@/components/fields/SubmitField'
+import TextField from '@/components/fields/TextField'
 
 const LensVersioninfoListPage = () => {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
 
   const [product, setProduct] = useState<string>(searchParams.get('product') || '')
   const [versionspec, setVersionspec] = useState<string>(searchParams.get('versionspec') || '')
 
+  const queryHandler = () => {
+    setSearchParams((params) => {
+      params.set('product', product)
+      params.set('versionspec', versionspec)
+      return params
+    })
+
+    const dt = getTableApi('versioninfo_list_table')
+    dt.ajax.reload()
+  }
+
   const dtColumns = [
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
-      title: "Address",
+      title: 'Address',
       createdCell: (cell, data: string, row: VulnRow) =>
         renderElements(
           cell,
-          <DataTableLink
-            url={`/lens/host/view/${row['host_id']}`}
-            navigate={navigate}
-          >
+          <DataTableLink url={`/lens/host/view/${row['host_id']}`} navigate={navigate}>
             {data}
-          </DataTableLink>
+          </DataTableLink>,
         ),
     }),
-    Column('host_hostname', { title: "Hostname" }),
+    Column('host_hostname', { title: 'Hostname' }),
     Column('service_proto', { visible: false }),
     Column('service_port', { visible: false }),
     Column('service', {
-      title: "Service",
+      title: 'Service',
       className: 'service_endpoint_dropdown',
       createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
@@ -56,12 +64,12 @@ const LensVersioninfoListPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: false, }),
-    Column('product', { title: "Product" }),
-    Column('version', { title: "Version" }),
-    Column('extra', { title: "Extra" }),
+    Column('via_target', { visible: false }),
+    Column('product', { title: 'Product' }),
+    Column('version', { title: 'Version' }),
+    Column('extra', { title: 'Extra' }),
     Column('tags', {
-      title: "Tags",
+      title: 'Tags',
       className: 'abutton_annotate_dt',
       createdCell: (cell, _data: string[], row: VulnRow) => {
         renderElements(
@@ -79,17 +87,15 @@ const LensVersioninfoListPage = () => {
   ]
 
   const rbqFields: Field[] = [
-    { name: "Versioninfo.host_address", label: "Address" },
-    { name: "Versioninfo.host_hostname", label: "Hostname" },
-    { name: "Versioninfo.service_proto", label: "Proto" },
-    { name: "Versioninfo.service_port", label: "Port" },
-    { name: "Versioninfo.product", label: "Product" },
-    { name: "Versioninfo.version", label: "Version" },
-    { name: "Versioninfo.extra", label: "Extra{}" },
-    { name: "Versioninfo.tags", label: "Tags[]" },
+    { name: 'Versioninfo.host_address', label: 'Address' },
+    { name: 'Versioninfo.host_hostname', label: 'Hostname' },
+    { name: 'Versioninfo.service_proto', label: 'Proto' },
+    { name: 'Versioninfo.service_port', label: 'Port' },
+    { name: 'Versioninfo.product', label: 'Product' },
+    { name: 'Versioninfo.version', label: 'Version' },
+    { name: 'Versioninfo.extra', label: 'Extra{}' },
+    { name: 'Versioninfo.tags', label: 'Tags[]' },
   ]
-
-  const queryHandler = () => {}
 
   return (
     <div>
@@ -137,7 +143,6 @@ const LensVersioninfoListPage = () => {
         ajax_url={urlFor(`/backend/lens/versioninfo/list.json${toQueryString(searchParams)}`)}
         order={[[1, 'asc']]}
       />
-
     </div>
   )
 }

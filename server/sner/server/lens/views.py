@@ -232,6 +232,7 @@ def versioninfo_list_json_route():
         ColumnDT(Versioninfo.host_hostname, mData='host_hostname'),
         ColumnDT(Versioninfo.service_proto, mData='service_proto'),
         ColumnDT(Versioninfo.service_port, mData='service_port'),
+        # break pylint duplicate-code detection
         ColumnDT(service_column, mData='service'),
         ColumnDT(Versioninfo.via_target, mData='via_target'),
         ColumnDT(Versioninfo.product, mData='product'),
@@ -243,8 +244,12 @@ def versioninfo_list_json_route():
     restrict = [Versioninfo.host_address.op('<<=')(net) for net in current_user.api_networks]
     query = db.session.query().select_from(Versioninfo) \
         .filter(or_(*restrict))
-
     query = filter_query_jsonfilter(query, request.values.get('jsonfilter'))
+
+    product = request.values.get('product')
+
+    if product:
+        query = query.filter(Versioninfo.product.ilike(f"%{product}%"))
 
     # pre-query, fake server side paging
     request_values = request.values.to_dict()
@@ -255,17 +260,20 @@ def versioninfo_list_json_route():
     versioninfos = DataTables(request_values, query, columns).output_result()
     check_dt_errors(versioninfos)
 
-    # if versionspec:
-    #     try:
-    #         parsed_version_specifier = versionspec_parse(versionspec)
-    #     except InvalidFormatException as exc:
-    #         return error_response(message=str(exc), code=HTTPStatus.BAD_REQUEST)
+    versionspec = request_values.get('versionspec')
 
-    #     versioninfos["data"] = list(filter(
-    #         lambda item: is_in_version_range(item["version"], parsed_version_specifier),
-    #         versioninfos["data"]
-    #     ))
-    #     versioninfos["recordsFiltered"] = len(versioninfos["data"])
+    if versionspec:
+        # pylint: disable=duplicate-code
+        try:
+            parsed_version_specifier = versionspec_parse(versionspec)
+        except InvalidFormatException as exc:
+            return error_response(message=str(exc), code=HTTPStatus.BAD_REQUEST)
+
+        versioninfos["data"] = list(filter(
+            lambda item: is_in_version_range(item["version"], parsed_version_specifier),
+            versioninfos["data"]
+        ))
+        versioninfos["recordsFiltered"] = len(versioninfos["data"])
 
     # post-query, fake server side paging
     if orig_start > 0:
