@@ -222,9 +222,6 @@ const VulnListPage = () => {
       <div id="vuln_list_table_toolbar" className="dt_toolbar">
         <div data-testid="vuln_list_table_toolbox" className="dt_toolbar_toolbox_alwaysvisible">
           <div className="btn-group">
-            <a className="btn btn-outline-secondary">
-              <i className="fas fa-check-square"></i>
-            </a>
             <a
               className="btn btn-outline-secondary"
               data-testid="vuln_select_all"
@@ -235,19 +232,19 @@ const VulnListPage = () => {
                 dt.rows({ page: 'current' }).select()
               }}
             >
-              All
+              Select all
             </a>
             <a
               className="btn btn-outline-secondary"
               data-testid="vuln_unselect_all"
               href="#"
-              title="unselect all"
+              title="clear selection"
               onClick={() => {
                 const dt = getTableApi('vuln_list_table')
                 dt.rows({ page: 'current' }).deselect()
               }}
             >
-              None
+              Clear selection
             </a>
           </div>{' '}
           <div className="btn-group">
