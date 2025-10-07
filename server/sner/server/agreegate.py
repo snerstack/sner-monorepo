@@ -9,10 +9,11 @@ import json
 import re
 from http import HTTPStatus
 from pathlib import Path
-from types import SimpleNamespace
+from typing import List, Optional
 
 import requests
 from flask import current_app
+from pydantic import BaseModel, Field, TypeAdapter
 from sqlalchemy import func
 
 from sner.server.auth.models import User
@@ -20,6 +21,30 @@ from sner.server.extensions import db
 
 
 AGREEGATE_NETLISTS_FILE = "agreegate_netlists.json"
+
+
+class Group(BaseModel):
+    """Group model for adding/editing groups"""
+
+    name: str
+    description: Optional[str] = None
+    external_id: Optional[str] = None
+    allowed_networks: list[str]
+
+
+class UserGroupsResponse(BaseModel):
+    """Model for syncing users/groups.allowed_networs with SNER instance"""
+
+    username: str
+    email: str
+    full_name: str
+    role: Optional[str] = Field(None, description="User role")
+    groups: list[str] = Field([], description="User groups")
+    enabled: bool = Field(False, description="User enabled flag")
+
+
+AGAPI_GroupsResponseAdapter = TypeAdapter(List[Group])
+AGAPI_UserGroupsResponseAdapter = TypeAdapter(List[UserGroupsResponse])
 
 
 class AgreegateApiError(Exception):
@@ -103,12 +128,12 @@ def load_merge_agreegate_netlists(config):
     return config
 
 
-def ensure_user(username, email, full_name, ensure_roles):
+def ensure_user(username, email, full_name):
     """ensure user created with attributes"""
 
     user = User.query.filter(func.lower(User.username) == username).one_or_none()
     if not user:
-        user = User(username=username, email=email, full_name=full_name, roles=ensure_roles, active=True)
+        user = User(username=username, email=email, full_name=full_name)
         db.session.add(user)
         db.session.commit()
 
@@ -116,9 +141,9 @@ def ensure_user(username, email, full_name, ensure_roles):
     if not user.full_name:
         user.full_name = full_name
 
-    # handle situation where user account is autocreated from OIDC before is synced from agreegate
-    if not all(role in user.roles for role in ensure_roles):
-        user.roles = list(set(user.roles + ensure_roles))
+    ensured_roles = ['user']
+    if not all(role in user.roles for role in ensured_roles):
+        user.roles = list(set(user.roles + ensured_roles))
 
     db.session.commit()
     return user
@@ -136,33 +161,28 @@ def sync_agreegate_allowed_networks():
     * set api_network as coresponding groups allowed_networks for ag user roles of user, viewer, editor
     """
 
-    def objectify(data):
-        return [SimpleNamespace(**item) for item in data]
-
     epui_regexp = re.compile(r"^[a-zA-Z0-9]+@einfra.cesnet.cz$")
-    ag_groups = objectify(agreegate_apicall("GET", "/api/v1/groups"))
-    ag_users = objectify(agreegate_apicall("GET", "/api/v1/usergroups"))
+    ag_groups = AGAPI_GroupsResponseAdapter.validate_python(agreegate_apicall("GET", "/api/v1/groups"))
+    ag_users = AGAPI_UserGroupsResponseAdapter.validate_python(agreegate_apicall("GET", "/api/v1/usergroups"))
 
     for ag_user in ag_users:
         if not epui_regexp.match(ag_user.username):
             current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, skipping not einfra aai")
             continue
 
+        sner_user = ensure_user(ag_user.username, ag_user.email, ag_user.full_name)
+        sner_user.active = ag_user.enabled
+
         if ag_user.role in ["maintainer", "observer+editor", "observer"]:
             current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, synced with all networks")
-            sner_user = ensure_user(ag_user.username, ag_user.email, ag_user.full_name, ["user"])
-
             sner_user.api_networks = ["0.0.0.0/0", "::/0"]
-            db.session.commit()
             continue
 
         if ag_user.role in ["viewer", "editor"]:
             current_app.logger.debug(f"user {ag_user.username}/{ag_user.email}, synced with groups allowed_networks")
-            sner_user = ensure_user(ag_user.username, ag_user.email, ag_user.full_name, ["user"])
-
             sync_groups = [group for group in ag_groups if group.name in ag_user.groups]
             groups_networks = itertools.chain.from_iterable(group.allowed_networks for group in sync_groups)
             sner_user.api_networks = groups_networks
-            db.session.commit()
 
+    db.session.commit()
     return 0
