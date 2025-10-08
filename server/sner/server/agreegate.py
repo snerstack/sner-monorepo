@@ -119,6 +119,8 @@ def load_merge_agreegate_netlists(config):
         config["basic_nets_ipv4"] = sorted(list(set(config.get("basic_nets_ipv4", []) + ipv4_networks)))
         config["basic_nets_ipv6"] = sorted(list(set(config.get("basic_nets_ipv6", []) + ipv6_networks)))
 
+        config["auror_testssl_ips"] = sorted(list(set(config.get("auror_testssl_ips", []))))
+
         ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/nuclei", []))
         config["nuclei_nets_ipv4"] = sorted(list(set(config.get("nuclei_nets_ipv4", []) + ipv4_networks)))
         config["nuclei_nets_ipv6"] = sorted(list(set(config.get("nuclei_nets_ipv6", []) + ipv6_networks)))

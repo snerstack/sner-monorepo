@@ -23,6 +23,7 @@ from sner.server.planner.stages import (
     project_sixenum_targets,
     ServiceDisco,
     SixDisco,
+    StorageAurorTestsslTargetlist,
     StorageCleanup,
     StorageLoader,
     StorageLoaderAurorHostnames,
@@ -289,6 +290,59 @@ def test_storage_loader_nuclei(app, queue_factory, job_completed_factory, vuln_f
     assert Vuln.query.filter_by(xtype='nuclei.http-missing-security-headers.x-frame-options').count() == 0
     assert Vuln.query.filter_by(xtype='nuclei.readme-md').count() == 1
     assert Vuln.query.filter_by(xtype='dummy').count() == 1
+
+
+def test_storage_auror_testssl_targetlist(app, host_factory, note_factory, service_factory):  # pylint: disable=unused-argument
+    """test stage"""
+    host1 = host_factory.create(address="127.0.0.1", hostname="")
+    service1 = service_factory.create(host=host1, proto="tcp", port=443, name="https", state="open:")
+    host2 = host_factory.create(address="::1")
+    service2 = service_factory.create(host=host2, proto="tcp", port=25, name="smtp", state="open:")
+    host3 = host_factory.create(address="127.0.0.3")
+    service3 = service_factory.create(host=host3, proto="tcp", port=80, name="http", state="open:")
+    host4 = host_factory.create(address="8.8.8.8", hostname="dns.google.com")
+    service4 = service_factory.create(host=host4, proto="tcp", port=853, name="domain-s", state="open:")
+
+    note_factory.create(
+        host=host1,
+        service=service1,
+        xtype="nmap.ssl-cert",
+        data='{"random data": "random"}',
+    )
+    note_factory.create(
+        host=host2,
+        service=service2,
+        xtype="nmap.ssl-cert",
+        data='{"random data": "random"}',
+    )
+    note_factory.create(
+        host=host3,
+        service=service3,
+        xtype="nmap.ssl-cert",
+        data='{"random data": "random"}',
+    )
+    note_factory.create(
+        host=host3,
+        service=service3,
+        xtype="auror.hostnames",
+        data='["localhost.localdomain", "localhost.localdomain"]',
+    )
+    note_factory.create(
+        host=host4,
+        service=service4,
+        xtype="nmap.ssl-cert",
+        data='{"random data": "random"}',
+    )
+    dummy = DummyStage()
+    StorageAurorTestsslTargetlist("1d", "dummylock", dummy, {25: "smtp"}).run()
+
+    assert dummy.task_args == [
+        "127.0.0.1;127.0.0.1;443;I",
+        "localhost.localdomain;::1;25;I",
+        "localhost.localdomain;::1;25;E",
+        "localhost.localdomain;127.0.0.3;80;I",
+        "dns.google.com;8.8.8.8;853;I",
+    ]
 
 
 def test_storage_testssl_targetlist(app, service_factory):  # pylint: disable=unused-argument

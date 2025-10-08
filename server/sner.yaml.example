@@ -51,6 +51,8 @@
 #  basic_nets_ipv6: ['::1/128']
 #  basic_targets: []
 #
+#  auror_testssl_ips: []
+#
 #  # vulnerability scan ranges
 #  nuclei_nets_ipv4: []
 #  nuclei_nets_ipv6: []
@@ -104,3 +106,22 @@
 #
 #    rebuild_versioninfo_map:
 #      schedule: 10minutes
+#
+#    auror_hostnames:
+#      schedule: 1day
+#      queue: auror.hostnames
+#
+#    auror_testssl:
+#      schedule: 1day
+#      queue: auror.testssl
+#      ports_starttls:
+#        {
+#          21: "ftp",
+#          25: "smtp",
+#          110: "pop3",
+#          143: "imap",
+#          389: "ldap",
+#          5432: "postgres",
+#        }
+#      connect_timeout: 5
+#      openssl_timeout: 5

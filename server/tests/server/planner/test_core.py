@@ -26,11 +26,13 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     queue_factory.create(name="sner.testssl")
     queue_factory.create(name="sner.sportmap.rolling")
     queue_factory.create(name="auror.hostnames")
+    queue_factory.create(name="auror.testssl")
 
     config = yaml.safe_load(
         """
       basic_nets_ipv4: []
       basic_nets_ipv6: ['::1/128']
+      auror_testssl_ips: []
       nuclei_nets_ipv4: []
       sportmap_nets_ipv4: []
       pipelines:
@@ -66,9 +68,23 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
             schedule: 13days
             queue: sner.sportmap.rolling
 
-          auror_scan:
-            hostnames_schedule: 1day
-            hostnames_queue: auror.hostnames
+          auror_hostnames:
+            schedule: 1day
+            queue: auror.hostnames
+
+          auror_testssl:
+            schedule: 1day
+            queue: auror.testssl
+            connect_timeout: 10
+            openssl_timeout: 15
+            ports_starttls: {
+                              21: "ftp",
+                              25: "smtp",
+                              110: "pop3",
+                              143: "imap",
+                              389: "ldap",
+                              5432: "postgres",
+                          }
 
           storage_cleanup:
             enabled: true

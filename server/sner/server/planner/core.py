@@ -26,6 +26,7 @@ from sner.server.planner.stages import (
     StorageCleanup,
     StorageLoader,
     StorageLoaderAurorHostnames,
+    StorageAurorTestsslTargetlist,
     StorageLoaderNuclei,
     StorageLoaderSportmap,
     StorageRescan,
@@ -195,7 +196,7 @@ class Planner(TerminateContextMixin):
         self.stages[name] = stage_cls(**kwargs)
         return self.stages[name]
 
-    def _setup_stages(self):
+    def _setup_stages(self):  # pylint: disable=too-many-branches
         """setup planner stages/pipelines"""
 
         if not self.config.pipelines:
@@ -357,20 +358,37 @@ class Planner(TerminateContextMixin):
                 next_stage=testssl_load_stage
             )
 
-        # auror scan
-        if plines.auror_scan:
+        # auror hostnames
+        if plines.auror_hostnames:
             auror_hostnames_stage = self._add_stage(
                 "auror:hostnames",
                 StorageLoaderAurorHostnames,
-                queue_name=plines.auror_scan.hostnames_queue
+                queue_name=plines.auror_hostnames.queue
             )
 
             self._add_stage(
                 "auror:hostnames_targetlist",
                 Targetlist,
-                schedule=plines.auror_scan.hostnames_schedule,
+                schedule=plines.auror_hostnames.schedule,
                 targets=["trigger"],
                 next_stages=[auror_hostnames_stage]
+            )
+
+        # auror testssl
+        if plines.auror_testssl:
+            auror_testssl_load_stage = self._add_stage(
+                "auror_testssl:load",
+                StorageLoader,
+                queue_name=plines.auror_testssl.queue
+            )
+
+            self._add_stage(
+                "auror_testssl:targetlist",
+                StorageAurorTestsslTargetlist,
+                schedule=plines.auror_testssl.schedule,
+                next_stage=auror_testssl_load_stage,
+                ports_starttls=plines.auror_testssl.ports_starttls,
+                filternets=self.config.auror_testssl_ips
             )
 
         # storage cleanup
