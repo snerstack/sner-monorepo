@@ -104,3 +104,13 @@
 #
 #    rebuild_versioninfo_map:
 #      schedule: 10minutes
+#
+#    auror_hostnames:
+#      schedule: 1day
+#      queue: auror.hostnames
+#
+#    auror_testssl:
+#      schedule: 1day
+#      queue: auror.testssl
+#      connect_timeout: 5
+#      openssl_timeout: 5

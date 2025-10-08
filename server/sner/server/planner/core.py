@@ -357,18 +357,18 @@ class Planner(TerminateContextMixin):
                 next_stage=testssl_load_stage
             )
 
-        # auror scan
-        if plines.auror_scan:
+        # auror hostnames
+        if plines.auror_hostnames:
             auror_hostnames_stage = self._add_stage(
                 "auror:hostnames",
                 StorageLoaderAurorHostnames,
-                queue_name=plines.auror_scan.hostnames_queue
+                queue_name=plines.auror_hostnames.queue
             )
 
             self._add_stage(
                 "auror:hostnames_targetlist",
                 Targetlist,
-                schedule=plines.auror_scan.hostnames_schedule,
+                schedule=plines.auror_hostnames.schedule,
                 targets=["trigger"],
                 next_stages=[auror_hostnames_stage]
             )

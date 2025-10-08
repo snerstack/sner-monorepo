@@ -284,14 +284,16 @@ def v2_public_storage_auror_route():
     @dataclass
     class HostMapItem:
         """helper class"""
+
         address: str
         hostnames: set
         os: str
 
     # fetch host-auror_hostnames map, so it's over-fetched with ORM later
     storage_data = db.session.execute(
-        select(Host.id, Host.address, Host.hostname, Host.os, Note.data)
-        .outerjoin(Note, and_(Note.host_id == Host.id, Note.xtype == "auror.hostnames"))
+        select(Host.id, Host.address, Host.hostname, Host.os, Note.data).outerjoin(
+            Note, and_(Note.host_id == Host.id, Note.xtype == "auror.hostnames")
+        )
     ).all()
 
     host_map = {}
@@ -308,23 +310,48 @@ def v2_public_storage_auror_route():
         host_map[host_id] = HostMapItem(host_address, hostnames, host_os)
 
     # dump all services along with hostnames for auror
-    services = db.session.execute(select(Service.host_id, Service.proto, Service.port, Service.state)).all()
+    services = db.session.execute(select(Service.id, Service.host_id, Service.proto, Service.port, Service.state)).all()
+    all_tls_notes = db.session.execute(
+        select(Note.host_id, Note.service_id, Note.via_target, Note.xtype, Note.data).where(Note.xtype.like("auror.testssl%"))
+    ).all()
+
+    notes_map = {}
+    for note in all_tls_notes:
+        key = (note.host_id, note.service_id, note.via_target)
+        notes_map.setdefault(key, []).append(note)
+
     response = []
-    for host_id, proto, port, state in services:
+    for service_id, host_id, proto, port, state in services:
         for hostname in host_map[host_id].hostnames:
-            response.append({
-                "input": {
-                    "hostname": hostname,
-                    "ip": host_map[host_id].address,
-                    "port": port,
-                    "proto": proto,
-                },
-                "port_scan": {
-                    "port": port,
-                    "proto": proto,
-                    "port_state": state,
-                    "os": host_map[host_id].os
-                }
-            })
+            key = (host_id, service_id, hostname)
+            notes = notes_map.get(key, [])
+            if notes:
+                for note in notes:
+                    tls_result = json.loads(note.data).get("auror_data", None)
+                    response.append(
+                        {
+                            "input": {
+                                "hostname": hostname,
+                                "ip": host_map[host_id].address,
+                                "port": port,
+                                "proto": proto,
+                            },
+                            "port_scan": {"port": port, "proto": proto, "port_state": state, "os": host_map[host_id].os},
+                            "tls_scan": tls_result,
+                        }
+                    )
+            else:
+                response.append(
+                    {
+                        "input": {
+                            "hostname": hostname,
+                            "ip": host_map[host_id].address,
+                            "port": port,
+                            "proto": proto,
+                        },
+                        "port_scan": {"port": port, "proto": proto, "port_state": state, "os": host_map[host_id].os},
+                        "tls_scan": None,
+                    }
+                )
 
     return response
