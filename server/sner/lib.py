@@ -3,6 +3,7 @@
 shared functions
 """
 
+import re
 import os
 import signal
 from contextlib import contextmanager
@@ -29,11 +30,21 @@ def is_zip(path):
 
 
 def file_from_zip(zippath, filename):
-    """exctract filename data from zipfile"""
+    """extract file data from zipfile"""
 
     with ZipFile(zippath) as ftmp_zip:
         with ftmp_zip.open(filename) as ftmp:
             return ftmp.read()
+
+
+def files_from_zip(zippath, regexp):
+    """extract files data from zipfile by filename regexp"""
+
+    matcher = re.compile(regexp)
+    with ZipFile(zippath) as ftmp_zip:
+        for filename in ftmp_zip.namelist():
+            if matcher.match(filename):
+                yield file_from_zip(zippath, filename)
 
 
 def format_host_address(value):
