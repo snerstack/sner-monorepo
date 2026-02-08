@@ -148,7 +148,7 @@ class AgentBase(ABC, TerminateContextMixin):
         zipdir(jobdir, f'{jobdir}.zip')
         shutil.rmtree(jobdir)
 
-        self.log.info('process_assignment finished, retval=%d', retval)
+        self.log.info('process_assignment %s finished, retval=%d', assignment["id"], retval)
         return retval
 
 
