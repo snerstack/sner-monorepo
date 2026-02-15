@@ -69,7 +69,7 @@ def filter_tarpits(pidb, threshold=200):
     hosts_over_threshold = dict(filter(lambda x: x[1] > threshold, host_services_count.items()))
 
     if hosts_over_threshold:
-        for collection in ['services', 'vulns', 'notes']:
+        for collection in ["services", "vulns", "notes"]:
             # list() should provide copy for list-in-loop pruning
             for item in list(getattr(pidb, collection)):
                 if pidb.hosts.by.iid[item.host_iid].address in hosts_over_threshold:
@@ -113,18 +113,18 @@ class Schedule(Stage):
 
     def __init__(self, schedule, lockname):
         self.schedule = schedule
-        self.lastrun_path = Path(f'{current_app.config["SNER_VAR"]}/lastrun.{lockname}')
+        self.lastrun_path = Path(f"{current_app.config['SNER_VAR']}/lastrun.{lockname}")
 
     def run(self):
         """run only on configured schedule"""
 
         if self.lastrun_path.exists():
-            lastrun = datetime.fromisoformat(self.lastrun_path.read_text(encoding='utf8'))
+            lastrun = datetime.fromisoformat(self.lastrun_path.read_text(encoding="utf8"))
             if (datetime.utcnow().timestamp() - lastrun.timestamp()) < timeparse(self.schedule):
                 return
 
         self._run()
-        self.lastrun_path.write_text(datetime.utcnow().isoformat(), encoding='utf8')
+        self.lastrun_path.write_text(datetime.utcnow().isoformat(), encoding="utf8")
 
     @abstractmethod
     def _run(self):
@@ -144,11 +144,13 @@ class QueueHandler(Stage):
         """drain queue and yield PIDBs"""
 
         for aajob in Job.query.filter(Job.queue_id == self.queue.id, Job.retval == 0).all():
-            current_app.logger.info(f'{self.__class__.__name__} drain {aajob.id} ({aajob.queue.name})')
+            current_app.logger.info(f"{self.__class__.__name__} drain {aajob.id} ({aajob.queue.name})")
             try:
                 parsed = JobManager.parse(aajob)
             except Exception as exc:  # pylint: disable=broad-except
-                current_app.logger.error(f'{self.__class__.__name__} failed to drain {aajob.id} ({aajob.queue.name}), {exc}', exc_info=True)
+                current_app.logger.error(
+                    f"{self.__class__.__name__} failed to drain {aajob.id} ({aajob.queue.name}), {exc}", exc_info=True
+                )
                 aajob.retval += 1000
                 db.session.commit()
                 continue
@@ -159,7 +161,9 @@ class QueueHandler(Stage):
     def task(self, data):
         """enqueue data/targets into all configured queues"""
 
-        already_queued = db.session.connection().execute(select(Target.target).filter(Target.queue == self.queue)).scalars().all()
+        already_queued = (
+            db.session.connection().execute(select(Target.target).filter(Target.queue == self.queue)).scalars().all()
+        )
         enqueue = list(set(data) - set(already_queued))
         QueueManager.enqueue(self.queue, enqueue)
         current_app.logger.info(f'{self.__class__.__name__} enqueued {len(enqueue)} targets to "{self.queue.name}"')
@@ -251,8 +255,8 @@ class StorageSixEnumTargetlist(Schedule):
         self.next_stage.task(targets)
 
 
-class StorageTestsslTargetlist(Schedule):  # pylint: disable=too-few-public-methods
-    """enumerates testssl targets from storage data"""
+class StorageServiceScanTargetlist(Schedule):
+    """list targets for service scan"""
 
     def __init__(self, schedule, lockname, next_stage):
         super().__init__(schedule, lockname)
@@ -439,23 +443,23 @@ class StorageLoaderSportmap(QueueHandler):
 
         for pidb in self._drain():
             current_app.logger.info(
-                f'{self.__class__.__name__} loading {len(pidb.hosts)} '
-                f'hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes'
+                f"{self.__class__.__name__} loading {len(pidb.hosts)} "
+                f"hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes"
             )
 
             # do not import empty hosts
             all_addrs = set(pidb.hosts.all.address)
-            detected_addrs = set(pidb.notes.where(xtype='sportmap').join(pidb.hosts, host_iid="iid").all.address)
+            detected_addrs = set(pidb.notes.where(xtype="sportmap").join(pidb.hosts, host_iid="iid").all.address)
             prune_addrs = all_addrs - detected_addrs
             pidb.hosts.remove_many(pidb.hosts.where(address=Table.is_in(prune_addrs)))
             StorageManager.import_parsed(pidb)
 
             # prune old notes
             affected_rows = Note.query.filter(
-                Note.xtype == 'sportmap',
-                Note.host_id.in_(db.session.query(Host.id).filter(Host.address.in_(prune_addrs)))
+                Note.xtype == "sportmap",
+                Note.host_id.in_(db.session.query(Host.id).filter(Host.address.in_(prune_addrs))),
             ).delete(synchronize_session=False)
-            current_app.logger.info(f'{self.__class__.__name__} prunned {affected_rows} old notes')
+            current_app.logger.info(f"{self.__class__.__name__} prunned {affected_rows} old notes")
             db.session.commit()
             db.session.expire_all()
 
@@ -466,6 +470,7 @@ class StorageLoaderAurorHostnames(QueueHandler):
     @dataclass
     class NoteMapItem:
         """helper class"""
+
         host_id: int
         note_id: int
 
@@ -474,20 +479,18 @@ class StorageLoaderAurorHostnames(QueueHandler):
 
         for pidb in self._drain():
             current_app.logger.info(
-                f'{self.__class__.__name__} loading {len(pidb.hosts)} '
-                f'hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes'
+                f"{self.__class__.__name__} loading {len(pidb.hosts)} "
+                f"hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes"
             )
 
             # Fetch existing host-note mappings
             existing_notes = db.session.execute(
-                select(Host.address, Host.id, Note.id)
-                .outerjoin(Note, and_(Note.host_id == Host.id, Note.xtype == "auror.hostnames"))
+                select(Host.address, Host.id, Note.id).outerjoin(
+                    Note, and_(Note.host_id == Host.id, Note.xtype == "auror.hostnames")
+                )
             ).all()
 
-            notes_map = {
-                address: self.NoteMapItem(host_id, note_id)
-                for address, host_id, note_id in existing_notes
-            }
+            notes_map = {address: self.NoteMapItem(host_id, note_id) for address, host_id, note_id in existing_notes}
 
             # Prepare and do batch updates and inserts
             updated_host_ids = set()
@@ -499,18 +502,18 @@ class StorageLoaderAurorHostnames(QueueHandler):
                     updated_host_ids.add(host_item.host_id)
 
                     if host_item.note_id:
-                        note_updates.append({
-                            "id": host_item.note_id,
-                            "data": note.data,
-                            "import_time": datetime.utcnow()
-                        })
+                        note_updates.append(
+                            {"id": host_item.note_id, "data": note.data, "import_time": datetime.utcnow()}
+                        )
                     else:
-                        note_inserts.append({
-                            "host_id": host_item.host_id,
-                            "xtype": "auror.hostnames",
-                            "data": note.data,
-                            "import_time": datetime.utcnow()
-                        })
+                        note_inserts.append(
+                            {
+                                "host_id": host_item.host_id,
+                                "xtype": "auror.hostnames",
+                                "data": note.data,
+                                "import_time": datetime.utcnow(),
+                            }
+                        )
 
             if note_updates:
                 db.session.bulk_update_mappings(Note, note_updates)
@@ -518,23 +521,24 @@ class StorageLoaderAurorHostnames(QueueHandler):
                 db.session.bulk_insert_mappings(Note, note_inserts)
 
             # Prune old notes
-            affected_rows = db.session.query(Note).filter(
-                Note.xtype == 'auror.hostnames',
-                Note.host_id.notin_(updated_host_ids)
-            ).delete(synchronize_session=False)
+            affected_rows = (
+                db.session.query(Note)
+                .filter(Note.xtype == "auror.hostnames", Note.host_id.notin_(updated_host_ids))
+                .delete(synchronize_session=False)
+            )
 
             db.session.commit()
             db.session.expire_all()
             current_app.logger.info(
-                f'{self.__class__.__name__} updated {len(updated_host_ids)} hosts, pruned {affected_rows} notes'
+                f"{self.__class__.__name__} updated {len(updated_host_ids)} hosts, pruned {affected_rows} notes"
             )
 
 
-class RebuildVersioninfoMap(Schedule):  # pylint: disable=too-few-public-methods
+class RebuildVersioninfoMap(Schedule):
     """recount versioninfo map"""
 
     def _run(self):
         """run"""
 
         VersioninfoManager.rebuild()
-        current_app.logger.info(f'{self.__class__.__name__} finished')
+        current_app.logger.info(f"{self.__class__.__name__} finished")

@@ -40,29 +40,26 @@ from sner.server.storage.models import Host, Note, Vuln
 def configure_logging():
     """configure server/app logging"""
 
-    logging.config.dictConfig({
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "formatter_planner": {
-                "format": "sner.planner [%(asctime)s] %(levelname)s %(message)s",
-                "datefmt": "%d/%b/%Y:%H:%M:%S %z"
-            }
-        },
-        "handlers": {
-            "console_planner": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",
-                "formatter": "formatter_planner"
-            }
-        },
-        "loggers": {
-            "sner.server": {
-                "level": "INFO",
-                "handlers": ["console_planner"]
-            }
+    logging.config.dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "formatter_planner": {
+                    "format": "sner.planner [%(asctime)s] %(levelname)s %(message)s",
+                    "datefmt": "%d/%b/%Y:%H:%M:%S %z",
+                }
+            },
+            "handlers": {
+                "console_planner": {
+                    "class": "logging.StreamHandler",
+                    "stream": "ext://sys.stdout",
+                    "formatter": "formatter_planner",
+                }
+            },
+            "loggers": {"sner.server": {"level": "INFO", "handlers": ["console_planner"]}},
         }
-    })
+    )
 
 
 def dump_targets(netlist):
@@ -87,17 +84,18 @@ def outofscope_check(prune=False):
         return f"{(value / total) * 100:.2f}%" if total else "N/A"
 
     # find hosts which are not in any scan scope
-    scope = list(chain.from_iterable(
-        current_app.config["SNER_PLANNER"].get(item, [])
-        for item in [
-            "basic_nets_ipv4",
-            "basic_nets_ipv6",
-            "nuclei_nets_ipv4",
-            "nuclei_nets_ipv6"
-            "sportmap_nets_ipv4",
-            "sportmap_nets_ipv6",
-        ]
-    ))
+    scope = list(
+        chain.from_iterable(
+            current_app.config["SNER_PLANNER"].get(item, [])
+            for item in [
+                "basic_nets_ipv4",
+                "basic_nets_ipv6",
+                "nuclei_nets_ipv4",
+                "nuclei_nets_ipv6sportmap_nets_ipv4",
+                "sportmap_nets_ipv6",
+            ]
+        )
+    )
     current_app.logger.debug("basic scan scope: %s", scope)
     scope_query = [Host.address.op("<<=")(net) for net in scope]
     query = select(Host.id).filter(not_(or_(*scope_query)))
@@ -105,15 +103,17 @@ def outofscope_check(prune=False):
 
     # find other objects which should be pruned from database (not in scope anymore)
     # nuclei and sportmap shares agreegate scanning scope
-    scope = list(chain.from_iterable(
-        current_app.config["SNER_PLANNER"].get(item, [])
-        for item in [
-            "nuclei_nets_ipv4",
-            "nuclei_nets_ipv6",
-            "sportmap_nets_ipv4",
-            "sportmap_nets_ipv6",
-        ]
-    ))
+    scope = list(
+        chain.from_iterable(
+            current_app.config["SNER_PLANNER"].get(item, [])
+            for item in [
+                "nuclei_nets_ipv4",
+                "nuclei_nets_ipv6",
+                "sportmap_nets_ipv4",
+                "sportmap_nets_ipv6",
+            ]
+        )
+    )
     current_app.logger.debug("vuln scan scope: %s", scope)
     scope_query = [Host.address.op("<<=")(net) for net in scope]
 
@@ -152,16 +152,13 @@ def outofscope_check(prune=False):
 
     if prune:
         db.session.execute(
-            delete(Note).filter(Note.id.in_(outscope_note_ids)),
-            execution_options={"synchronize_session": False}
+            delete(Note).filter(Note.id.in_(outscope_note_ids)), execution_options={"synchronize_session": False}
         )
         db.session.execute(
-            delete(Vuln).filter(Vuln.id.in_(outscope_vuln_ids)),
-            execution_options={"synchronize_session": False}
+            delete(Vuln).filter(Vuln.id.in_(outscope_vuln_ids)), execution_options={"synchronize_session": False}
         )
         db.session.execute(
-            delete(Host).filter(Host.id.in_(outscope_host_ids)),
-            execution_options={"synchronize_session": False}
+            delete(Host).filter(Host.id.in_(outscope_host_ids)), execution_options={"synchronize_session": False}
         )
         db.session.commit()
         db.session.expire_all()
@@ -380,12 +377,12 @@ class Planner(TerminateContextMixin):
         # rebuild versioninfo
         if plines.rebuild_versioninfo_map:
             self._add_stage(
-                "rebuild_versioninfo_map",
-                RebuildVersioninfoMap,
-                schedule=plines.rebuild_versioninfo_map.schedule
+                "rebuild_versioninfo_map", RebuildVersioninfoMap, schedule=plines.rebuild_versioninfo_map.schedule
             )
 
-    def terminate(self, signum=None, frame=None):  # pragma: no cover  pylint: disable=unused-argument  ; running over multiprocessing
+    def terminate(
+        self, signum=None, frame=None
+    ):  # pragma: no cover  pylint: disable=unused-argument  ; running over multiprocessing
         """terminate at once"""
 
         self.log.info("received terminate")
