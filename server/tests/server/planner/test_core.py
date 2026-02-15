@@ -7,7 +7,6 @@ import yaml
 from flask import current_app
 
 from sner.server.planner.core import (
-    dump_targets,
     outofscope_check,
     Planner,
 )
@@ -80,19 +79,6 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
 
     planner = Planner(config, oneshot=True)
     planner.run()
-
-
-def test_dumptargets(app):  # pylint: disable=unused-argument
-    """test dump targets"""
-
-    current_app.config["SNER_PLANNER"] = yaml.safe_load(
-        """
-      basic_nets_ipv4: ['127.0.0.11/32']
-      basic_nets_ipv6: ['::1/128']
-      """
-    )
-
-    assert len(dump_targets("basic_nets_ipv4")) == 1
 
 
 def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pylint: disable=unused-argument

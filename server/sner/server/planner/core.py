@@ -62,20 +62,6 @@ def configure_logging():
     )
 
 
-def dump_targets(netlist):
-    """dump all available targets, helper for manual sweeps"""
-
-    blacklist = ExclMatcher(current_app.config["SNER_EXCLUSIONS"])
-
-    addrs = []
-    for net in current_app.config["SNER_PLANNER"][netlist]:
-        for addr in enumerate_network(net):
-            if not blacklist.match(addr):
-                addrs.append(addr)
-
-    return addrs
-
-
 def outofscope_check(prune=False):
     """handles data in storage that is outside the planner"s scanning scope"""
 
