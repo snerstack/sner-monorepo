@@ -8,7 +8,7 @@ from flask import current_app
 from flask.cli import with_appcontext
 
 from sner.server.agreegate import fetch_agreegate_netlists
-from sner.server.planner.core import dump_targets, outofscope_check, Planner
+from sner.server.planner.core import outofscope_check, Planner
 
 
 @click.group(name='planner', help='sner.server planner commands')
@@ -23,20 +23,6 @@ def run_command(**kwargs):
     """run planner daemon"""
 
     Planner(current_app.config['SNER_PLANNER'], kwargs['oneshot']).run()
-
-
-@command.command(name='dump-targets', help='dump all targets respecting exclusions')
-@with_appcontext
-@click.option(
-    '--netlist',
-    type=click.Choice(['basic_nets_ipv4', 'nuclei_nets_ipv4'], case_sensitive=False),
-    default="basic_nets_ipv4"
-)
-def dump_targets_command(netlist):
-    """dump all targets respecting exclusions"""
-
-    if targets := dump_targets(netlist):
-        print("\n".join(targets))
 
 
 @command.command(name='fetch-agreegate-netlists', help='fetch networks to be scanned from agreegate API')
