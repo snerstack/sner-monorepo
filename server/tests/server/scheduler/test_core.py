@@ -81,12 +81,12 @@ def test_excl_matcher(app):  # pylint: disable=unused-argument
 def test_queuemanager_errorhandling(app, queue):  # pylint: disable=unused-argument
     """test QueuemaManger error handling"""
 
-    Path(f'{queue.data_abspath}').mkdir(parents=True)
-    Path(f'{queue.data_abspath}/extra').touch()
+    Path(f"{queue.data_abspath}").mkdir(parents=True)
+    Path(f"{queue.data_abspath}/extra").touch()
     with pytest.raises(RuntimeError) as pytest_wrapped_e:
         QueueManager.delete(queue)
 
-    assert 'failed to remove queue directory' in str(pytest_wrapped_e)
+    assert "failed to remove queue directory" in str(pytest_wrapped_e)
 
 
 def test_schedulerservice_hashval():
@@ -105,14 +105,14 @@ def test_schedulerservice_readynetupdates(app, queue, target_factory):  # pylint
     """test scheduler service readynet manipulation"""
 
     queue.group_size = 2
-    target_factory.create(queue=queue, target='1', hashval=SchedulerService.hashval('1'))
-    target_factory.create(queue=queue, target='2', hashval=SchedulerService.hashval('2'))
-    target_factory.create(queue=queue, target='3', hashval=SchedulerService.hashval('3'))
+    target_factory.create(queue=queue, target="1", hashval=SchedulerService.hashval("1"))
+    target_factory.create(queue=queue, target="2", hashval=SchedulerService.hashval("2"))
+    target_factory.create(queue=queue, target="3", hashval=SchedulerService.hashval("3"))
     db.session.commit()
 
     assignment = SchedulerService.job_assign(None, [])
 
-    assert len(assignment['targets']) == 2
+    assert len(assignment["targets"]) == 2
     assert Readynet.query.count() == 1
 
 
@@ -126,7 +126,7 @@ def test_schedulerservice_morereadynetupdates(app, queue, target_factory):  # py
     readynets map must be manually recounted.
     """
 
-    current_app.config['SNER_HEATMAP_HOT_LEVEL'] = 5
+    current_app.config["SNER_HEATMAP_HOT_LEVEL"] = 5
     queue.group_size = 2
 
     for addr in range(10):
@@ -138,33 +138,37 @@ def test_schedulerservice_morereadynetupdates(app, queue, target_factory):  # py
     assignment2 = SchedulerService.job_assign(None, [])
     assignment3 = SchedulerService.job_assign(None, [])
 
-    assert len(assignment3['targets']) == 1
+    assert len(assignment3["targets"]) == 1
     assert Readynet.query.count() == 0
 
-    SchedulerService.job_output(db.session.get(Job, assignment3['id']), 0, b'')
+    SchedulerService.job_output(db.session.get(Job, assignment3["id"]), 0, b"")
     assert Readynet.query.count() == 1
 
-    SchedulerService.job_output(db.session.get(Job, assignment2['id']), 0, b'')
-    SchedulerService.job_output(db.session.get(Job, assignment1['id']), 0, b'')
+    SchedulerService.job_output(db.session.get(Job, assignment2["id"]), 0, b"")
+    SchedulerService.job_output(db.session.get(Job, assignment1["id"]), 0, b"")
     assert Readynet.query.count() == 1
 
 
 def test_schedulerservice_hashvalprocessing(app, queue, target_factory):  # pylint: disable=unused-argument
     """test scheduler service hashvalsreadynet manipulation"""
 
-    target_factory.create(queue=queue, target='tcp://127.0.0.1:23', hashval=SchedulerService.hashval('tcp://127.0.0.1:23'))
+    service_target = "svc,127.0.0.1,proto=tcp,port=23"
+    service_target_hashval = "127.0.0.0/24"
+    target_factory.create(
+        queue=queue, target=service_target, hashval=SchedulerService.hashval(service_target)
+    )
     db.session.commit()
 
     assignment = SchedulerService.job_assign(None, [])
 
     assert assignment
-    assert Heatmap.query.one().hashval == '127.0.0.0/24'
+    assert Heatmap.query.one().hashval == service_target_hashval
 
 
 def test_schedulerservice_readynetrecount(app, queue, target_factory):  # pylint: disable=unused-argument
     """test scheduler service readynet_recount"""
 
-    current_app.config['SNER_HEATMAP_HOT_LEVEL'] = 5
+    current_app.config["SNER_HEATMAP_HOT_LEVEL"] = 5
     queue.group_size = 2
 
     for addr in range(10):
@@ -176,17 +180,17 @@ def test_schedulerservice_readynetrecount(app, queue, target_factory):  # pylint
     SchedulerService.job_assign(None, [])
 
     assignment3 = SchedulerService.job_assign(None, [])
-    assert len(assignment3['targets']) == 1
+    assert len(assignment3["targets"]) == 1
     assert Readynet.query.count() == 0
 
-    current_app.config['SNER_HEATMAP_HOT_LEVEL'] = 7
+    current_app.config["SNER_HEATMAP_HOT_LEVEL"] = 7
     SchedulerService.readynet_recount()
     assert Readynet.query.count() == 1
 
     assignment4 = SchedulerService.job_assign(None, [])
-    assert len(assignment4['targets']) == 2
+    assert len(assignment4["targets"]) == 2
 
-    current_app.config['SNER_HEATMAP_HOT_LEVEL'] = 3
+    current_app.config["SNER_HEATMAP_HOT_LEVEL"] = 3
     SchedulerService.readynet_recount()
     assert Readynet.query.count() == 0
 
@@ -199,7 +203,7 @@ def test_schedulerservice_heatmapcheck(app, target):  # pylint: disable=unused-a
     assignment = SchedulerService.job_assign(None, [])
     assert SchedulerService.heatmap_check()
 
-    Job.query.filter(Job.id == assignment['id']).delete()
+    Job.query.filter(Job.id == assignment["id"]).delete()
     db.session.commit()
     assert not SchedulerService.heatmap_check()
 
@@ -222,26 +226,26 @@ def test_schedulerservice_capsrouting(app, queue_factory, target_factory):  # py
     low priority so it will be backfill for default pool
     """
 
-    qsner_pool1_normal = queue_factory.create(name="sner.normal", reqs=['default'], priority=QueuePrio.NORMAL)
-    qsner_pool1_prio = queue_factory.create(name="sner.high", reqs=['default'], priority=QueuePrio.HIGH)
-    qsner_pool2 = queue_factory.create(name="sner.pooly", reqs=['testssl'], priority=QueuePrio.LOW)
+    qsner_pool1_normal = queue_factory.create(name="sner.normal", reqs=["default"], priority=QueuePrio.NORMAL)
+    qsner_pool1_prio = queue_factory.create(name="sner.high", reqs=["default"], priority=QueuePrio.HIGH)
+    qsner_pool2 = queue_factory.create(name="sner.pooly", reqs=["testssl"], priority=QueuePrio.LOW)
 
-    target_factory.create(queue=qsner_pool1_normal, target='normal')
-    target_factory.create(queue=qsner_pool1_prio, target='prio')
-    target_factory.create(queue=qsner_pool2, target='pool2')
-    target_factory.create(queue=qsner_pool2, target='pool2')
+    target_factory.create(queue=qsner_pool1_normal, target="normal")
+    target_factory.create(queue=qsner_pool1_prio, target="prio")
+    target_factory.create(queue=qsner_pool2, target="pool2")
+    target_factory.create(queue=qsner_pool2, target="pool2")
 
-    assignment = SchedulerService.job_assign(None, agent_caps=['default', 'testssl'])
-    assert assignment['targets'] == ['prio']
+    assignment = SchedulerService.job_assign(None, agent_caps=["default", "testssl"])
+    assert assignment["targets"] == ["prio"]
 
-    assignment = SchedulerService.job_assign(None, agent_caps=['testssl'])
-    assert assignment['targets'] == ['pool2']
+    assignment = SchedulerService.job_assign(None, agent_caps=["testssl"])
+    assert assignment["targets"] == ["pool2"]
 
-    assignment = SchedulerService.job_assign(None, agent_caps=['default', 'testssl'])
-    assert assignment['targets'] == ['normal']
+    assignment = SchedulerService.job_assign(None, agent_caps=["default", "testssl"])
+    assert assignment["targets"] == ["normal"]
 
-    assignment = SchedulerService.job_assign(None, agent_caps=['default', 'testssl'])
-    assert assignment['targets'] == ['pool2']
+    assignment = SchedulerService.job_assign(None, agent_caps=["default", "testssl"])
+    assert assignment["targets"] == ["pool2"]
 
 
 def test_schedulerservice_morecapsrouting(app, queue_factory, target_factory):  # pylint: disable=unused-argument
@@ -249,23 +253,23 @@ def test_schedulerservice_morecapsrouting(app, queue_factory, target_factory):  
 
     # deployment check, default client can handle queue with no-reqs
     queue1 = queue_factory.create(name="test1", reqs=[], priority=QueuePrio.NORMAL)
-    target_factory.create(queue=queue1, target='dummy1')
+    target_factory.create(queue=queue1, target="dummy1")
 
-    assignment = SchedulerService.job_assign(None, agent_caps=['default'])
-    assert assignment['targets'] == ['dummy1']
+    assignment = SchedulerService.job_assign(None, agent_caps=["default"])
+    assert assignment["targets"] == ["dummy1"]
 
     # deployment check, all-caps client can handle no-reqs queue
-    target_factory.create(queue=queue1, target='dummy2')
+    target_factory.create(queue=queue1, target="dummy2")
 
     assignment = SchedulerService.job_assign(None, agent_caps=[])
-    assert assignment['targets'] == ['dummy2']
+    assert assignment["targets"] == ["dummy2"]
 
     # deployment check, all-caps client can handle queue with reqs
-    queue3 = queue_factory.create(name="test3", reqs=['dummy'], priority=QueuePrio.NORMAL)
-    target_factory.create(queue=queue3, target='dummy3')
+    queue3 = queue_factory.create(name="test3", reqs=["dummy"], priority=QueuePrio.NORMAL)
+    target_factory.create(queue=queue3, target="dummy3")
 
     assignment = SchedulerService.job_assign(None, agent_caps=[])
-    assert assignment['targets'] == ['dummy3']
+    assert assignment["targets"] == ["dummy3"]
 
 
 def test_schedulerservice_repeatfailedjobs(app, queue, job_factory):  # pylint: disable=unused-argument

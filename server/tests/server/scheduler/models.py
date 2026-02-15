@@ -42,7 +42,7 @@ class TargetFactory(BaseModelFactory):
         model = Target
 
     queue = SubFactory(QueueFactory)
-    target = 'testtarget'
+    target = "testtarget"
     hashval = SchedulerService.hashval(target)
 
     @post_generation
@@ -58,15 +58,17 @@ class TargetFactory(BaseModelFactory):
             db.session.commit()
 
 
-class JobFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class JobFactory(BaseModelFactory):
     """test job model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+
+    class Meta:
         """test job model factory"""
+
         model = Job
 
     id = LazyAttribute(lambda x: str(uuid4()))
     queue = SubFactory(QueueFactory)
-    assignment = json.dumps({'module': 'dummy', 'targets': ['1', '2']})
+    assignment = json.dumps({"module": "dummy", "targets": ["1", "2"]})
     retval = None
     time_start = datetime.now()
     time_end = None
@@ -79,7 +81,7 @@ class JobFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
             return
 
         SchedulerService.get_lock()
-        for target in json.loads(self.assignment)['targets']:
+        for target in json.loads(self.assignment)["targets"]:
             SchedulerService.heatmap_put(SchedulerService.hashval(target))
         SchedulerService.release_lock()
 
