@@ -35,6 +35,7 @@ pytest-selenium
 pytimeparse
 pyyaml
 requests
+ruff
 schema
 soft-webauthn
 sqlalchemy-datatables
