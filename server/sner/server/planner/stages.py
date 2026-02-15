@@ -100,7 +100,7 @@ def filter_service_open(pidb):
     return pidb
 
 
-class Stage(ABC):  # pylint: disable=too-few-public-methods
+class Stage(ABC):
     """planner stage base"""
 
     @abstractmethod
@@ -108,7 +108,7 @@ class Stage(ABC):  # pylint: disable=too-few-public-methods
         """stage main runnable"""
 
 
-class Schedule(Stage):  # pylint: disable=too-few-public-methods
+class Schedule(Stage):
     """schedule base"""
 
     def __init__(self, schedule, lockname):
@@ -131,7 +131,7 @@ class Schedule(Stage):  # pylint: disable=too-few-public-methods
         """stage runnable implementation"""
 
 
-class QueueHandler(Stage):  # pylint: disable=too-few-public-methods
+class QueueHandler(Stage):
     """queue handler base"""
 
     def __init__(self, queue_name):
@@ -165,7 +165,7 @@ class QueueHandler(Stage):  # pylint: disable=too-few-public-methods
         current_app.logger.info(f'{self.__class__.__name__} enqueued {len(enqueue)} targets to "{self.queue.name}"')
 
 
-class DummyStage(Stage):  # pylint: disable=too-few-public-methods
+class DummyStage(Stage):
     """dummy testing stage"""
 
     def __init__(self):
@@ -235,7 +235,7 @@ class StorageSixTargetlist(Schedule):  # pylint: disable=too-few-public-methods
         self.next_stage.task(targets)
 
 
-class StorageSixEnumTargetlist(Schedule):  # pylint: disable=too-few-public-methods
+class StorageSixEnumTargetlist(Schedule):
     """generates target for six_enum_discovery module"""
 
     def __init__(self, schedule, lockname, next_stage, filternets=None):

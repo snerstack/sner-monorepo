@@ -2,7 +2,6 @@
 """
 auth component models
 """
-# pylint: disable=too-few-public-methods,abstract-method
 
 from datetime import datetime
 

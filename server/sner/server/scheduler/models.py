@@ -2,7 +2,6 @@
 """
 sqlalchemy models
 """
-# pylint: disable=too-few-public-methods,abstract-method
 
 import os
 from datetime import datetime

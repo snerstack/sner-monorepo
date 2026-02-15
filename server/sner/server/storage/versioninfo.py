@@ -26,7 +26,7 @@ def versioninfo_docid(
     service_port,
     via_target,
     product
-):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+):
     """compute versioninfo docid"""
 
     keydata = '|'.join(map(str, [

@@ -17,7 +17,7 @@ from sner.server.utils import SnerJSONEncoder
 logger = logging.getLogger(__name__)
 
 
-class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
+class ParserModule(ParserBase):
     """ssh_audit output parser"""
 
     @classmethod

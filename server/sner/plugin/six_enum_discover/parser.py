@@ -12,7 +12,7 @@ from sner.lib import file_from_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
 
 
-class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
+class ParserModule(ParserBase):
     """six enum parser, pulls list of hosts for discovery module"""
 
     ARCHIVE_PATHS = r'output\-[0-9]+.txt'

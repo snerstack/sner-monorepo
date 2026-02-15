@@ -107,7 +107,7 @@ class ExclMatcher():
         return False
 
 
-class ExclMatcherImplBase(ABC):  # pylint: disable=too-few-public-methods
+class ExclMatcherImplBase(ABC):
     """base interface which must  be implemented by all available matchers"""
 
     def __init__(self, match_to):
@@ -126,7 +126,7 @@ class ExclMatcherImplBase(ABC):  # pylint: disable=too-few-public-methods
 
 
 @ExclMatcher.register(ExclFamily.NETWORK)
-class NetworkExclMatcher(ExclMatcherImplBase):  # pylint: disable=too-few-public-methods
+class NetworkExclMatcher(ExclMatcherImplBase):
     """network matcher"""
 
     def _initialize(self, match_to):
@@ -166,7 +166,7 @@ class NetworkExclMatcher(ExclMatcherImplBase):  # pylint: disable=too-few-public
 
 
 @ExclMatcher.register(ExclFamily.REGEX)
-class RegexExclMatcher(ExclMatcherImplBase):  # pylint: disable=too-few-public-methods
+class RegexExclMatcher(ExclMatcherImplBase):
     """regex matcher"""
 
     def _initialize(self, match_to):

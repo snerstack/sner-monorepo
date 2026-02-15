@@ -2,6 +2,7 @@
 """
 scheduler test models
 """
+# pylint: disable=too-few-public-methods
 
 import json
 from datetime import datetime
@@ -18,9 +19,10 @@ from sner.server.utils import yaml_dump
 from tests import BaseModelFactory
 
 
-class QueueFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class QueueFactory(BaseModelFactory):
     """test queue model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+
+    class Meta:
         """test queue model factory"""
         model = Queue
 
@@ -31,10 +33,12 @@ class QueueFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
     active = True
 
 
-class TargetFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class TargetFactory(BaseModelFactory):
     """test target model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+
+    class Meta:
         """test target model factory"""
+
         model = Target
 
     queue = SubFactory(QueueFactory)
@@ -80,7 +84,7 @@ class JobFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
         SchedulerService.release_lock()
 
 
-class JobCompletedFactory(JobFactory):  # pylint: disable=too-few-public-methods
+class JobCompletedFactory(JobFactory):
     """test completed job model factory"""
 
     retval = 0

@@ -30,7 +30,7 @@ def load_parser_plugins():
         REGISTERED_PARSERS[plugin_name] = getattr(module, 'ParserModule')
 
 
-class ParsedItemBase:  # pylint: disable=too-few-public-methods
+class ParsedItemBase:
     """parsed items base object; shared functions"""
 
     def update(self, obj):
@@ -163,7 +163,7 @@ class ParsedItemsDb:
         service_port=None,
         via_target=None,
         **kwargs
-    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    ):
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)
@@ -193,7 +193,7 @@ class ParsedItemsDb:
         service_port=None,
         via_target=None,
         **kwargs
-    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    ):
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)
@@ -210,7 +210,7 @@ class ParsedItemsDb:
         return note
 
 
-class ParserBase(ABC):  # pylint: disable=too-few-public-methods
+class ParserBase(ABC):
     """parser interface definition"""
 
     @staticmethod

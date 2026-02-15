@@ -20,7 +20,7 @@ from sner.server.parser import ParsedItemsDb, ParserBase
 logger = logging.getLogger(__name__)
 
 
-class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
+class ParserModule(ParserBase):
     """testssl parser"""
 
     ARCHIVE_PATHS = r'output\-[0-9]+\.json'

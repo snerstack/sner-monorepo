@@ -12,7 +12,7 @@ from sner.lib import file_from_zip, is_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
 
 
-class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
+class ParserModule(ParserBase):
     """auror_hostnames output parser"""
 
     @classmethod

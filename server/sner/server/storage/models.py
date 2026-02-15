@@ -28,7 +28,6 @@ fill in the best value as possible in order to prevent accidental data
 overwrite and support upsert/update mechanism used during continuous network
 monitoring.
 """
-# pylint: disable=too-few-public-methods,abstract-method
 
 from datetime import datetime
 

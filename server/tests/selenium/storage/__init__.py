@@ -49,7 +49,7 @@ def check_dt_toolbox_multiactions(
     model_class,
     load_route=True,
     test_delete=True
-):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+):
     """check dt toolbar toolbox actions; there must be 2 rows to perform the test"""
 
     if load_route:

@@ -15,7 +15,7 @@ FRONTEND_TESTSERVER_DEFAULT = "http://localhost:18002"
 FRONTEND_TESTSERVER_DEV = "http://localhost:18082"
 
 
-class JsNoAjaxPending():  # pylint: disable=too-few-public-methods
+class JsNoAjaxPending():
     """custom expected_condition, wait for all ajax calls to finish"""
 
     def __call__(self, driver):

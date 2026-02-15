@@ -8,3 +8,8 @@ ignore-comments=no
 
 [MESSAGES CONTROL]
 disable=not-callable
+
+[DESIGN]
+min-public-methods=1
+max-positional-arguments=7
+max-args=7

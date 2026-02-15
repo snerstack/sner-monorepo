@@ -2,6 +2,7 @@
 """
 auth test models
 """
+# pylint: disable=too-few-public-methods
 
 from factory import LazyAttribute, post_generation, SubFactory
 from fido2 import cbor
@@ -13,9 +14,9 @@ from sner.server.password_supervisor import PasswordSupervisor as PWS
 from tests import BaseModelFactory
 
 
-class UserFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class UserFactory(BaseModelFactory):
     """test user model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta:
         """test user model factory"""
         model = User
 
@@ -27,9 +28,9 @@ class UserFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
     api_networks = ['127.0.0.0/8', '2001:db8::/32']
 
 
-class WebauthnCredentialFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class WebauthnCredentialFactory(BaseModelFactory):
     """test webauthn_credential model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta:
         """test webauthn_credential model factory"""
         model = WebauthnCredential
 
