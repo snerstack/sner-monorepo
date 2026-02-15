@@ -20,7 +20,7 @@ from sner.server.parser import ParsedItemsDb, ParserBase
 logger = logging.getLogger(__name__)
 
 
-class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
+class ParserModule(ParserBase):
     """nc output parser"""
 
     REGEX = r'^\(?(?P<hostname>.*)\)? \[(?P<address>[0-9a-f\.:]+)\] (?P<port>[0-9]+) \(.*\):? (?P<result>.*)$'

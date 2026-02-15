@@ -19,7 +19,7 @@ from sner.server.parser import ParsedItemsDb, ParserBase
 logger = logging.getLogger(__name__)
 
 
-class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
+class ParserModule(ParserBase):
     """nmap xml output parser"""
 
     ARCHIVE_PATHS = r'output.*\.xml|scan\-.*\.xml'

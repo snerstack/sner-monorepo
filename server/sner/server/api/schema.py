@@ -29,7 +29,8 @@ class JobAssignmentConfigSchema(BaseSchema):
     tweaked in order to serialize unknown fields, modules config attributes are of free-form
     """
 
-    class Meta:  # pylint: disable=too-few-public-methods,missing-class-docstring
+    class Meta:  # pylint: disable=too-few-public-methods
+        """meta"""
         unknown = INCLUDE
     module = fields.String(required=True)
 

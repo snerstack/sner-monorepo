@@ -2,6 +2,7 @@
 """
 storage test models
 """
+# pylint: disable=too-few-public-methods
 
 from datetime import datetime
 
@@ -12,9 +13,9 @@ from sner.server.storage.versioninfo import versioninfo_docid
 from tests import BaseModelFactory
 
 
-class HostFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class HostFactory(BaseModelFactory):
     """test host model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta:
         """test host model factory"""
         model = Host
 
@@ -24,9 +25,9 @@ class HostFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
     comment = 'testing webserver'
 
 
-class ServiceFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class ServiceFactory(BaseModelFactory):
     """test service model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta:
         """test service model factory"""
         model = Service
 
@@ -39,9 +40,9 @@ class ServiceFactory(BaseModelFactory):  # pylint: disable=too-few-public-method
     comment = 'a test service comment'
 
 
-class VulnFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class VulnFactory(BaseModelFactory):
     """test vuln model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta:
         """test vuln model factory"""
         model = Vuln
 
@@ -57,9 +58,9 @@ class VulnFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
     comment = 'some test vuln comment'
 
 
-class NoteFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class NoteFactory(BaseModelFactory):
     """test note model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta:
         """test note model factory"""
         model = Note
 
@@ -70,9 +71,9 @@ class NoteFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
     comment = 'some test note comment'
 
 
-class VersioninfoFactory(BaseModelFactory):  # pylint: disable=too-few-public-methods
+class VersioninfoFactory(BaseModelFactory):
     """test versioninfo model factory"""
-    class Meta:  # pylint: disable=too-few-public-methods
+    class Meta:
         """test versioninfo model factory"""
         model = Versioninfo
 

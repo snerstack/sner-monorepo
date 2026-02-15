@@ -62,7 +62,7 @@ class AgentModule(ModuleBase):
         targets_file,
         output_file,
         extra_args=None
-    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    ):
         """run scan"""
 
         Path(targets_file).write_text('\n'.join(targets), encoding='utf-8')

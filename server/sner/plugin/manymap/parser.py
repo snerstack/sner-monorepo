@@ -9,7 +9,7 @@ from pprint import pprint
 from sner.plugin.nmap.parser import ParserModule as NmapParserModule
 
 
-class ParserModule(NmapParserModule):  # pylint: disable=too-few-public-methods
+class ParserModule(NmapParserModule):
     """inet endpoints scanner xml output parser; the module uses nmap hence parse uses nmap parser"""
 
     ARCHIVE_PATHS = r'output\-[0-9]+\.xml'

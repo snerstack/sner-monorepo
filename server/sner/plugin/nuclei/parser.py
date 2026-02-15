@@ -36,7 +36,7 @@ def dnsptr_to_ip(dnsptr: str) -> str:
     raise ValueError("Input is not a valid reverse DNS string.")  # pragma: nocover  ; won't test
 
 
-class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
+class ParserModule(ParserBase):
     """nuclei output parser"""
 
     @classmethod

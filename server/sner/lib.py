@@ -52,7 +52,7 @@ def format_host_address(value):
     return value if ':' not in value else f'[{value}]'
 
 
-class TerminateContextMixin:  # pylint: disable=too-few-public-methods
+class TerminateContextMixin:
     """terminate context mixin"""
 
     @contextmanager

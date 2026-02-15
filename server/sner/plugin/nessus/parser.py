@@ -15,7 +15,7 @@ from sner.server.storage.models import SeverityEnum
 from sner.server.utils import SnerJSONEncoder
 
 
-class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
+class ParserModule(ParserBase):
     """nessus .nessus output parser"""
 
     SEVERITY_MAP = ['info', 'low', 'medium', 'high', 'critical']

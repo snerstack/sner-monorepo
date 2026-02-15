@@ -20,7 +20,7 @@ class TextAreaListField(TextAreaField):
         self.data = valuelist[0].splitlines() if valuelist else []  # pylint: disable=attribute-defined-outside-init
 
 
-class EmptyToNoneFieldMixin():  # pylint: disable=too-few-public-methods
+class EmptyToNoneFieldMixin():
     """empty string to none casting mixin"""
 
     # value from form
