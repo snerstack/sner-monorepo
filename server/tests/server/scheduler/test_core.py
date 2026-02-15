@@ -19,13 +19,13 @@ from sner.server.scheduler.models import Heatmap, Job, Readynet
 def test_enumerate_network():
     """check enumerate_network"""
 
-    assert len(enumerate_network('127.0.1.123')) == 1
-    assert len(enumerate_network('127.0.1.123/32')) == 1
+    assert len(enumerate_network("127.0.1.123")) == 1
+    assert len(enumerate_network("127.0.1.123/32")) == 1
 
-    output = enumerate_network('127.0.2.0/31')
+    output = enumerate_network("127.0.2.0/31")
     assert len(output) == 2
-    assert '127.0.2.0' in output
-    assert '127.0.2.0' in output
+    assert "127.0.2.0" in output
+    assert "127.0.2.0" in output
 
     assert 'fe80::1:3' in enumerate_network('fe80::1:0/126')
 
@@ -42,29 +42,31 @@ def test_sixenum_target_boundaries():
 def test_excl_matcher(app):  # pylint: disable=unused-argument
     """test matcher"""
 
-    test_regex = 'notarget[012]'
-    test_network = '127.66.66.0/26'
-    test_sixenum1 = '2001:db8:aa:200::/56'
-    test_sixenum2 = '2001:db8:aa:400::1/128'
+    test_regex = "notarget[012]"
+    test_network = "127.66.66.0/26"
+    test_sixenum1 = "2001:db8:aa:200::/56"
+    test_sixenum2 = "2001:db8:aa:400::1/128"
 
-    matcher = ExclMatcher(yaml.safe_load(f"""
+    matcher = ExclMatcher(
+        yaml.safe_load(f"""
         - [regex, '{test_regex}']
         - [network, '{test_network}']
         - [network, '{test_sixenum1}']
         - [network, '{test_sixenum2}']
-    """))
+    """)
+    )
     tnetwork = ip_network(test_network)
 
     assert matcher.match(str(tnetwork.network_address))
     assert matcher.match(str(tnetwork.broadcast_address))
-    assert not matcher.match(str(tnetwork.network_address-1))
-    assert not matcher.match(str(tnetwork.broadcast_address+1))
+    assert not matcher.match(str(tnetwork.network_address - 1))
+    assert not matcher.match(str(tnetwork.broadcast_address + 1))
 
     assert matcher.match(f'tcp://{tnetwork.network_address}:12345')
     assert not matcher.match('tcp://notanaddress:12345')
 
-    assert matcher.match('notarget1')
-    assert not matcher.match('notarget3')
+    assert matcher.match("notarget1")
+    assert not matcher.match("notarget3")
 
     # first and last enums for test_sixenum1
     assert matcher.match('sixenum://2001:db8:aa:200::0-ffff')
@@ -92,13 +94,13 @@ def test_queuemanager_errorhandling(app, queue):  # pylint: disable=unused-argum
 def test_schedulerservice_hashval():
     """test heatmap hashval computation"""
 
-    assert SchedulerService.hashval('127.0.0.1') == '127.0.0.0/24'
-    assert SchedulerService.hashval('2001:db8:aa::1:2:3:4') == '2001:db8:aa::/48'
-    assert SchedulerService.hashval('url') == 'url'
     assert SchedulerService.hashval('tcp://127.0.0.3:11') == '127.0.0.0/24'
     assert SchedulerService.hashval('tcp://[::1]:11') == '::/48'
     assert SchedulerService.hashval('sixenum://2001:db8:aa::1:2:3:11') == '2001:db8:aa::/48'
     assert SchedulerService.hashval('sixenum://2001:db8:bb::1:2:3:0-ffff') == '2001:db8:bb::/48'
+    assert SchedulerService.hashval("127.0.0.1") == "127.0.0.0/24"
+    assert SchedulerService.hashval("2001:db8:aa::1:2:3:4") == "2001:db8:aa::/48"
+    assert SchedulerService.hashval("url") == "url"
 
 
 def test_schedulerservice_readynetupdates(app, queue, target_factory):  # pylint: disable=unused-argument

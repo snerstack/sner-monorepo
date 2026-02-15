@@ -109,6 +109,7 @@ def test_storagesixenumtargetlist(app, host_factory):  # pylint: disable=unused-
 
     host_factory.create(address='2001:db8:aa::')
     host_factory.create(address='2001:db8:bb::')
+
     dummy = DummyStage()
     StorageSixEnumTargetlist(
         schedule='0s',

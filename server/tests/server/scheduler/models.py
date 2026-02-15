@@ -24,10 +24,11 @@ class QueueFactory(BaseModelFactory):
 
     class Meta:
         """test queue model factory"""
+
         model = Queue
 
-    name = 'testqueue'
-    config = yaml_dump({'module': 'dummy', 'args': '--arg1 abc --arg2'})
+    name = "testqueue"
+    config = yaml_dump({"module": "dummy", "args": "--arg1 abc --arg2"})
     group_size = 1
     priority = 10
     active = True
