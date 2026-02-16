@@ -12,7 +12,12 @@ from flask import current_app
 
 from sner.server.dbx_command import QueuePrio
 from sner.server.extensions import db
-from sner.server.scheduler.core import enumerate_network, ExclMatcher, QueueManager, SchedulerService, sixenum_target_boundaries
+from sner.server.scheduler.core import (
+    enumerate_network,
+    ExclMatcher,
+    QueueManager,
+    SchedulerService,
+)
 from sner.server.scheduler.models import Heatmap, Job, Readynet
 
 
@@ -27,16 +32,7 @@ def test_enumerate_network():
     assert "127.0.2.0" in output
     assert "127.0.2.0" in output
 
-    assert 'fe80::1:3' in enumerate_network('fe80::1:0/126')
-
-
-def test_sixenum_target_boundaries():
-    """check sixenum_target_boundaries"""
-
-    assert sixenum_target_boundaries('sixenum://::1') == ('::1', '::1')
-    assert sixenum_target_boundaries('sixenum://::1-ffff') == ('::1', '::ffff')
-    with pytest.raises(ValueError):
-        sixenum_target_boundaries('dummy')
+    assert "fe80::1:3" in enumerate_network("fe80::1:0/126")
 
 
 def test_excl_matcher(app):  # pylint: disable=unused-argument
@@ -62,19 +58,19 @@ def test_excl_matcher(app):  # pylint: disable=unused-argument
     assert not matcher.match(str(tnetwork.network_address - 1))
     assert not matcher.match(str(tnetwork.broadcast_address + 1))
 
-    assert matcher.match(f'tcp://{tnetwork.network_address}:12345')
-    assert not matcher.match('tcp://notanaddress:12345')
+    assert matcher.match(f"svc,{tnetwork.network_address},proto=tcp,port=12345")
+    assert not matcher.match("svc,notanaddress,proto=tcp,port=12345")
 
     assert matcher.match("notarget1")
     assert not matcher.match("notarget3")
 
     # first and last enums for test_sixenum1
-    assert matcher.match('sixenum://2001:db8:aa:200::0-ffff')
-    assert matcher.match('sixenum://2001:db8:aa:2ff:ffff:ffff:ffff:0-ffff')
+    assert matcher.match("sixenum,2001:db8:aa:200::0-ffff")
+    assert matcher.match("sixenum,2001:db8:aa:2ff:ffff:ffff:ffff:0-ffff")
     # test very small sixenum excl agains standard enum target
-    assert matcher.match('sixenum://2001:db8:aa:400::0-ffff')
+    assert matcher.match("sixenum,2001:db8:aa:400::0-ffff")
     # test value outsite matcher
-    assert not matcher.match('sixenum://2001:db8:aa:300::0-ffff')
+    assert not matcher.match("sixenum,2001:db8:aa:300::0-ffff")
 
     for item in matcher.excls:
         repr(item)
@@ -94,13 +90,13 @@ def test_queuemanager_errorhandling(app, queue):  # pylint: disable=unused-argum
 def test_schedulerservice_hashval():
     """test heatmap hashval computation"""
 
-    assert SchedulerService.hashval('tcp://127.0.0.3:11') == '127.0.0.0/24'
-    assert SchedulerService.hashval('tcp://[::1]:11') == '::/48'
-    assert SchedulerService.hashval('sixenum://2001:db8:aa::1:2:3:11') == '2001:db8:aa::/48'
-    assert SchedulerService.hashval('sixenum://2001:db8:bb::1:2:3:0-ffff') == '2001:db8:bb::/48'
     assert SchedulerService.hashval("127.0.0.1") == "127.0.0.0/24"
     assert SchedulerService.hashval("2001:db8:aa::1:2:3:4") == "2001:db8:aa::/48"
     assert SchedulerService.hashval("url") == "url"
+    assert SchedulerService.hashval("svc,127.0.0.3,proto=tcp,port=11") == "127.0.0.0/24"
+    assert SchedulerService.hashval("svc,::1,proto=tcp,port=11") == "::/48"
+    assert SchedulerService.hashval("sixenum,2001:db8:aa::1:2:3:11") == "2001:db8:aa::/48"
+    assert SchedulerService.hashval("sixenum,2001:db8:bb::1:2:3:0-ffff") == "2001:db8:bb::/48"
 
 
 def test_schedulerservice_readynetupdates(app, queue, target_factory):  # pylint: disable=unused-argument

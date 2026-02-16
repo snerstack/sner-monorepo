@@ -47,7 +47,7 @@ def storage_import(path, parser, **kwargs):
 
         try:
             if kwargs.get('dry'):
-                StorageManager.import_parsed_dry(parser_impl.parse_path(item))
+                StorageManager.import_parsed_dryrun(parser_impl.parse_path(item))
             else:
                 StorageManager.import_parsed(parser_impl.parse_path(item), list(kwargs['addtag']))
         except Exception as exc:  # pylint: disable=broad-except

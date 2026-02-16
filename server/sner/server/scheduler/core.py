@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict, namedtuple
 from datetime import datetime
 from enum import Enum
-from ipaddress import ip_address, ip_network, IPv4Address, IPv6Address
+from ipaddress import ip_address, ip_network
 from pathlib import Path
 from random import random
 from shutil import copy2
@@ -21,11 +21,10 @@ from sqlalchemy import and_, cast, delete, distinct, func, or_, select, text
 from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY, insert as pg_insert
 from sqlalchemy.exc import SQLAlchemyError
 
-from sner.agent.modules import SERVICE_TARGET_REGEXP
-from sner.plugin.six_enum_discover.agent import SIXENUM_TARGET_REGEXP
 from sner.server.extensions import db
 from sner.server.parser import REGISTERED_PARSERS
 from sner.server.scheduler.models import Heatmap, Job, Queue, Readynet, Target
+from sner.targets import TargetManager, ServiceTarget, SixenumTarget
 
 
 SCHEDULER_LOCK_NUMBER = 1
@@ -50,24 +49,6 @@ def enumerate_network(arg):
             data.append(str(network.broadcast_address))
 
     return data
-
-
-def sixenum_target_boundaries(value):
-    """returns tuple(first, last)"""
-
-    if not (mtmp := re.match(SIXENUM_TARGET_REGEXP, value)):
-        raise ValueError('not valid sixenum target')
-
-    addr = mtmp.group('scan6dst')
-
-    if '-' in addr:
-        first, last = addr.split('-')
-        tmp = first.split(':')
-        tmp[-1] = last
-        last = ':'.join(tmp)
-        return first, last
-
-    return addr, addr
 
 
 class ExclFamily(Enum):
@@ -143,13 +124,15 @@ class NetworkExclMatcher(ExclMatcherImplBase):
         if self._test_addr(value):
             return True
 
+        tmptarget = TargetManager.from_str(value)
+
         # test value as service target
-        if mtmp := re.match(SERVICE_TARGET_REGEXP, value):
-            return self._test_addr(mtmp.group('host').replace('[', '').replace(']', ''))
+        if isinstance(tmptarget, ServiceTarget):
+            return self._test_addr(tmptarget.address)
 
         # test value as sixenum target
-        if mtmp := re.match(SIXENUM_TARGET_REGEXP, value):
-            first, last = map(ip_address, sixenum_target_boundaries(value))
+        if isinstance(tmptarget, SixenumTarget):
+            first, last = tmptarget.boundaries()
 
             # first or last enum addr is in excluded range
             if self._test_addr(first) or self._test_addr(last):
@@ -186,7 +169,7 @@ class QueueManager:
         enqueued = []
         enqueued_hashvals = set()
 
-        for target in filter(None, map(lambda x: x.strip(), targets)):
+        for target in filter(None, map(str.strip, targets)):
             thashval = SchedulerService.hashval(target)
             enqueued.append({'queue_id': queue.id, 'target': target, 'hashval': thashval})
             enqueued_hashvals.add(thashval)
@@ -309,7 +292,12 @@ class JobManager:
 
         module = yaml.safe_load(job.queue.config)['module']
         parser_impl = REGISTERED_PARSERS[module]
-        return parser_impl.parse_path(job.output_abspath)
+        pidb = parser_impl.parse_path(job.output_abspath)
+
+        for item in json.loads(job.assignment)["targets"]:
+            pidb.insert_target(item)
+
+        return pidb
 
     @staticmethod
     def archive(job):
@@ -389,24 +377,7 @@ class SchedulerService:
     def hashval(value):
         """computes rate-limit heatmap hash value"""
 
-        if mtmp := re.match(SERVICE_TARGET_REGEXP, value):
-            value = mtmp.group('host')
-            if (value[0] == '[') and (value[-1] == ']'):
-                value = value[1:-1]
-
-        if mtmp := re.match(SIXENUM_TARGET_REGEXP, value):
-            value = mtmp.group('scan6dst').split('-')[0]
-
-        try:
-            addr = ip_address(value)
-            if isinstance(addr, IPv4Address):
-                return str(ip_network(f'{ip_address(value)}/24', strict=False))
-            if isinstance(addr, IPv6Address):
-                return str(ip_network(f'{ip_address(value)}/48', strict=False))
-        except ValueError:
-            pass
-
-        return value
+        return TargetManager.from_str(value).hashval()
 
     @staticmethod
     def heatmap_put(hashval):

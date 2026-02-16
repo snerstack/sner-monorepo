@@ -32,26 +32,31 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
       basic_nets_ipv6: ['::1/128']
       nuclei_nets_ipv4: []
       sportmap_nets_ipv4: []
+
       pipelines:
           standalone_queues:
             queues:
               - standalone
 
-          basic_scan:
-            schedule: 5days
-            service_disco_queue: sner.nmap.servicedisco
-            service_scan_queues:
-              - sner.nmap.serviceversion
-
-          basic_rescan:
-            schedule: 1day
-            host_interval: 3days
-            service_interval: 2days
+          service_disco:
+            netlist_schedule: 5days
+            queue: sner.nmap.servicedisco
 
           six_disco:
-            schedule: 2days
+            dns_netlist_schedule: 2days
             dns_disco_queue: sner.six_dns_discover
+            storage_enum_schedule: 2days
             storage_enum_queue: sner.six_enum_discover
+
+          service_scan:
+            schedule: 1hour
+            service_interval: 2days
+            queues:
+              - sner.nmap.serviceversion
+
+          host_rescan:
+            schedule: 1day
+            host_interval: 3days
 
           nuclei_scan:
             schedule: 5days

@@ -16,6 +16,7 @@ from pathlib import Path
 from littletable import Table as LittleTable
 
 import sner.plugin
+from sner.targets import TargetManager
 
 
 REGISTERED_PARSERS = {}
@@ -56,10 +57,14 @@ class ParsedHost(ParsedItemBase):
     """parsed host"""
 
     address: str
-    iid: int = None  # primary key
     hostname: str = None
     hostnames: list = None
     os: str = None  # pylint: disable=invalid-name
+    iid: int = None
+
+    def ident(self, _pidb_container):
+        """get storage upsert key; composite key"""
+        return (self.address, )
 
 
 @dataclass
@@ -69,11 +74,16 @@ class ParsedService(ParsedItemBase):  # pylint: disable=too-many-instance-attrib
     host_iid: int
     proto: str
     port: int
-    iid: int = None  # primary key
     state: str = None
     name: str = None
     info: str = None
     import_time: datetime = None
+    iid: int = None
+
+    def ident(self, pidb_container):
+        """get storage upsert key; composite key"""
+        host = pidb_container.hosts.by.iid[self.host_iid]
+        return (host.address, self.proto, self.port)
 
 
 @dataclass
@@ -85,12 +95,22 @@ class ParsedVuln(ParsedItemBase):  # pylint: disable=too-many-instance-attribute
     xtype: str
     service_iid: int = None
     via_target: str = None
-    iid: int = None  # primary key
     severity: str = None
     descr: str = None
     data: str = None
     refs: list = None
     import_time: datetime = None
+    iid: int = None
+
+    def ident(self, pidb_container):
+        """get storage upsert key; composite key"""
+        host = pidb_container.hosts.by.iid[self.host_iid]
+        service_ref = (
+            (pidb_container.services.by.iid[self.service_iid].proto, pidb_container.services.by.iid[self.service_iid].port)
+            if self.service_iid is not None else
+            (None, None)
+        )
+        return (host.address, *service_ref, self.xtype, self.name, self.via_target)
 
 
 @dataclass
@@ -101,9 +121,19 @@ class ParsedNote(ParsedItemBase):
     xtype: str
     service_iid: tuple = None
     via_target: str = None
-    iid: int = None  # primary key
     data: str = None
     import_time: datetime = None
+    iid: int = None
+
+    def ident(self, pidb_container):
+        """get storage upsert key; composite key"""
+        host = pidb_container.hosts.by.iid[self.host_iid]
+        service_ref = (
+            (pidb_container.services.by.iid[self.service_iid].proto, pidb_container.services.by.iid[self.service_iid].port)
+            if self.service_iid is not None else
+            (None, None)
+        )
+        return (host.address, *service_ref, self.xtype, self.via_target)
 
 
 class ParsedItemsDb:
@@ -119,11 +149,27 @@ class ParsedItemsDb:
         self.notes = LittleTable()
         self.notes.create_index('iid', unique=True)
 
+        self.targets = LittleTable()
+
     @staticmethod
     def _first(alist):
         if alist:
             return alist[0]
         return None
+
+    def _next_iid(self, table_name):
+        """get next auto-id"""
+
+        table = getattr(self, table_name)
+        if len(table) == 0:
+            return 0
+        return max(item.iid for item in table) + 1
+
+    def insert_target(self, target):
+        """insert target"""
+
+        self.targets.insert(TargetManager.from_str(target))
+        return target
 
     def upsert_host(self, address, **kwargs):
         """upsert host"""
@@ -208,6 +254,22 @@ class ParsedItemsDb:
         note.iid = len(self.notes)
         self.notes.insert(note)
         return note
+
+    def ident(self, pidb_item):
+        """
+        ident proxy.
+        to generate ident (upsert key) for service/vuln/note related items must
+        be also accessed through pidb container itself
+        """
+        return pidb_item.ident(self)
+
+    def idents(self, pidb_collection):
+        """return indents of all items in collection"""
+        return list(map(lambda item: item.ident(self), pidb_collection))
+
+    def target_scopes(self):
+        """return scopes for all targets"""
+        return [item.scope() for item in self.targets]
 
 
 class ParserBase(ABC):

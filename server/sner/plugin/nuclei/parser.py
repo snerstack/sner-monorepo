@@ -8,7 +8,6 @@ import logging
 from ipaddress import ip_address
 from pathlib import Path
 from urllib.parse import urlsplit
-from zipfile import ZipFile
 
 from sner.lib import file_from_zip, get_nested_key, is_address, is_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
@@ -46,11 +45,8 @@ class ParserModule(ParserBase):
         pidb = ParsedItemsDb()
 
         if is_zip(path):
-            with ZipFile(path) as fzip:
-                for fname in filter(lambda x: 'output.json' == x, fzip.namelist()):
-                    pidb = cls._parse_data(file_from_zip(path, fname).decode('utf-8'), pidb)
+            return cls._parse_data(file_from_zip(path, "output.json"), pidb)
 
-            return pidb
         return cls._parse_data(Path(path).read_text(encoding='utf-8'), pidb)
 
     @classmethod
