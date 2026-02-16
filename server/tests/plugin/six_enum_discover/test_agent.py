@@ -13,7 +13,6 @@ from pyroute2 import NDB
 
 from sner.agent.core import main as agent_main
 from sner.lib import file_from_zip
-from sner.plugin.six_enum_discover.agent import AgentModule
 
 
 def test_basic(tmpworkdir):  # pylint: disable=unused-argument
@@ -25,7 +24,7 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
             'module': 'six_enum_discover',
             'rate': 100
         },
-        'targets': ['sixenum://::1-2', 'sixenum://::01']
+        'targets': ['sixenum,::1-2', 'sixenum,::01']
     }
 
     result = agent_main(['--assignment', json.dumps(test_a), '--debug'])
@@ -37,13 +36,6 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
 
     assert result == 0
     assert '::1' in file_from_zip(f'{test_a["id"]}.zip', 'output-0.txt').decode('utf-8')
-
-
-def test_agent_enumeratetargets():
-    """six_enum_discover enumerate targets test"""
-
-    targets = list(AgentModule().enumerate_targets(['sixenum://::1', 'sixenum://::1-2', 'sixenum://::01', '2001:db8:bb::1:2:3:0-ffff']))
-    assert targets == [(0, '::1'), (1, '::1-2'), (2, '::01')]
 
 
 @pytest.mark.skipif('PYTEST_IPV6' not in os.environ, reason='ipv6 requires global connectivity')

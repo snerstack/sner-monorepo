@@ -3,68 +3,27 @@
 planner stages tests
 """
 
-import logging
-import os
-from ipaddress import ip_address
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-from sner.server.extensions import db
 from sner.server.parser import ParsedItemsDb
 from sner.server.planner.stages import (
     DummyStage,
-    filter_external_hosts,
     filter_tarpits,
     Netlist,
-    project_hosts,
-    project_services,
-    project_sixenum_targets,
-    ServiceDisco,
+    PruningStorageLoader,
     SixDisco,
     StorageCleanup,
     StorageLoader,
-    StorageLoaderAurorHostnames,
-    StorageLoaderNuclei,
-    StorageLoaderSportmap,
-    StorageRescan,
+    AurorHostnamesStorageLoader,
+    SportmapStorageLoader,
+    StorageHostRescan,
     StorageSixTargetlist,
     StorageSixEnumTargetlist,
-    StorageTestsslTargetlist,
 )
-from sner.server.scheduler.core import SchedulerService
-from sner.server.scheduler.models import Job, Target
 from sner.server.storage.models import Host, Note, Service, Vuln
 from sner.server.utils import yaml_dump
-
-
-def test_project_hosts(sample_pidb):
-    """test project host"""
-
-    hosts = project_hosts(sample_pidb)
-    assert sorted(hosts) == sorted(['127.0.3.1', '127.0.4.1'])
-
-
-def test_project_services(sample_pidb):
-    """test project servicelist"""
-
-    services = project_services(sample_pidb)
-    assert len(services) == 202
-
-
-def test_project_sixenum_targets():
-    """test project_v6_enums"""
-
-    enums = project_sixenum_targets(['::1', '2001:db8:0:0:0:00ff:fe00:0'])
-    assert enums == ['sixenum://0000:0000:0000:0000:0000:0000:0000:0-ffff']
-
-
-def test_filter_external_hosts():
-    """test filter_nets"""
-
-    hosts = filter_external_hosts(['127.0.0.1', '127.0.1.1'], ['127.0.0.0/24'])
-    assert hosts == ['127.0.0.1']
 
 
 def test_filter_tarpits(sample_pidb):
@@ -118,29 +77,25 @@ def test_storagesixenumtargetlist(app, host_factory):  # pylint: disable=unused-
         next_stage=dummy
     ).run()
 
-    expected = ['sixenum://2001:0db8:00aa:0000:0000:0000:0000:0-ffff', 'sixenum://2001:0db8:00bb:0000:0000:0000:0000:0-ffff']
+    expected = ['sixenum,2001:0db8:00aa:0000:0000:0000:0000:0-ffff', 'sixenum,2001:0db8:00bb:0000:0000:0000:0000:0-ffff']
     assert sorted(dummy.task_args) == sorted(expected)
 
 
-def test_storagerescan(app, host_factory, service_factory, queue_factory):  # pylint: disable=unused-argument
+def test_storagehostrescan(app, host_factory, service_factory, queue_factory):  # pylint: disable=unused-argument
     """test rescan_services pipeline"""
 
     service_factory.create(host=host_factory.create(address='127.0.0.1'))
     service_factory.create(host=host_factory.create(address='::1'))
     sdisco_dummy = DummyStage()
-    sscan_dummy = DummyStage()
-    StorageRescan(
+    StorageHostRescan(
         schedule='0s',
         lockname='dummylock',
+        filternets=["127.0.0.0/8", "::1/128"],
         host_interval='0s',
         servicedisco_stage=sdisco_dummy,
-        service_interval='0s',
-        servicescan_stages=[sscan_dummy],
-        filternets=["127.0.0.0/8", "::1/128"]
     ).run()
 
     assert len(sdisco_dummy.task_args) == 2
-    assert len(sscan_dummy.task_args) == 2
 
 
 def test_sixdiscoqueuehandler(app, job_completed_sixenumdiscover):  # pylint: disable=unused-argument
@@ -157,17 +112,6 @@ def test_sixdiscoqueuehandler(app, job_completed_sixenumdiscover):  # pylint: di
     assert '::1' in dummy.task_args
 
 
-def test_servicedisco(app, job_completed_nmap):  # pylint: disable=unused-argument
-    """test ServiceDisco"""
-
-    dummy = DummyStage()
-    ServiceDisco(queue_name=job_completed_nmap.queue.name, next_stages=[dummy]).run()
-
-    assert dummy.task_count == 1
-    assert len(dummy.task_args) == 5
-    assert 'tcp://127.0.0.1:139' in dummy.task_args
-
-
 def test_storageloader(app, job_completed_nmap):  # pylint: disable=unused-argument
     """test test_stage_StandaloneQueues"""
 
@@ -175,22 +119,7 @@ def test_storageloader(app, job_completed_nmap):  # pylint: disable=unused-argum
 
     assert Host.query.count() == 1
     assert Service.query.count() == 6
-    assert Note.query.count() == 21
-
-
-def test_storageloader_invalidjobs(app, queue_factory, job_completed_factory):  # pylint: disable=unused-argument
-    """test StorageLoader planner stage"""
-
-    queue = queue_factory.create(name='test queue', config=yaml_dump({'module': 'dummy'}))
-    job = job_completed_factory.create(queue=queue, make_output=Path('tests/server/data/parser-dummy-job-invalidjson.zip').read_bytes())
-    job_completed_factory.create(queue=queue, make_output=Path('tests/server/data/parser-dummy-job.zip').read_bytes())
-    assert Job.query.count() == 2
-
-    dummy = DummyStage()
-    ServiceDisco(queue_name=queue.name, next_stages=[dummy]).run()
-
-    assert job.retval == 1000
-    assert Job.query.count() == 1
+    assert Note.query.count() == 20
 
 
 def test_queuehandler_nxqueue(app, job_completed_nmap):  # pylint: disable=unused-argument
@@ -211,51 +140,6 @@ def test_storagecleanup(app, host_factory, service_factory):  # pylint: disable=
     assert Host.query.count() == 1
 
 
-def test_storage_loader_nuclei(app, queue_factory, job_completed_factory, vuln_factory):  # pylint: disable=unused-argument
-    """mock completed job with real data"""
-
-    queue = queue_factory.create(
-        name='nuclei.rolling.test',
-        config=yaml_dump({'module': 'nuclei', 'args': 'arg1'}),
-    )
-    job_completed_factory.create(
-        queue=queue,
-        make_output=Path('tests/server/data/nuclei_movingtarget_phase1.job.zip').read_bytes()
-    )
-
-    loader = StorageLoaderNuclei(queue_name=queue.name)
-    loader.run()
-
-    assert Host.query.count() == 1
-    assert Vuln.query.filter_by(xtype='nuclei.http-missing-security-headers.x-frame-options').count() == 1
-    assert Vuln.query.filter_by(xtype='nuclei.readme-md').count() == 0
-
-    host = Host.query.one()
-    # should not be pruned, not nuclei.* vuln
-    vuln_factory.create(host=host, name="rolling dummy", xtype="dummy", via_target=host.address)
-
-    job_completed_factory.create(
-        queue=queue,
-        make_output=Path('tests/server/data/nuclei_movingtarget_phase2.job.zip').read_bytes()
-    )
-    loader.run()
-
-    assert Host.query.count() == 1
-    assert Vuln.query.filter_by(xtype='nuclei.http-missing-security-headers.x-frame-options').count() == 0
-    assert Vuln.query.filter_by(xtype='nuclei.readme-md').count() == 1
-    assert Vuln.query.filter_by(xtype='dummy').count() == 1
-
-
-def test_storage_testssl_targetlist(app, service_factory):  # pylint: disable=unused-argument
-    """test stage"""
-
-    service_factory.create(port=443)
-    dummy = DummyStage()
-
-    StorageTestsslTargetlist('0s', 'lockname', dummy).run()
-    assert dummy.task_count == 1
-
-
 def test_storage_loader_sportmap(app, queue, host_factory, note_factory):  # pylint: disable=unused-argument
     """mock completed job with real data"""
 
@@ -266,7 +150,7 @@ def test_storage_loader_sportmap(app, queue, host_factory, note_factory):  # pyl
     pidb.upsert_host('127.3.4.6')
     pidb.upsert_note('127.3.4.2', xtype='sportmap', data='dummy')
 
-    loader = StorageLoaderSportmap(queue_name=queue.name)
+    loader = SportmapStorageLoader(queue_name=queue.name)
     with patch.object(loader, '_drain') as drain_mock:
         drain_mock.return_value = [pidb]
         loader.run()
@@ -289,9 +173,85 @@ def test_storage_loader_auror_hostnames(app, queue_factory, job_completed_factor
     )
     job_completed_factory.create(
         queue=queue,
-        make_output=Path('tests/server/data/parser-auror_hostnames-job.zip').read_bytes()
+        make_output="tests/server/data/parser-auror_hostnames-job.zip"
     )
 
-    StorageLoaderAurorHostnames(queue_name=queue.name).run()
+    AurorHostnamesStorageLoader(queue_name=queue.name).run()
 
     assert Note.query.count() == 2
+
+
+def test_versionscan(app, queue_factory):  # pylint: disable=unused-argument
+    """test version scan stage"""
+
+    queue1 = queue_factory.create(name="queue1")
+    stage = PruningStorageLoader(queue1.name)
+
+    pidb = ParsedItemsDb()
+    pidb.insert_target("svc,127.0.0.1,proto=tcp,port=1")
+    pidb.upsert_note("127.0.0.1", "cpe", service_proto="tcp", service_port=1, via_target="127.0.0.1", data="dummy1")
+    pidb.upsert_note("127.0.0.1", "nmap.banner_dict", service_proto="tcp", service_port=1, via_target="127.0.0.1", data="dummy2")
+    pidb.upsert_note("127.0.0.1", "nmap.clock-skew", service_proto=None, service_port=None, via_target="127.0.0.1", data="dummy3")
+
+    with patch.object(stage, "_drain", return_value=[pidb]):
+        stage.run()
+
+    assert Service.query.filter_by(proto="tcp").count() == 1
+    assert Note.query.count() == 3
+
+    pidb = ParsedItemsDb()
+    pidb.insert_target("svc,127.0.0.1,proto=tcp,port=1")
+    pidb.upsert_service("127.0.0.1", "tcp", 1, state="open")
+    pidb.upsert_note("127.0.0.1", "nmap.clock-skew", service_proto=None, service_port=None, via_target="127.0.0.1", data="dummy3")
+
+    with patch.object(stage, "_drain", return_value=[pidb]):
+        stage.run()
+
+    assert Service.query.filter_by(proto="tcp").count() == 1
+    assert Note.query.count() == 1
+
+
+def test_nucleiscan(app, queue_factory, job_completed_factory, vuln_factory):  # pylint: disable=unused-argument
+    """mock completed job with real data"""
+
+    queue_config = {"module": "nuclei", "args": "arg1"}
+    queue = queue_factory.create(
+        name="nuclei.rolling.test",
+        config=yaml_dump(queue_config),
+    )
+    job_completed_factory.create(
+        queue=queue,
+        make_output="tests/server/data/nuclei_v2_movingtarget_phase1.job.zip",
+        make_output__XXX="abc"
+    )
+
+    stage = PruningStorageLoader(queue_name=queue.name)
+    stage.run()
+
+    assert Host.query.count() == 1
+    assert Vuln.query.filter_by(xtype="nuclei.http-missing-security-headers.x-frame-options").count() == 1
+    assert Vuln.query.filter_by(xtype="nuclei.readme-md").count() == 0
+
+    host = Host.query.one()
+    # should not be pruned, not nuclei.* vuln
+    vuln_factory.create(host=host, name="rolling dummy", xtype="dummy", via_target=host.address)
+
+    job_completed_factory.create(
+        queue=queue, make_output="tests/server/data/nuclei_v2_movingtarget_phase2.job.zip"
+    )
+    stage.run()
+
+    assert Host.query.count() == 1
+    assert Vuln.query.filter_by(xtype="nuclei.http-missing-security-headers.x-frame-options").count() == 0
+    assert Vuln.query.filter_by(xtype="nuclei.readme-md").count() == 1
+    assert Vuln.query.filter_by(xtype="dummy").count() == 1
+
+    # empty results, should prune all nuclei
+    job_completed_factory.create(
+        queue=queue, make_output="tests/server/data/nuclei_v2_movingtarget_phase3.job.zip"
+    )
+    stage.run()
+    assert Host.query.count() == 1
+    assert Vuln.query.filter_by(xtype="nuclei.http-missing-security-headers.x-frame-options").count() == 0
+    assert Vuln.query.filter_by(xtype="nuclei.readme-md").count() == 0
+    assert Vuln.query.filter_by(xtype="dummy").count() == 1

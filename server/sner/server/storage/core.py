@@ -3,23 +3,20 @@
 scheduler module functions
 """
 
-import json
 from csv import DictWriter, QUOTE_ALL
-from datetime import datetime, timedelta
 from http import HTTPStatus
 from io import StringIO
 from typing import Union
 
 from flask import current_app
-from pytimeparse import parse as timeparse
-from sqlalchemy import case, cast, delete, func, or_, not_, select, update
+from sqlalchemy import case, cast, delete, func, or_, not_, select, update, tuple_
 from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY
 from sqlalchemy.sql.functions import coalesce
 
 from sner.lib import format_host_address
 from sner.server.extensions import db
 from sner.server.storage.forms import AnnotateForm
-from sner.server.storage.models import Host, Note, Service, Vuln
+from sner.server.storage.models import Host, Note, Service, Vuln, SeverityEnum
 from sner.server.utils import filter_query, windowed_query, error_response
 
 
@@ -306,184 +303,8 @@ def vuln_export(qfilter=None):
     return output_buffer.getvalue()
 
 
-def db_host(address, flag_required=False):
-    """query upsert host object"""
-
-    query = Host.query.filter(Host.address == address)
-    return query.one() if flag_required else query.one_or_none()
-
-
-def db_service(host_address, proto, port, flag_required=False):
-    """query upsert service object"""
-
-    query = Service.query.outerjoin(Host).filter(Host.address == host_address, Service.proto == proto, Service.port == port)
-    return query.one() if flag_required else query.one_or_none()
-
-
-def db_vuln(
-    host_address,
-    name,
-    xtype,
-    service_proto=None,
-    service_port=None,
-    via_target=None
-):  # pylint: disable=too-many-arguments,too-many-positional-arguments
-    """query upsert vuln object"""
-
-    query = Vuln.query.outerjoin(Host, Vuln.host_id == Host.id).outerjoin(Service, Vuln.service_id == Service.id).filter(
-        Host.address == host_address,
-        Vuln.name == name,
-        Vuln.xtype == xtype,
-        Service.proto == service_proto,
-        Service.port == service_port,
-        Vuln.via_target == via_target
-    )
-    return query.one_or_none()
-
-
-def db_note(host_address, xtype, service_proto=None, service_port=None, via_target=None):
-    """query upsert note object"""
-
-    query = Note.query.outerjoin(Host, Note.host_id == Host.id).outerjoin(Service, Note.service_id == Service.id).filter(
-        Host.address == host_address,
-        Note.xtype == xtype,
-        Service.proto == service_proto,
-        Service.port == service_port,
-        Note.via_target == via_target
-    )
-    return query.one_or_none()
-
-
 class StorageManager:
     """storage app logic"""
-
-    @staticmethod
-    def import_parsed_dry(pidb):
-        """check pidb for new storage items"""
-
-        for ihost in pidb.hosts:
-            host = db_host(ihost.address)
-            if not host:
-                print(f'storage update new host: {ihost}')
-
-        for iservice in pidb.services:
-            service = db_service(pidb.hosts.by.iid[iservice.host_iid].address, iservice.proto, iservice.port)
-            if not service:
-                print(f'storage update new service: {iservice}')
-
-        for ivuln in pidb.vulns:
-            service = pidb.services.by.iid[ivuln.service_iid] if (ivuln.service_iid is not None) else None
-            vuln = db_vuln(
-                pidb.hosts.by.iid[ivuln.host_iid].address,
-                ivuln.name,
-                ivuln.xtype,
-                service.proto if service else None,
-                service.port if service else None,
-                ivuln.via_target
-            )
-            if not vuln:
-                print(f'storage update new vuln: {ivuln}')
-
-        for inote in pidb.notes:
-            service = pidb.services.by.iid[inote.service_iid] if (inote.service_iid is not None) else None
-            note = db_note(
-                pidb.hosts.by.iid[inote.host_iid].address,
-                inote.xtype,
-                service.proto if service else None,
-                service.port if service else None,
-                inote.via_target
-            )
-            if not note:
-                print(f'storage update new note: {inote}')
-
-    @staticmethod
-    def import_parsed(pidb, addtags=None):  # pylint: disable=too-many-branches
-        """import"""
-
-        # import hosts
-        for ihost in pidb.hosts:
-            host = db_host(ihost.address)
-            if not host:
-                host = Host(address=ihost.address)
-                db.session.add(host)
-                current_app.logger.info(f'storage update new host {host}')
-            host.update(ihost)
-            if addtags:
-                tag_add(host, addtags)
-
-            if ihost.hostnames:
-                note = db_note(ihost.address, 'hostnames')
-                if not note:
-                    note = Note(host=host, xtype='hostnames', data='[]')
-                    db.session.add(note)
-                note.data = json.dumps(list(set(json.loads(note.data) + ihost.hostnames)))
-        db.session.commit()
-
-        # import services
-        for iservice in pidb.services:
-            host = db_host(pidb.hosts.by.iid[iservice.host_iid].address, flag_required=True)
-            service = db_service(host.address, iservice.proto, iservice.port)
-            if not service:
-                service = Service(host=host, proto=iservice.proto, port=iservice.port)
-                db.session.add(service)
-                current_app.logger.info(f'storage update new service {service}')
-            service.update(iservice)
-            if addtags:
-                tag_add(service, addtags)
-        db.session.commit()
-
-        # import vulns
-        for ivuln in pidb.vulns:
-            host = db_host(pidb.hosts.by.iid[ivuln.host_iid].address, flag_required=True)
-            service = (
-                db_service(
-                    host.address,
-                    pidb.services.by.iid[ivuln.service_iid].proto,
-                    pidb.services.by.iid[ivuln.service_iid].port,
-                    flag_required=True
-                )
-                if ivuln.service_iid is not None
-                else None
-            )
-            vuln = db_vuln(
-                host.address,
-                ivuln.name,
-                ivuln.xtype,
-                service.proto if service else None,
-                service.port if service else None,
-                ivuln.via_target
-            )
-            if not vuln:
-                vuln = Vuln(host=host, name=ivuln.name, xtype=ivuln.xtype, service=service, via_target=ivuln.via_target)
-                db.session.add(vuln)
-                current_app.logger.info(f'storage update new vuln {vuln}')
-            vuln.update(ivuln)
-            if addtags:
-                tag_add(vuln, addtags)
-        db.session.commit()
-
-        # import notes
-        for inote in pidb.notes:
-            host = db_host(pidb.hosts.by.iid[inote.host_iid].address, flag_required=True)
-            service = (
-                db_service(
-                    host.address,
-                    pidb.services.by.iid[inote.service_iid].proto,
-                    pidb.services.by.iid[inote.service_iid].port,
-                    flag_required=True
-                )
-                if inote.service_iid is not None
-                else None
-            )
-            note = db_note(host.address, inote.xtype, service.proto if service else None, service.port if service else None, inote.via_target)
-            if not note:
-                note = Note(host=host, xtype=inote.xtype, service=service, via_target=inote.via_target)
-                db.session.add(note)
-                current_app.logger.info(f'storage update new note {note}')
-            note.update(inote)
-            if addtags:
-                tag_add(note, addtags)
-        db.session.commit()
 
     @staticmethod
     def get_all_six_address(filternets=None):
@@ -497,59 +318,50 @@ class StorageManager:
         return db.session.connection().execute(query).scalars().all()
 
     @staticmethod
-    def get_rescan_hosts(interval, filternets=None):
-        """rescan hosts from storage; discovers new services on hosts"""
+    def get_hosts(filternets, rescan_horizont):
+        """query all hosts in filternets and/or with host.rescan_time over rescan_horizont"""
 
-        now = datetime.utcnow()
-        rescan_horizont = now - timedelta(seconds=timeparse(interval))
-        query = (
-            Host.query
-            .filter(or_(Host.rescan_time < rescan_horizont, Host.rescan_time == None))  # noqa: E711  pylint: disable=singleton-comparison
-        )
+        query = Host.query
+
         if filternets:
             restrict = [Host.address.op('<<=')(net) for net in filternets]
             query = query.filter(or_(*restrict))
 
-        rescan, ids = [], []
-        for host in windowed_query(query, Host.id):
-            rescan.append(host.address)
-            ids.append(host.id)
+        if rescan_horizont:
+            query = query.filter(or_(Host.rescan_time < rescan_horizont, Host.rescan_time == None))  # noqa: E711,E501  pylint: disable=singleton-comparison
 
-        # orm is bypassed for performance reasons in case of large rescans
-        db.session.connection().execute(update(Host).where(Host.id.in_(ids)).values(rescan_time=now))
-        db.session.commit()
-        db.session.expire_all()
-
-        return rescan
+        yield from windowed_query(query, Host.id)
 
     @staticmethod
-    def get_rescan_services(interval, filternets=None):
-        """rescan services from storage; update known services info"""
-
-        if filternets is None:  # pragma: nocover  ; won't test
-            filternets = []
-
-        now = datetime.utcnow()
-        rescan_horizont = now - timedelta(seconds=timeparse(interval))
-        restrict = [Host.address.op('<<=')(net) for net in filternets]
-        query = (
-            Service.query.join(Host)
-            .filter(or_(*restrict))
-            .filter(or_(Service.rescan_time < rescan_horizont, Service.rescan_time == None))  # noqa: E711  pylint: disable=singleton-comparison
-        )
-
-        rescan, ids = [], []
-        for service in windowed_query(query, Service.id):
-            item = f'{service.proto}://{format_host_address(service.host.address)}:{service.port}'
-            rescan.append(item)
-            ids.append(service.id)
-
+    def update_hosts_rescantime(ids, value):
+        """update rescantime on host objects by ids"""
         # orm is bypassed for performance reasons in case of large rescans
-        db.session.connection().execute(update(Service).where(Service.id.in_(ids)).values(rescan_time=now))
+        db.session.connection().execute(update(Host).where(Host.id.in_(ids)).values(rescan_time=value))
         db.session.commit()
         db.session.expire_all()
 
-        return rescan
+    @staticmethod
+    def get_services(filternets, rescan_horizont):
+        """query all services in filternets and/or service.rescan_time rescan_horizont"""
+
+        query = Service.query.filter(Service.state.ilike("open:%"))
+
+        if filternets:
+            restrict = [Host.address.op("<<=")(net) for net in filternets]
+            query = query.join(Host).filter(or_(*restrict))
+
+        if rescan_horizont:
+            query = query.filter(or_(Service.rescan_time < rescan_horizont, Service.rescan_time == None))  # noqa: E711,E501  pylint: disable=singleton-comparison
+
+        yield from windowed_query(query, Service.id)
+
+    @staticmethod
+    def update_services_rescantime(ids, value):
+        """update rescantime on service objects by ids"""
+        # orm is bypassed for performance reasons in case of large rescans
+        db.session.connection().execute(update(Service).where(Service.id.in_(ids)).values(rescan_time=value))
+        db.session.commit()
+        db.session.expire_all()
 
     @staticmethod
     def cleanup_storage():
@@ -599,3 +411,202 @@ class StorageManager:
 
         db.session.commit()
         db.session.expire_all()
+
+    @staticmethod
+    def get_host(address, addtags=None, create=True):
+        """get'n'create storage host"""
+        host = Host.query.filter(Host.address == address).one_or_none()
+        if create and not host:
+            host = Host(address=address)
+            if addtags:
+                tag_add(host, addtags)
+            db.session.add(host)
+            db.session.commit()
+        return host
+
+    @staticmethod
+    def get_service(address, proto, port, addtags=None, create=True):
+        """get'n'create storage service"""
+        service = (
+            Service.query.outerjoin(Host)
+            .filter(Host.address == address, Service.proto == proto, Service.port == port)
+            .one_or_none()
+        )
+        if create and not service:
+            host = StorageManager.get_host(address, addtags=addtags)
+            service = Service(host=host, proto=proto, port=port)
+            if addtags:
+                tag_add(service, addtags)
+            db.session.add(service)
+            db.session.commit()
+
+        return service
+
+    @staticmethod
+    def get_vuln(address, proto, port, xtype, name, via_target, source=None, addtags=None, create=True):  # noqa: E501  pylint: disable=too-many-arguments,too-many-positional-arguments
+        """get'n'create storage vuln"""
+        query = (
+            Vuln.query.outerjoin(Host, Vuln.host_id == Host.id)
+            .outerjoin(Service, Vuln.service_id == Service.id)
+            .filter(
+                Host.address == address,
+                Vuln.xtype == xtype,
+                Vuln.name == name,
+                Vuln.via_target == via_target,
+                Vuln.source == source,
+            )
+        )
+        if (proto is not None) and (port is not None):
+            query = query.filter(Service.proto == proto, Service.port == port)
+
+        vuln = query.one_or_none()
+        if create and not vuln:
+            host = StorageManager.get_host(address, addtags=addtags)
+            service = (
+                StorageManager.get_service(address=address, proto=proto, port=port, addtags=addtags)
+                if (proto is not None) and (port is not None)
+                else None
+            )
+            vuln = Vuln(
+                host=host,
+                service=service,
+                xtype=xtype,
+                name=name,
+                via_target=via_target,
+                source=source,
+                severity=SeverityEnum.UNKNOWN,
+            )
+            if addtags:
+                tag_add(vuln, addtags)
+            db.session.add(vuln)
+            db.session.commit()
+
+        return vuln
+
+    @staticmethod
+    def get_note(address, proto, port, xtype, via_target, source=None, addtags=None, create=True):  # noqa: E501  pylint: disable=too-many-arguments,too-many-positional-arguments
+        """get'n'create storage note"""
+        query = (
+            Note.query.outerjoin(Host, Note.host_id == Host.id)
+            .outerjoin(Service, Note.service_id == Service.id)
+            .filter(
+                Host.address == address,
+                Note.xtype == xtype,
+                Note.via_target == via_target,
+                Note.source == source,
+            )
+        )
+        if (proto is not None) and (port is not None):
+            query = query.filter(Service.proto == proto, Service.port == port)
+
+        note = query.one_or_none()
+        if create and not note:
+            host = StorageManager.get_host(address, addtags=addtags)
+            service = (
+                StorageManager.get_service(address=address, proto=proto, port=port, addtags=addtags)
+                if (proto is not None) and (port is not None)
+                else None
+            )
+            note = Note(host=host, service=service, xtype=xtype, via_target=via_target, source=source)
+            if addtags:
+                tag_add(note, addtags)
+            db.session.add(note)
+            db.session.commit()
+
+        return note
+
+    @staticmethod
+    def import_parsed(pidb, source=None, addtags=None):
+        """import pidb objects into storage"""
+
+        for item in pidb.hosts:
+            dbhost = StorageManager.get_host(*pidb.ident(item), addtags=addtags)
+            dbhost.update(item)
+
+        for item in pidb.services:
+            dbservice = StorageManager.get_service(*pidb.ident(item), addtags=addtags)
+            dbservice.update(item)
+
+        for item in pidb.vulns:
+            dbvuln = StorageManager.get_vuln(*pidb.ident(item), source=source, addtags=addtags)
+            dbvuln.update(item)
+
+        for item in pidb.notes:
+            dbnote = StorageManager.get_note(*pidb.ident(item), source=source, addtags=addtags)
+            dbnote.update(item)
+
+        db.session.commit()
+
+    @staticmethod
+    def import_parsed_dryrun(pidb):
+        """simulate import pidb objects into storage"""
+
+        for item in pidb.hosts:
+            if not StorageManager.get_host(*pidb.ident(item), create=False):
+                print(f"storage update new host: {item}")
+
+        for item in pidb.services:
+            if not StorageManager.get_service(*pidb.ident(item), create=False):
+                print(f"storage update new service: {item}")
+
+        for item in pidb.vulns:
+            if not StorageManager.get_vuln(*pidb.ident(item), create=False):
+                print(f"storage update new vuln: {item}")
+
+        for item in pidb.notes:
+            if not StorageManager.get_note(*pidb.ident(item), create=False):
+                print(f"storage update new note: {item}")
+
+    @staticmethod
+    def prune_scoped_notes(pidb, source):
+        """
+        Prune notes according to PIDB target scopes and queue.
+
+        :return: Number of items that were deleted.
+        :rtype: int
+        """
+
+        target_scopes = pidb.target_scopes()
+        upsert_map = pidb.idents(pidb.notes)
+
+        notes_to_check = (
+            Note.query.outerjoin(Host, Note.host_id == Host.id)
+            .outerjoin(Service, Note.service_id == Service.id)
+            .filter(
+                tuple_(Host.address, Service.proto, Service.port, Note.via_target).in_(target_scopes),
+                Note.source == source,
+            )
+            .all()
+        )
+        notes_to_delete = [item.id for item in notes_to_check if item.ident() not in upsert_map]
+        Note.query.filter(Note.id.in_(notes_to_delete)).delete()
+        db.session.commit()
+
+        return len(notes_to_delete)
+
+    @staticmethod
+    def prune_scoped_vulns(pidb, source):
+        """
+        Prune vulns according to PIDB target scopes and queue.
+
+        :return: Number of items that were deleted.
+        :rtype: int
+        """
+
+        target_scopes = pidb.target_scopes()
+        upsert_map = pidb.idents(pidb.vulns)
+
+        vulns_to_check = (
+            Vuln.query.outerjoin(Host, Vuln.host_id == Host.id)
+            .outerjoin(Service, Vuln.service_id == Service.id)
+            .filter(
+                tuple_(Host.address, Service.proto, Service.port, Vuln.via_target).in_(target_scopes),
+                Vuln.source == source,
+            )
+            .all()
+        )
+        vulns_to_delete = [item.id for item in vulns_to_check if item.ident() not in upsert_map]
+        Vuln.query.filter(Vuln.id.in_(vulns_to_delete)).delete()
+        db.session.commit()
+
+        return len(vulns_to_delete)

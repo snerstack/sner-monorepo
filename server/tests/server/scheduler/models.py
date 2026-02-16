@@ -5,6 +5,7 @@ scheduler test models
 # pylint: disable=too-few-public-methods
 
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
@@ -12,6 +13,7 @@ from zipfile import ZipFile
 
 from factory import LazyAttribute, post_generation, SubFactory
 
+from sner.lib import file_from_zip
 from sner.server.extensions import db
 from sner.server.scheduler.core import SchedulerService
 from sner.server.scheduler.models import Job, Queue, Readynet, Target
@@ -102,12 +104,13 @@ class JobCompletedFactory(JobFactory):
 
         output_abspath = self.output_abspath  # pylint: disable=no-member ; sqla computed property
         Path(output_abspath).parent.mkdir(parents=True, exist_ok=True)
+
         if extracted:
-            Path(output_abspath).write_bytes(extracted)
+            shutil.copy(extracted, output_abspath)
+            self.assignment = file_from_zip(output_abspath, "assignment.json").decode()
         else:
-            with open(output_abspath, 'wb') as job_file:
-                with ZipFile(job_file, 'w') as zip_file:
-                    zip_file.writestr('assignment.json', self.assignment)
+            with ZipFile(output_abspath, "w") as zip_file:
+                zip_file.writestr("assignment.json", self.assignment)
 
         return
 

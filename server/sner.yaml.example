@@ -1,106 +1,80 @@
-#server:
-#  secret_key: 'changeit'
-#  application_root: '/sner'
-#  xflask_proxyfix: true,
-#  sqlalchemy_database_uri: 'postgresql://user:password@localhost/sner'
-#  sner_var: '/var/lib/sner'
-#  sner_session_idletime: 3600
-#  sner_tags_host:
-#    - reviewed
-#  sner_tags_vuln:
-#    - info
-#    - report
-#    - todo
-#    - falsepositive
-#  sner_tags_annotate:
-#    - sslhell
-#  sner_trim_report_cells: 65000
-#  sner_heatmap_hot_level: 10
-#  sner_exclusions:
-#    - [regex, '^tcp://.*:22$']
-#    - [network, '127.66.66.0/26']
-#  sner_agreegate_url: https://...
-#  sner_agreegate_apikey: apikey
-#
-#  oidc_name: 'OIDC_DEFAULT'
-#  oidc_create_user: true
-#  oidc_default_metadata: 'https://URL/.well-known/openid-configuration'
-#  oidc_default_client_id: 'dummy'
-#  oidc_default_client_secret: 'dummy'
-#  oidc_default_redirect_uri: 'https://external_hostname/path/auth/login_oidc_callback'
-#
-#  sner_frontend_config:
-#    oidc_display_name: "My federation provider"
-#    docs_link: https://servicex.myorg.example
-#
-#agent:
-#  server: 'http://localhost:18000'
-#  apikey: 'generateit'
-#  queue: 'a_queue_name'
-#  caps:
-#    - default
-#    - testssl
-#  backoff_time: 5.0
-#  net_timeout: 300
-#  oneshot: False
-#
-#
-#planner:
-#  # basic&testssl scan ranges
-#  basic_nets_ipv4: []
-#  basic_nets_ipv6: ['::1/128']
-#  basic_targets: []
-#
-#  # vulnerability scan ranges
-#  nuclei_nets_ipv4: []
-#  nuclei_nets_ipv6: []
-#  nuclei_targets: []
-#
-#  # fixed source port scan ranges
-#  sportmap_nets_ipv4: []
-#  sportmap_nets_ipv6: []
-#  sportmap_targets: []
-#
-#  # execution pipelines
-#  pipelines:
-#    standalone_queues:
-#      queues:
-#        - dev.dummy
-#        - sner.nuclei
-#        - sner.sportmap
-#    
-#    basic_scan:
-#      schedule: 5days
-#      service_disco_queue: sner.nmap.servicedisco
-#      service_scan_queues:
-#        - sner.nmap.serviceversion
-#        - sner.jarm
-#        - sner.nmap.script
-#
-#    basic_rescan:
-#      schedule: 1day
-#      host_interval: 3days
-#      service_interval: 2days
-#
-#    six_disco:
-#      schedule: 2days
-#      dns_disco_queue: sner.six_dns_discover
-#      storage_enum_queue: sner.six_enum_discover
-#
-#    nuclei_scan:
-#      schedule: 7days
-#      queue: sner.nuclei.rolling
-#
-#    sportmap_scan:
-#      schedule: 7days
-#      queue: sner.sportmap.rolling
-#
-#    testssl_scan:
-#      schedule: 7days
-#      queue: sner.testssl
-#
-#    storage_cleanup:
-#      enabled: true
-#
-#    rebuild_versioninfo_map:
-#      schedule: 10minutes
+## sner example config
+
+server:
+  secret_key: 'CHANGEIT'
+  xflask_proxyfix: true
+
+  sqlalchemy_database_uri: 'postgresql://user:password@localhost/sner'
+
+  sner_exclusions:
+    - [regex, '^tcp://.*:22$']
+    - [network, '127.66.66.0/26']
+
+  oidc_name: 'OIDC_DEFAULT'
+  oidc_create_user: true
+  oidc_default_metadata: 'https://URL/.well-known/openid-configuration'
+  oidc_default_client_id: 'dummy'
+  oidc_default_client_secret: 'dummy'
+  oidc_default_redirect_uri: 'https://external_hostname/auth/login_oidc_callback'
+
+  sner_frontend_config:
+    oidc_display_name: "My federation provider"
+    docs_link: https://servicex.myorg.example
+
+
+agent:
+  server: 'http://localhost:18000'
+  apikey: 'GENERATEIT'
+
+
+planner:
+  basic_nets_ipv4: []
+  basic_nets_ipv6: []
+
+  nuclei_nets_ipv4: []
+  nuclei_nets_ipv6: []
+  sportmap_nets_ipv4: []
+  sportmap_nets_ipv6: []
+
+  pipelines:
+    standalone_queues:
+      queues:
+        - dev.dummy
+        - sner.nuclei
+        - sner.sportmap
+
+    service_disco:
+      netlist_schedule: 5days
+      service_disco_queue: sner.nmap.servicedisco
+
+    six_disco:
+      dns_netlist_schedule: 2days
+      dns_disco_queue: sner.six_dns_discover
+      storage_enum_schedule: 2days
+      storage_enum_queue: sner.six_enum_discover
+
+    service_scan:
+      schedule: 4hours
+      queues:
+        - sner.nmap.serviceversion
+        - sner.jarm
+        - sner.nmap.script
+      service_interval: 2days
+
+    host_rescan:
+      schedule: 4hours
+      host_interval: 3days
+
+    nuclei_scan:
+      schedule: 7days
+      queue: sner.nuclei.rolling
+
+    sportmap_scan:
+      schedule: 7days
+      queue: sner.sportmap.rolling
+
+    storage_cleanup:
+      enabled: true
+
+    rebuild_versioninfo_map:
+      schedule: 10minutes

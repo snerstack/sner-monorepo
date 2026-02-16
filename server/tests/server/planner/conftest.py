@@ -3,8 +3,6 @@
 planner fixtures
 """
 
-from pathlib import Path
-
 import pytest
 
 from sner.server.parser import ParsedItemsDb
@@ -21,7 +19,7 @@ def job_completed_nmap(queue_factory, job_completed_factory):
     )
     yield job_completed_factory.create(
         queue=queue,
-        make_output=Path('tests/server/data/parser-nmap-job.zip').read_bytes()
+        make_output="tests/server/data/parser-nmap-job.zip"
     )
 
 
@@ -35,7 +33,7 @@ def job_completed_sixenumdiscover(queue_factory, job_completed_factory):
     )
     yield job_completed_factory.create(
         queue=queue,
-        make_output=Path('tests/server/data/parser-six_enum_discover-job.zip').read_bytes()
+        make_output="tests/server/data/parser-six_enum_discover-job.zip"
     )
 
 

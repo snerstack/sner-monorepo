@@ -6,58 +6,24 @@ planner stages
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from ipaddress import ip_address, ip_network, IPv6Address
 from pathlib import Path
 
 from flask import current_app
 from littletable import Table
 from pytimeparse import parse as timeparse
-from sqlalchemy import and_, select, tuple_
+from sqlalchemy import and_, select
 from sqlalchemy.orm.exc import NoResultFound
-from sner.lib import format_host_address
+
+# from sner.lib import format_host_address
+from sner.targets import SixenumTarget, ServiceTarget
 from sner.server.extensions import db
 from sner.server.scheduler.core import enumerate_network, JobManager, QueueManager
 from sner.server.scheduler.models import Queue, Job, Target
 from sner.server.storage.core import StorageManager
-from sner.server.storage.models import Host, Note, Service, Vuln
+from sner.server.storage.models import Host, Note
 from sner.server.storage.versioninfo import VersioninfoManager
-
-
-def project_hosts(pidb):
-    """project host list from context data"""
-
-    return [f'{host.address}' for host in pidb.hosts]
-
-
-def project_services(pidb):
-    """project service list from pidb"""
-
-    return [
-        f'{service.proto}://{format_host_address(pidb.hosts.by.iid[service.host_iid].address)}:{service.port}'
-        for service
-        in pidb.services
-    ]
-
-
-def project_sixenum_targets(hosts):
-    """project targets for six_enum_discover agent from list of ipv6 addresses"""
-
-    targets = set()
-    for host in hosts:
-        exploded = IPv6Address(host).exploded
-        # do not enumerate EUI-64 hosts/nets
-        if exploded[27:32] == 'ff:fe':
-            continue
-
-        # generate mask for scan6 tool
-        exploded = exploded.split(':')
-        exploded[-1] = '0-ffff'
-        target = ':'.join(exploded)
-
-        targets.add(f'sixenum://{target}')
-
-    return list(targets)
 
 
 def filter_tarpits(pidb, threshold=200):
@@ -83,21 +49,11 @@ def filter_tarpits(pidb, threshold=200):
     return pidb
 
 
-def filter_external_hosts(hosts, nets):
-    """filter addrs not belonging to nets list"""
-
-    whitelist = [ip_network(net) for net in nets]
-    return [item for item in hosts if any(ip_address(item) in net for net in whitelist)]
-
-
-def filter_service_open(pidb):
-    """filter open services"""
-
-    # list() should provide copy for list-in-loop pruning
-    for service in list(pidb.services):
-        if not service.state.startswith('open:'):
-            pidb.services.remove(service)
-    return pidb
+def log_parsed(caller, pidb):
+    """log number of items parsed/imported to storage"""
+    current_app.logger.info(
+        f"{caller} imported pidb hosts:{len(pidb.hosts)} services:{len(pidb.services)} vulns:{len(pidb.vulns)} notes:{len(pidb.notes)}"
+    )
 
 
 class Stage(ABC):
@@ -188,7 +144,17 @@ class DummyStage(Stage):
         """dummy impl"""
 
 
-class Netlist(Schedule):  # pylint: disable=too-few-public-methods
+class StorageLoader(QueueHandler):
+    """load queues to storage"""
+
+    def run(self):
+        """run"""
+        for pidb in self._drain():
+            StorageManager.import_parsed(pidb, source=self.queue.name)
+            log_parsed(f"{self.__class__.__name__}:{self.queue.name}", pidb)
+
+
+class Netlist(Schedule):
     """periodic host discovery via list of ipv4 networks"""
 
     def __init__(self, schedule, lockname, netlist, next_stages):
@@ -202,41 +168,54 @@ class Netlist(Schedule):  # pylint: disable=too-few-public-methods
         hosts = []
         for net in self.netlist:
             hosts += enumerate_network(net)
-        current_app.logger.info(f'{self.__class__.__name__} enumerated {len(hosts)} hosts')
+        current_app.logger.info(f"{self.__class__.__name__} enumerated {len(hosts)} hosts")
         for stage in self.next_stages:
             stage.task(hosts)
 
 
-class Targetlist(Schedule):  # pylint: disable=too-few-public-methods
-    """periodic emit targets from simple list"""
+class ServiceDisco(QueueHandler):
+    """do service discovery on targets"""
 
-    def __init__(self, schedule, lockname, targets, next_stages):
-        super().__init__(schedule, lockname)
-        self.targets = targets
-        self.next_stages = next_stages
-
-    def _run(self):
+    def run(self):
         """run"""
+        for pidb in self._drain():
+            tmpdb = filter_tarpits(pidb)
+            StorageManager.import_parsed(tmpdb, source=self.queue.name)
+            log_parsed(f"{self.__class__.__name__}:{self.queue.name}", pidb)
 
-        current_app.logger.info(f'{self.__class__.__name__} enumerated {len(self.targets)} hosts')
-        for stage in self.next_stages:
-            stage.task(self.targets)
 
+class SixDisco(QueueHandler):
+    """cleanup list host ipv6 hosts (drop any outside scope) and pass it to service discovery"""
 
-class StorageSixTargetlist(Schedule):  # pylint: disable=too-few-public-methods
-    """generates filtered ipv6 host addresses for scans"""
-
-    def __init__(self, schedule, lockname, next_stage, filternets=None):
-        super().__init__(schedule, lockname)
+    def __init__(self, queue_name, next_stage, filternets=None):
+        super().__init__(queue_name)
         self.next_stage = next_stage
-        self.filternets = filternets
+        self.filternets = filternets or []
+        self._whitelist = [ip_network(net) for net in self.filternets]
 
-    def _run(self):
+    def _filter_external_hosts(self, hosts):
+        """filter addrs not belonging to filternets"""
+
+        result = []
+
+        for host in hosts:
+            ip_obj = ip_address(host)
+            for net in self._whitelist:
+                if ip_obj in net:
+                    result.append(host)
+                    break
+
+        return result
+
+    def run(self):
         """run"""
 
-        targets = [f"[{item}]" for item in StorageManager.get_all_six_address(self.filternets)]
-        current_app.logger.info(f'{self.__class__.__name__} enumerated {len(targets)} targets')
-        self.next_stage.task(targets)
+        for pidb in self._drain():
+            hosts = [item.address for item in pidb.hosts]
+            if self.filternets:
+                hosts = self._filter_external_hosts(hosts)
+            current_app.logger.info(f"{self.__class__.__name__} tasking {len(hosts)} hosts to {self.next_stage}")
+            self.next_stage.task(hosts)
 
 
 class StorageSixEnumTargetlist(Schedule):
@@ -247,196 +226,147 @@ class StorageSixEnumTargetlist(Schedule):
         self.next_stage = next_stage
         self.filternets = filternets
 
+    @staticmethod
+    def _project_sixenum_targets(hosts):
+        """project targets for six_enum_discover agent from list of ipv6 addresses"""
+
+        targets = set()
+
+        for host in hosts:
+            exploded = IPv6Address(host).exploded
+
+            # do not enumerate EUI-64 hosts/nets
+            if exploded[27:32] == "ff:fe":
+                continue
+
+            # generate mask for scan6 tool
+            exploded = exploded.split(":")
+            exploded[-1] = "0-ffff"
+            target = ":".join(exploded)
+
+            targets.add(str(SixenumTarget(target)))
+
+        return list(targets)
+
     def _run(self):
         """run"""
 
-        targets = project_sixenum_targets(StorageManager.get_all_six_address(self.filternets))
-        current_app.logger.info(f'{self.__class__.__name__} projected {len(targets)} targets')
+        all_v6_addresses = StorageManager.get_all_six_address(self.filternets)
+        targets = self._project_sixenum_targets(all_v6_addresses)
+        current_app.logger.info(f"{self.__class__.__name__} tasking {len(targets)} targets to {self.next_stage}")
         self.next_stage.task(targets)
 
 
 class StorageServiceScanTargetlist(Schedule):
     """list targets for service scan"""
 
-    def __init__(self, schedule, lockname, next_stage):
+    def __init__(self, schedule, lockname, service_interval, filternets, servicescan_stages):
         super().__init__(schedule, lockname)
+        self.service_interval = service_interval
+        self.filternets = filternets
+        self.servicescan_stages = servicescan_stages
+
+    def _run(self):
+        """run"""
+
+        now = datetime.now(timezone.utc)
+        rescan_horizont = now - timedelta(seconds=timeparse(self.service_interval))
+
+        targets, ids = [], []
+        for service in StorageManager.get_services(self.filternets, rescan_horizont):
+            targets.append(str(ServiceTarget(service.host.address, service.proto, service.port)))
+            ids.append(service.id)
+
+        for item in self.servicescan_stages:
+            item.task(targets)
+
+        StorageManager.update_services_rescantime(ids, now)
+
+
+class StorageServiceTargetlist(Schedule):
+    """list all services as ServiceTarget in filternets"""
+
+    def __init__(self, schedule, lockname, filternets, next_stage):
+        super().__init__(schedule, lockname)
+        self.filternets = filternets
         self.next_stage = next_stage
 
     def _run(self):
         """run"""
 
-        targets = [
-            f"{svc.proto}://{format_host_address(svc.host.address)}:{svc.port}"
-            for svc in
-            Service.query.filter(Service.proto == "tcp", Service.port == 443, Service.state.ilike("open:%")).all()
-        ]
-        current_app.logger.info(f'{self.__class__.__name__} projected {len(targets)} targets')
+        targets = []
+        for service in StorageManager.get_services(self.filternets, None):
+            targets.append(str(ServiceTarget(service.host.address, service.proto, service.port)))
+
         self.next_stage.task(targets)
 
 
-class SixDisco(QueueHandler):
-    """cleanup list host ipv6 hosts (drop any outside scope) and pass it to service discovery"""
-
-    def __init__(self, queue_name, next_stage, filternets=None):
-        super().__init__(queue_name)
-        self.next_stage = next_stage
-        self.filternets = filternets
+class PruningStorageLoader(QueueHandler):
+    """import pidb and prune items on targets scope and source key"""
 
     def run(self):
-        """run"""
-
         for pidb in self._drain():
-            hosts = project_hosts(pidb)
-            if self.filternets:
-                hosts = filter_external_hosts(hosts, self.filternets)
-            current_app.logger.info(f'{self.__class__.__name__} projected {len(hosts)} hosts')
-            self.next_stage.task(hosts)
+            StorageManager.import_parsed(pidb, source=self.queue.name)
+            log_parsed(f"{self.__class__.__name__}:{self.queue.name}", pidb)
+
+            count_notes = StorageManager.prune_scoped_notes(pidb, source=self.queue.name)
+            count_vulns = StorageManager.prune_scoped_vulns(pidb, source=self.queue.name)
+            current_app.logger.info(
+                f"{self.__class__.__name__}:{self.queue.name} prunned old items, vulns:{count_vulns} notes:{count_notes}"
+            )
 
 
-class ServiceDisco(QueueHandler):
-    """do service discovery on targets"""
-
-    def __init__(self, queue_name, next_stages):
-        super().__init__(queue_name)
-        self.next_stages = next_stages
-
-    def run(self):
-        """run"""
-
-        for pidb in self._drain():
-            tmpdb = filter_tarpits(pidb)
-            tmpdb = filter_service_open(tmpdb)
-            services = project_services(tmpdb)
-            current_app.logger.info(f'{self.__class__.__name__} projected {len(services)} services')
-            for stage in self.next_stages:
-                stage.task(services)
-
-
-class StorageRescan(Schedule):  # pylint: disable=too-few-public-methods
-    """storage rescan"""
+class StorageHostRescan(Schedule):
+    """storage host rescan"""
 
     def __init__(
         self,
         schedule,
         lockname,
+        filternets,
         host_interval,
         servicedisco_stage,
-        service_interval,
-        servicescan_stages,
-        filternets,
-    ):  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    ):
         super().__init__(schedule, lockname)
+        self.filternets = filternets
         self.host_interval = host_interval
         self.servicedisco_stage = servicedisco_stage
-        self.service_interval = service_interval
-        self.servicescan_stages = servicescan_stages
-        self.filternets = filternets
 
     def _run(self):
         """run"""
 
-        hosts = StorageManager.get_rescan_hosts(self.host_interval, self.filternets)
-        services = StorageManager.get_rescan_services(self.service_interval, self.filternets)
-        current_app.logger.info(f'{self.__class__.__name__} rescaning {len(hosts)} hosts {len(services)} services')
-        self.servicedisco_stage.task(hosts)
-        for stage in self.servicescan_stages:
-            stage.task(services)
+        now = datetime.utcnow()
+        rescan_horizont = now - timedelta(seconds=timeparse(self.host_interval))
+
+        targets, ids = [], []
+        for host in StorageManager.get_hosts(self.filternets, rescan_horizont):
+            targets.append(host.address)
+            ids.append(host.id)
+
+        current_app.logger.info(f"{self.__class__.__name__} rescaning {len(targets)} hosts")
+        self.servicedisco_stage.task(targets)
+
+        StorageManager.update_hosts_rescantime(ids, now)
 
 
-class StorageLoader(QueueHandler):
-    """load queues to storage"""
+class StorageSixTargetlist(Schedule):
+    """generates filtered ipv6 host addresses for scans"""
 
-    def run(self):
+    def __init__(self, schedule, lockname, filternets, next_stage):
+        super().__init__(schedule, lockname)
+        self.filternets = filternets
+        self.next_stage = next_stage
+
+    def _run(self):
         """run"""
 
-        for pidb in self._drain():
-            current_app.logger.info(
-                f'{self.__class__.__name__} loading {len(pidb.hosts)} '
-                f'hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes'
-            )
-            StorageManager.import_parsed(pidb)
+        targets = [f"[{item}]" for item in StorageManager.get_all_six_address(self.filternets)]
+        current_app.logger.info(f"{self.__class__.__name__} enumerated {len(targets)} targets")
+        self.next_stage.task(targets)
 
 
-class StorageCleanup(Stage):  # pylint: disable=too-few-public-methods
-    """cleanup storage"""
-
-    def run(self):
-        """cleanup storage"""
-
-        StorageManager.cleanup_storage()
-        current_app.logger.debug(f'{self.__class__.__name__} finished')
-
-
-class StorageLoaderNuclei(QueueHandler):
-    """load nuclei queue to storage"""
-
-    def run(self):
-        """run"""
-
-        for pidb in self._drain():
-            current_app.logger.info(
-                f'{self.__class__.__name__} loading {len(pidb.hosts)} '
-                f'hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes'
-            )
-
-            StorageManager.import_parsed(pidb)
-
-            # To ware-out old findings, nuclei pipeline requires only full targets
-            # (ip or hostname) to be specified. that yields full list of reported items.
-            #
-            # To prune old data, walk all storage vulns xtype=nuclei.* for current targets (address, via_target)
-            # and if it's upsert index is not in current job, delete it. This ensures that only
-            # the latest findings are kept. The upsert index for vuln in storage is handled by
-            # import_parsed(pidb) as (address, name, xtype, proto, port, via_target)
-            #
-            # During monitoring, any responded vulnerability must be forked it's own copy,
-            # so further updates to the database item would not overwrite existing data
-            # modified by handler?
-            #
-            # we could also drop any report item by lowest time for any target in pidb
-            #
-            # we could add flow tags in import_parsed, and prune not-touched item for all targets in pidb
-            # than cleanup tags (would produce too many queries)
-
-            upsert_map = set()
-            targets = set()
-            for vuln in pidb.vulns:
-                # upsert index should be also honored by parser
-                upsert_map.add((
-                    pidb.hosts[vuln.host_iid].address,
-                    vuln.name,
-                    vuln.xtype,
-                    pidb.services[vuln.service_iid].proto if (vuln.service_iid is not None) else None,
-                    pidb.services[vuln.service_iid].port if (vuln.service_iid is not None) else None,
-                    vuln.via_target,
-                ))
-                targets.add((pidb.hosts[vuln.host_iid].address, vuln.via_target))
-
-            prune_count = 0
-            vulns_to_check = Vuln.query.join(Host).filter(
-                tuple_(Host.address, Vuln.via_target).in_(targets),
-                Vuln.xtype.startswith('nuclei.')
-            ).all()
-            for vuln in vulns_to_check:
-                ident = (
-                    vuln.host.address,
-                    vuln.name,
-                    vuln.xtype,
-                    vuln.service.proto if vuln.service else None,
-                    vuln.service.port if vuln.service else None,
-                    vuln.via_target,
-                )
-
-                if ident not in upsert_map:
-                    db.session.delete(vuln)
-                    prune_count += 1
-
-            db.session.commit()
-            current_app.logger.info(f'{self.__class__.__name__} prunned {prune_count} old vulns')
-
-
-class StorageLoaderSportmap(QueueHandler):
-    """load nuclei queue to storage"""
+class SportmapStorageLoader(QueueHandler):
+    """load sportmap queue to storage"""
 
     def run(self):
         """run"""
@@ -464,7 +394,21 @@ class StorageLoaderSportmap(QueueHandler):
             db.session.expire_all()
 
 
-class StorageLoaderAurorHostnames(QueueHandler):
+class AurorHostnamesTrigger(Schedule):
+    """emit target to next task"""
+
+    def __init__(self, schedule, lockname, next_stage):
+        super().__init__(schedule, lockname)
+        self.next_stage = next_stage
+
+    def _run(self):
+        """run"""
+
+        current_app.logger.info(f"{self.__class__.__name__} triggered")
+        self.next_stage.task(["tick"])
+
+
+class AurorHostnamesStorageLoader(QueueHandler):
     """load auror.hostnames queue to storage"""
 
     @dataclass
@@ -542,3 +486,13 @@ class RebuildVersioninfoMap(Schedule):
 
         VersioninfoManager.rebuild()
         current_app.logger.info(f"{self.__class__.__name__} finished")
+
+
+class StorageCleanup(Stage):
+    """cleanup storage"""
+
+    def run(self):
+        """cleanup storage"""
+
+        StorageManager.cleanup_storage()
+        current_app.logger.debug(f"{self.__class__.__name__} finished")

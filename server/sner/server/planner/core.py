@@ -1,9 +1,64 @@
 # This file is part of sner4 project governed by MIT license, see the LICENSE.txt file.
 """
-planner core
+# Planner v2
 
-planner handles processing of queues acording to defined pipelines. queues has system of priorities
-and requirements so they can be handled by pools of agents with respective capabilities
+Planner v2 implementation
+
+## 1. Standalone queues
+
+Load raw items from user-defined queues without any downstream processing.
+
+
+## 2. Basic scanning
+
+### Service discovery
+
+Performs initial host and service discovery, loads all results into storage for
+further processing by other stages and pipelines.
+
+### Six discovery
+
+Performs IPv6 address discovery based on DNS and pattern enumeration techniques,
+all addresses found are passed to "Service discovery" pipeline.
+
+### Service scanning
+
+Any service discovered by previous pipelines gets scanned by detail scanners:
+  * version scan
+  * jarm scan
+  * script scan
+
+### Host rescan
+
+Services are rescanned on known hosts in order to keep database up-to-date without
+generatin too much noise on scanning unused addresses.
+
+
+## 3. Vulnerability scanning
+
+Nuclei scan (and eventually Nessus scan) scans known services in similar manner as
+"Service scanning" pipeline, but can be configured with different set of networks to scan.
+
+This pipeline uses "Service discovery" results to find open services.
+
+
+## 4. Source-port scanning
+
+TODO
+
+
+## 5. Auror (TLS scanning)
+
+TODO
+
+
+## 6. Maintenance pipelines
+
+* Storage cleanup
+  Drops all closed services and hosts without any information.
+
+* Rebuild Versioninfo map
+  Rebuild versioinfo data from current storage.
 """
 
 import logging
@@ -18,22 +73,21 @@ from sner.server.extensions import db
 from sner.server.planner.config import PlannerConfig
 from sner.server.planner.stages import (
     Netlist,
-    Targetlist,
     RebuildVersioninfoMap,
     Schedule,
     ServiceDisco,
     SixDisco,
     StorageCleanup,
     StorageLoader,
-    StorageLoaderAurorHostnames,
-    StorageLoaderNuclei,
-    StorageLoaderSportmap,
-    StorageRescan,
+    AurorHostnamesTrigger,
+    AurorHostnamesStorageLoader,
+    SportmapStorageLoader,
+    StorageHostRescan,
     StorageSixEnumTargetlist,
-    StorageSixTargetlist,
-    StorageTestsslTargetlist,
+    StorageServiceTargetlist,
+    StorageServiceScanTargetlist,
+    PruningStorageLoader,
 )
-from sner.server.scheduler.core import enumerate_network, ExclMatcher
 from sner.server.storage.models import Host, Note, Vuln
 
 
@@ -162,13 +216,16 @@ class Planner(TerminateContextMixin):
         self.log = current_app.logger
         self.log.setLevel(logging.DEBUG if current_app.config["DEBUG"] else logging.INFO)
 
+        # TODO: refactor to mixin ?
         self.original_signal_handlers = {}
+
         self.loop = None
         self.oneshot = oneshot
-        self.stages = {}
 
         self.config = PlannerConfig(**config)
-        self._setup_stages()
+        self.stages = {}
+
+        self._setup_pipelines()
 
     def _add_stage(self, name, stage_cls, **kwargs):
         """add stage to planner helper"""
@@ -178,182 +235,134 @@ class Planner(TerminateContextMixin):
         self.stages[name] = stage_cls(**kwargs)
         return self.stages[name]
 
-    def _setup_stages(self):
+    def _setup_pipelines(self):
         """setup planner stages/pipelines"""
 
-        if not self.config.pipelines:
-            return
         plines = self.config.pipelines
+        if not plines:
+            return
 
-        # loads standalone queues
+        # standalone queues
         if plines.standalone_queues:
             for qname in plines.standalone_queues.queues:
-                self._add_stage(
-                    f"standalone_queue:{qname}",
-                    StorageLoader,
-                    queue_name=qname
-                )
+                self._add_stage(f"standalone:{qname}", StorageLoader, queue_name=qname)
 
-        # basic discovery and version scanning
-        if plines.basic_scan:
-            basic_servicescan_stages = [
-                self._add_stage(f"basic_scan:{sscan_qname}", StorageLoader, queue_name=sscan_qname)
-                for sscan_qname in plines.basic_scan.service_scan_queues
-            ]
-
-            basic_servicedisco_stage = self._add_stage(
+        # basic_scan: host and service discovery
+        if plines.service_disco:
+            service_disco_stage = self._add_stage(
                 "basic_scan:service_disco",
                 ServiceDisco,
-                queue_name=plines.basic_scan.service_disco_queue,
-                next_stages=basic_servicescan_stages
+                queue_name=plines.service_disco.queue,
             )
 
             self._add_stage(
                 "basic_scan:netlist",
                 Netlist,
-                schedule=plines.basic_scan.schedule,
+                schedule=plines.service_disco.netlist_schedule,
                 netlist=self.config.basic_nets_ipv4,
-                next_stages=[basic_servicedisco_stage]
+                next_stages=[service_disco_stage],
             )
 
-            self._add_stage(
-                "basic_scan:targetlist",
-                Targetlist,
-                schedule=plines.basic_scan.schedule,
-                targets=self.config.basic_targets,
-                next_stages=[basic_servicedisco_stage]
-            )
-
-        # basic rescan of hosts and services in storage
-        if plines.basic_rescan:
-            self._add_stage(
-                "basic_rescan",
-                StorageRescan,
-                schedule=plines.basic_rescan.schedule,
-                host_interval=plines.basic_rescan.host_interval,
-                servicedisco_stage=basic_servicedisco_stage,
-                service_interval=plines.basic_rescan.service_interval,
-                servicescan_stages=basic_servicescan_stages,
-                filternets=self.config.basic_nets_ipv4 + self.config.basic_nets_ipv6,
-            )
-
-        # six discovery, DNS and neighbors of known six hosts for basic scanned nets
+        # basic_scan: IPv6 discovery, DNS and neighbors enumerations
         if plines.six_disco:
             six_disco_dns_stage = self._add_stage(
-                "six_disco:dns_disco",
+                "basic_scan:sixdisco_dns",
                 SixDisco,
                 queue_name=plines.six_disco.dns_disco_queue,
                 filternets=self.config.basic_nets_ipv6,
-                next_stage=basic_servicedisco_stage
+                next_stage=service_disco_stage,
             )
 
             self._add_stage(
-                "six_disco:dns_netlist",
+                "basic_scan:sixdisco_dns_netlist",
                 Netlist,
-                schedule=plines.six_disco.schedule,
+                schedule=plines.six_disco.dns_netlist_schedule,
                 netlist=self.config.basic_nets_ipv4,
-                next_stages=[six_disco_dns_stage]
+                next_stages=[six_disco_dns_stage],
             )
 
             six_disco_enum_stage = self._add_stage(
-                "six_disco:storage_enum",
+                "basic_scan:sixdisco_storage_enum",
                 SixDisco,
                 queue_name=plines.six_disco.storage_enum_queue,
                 filternets=self.config.basic_nets_ipv6,
-                next_stage=basic_servicedisco_stage
+                next_stage=service_disco_stage,
             )
 
             self._add_stage(
-                "six_disco:storage_six_enum_targetlist",
+                "basic_scan:sixdisco_storage_enum_targetlist",
                 StorageSixEnumTargetlist,
-                schedule=plines.six_disco.schedule,
+                schedule=plines.six_disco.storage_enum_schedule,
                 filternets=self.config.basic_nets_ipv6,
-                next_stage=six_disco_enum_stage
+                next_stage=six_disco_enum_stage,
             )
 
-        # nuclei scan
+        # basic_scan: version scan and other fingerprinting
+        if plines.service_scan:
+            servicescan_stages = [
+                self._add_stage(f"basic_scan:{sscan_qname}", PruningStorageLoader, queue_name=sscan_qname)
+                for sscan_qname in plines.service_scan.queues
+            ]
+
+            self._add_stage(
+                "basic_scan:service_scan_targetlist",
+                StorageServiceScanTargetlist,
+                schedule=plines.service_scan.schedule,
+                service_interval=plines.service_scan.service_interval,
+                filternets=self.config.basic_nets_ipv4 + self.config.basic_nets_ipv6,
+                servicescan_stages=servicescan_stages,
+            )
+
+        # basic_scan: rescan of hosts and services in storage
+        if plines.host_rescan:
+            self._add_stage(
+                "basic_scan:storage_host_rescan",
+                StorageHostRescan,
+                schedule=plines.host_rescan.schedule,
+                filternets=self.config.basic_nets_ipv4 + self.config.basic_nets_ipv6,
+                host_interval=plines.host_rescan.host_interval,
+                servicedisco_stage=service_disco_stage,
+            )
+
+        # nuclei_scan: scan
         if plines.nuclei_scan:
-            nuclei_load_stage = self._add_stage(
-                "nuclei_scan:load",
-                StorageLoaderNuclei,
-                queue_name=plines.nuclei_scan.queue
+            nuclei_scan_stage = self._add_stage(
+                f"nuclei_scan:{plines.nuclei_scan.queue}", PruningStorageLoader, queue_name=plines.nuclei_scan.queue
             )
 
             self._add_stage(
-                "nuclei_scan:netlist",
-                Netlist,
+                "nuclei_scan:storage_targetlist",
+                StorageServiceTargetlist,
                 schedule=plines.nuclei_scan.schedule,
-                netlist=self.config.nuclei_nets_ipv4,
-                next_stages=[nuclei_load_stage]
+                filternets=self.config.nuclei_nets_ipv4 + self.config.nuclei_nets_ipv6,
+                next_stage=nuclei_scan_stage,
             )
 
-            self._add_stage(
-                "nuclei_scan:targetlist",
-                Targetlist,
-                schedule=plines.nuclei_scan.schedule,
-                targets=self.config.nuclei_targets,
-                next_stages=[nuclei_load_stage]
-            )
-
-            self._add_stage(
-                "nuclei_scan:storage_six_targetlist",
-                StorageSixTargetlist,
-                schedule=plines.nuclei_scan.schedule,
-                filternets=self.config.nuclei_nets_ipv6,
-                next_stage=nuclei_load_stage
-            )
-
-        # sportmap scan
+        # nuclei_scan: source port scan
         if plines.sportmap_scan:
-            sportmap_load_stage = self._add_stage(
-                "sportmap_scan:load", StorageLoaderSportmap, queue_name=plines.sportmap_scan.queue
+            sportmap_scan_stage = self._add_stage(
+                "sportmap_scan:scan", SportmapStorageLoader, queue_name=plines.sportmap_scan.queue
             )
 
             self._add_stage(
-                "sportmap_scan:netlist",
-                Netlist,
-                schedule=plines.sportmap_scan.schedule,
-                netlist=self.config.sportmap_nets_ipv4,
-                next_stages=[sportmap_load_stage]
-            )
-
-            self._add_stage(
-                "sportmap_scan:storage_six_targetlist",
-                StorageSixTargetlist,
-                schedule=plines.sportmap_scan.schedule,
-                filternets=self.config.sportmap_nets_ipv6,
-                next_stage=sportmap_load_stage
-            )
-
-        # testssl scan
-        if plines.testssl_scan:
-            testssl_load_stage = self._add_stage(
-                "testssl_scan:load",
-                StorageLoader,
-                queue_name=plines.testssl_scan.queue
-            )
-
-            self._add_stage(
-                "testssl_scan:targetlist",
-                StorageTestsslTargetlist,
-                schedule=plines.testssl_scan.schedule,
-                next_stage=testssl_load_stage
+                "nuclei_scan:storage_targetlist",
+                StorageServiceTargetlist,
+                schedule=plines.nuclei_scan.schedule,
+                filternets=self.config.sportmap_nets_ipv4 + self.config.sportmap_nets_ipv6,
+                next_stage=sportmap_scan_stage,
             )
 
         # auror scan
         if plines.auror_scan:
             auror_hostnames_stage = self._add_stage(
-                "auror:hostnames",
-                StorageLoaderAurorHostnames,
-                queue_name=plines.auror_scan.hostnames_queue
+                "auror:hostnames", AurorHostnamesStorageLoader, queue_name=plines.auror_scan.hostnames_queue
             )
 
             self._add_stage(
                 "auror:hostnames_targetlist",
-                Targetlist,
+                AurorHostnamesTrigger,
                 schedule=plines.auror_scan.hostnames_schedule,
-                targets=["trigger"],
-                next_stages=[auror_hostnames_stage]
+                next_stage=auror_hostnames_stage,
             )
 
         # storage cleanup

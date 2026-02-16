@@ -57,8 +57,8 @@ DEFAULT_CONFIG = {
     'XFLASK_PROXYFIX': False,
 
     # sqlalchemy
-    'SQLALCHEMY_TRACK_MODIFICATIONS': False,
     'SQLALCHEMY_DATABASE_URI': 'postgresql:///sner',
+    'SQLALCHEMY_TRACK_MODIFICATIONS': False,
     'SQLALCHEMY_ECHO': False,
 
     # sner web server
@@ -245,8 +245,8 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
     ExclMatcher(app.config['SNER_EXCLUSIONS'])
 
     # initialize api blueprint; as side-effect overrides error handler
-    app.config['API_SPEC_OPTIONS']['servers'] = [{'url': app.config['APPLICATION_ROOT']}]
-    app.config['OPENAPI_SWAGGER_UI_URL'] = f'{app.config["APPLICATION_ROOT"] if app.config["APPLICATION_ROOT"] != "/" else ""}/static/swagger/'
+    app.config['API_SPEC_OPTIONS']['servers'] = [{"url": "/"}]
+    app.config['OPENAPI_SWAGGER_UI_URL'] = "/static/swagger/"
     api.init_app(app)
     api.register_blueprint(api_blueprint, url_prefix='/api')
 

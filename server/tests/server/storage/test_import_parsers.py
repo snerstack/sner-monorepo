@@ -33,7 +33,6 @@ def test_import_command_nmap_rawdata(runner):
     assert sorted([x.port for x in host.services]) == [22, 25, 113, 139, 445, 5432]
     tmpnote = Note.query.join(Service).filter(Note.host == host, Service.port == 25, Note.xtype == 'nmap.smtp-commands').one()
     assert 'PIPELINING' in json.loads(tmpnote.data)['output']
-    assert Note.query.filter(Note.host == host, Note.xtype == 'hostnames').one()
 
 
 def test_import_command_nessus(runner):
@@ -52,8 +51,6 @@ def test_import_command_nessus(runner):
     assert sorted([x.port for x in host.services]) == [443]
     tmpvuln = Vuln.query.join(Service).filter(Vuln.host == host, Service.port == 443, Vuln.xtype == 'nessus.104631').one()
     assert 'CVE-1900-0000' in tmpvuln.refs
-    note = Note.query.filter(Note.host == host, Note.xtype == 'hostnames').one()
-    assert len(json.loads(note.data)) == 3
 
 
 def test_import_command_manymap_job(runner):

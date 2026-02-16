@@ -73,6 +73,10 @@ class Host(StorageModelBase):
     def __repr__(self):
         return f'<Host {self.id}: {self.address} {self.hostname}>'
 
+    def ident(self):
+        """get storage upsert key; composite key"""
+        return (self.address, )
+
 
 class Service(StorageModelBase):
     """discovered host service"""
@@ -98,6 +102,10 @@ class Service(StorageModelBase):
     def __repr__(self):
         host = format_host_address(self.host.address) if self.host else None
         return f'<Service {self.id}: {host} {self.proto}.{self.port}>'
+
+    def ident(self):
+        """get storage upsert key; composite key"""
+        return (self.host.address, self.proto, self.port)
 
 
 class SeverityEnum(SelectableEnum):
@@ -130,6 +138,7 @@ class Vuln(StorageModelBase):
     modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     rescan_time = db.Column(db.DateTime, default=datetime.utcnow)
     import_time = db.Column(db.DateTime)
+    source = db.Column(db.String(250), nullable=True)
 
     host = relationship('Host', back_populates='vulns')
     service = relationship('Service', back_populates='vulns')
@@ -138,6 +147,11 @@ class Vuln(StorageModelBase):
         host = format_host_address(self.host.address) if self.host else None
         service = f'{self.service.proto}.{self.service.port}' if self.service else None
         return f'<Vuln {self.id}: {host} {service} {self.xtype}>'
+
+    def ident(self):
+        """get storage upsert key; composite key"""
+        service_refs = (self.service.proto, self.service.port) if self.service else (None, None)
+        return (self.host.address, *service_refs, self.xtype, self.name, self.via_target)
 
 
 class Note(StorageModelBase):
@@ -154,6 +168,7 @@ class Note(StorageModelBase):
     created = db.Column(db.DateTime, default=datetime.utcnow)
     modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     import_time = db.Column(db.DateTime)
+    source = db.Column(db.String(250), nullable=True)
 
     host = relationship('Host', back_populates='notes')
     service = relationship('Service', back_populates='notes')
@@ -162,6 +177,11 @@ class Note(StorageModelBase):
         host = format_host_address(self.host.address) if self.host else None
         service = f'{self.service.proto}.{self.service.port}' if self.service else None
         return f'<Note {self.id}: {host} {service} {self.xtype}>'
+
+    def ident(self):
+        """get storage upsert key; composite key"""
+        service_refs = (self.service.proto, self.service.port) if self.service else (None, None)
+        return (self.host.address, *service_refs, self.xtype, self.via_target)
 
 
 class Versioninfo(StorageModelBase):
