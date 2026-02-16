@@ -28,8 +28,7 @@ RUN sh bin/install_nmap.sh && \
     sh bin/install_ipv6toolkit.sh && \
     sh bin/install_jarm.sh && \
     sh bin/install_testssl.sh && \
-    sh bin/install_nuclei.sh && nuclei -update-templates && \
-    sh bin/install_quicmap.sh
+    sh bin/install_nuclei.sh && nuclei -update-templates
 
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/*
