@@ -19,7 +19,6 @@ service-target = proto "://" host-target ":" port
 import json
 import logging
 import os
-import re
 import signal
 import shlex
 import subprocess
@@ -30,10 +29,10 @@ from pathlib import Path
 from schema import Schema
 
 import sner.plugin
+from sner.targets import TargetManager
 
 
 REGISTERED_MODULES = {}
-SERVICE_TARGET_REGEXP = r'^(?P<proto>tcp|udp)://(?P<host>[0-9\.]{7,15}|[0-9a-zA-Z\.\-]{1,256}|\[[0-9a-fA-F:]{3,45}\]|\[[0-9a-zA-Z\.\-]{1,256}\]):(?P<port>[0-9]+)$'  # noqa: 501  pylint: disable=line-too-long
 
 
 def load_agent_plugins():
@@ -88,17 +87,8 @@ class ModuleBase(ABC):
             self.process = None
         return retval
 
-    def enumerate_service_targets(self, targets):
-        """
-        parse list of service targets, discards invalid values
+    def enumerate_targets(self, assignment):
+        """enumerate targetsv2 from assignment"""
 
-        :return: tuple of parsed target data
-        :rtype: (target index, target, proto, host, port)
-        """
-
-        for idx, target in enumerate(targets):
-            mtmp = re.match(SERVICE_TARGET_REGEXP, target)
-            if mtmp:
-                yield idx, target, mtmp.group('proto'), mtmp.group('host'), mtmp.group('port')
-            else:
-                self.log.warning('invalid service target: %s', target)
+        for idx, item in enumerate(assignment["targets"]):
+            yield idx, TargetManager.from_str(item)

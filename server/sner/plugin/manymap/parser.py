@@ -12,7 +12,7 @@ from sner.plugin.nmap.parser import ParserModule as NmapParserModule
 class ParserModule(NmapParserModule):
     """inet endpoints scanner xml output parser; the module uses nmap hence parse uses nmap parser"""
 
-    ARCHIVE_PATHS = r'output\-[0-9]+\.xml'
+    ARCHIVE_PATHS = r"output\-[0-9]+\.xml"
 
 
 if __name__ == '__main__':  # pragma: no cover

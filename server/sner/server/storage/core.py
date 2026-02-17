@@ -307,7 +307,7 @@ class StorageManager:
     """storage app logic"""
 
     @staticmethod
-    def get_all_six_address(filternets=None):
+    def get_six_addresses(filternets=None):
         """return all host ipv6 addresses"""
 
         query = select(Host.address).filter(func.family(Host.address) == 6)

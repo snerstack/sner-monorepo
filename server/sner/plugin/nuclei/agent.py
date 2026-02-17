@@ -9,14 +9,14 @@ from schema import Schema
 
 from sner.agent.modules import ModuleBase
 from sner.lib import format_host_address
-from sner.targets import TargetManager, ServiceTarget, NamedServiceTarget
+from sner.targets import ServiceTarget, NamedServiceTarget
 
 
 class AgentModule(ModuleBase):
     """nuclei module
 
     ## target specification
-    targets v2 GenericTarget | ServiceTarget | NamedServiceTarget
+    targetsV2 GenericTarget | ServiceTarget | NamedServiceTarget
     """
 
     CONFIG_SCHEMA = Schema({
@@ -28,8 +28,7 @@ class AgentModule(ModuleBase):
         super().run(assignment)
 
         targets = []
-        for item in assignment['targets']:
-            target = TargetManager.from_str(item)
+        for _, target in self.enumerate_targets(assignment):
             if isinstance(target, ServiceTarget):
                 targets.append(f"{format_host_address(target.address)}:{target.port}")
                 continue

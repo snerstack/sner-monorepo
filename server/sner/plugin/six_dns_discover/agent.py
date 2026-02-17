@@ -18,7 +18,7 @@ class AgentModule(ModuleBase):
     dns based ipv6 from ipv4 address discover
 
     ## target specification
-    target = IPv4Address
+    targetsV2 HostTarget
     """
 
     CONFIG_SCHEMA = Schema({
@@ -30,6 +30,21 @@ class AgentModule(ModuleBase):
         super().__init__()
         self.loop = True
 
+    @staticmethod
+    def find_ipv6_by_hostname(ipv4_address):
+        """find ipv6 addresses by same hostname of PTR and AAAA"""
+        result = []
+
+        try:
+            (hostname, _, _) = gethostbyaddr(ipv4_address)
+            resolved_addrs = getaddrinfo(hostname, None, AF_INET6)
+            for _, _, _, _, sockaddr in resolved_addrs:
+                result.append((sockaddr[0], hostname, ipv4_address))
+        except OSError:
+            pass
+
+        return result
+
     # pylint: disable=duplicate-code
     def run(self, assignment):
         """run the agent"""
@@ -37,16 +52,11 @@ class AgentModule(ModuleBase):
         super().run(assignment)
 
         result = {}
-        for addr in assignment['targets']:
-            try:
-                (hostname, _, _) = gethostbyaddr(addr)
-                resolved_addrs = getaddrinfo(hostname, None, AF_INET6)
-                for _, _, _, _, sockaddr in resolved_addrs:
-                    result[sockaddr[0]] = (hostname, addr)
-            except OSError:
-                continue
-            finally:
-                sleep(assignment['config']['delay'])
+        for _, target in self.enumerate_targets(assignment):
+            for v6addr, hostname, via_ipv4 in self.find_ipv6_by_hostname(target.address):
+                result[v6addr] = (hostname, via_ipv4)
+
+            sleep(assignment['config']['delay'])
 
             if not self.loop:  # pragma: no cover  ; not tested
                 break

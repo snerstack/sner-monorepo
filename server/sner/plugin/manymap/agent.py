@@ -9,6 +9,7 @@ from time import sleep
 from schema import Schema
 
 from sner.agent.modules import ModuleBase
+from sner.targets import ServiceTarget
 
 
 class AgentModule(ModuleBase):
@@ -16,7 +17,7 @@ class AgentModule(ModuleBase):
     internet endpoints nmap-based scanner
 
     ## target specification
-    target = service-target
+    targetsV2 ServiceTarget
     """
 
     CONFIG_SCHEMA = Schema({
@@ -35,13 +36,18 @@ class AgentModule(ModuleBase):
         super().run(assignment)
         ret = 0
 
-        for idx, _, proto, host, port in self.enumerate_service_targets(assignment['targets']):
-            output_args = ['-oA', f'output-{idx}', '--reason']
-            target_args = ['-p', f'{proto[0].upper()}:{port}']
-            if (host[0] == '[') and (host[-1] == ']'):
-                target_args += ['-6', host[1:-1]]
+        for idx, target in self.enumerate_targets(assignment):
+            if not isinstance(target, ServiceTarget):
+                self.log.warning("ignored non-ServiceTarget %s", target)
+                continue
+
+            output_args = ["-oA", f"output-{idx}", "--reason"]
+
+            target_args = ["-p", f"{target.proto[0].upper()}:{target.port}"]
+            if target.is_ipv6_address():
+                target_args += ['-6', target.address]
             else:
-                target_args += [host]
+                target_args += [target.address]
 
             cmd = ['nmap'] + shlex.split(assignment['config']['args']) + output_args + target_args
             ret |= self._execute(cmd, f'output-{idx}')

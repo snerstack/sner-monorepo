@@ -71,6 +71,14 @@ class GenericTarget:
         except ValueError:
             return self.value
 
+    def is_ipv6_address(self):
+        """ipv4/ipv6 address family check"""
+        try:
+            addr = ipaddress.ip_address(self.value)
+        except ValueError:
+            return False
+        return isinstance(addr, ipaddress.IPv6Address)
+
 
 @dataclass
 class HostTarget:
@@ -85,6 +93,10 @@ class HostTarget:
     def hashval(self):
         """return address hashval"""
         return address_hashval(self.address)
+
+    def is_ipv6_address(self):
+        """ipv4/ipv6 address family check"""
+        return isinstance(ipaddress.ip_address(self.address), ipaddress.IPv6Address)
 
 
 @dataclass
@@ -105,6 +117,10 @@ class ServiceTarget:
     def hashval(self):
         """return address hashval"""
         return address_hashval(self.address)
+
+    def is_ipv6_address(self):
+        """ipv4/ipv6 address family check"""
+        return isinstance(ipaddress.ip_address(self.address), ipaddress.IPv6Address)
 
 
 @dataclass

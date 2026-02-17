@@ -8,6 +8,7 @@ from time import sleep
 from schema import Schema
 
 from sner.agent.modules import ModuleBase
+from sner.targets import ServiceTarget
 
 
 class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
@@ -15,7 +16,7 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
     internet endpoints nmap-based scanner
 
     ## target specification
-    target = service-target
+    targetsV2 ServiceTarget
     """
 
     CONFIG_SCHEMA = Schema({
@@ -50,12 +51,16 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
         super().run(assignment)
         ret = 0
 
-        for idx, target, proto, host, port in self.enumerate_service_targets(assignment['targets']):
-            if proto != 'tcp':
-                self.log.warning('ignoring non-tcp target %s', target)
+        for idx, target in self.enumerate_targets(assignment):
+            if not isinstance(target, ServiceTarget):
+                self.log.warning("ignored non-ServiceTarget %s", target)
                 continue
 
-            target_args = ['--jsonfile-pretty', f'output-{idx}.json', f'{host}:{port}']
+            if target.proto != "tcp":
+                self.log.warning("ignore non-TCP target %s", target)
+                continue
+
+            target_args = ['--jsonfile-pretty', f'output-{idx}.json', f'{target.address}:{target.port}']
             cmd = ['testssl.sh', '--quiet', '--full', '-6', '--connect-timeout', '5', '--openssl-timeout', '5'] + target_args
             ret |= self._filter_exit_codes(self._execute(cmd, f'output-{idx}'))
 

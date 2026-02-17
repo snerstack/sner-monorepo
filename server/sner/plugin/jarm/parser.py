@@ -3,12 +3,10 @@
 parsers to import from agent outputs to storage
 """
 
-import re
 import sys
 from pprint import pprint
-from zipfile import ZipFile
 
-from sner.lib import file_from_zip
+from sner.lib import files_from_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
 
 
@@ -23,9 +21,8 @@ class ParserModule(ParserBase):
 
         pidb = ParsedItemsDb()
 
-        with ZipFile(path) as fzip:
-            for fname in filter(lambda x: re.match(cls.ARCHIVE_PATHS, x), fzip.namelist()):
-                pidb = cls._parse_data(file_from_zip(path, fname).decode('utf-8'), pidb)
+        for filedata in files_from_zip(path, cls.ARCHIVE_PATHS):
+            pidb = cls._parse_data(filedata.decode("utf-8"), pidb)
 
         return pidb
 
