@@ -16,7 +16,7 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     test_a = {
         'id': str(uuid4()),
         'config': {'module': 'jarm', 'delay': 0},
-        'targets': ['tcp://127.0.0.1:1', 'udp://127.0.0.1:1']
+        'targets': ['svc,127.0.0.1,proto=tcp,port=1', 'svc,127.0.0.1,proto=udp,port=1']
     }
 
     result = agent_main(['--assignment', json.dumps(test_a), '--debug'])

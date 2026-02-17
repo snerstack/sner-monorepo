@@ -15,7 +15,7 @@ class AgentModule(ModuleBase):
     jarm fingerprinter
 
     ## target specification
-    target = service-target
+    targetsV2 ServiceTarget
     """
 
     CONFIG_SCHEMA = Schema({
@@ -33,15 +33,14 @@ class AgentModule(ModuleBase):
         super().run(assignment)
         ret = 0
 
-        for idx, target, proto, host, port in self.enumerate_service_targets(assignment['targets']):
-            if proto != 'tcp':
-                self.log.warning('unsupported target (proto): %s', target)
+        for idx, target in self.enumerate_targets(assignment):
+            if target.proto != "tcp":
+                self.log.warning("ignore non-TCP target %s", target)
                 continue
 
-            target_args = ['-p', port]
-            target_args.append(host.replace('[', '').replace(']', ''))
-
+            target_args = ['-p', str(target.port), target.address]
             cmd = ['jarm', '-v'] + target_args
+
             ret |= self._execute(cmd, f'output-{idx}.out')
             sleep(assignment['config']['delay'])
 

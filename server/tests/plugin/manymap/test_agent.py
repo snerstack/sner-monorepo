@@ -20,7 +20,7 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
             'args': '-sV',
             'delay': 1
         },
-        'targets': ['invalid', 'tcp://127.0.0.1:1', 'udp://[::1]:2']
+        'targets': ['invalid', 'svc,127.0.0.1,proto=tcp,port=1', 'svc,::1,proto=udp,port=2']
     }
 
     result = agent_main(['--assignment', json.dumps(test_a), '--debug'])

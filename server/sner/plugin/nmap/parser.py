@@ -4,24 +4,22 @@ parsers to import from agent outputs to storage
 """
 
 import json
-import re
 import sys
 from datetime import datetime
 from pathlib import Path
 from pprint import pprint
 from time import time
-from zipfile import ZipFile
 
 import libnmap.parser
 
-from sner.lib import file_from_zip, is_zip
+from sner.lib import files_from_zip, is_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
 
 
 class ParserModule(ParserBase):
     """nmap xml output parser"""
 
-    ARCHIVE_PATHS = r'output\.xml|output6\.xml'
+    ARCHIVE_PATHS = r"output\.xml|output6\.xml"
 
     @classmethod
     def parse_path(cls, path):
@@ -30,10 +28,8 @@ class ParserModule(ParserBase):
         pidb = ParsedItemsDb()
 
         if is_zip(path):
-            with ZipFile(path) as fzip:
-                for fname in filter(lambda x: re.match(cls.ARCHIVE_PATHS, x), fzip.namelist()):
-                    pidb = cls._parse_data(file_from_zip(path, fname).decode('utf-8'), pidb)
-
+            for filedata in files_from_zip(path, cls.ARCHIVE_PATHS):
+                pidb = cls._parse_data(filedata.decode("utf-8"), pidb)
             return pidb
 
         return cls._parse_data(Path(path).read_text(encoding='utf-8'), pidb)

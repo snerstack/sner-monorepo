@@ -9,7 +9,6 @@ from pyroute2 import NDB  # pylint: disable=no-name-in-module
 from schema import Schema
 
 from sner.agent.modules import ModuleBase
-from sner.targets import TargetManager
 
 
 class AgentModule(ModuleBase):
@@ -23,7 +22,7 @@ class AgentModule(ModuleBase):
     for remote address scanning attacks.
 
     ## target specification
-    target = TargetV2 SixEnumTarget
+    targetsV2 SixEnumTarget
     """
 
     CONFIG_SCHEMA = Schema({
@@ -59,9 +58,7 @@ class AgentModule(ModuleBase):
         super().run(assignment)
         ret = 0
 
-        for idx, value in enumerate(assignment['targets']):
-            target = TargetManager.from_str(value)
-
+        for idx, target in self.enumerate_targets(assignment):
             # detect if scan has to be performed with --dst-addr or --local-scan
             first, _last = target.boundaries()
             is_localnet, iface = self._is_localnet(first)

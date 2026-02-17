@@ -44,7 +44,10 @@ class AgentModule(ModuleBase):
         super().run(assignment)
 
         ret = 0
-        targets, targets6 = NmapAgent.sort_ipv6_targets(assignment['targets'])
+
+        enumerated_targets = [target for _, target in self.enumerate_targets(assignment)]
+        targets, targets6 = NmapAgent.split_by_address_family(enumerated_targets)
+
         if targets and self.loop:
             ret |= self.run_scan(assignment, targets, 'output')
         if targets6 and self.loop:

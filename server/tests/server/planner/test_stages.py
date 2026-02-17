@@ -214,15 +214,13 @@ def test_versionscan(app, queue_factory):  # pylint: disable=unused-argument
 def test_nucleiscan(app, queue_factory, job_completed_factory, vuln_factory):  # pylint: disable=unused-argument
     """mock completed job with real data"""
 
-    queue_config = {"module": "nuclei", "args": "arg1"}
     queue = queue_factory.create(
         name="nuclei.rolling.test",
-        config=yaml_dump(queue_config),
+        config=yaml_dump({"module": "nuclei", "args": "arg1"}),
     )
     job_completed_factory.create(
         queue=queue,
         make_output="tests/server/data/nuclei_v2_movingtarget_phase1.job.zip",
-        make_output__XXX="abc"
     )
 
     stage = PruningStorageLoader(queue_name=queue.name)

@@ -251,7 +251,7 @@ class StorageSixEnumTargetlist(Schedule):
     def _run(self):
         """run"""
 
-        all_v6_addresses = StorageManager.get_all_six_address(self.filternets)
+        all_v6_addresses = StorageManager.get_six_addresses(self.filternets)
         targets = self._project_sixenum_targets(all_v6_addresses)
         current_app.logger.info(f"{self.__class__.__name__} tasking {len(targets)} targets to {self.next_stage}")
         self.next_stage.task(targets)
@@ -360,7 +360,7 @@ class StorageSixTargetlist(Schedule):
     def _run(self):
         """run"""
 
-        targets = [f"[{item}]" for item in StorageManager.get_all_six_address(self.filternets)]
+        targets = [f"[{item}]" for item in StorageManager.get_six_addresses(self.filternets)]
         current_app.logger.info(f"{self.__class__.__name__} enumerated {len(targets)} targets")
         self.next_stage.task(targets)
 
