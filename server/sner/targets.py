@@ -60,12 +60,18 @@ class GenericTarget:
 
     value: str
 
+    def __str__(self):
+        return self.value
+
+    def __hash__(self):
+        return hash(str(self))
+
     def scope(self):
         """get target scope"""
         return self.value
 
     def hashval(self):
-        """return address hashval with value fallback"""
+        """return scheduling hashval"""
         try:
             return address_hashval(self.value)
         except ValueError:
@@ -86,12 +92,18 @@ class HostTarget:
 
     address: str
 
+    def __str__(self):
+        return f"host,{self.address}"
+
+    def __hash__(self):
+        return hash(str(self))
+
     def scope(self):
         """get target scope"""
         return (self.address,)
 
     def hashval(self):
-        """return address hashval"""
+        """return scheduling hashval"""
         return address_hashval(self.address)
 
     def is_ipv6_address(self):
@@ -107,15 +119,18 @@ class ServiceTarget:
     proto: str
     port: int
 
+    def __str__(self):
+        return f"svc,{self.address},proto={self.proto},port={self.port}"
+
+    def __hash__(self):
+        return hash(str(self))
+
     def scope(self):
         """get target scope"""
         return (self.address, self.proto, self.port, self.address)
 
-    def __str__(self):
-        return f"svc,{self.address},proto={self.proto},port={self.port}"
-
     def hashval(self):
-        """return address hashval"""
+        """return scheduling hashval"""
         return address_hashval(self.address)
 
     def is_ipv6_address(self):
@@ -132,12 +147,18 @@ class NamedServiceTarget:
     port: int
     hostname: str
 
+    def __str__(self):
+        return f"named,{self.address},proto={self.proto},port={self.port},hostname={self.hostname}"
+
+    def __hash__(self):
+        return hash(str(self))
+
     def scope(self):
         """get target scope"""
         return (self.address, self.proto, self.port, self.hostname)
 
     def hashval(self):
-        """return address hashval"""
+        """return scheduling hashval"""
         return address_hashval(self.address)
 
 
@@ -151,8 +172,11 @@ class SixenumTarget:
     def __str__(self):
         return f"sixenum,{self.value}"
 
+    def __hash__(self):
+        return hash(str(self))
+
     def hashval(self):
-        """return address hashval"""
+        """return scheduling hashval"""
         return address_hashval(self.value.split("-")[0])
 
     def boundaries(self):
@@ -198,3 +222,8 @@ class TargetManager:
             return SixenumTarget(value.split(",", maxsplit=1)[1])
 
         return GenericTarget(value)
+
+    @classmethod
+    def from_list(cls, values):
+        """return list of targets from string values"""
+        return list(map(cls.from_str, values))

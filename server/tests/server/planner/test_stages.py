@@ -9,21 +9,23 @@ import pytest
 
 from sner.server.parser import ParsedItemsDb
 from sner.server.planner.stages import (
+    AurorHostnamesStorageLoader,
     DummyStage,
     filter_tarpits,
     Netlist,
     PruningStorageLoader,
+    ServiceDisco,
     SixDisco,
-    StorageCleanup,
-    StorageLoader,
-    AurorHostnamesStorageLoader,
     SportmapStorageLoader,
+    StorageCleanup,
     StorageHostRescan,
-    StorageSixTargetlist,
+    StorageLoader,
     StorageSixEnumTargetlist,
+    StorageSixTargetlist,
 )
 from sner.server.storage.models import Host, Note, Service, Vuln
 from sner.server.utils import yaml_dump
+from sner.targets import TargetManager, HostTarget, GenericTarget
 
 
 def test_filter_tarpits(sample_pidb):
@@ -43,7 +45,7 @@ def test_netlist(app):  # pylint: disable=unused-argument
     Netlist(schedule='600s', lockname='dummylock', netlist=['127.0.0.0/31'], next_stages=[dummy]).run()
 
     assert dummy.task_count == 1
-    assert dummy.task_args == ['127.0.0.0', '127.0.0.1']
+    assert dummy.task_args == TargetManager.from_list(['127.0.0.0', '127.0.0.1'])
 
 
 def test_storagesixtargetlist(app, host_factory):  # pylint: disable=unused-argument
@@ -59,7 +61,7 @@ def test_storagesixtargetlist(app, host_factory):  # pylint: disable=unused-argu
         next_stage=dummy
     ).run()
 
-    expected = ['[2001:db8:aa::1]']
+    expected = [HostTarget("2001:db8:aa::1")]
     assert sorted(dummy.task_args) == sorted(expected)
 
 
@@ -78,7 +80,7 @@ def test_storagesixenumtargetlist(app, host_factory):  # pylint: disable=unused-
     ).run()
 
     expected = ['sixenum,2001:0db8:00aa:0000:0000:0000:0000:0-ffff', 'sixenum,2001:0db8:00bb:0000:0000:0000:0000:0-ffff']
-    assert sorted(dummy.task_args) == sorted(expected)
+    assert sorted(map(str, dummy.task_args)) == sorted(expected)
 
 
 def test_storagehostrescan(app, host_factory, service_factory, queue_factory):  # pylint: disable=unused-argument
@@ -120,6 +122,19 @@ def test_storageloader(app, job_completed_nmap):  # pylint: disable=unused-argum
     assert Host.query.count() == 1
     assert Service.query.count() == 6
     assert Note.query.count() == 20
+
+
+def test_queuehandler(app, queue):  # pylint: disable=unused-argument
+    """test queue handler"""
+
+    stage = ServiceDisco(queue.name)
+    target = GenericTarget("dummy")
+
+    stage.task([target])
+    assert len(queue.targets) == 1
+
+    stage.task([target])
+    assert len(queue.targets) == 1
 
 
 def test_queuehandler_nxqueue(app, job_completed_nmap):  # pylint: disable=unused-argument
