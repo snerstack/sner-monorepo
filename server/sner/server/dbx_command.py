@@ -20,6 +20,7 @@ from sner.server.scheduler.models import Queue
 from sner.server.storage.versioninfo import VersioninfoManager
 from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
 from sner.server.utils import yaml_dump
+from sner.targets import TargetManager
 
 
 def db_remove():
@@ -206,7 +207,7 @@ def initdata_dev():
     })
     db.session.add(queue)
     db.session.commit()
-    QueueManager.enqueue(queue, ['1', '2', '3'])
+    QueueManager.enqueue(queue, TargetManager.from_list(['1', '2', '3']))
 
     # storage test data host1
     aggregable_vuln = {

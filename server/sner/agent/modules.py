@@ -90,5 +90,4 @@ class ModuleBase(ABC):
     def enumerate_targets(self, assignment):
         """enumerate targetsv2 from assignment"""
 
-        for idx, item in enumerate(assignment["targets"]):
-            yield idx, TargetManager.from_str(item)
+        yield from enumerate(TargetManager.from_list(assignment["targets"]))

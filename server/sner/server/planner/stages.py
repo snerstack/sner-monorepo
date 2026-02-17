@@ -24,6 +24,7 @@ from sner.server.scheduler.models import Queue, Job, Target
 from sner.server.storage.core import StorageManager
 from sner.server.storage.models import Host, Note
 from sner.server.storage.versioninfo import VersioninfoManager
+from sner.targets import TargetManager, HostTarget, GenericTarget
 
 
 def filter_tarpits(pidb, threshold=200):
@@ -114,13 +115,13 @@ class QueueHandler(Stage):
             JobManager.archive(aajob)
             JobManager.delete(aajob)
 
-    def task(self, data):
-        """enqueue data/targets into all configured queues"""
+    def task(self, targets):
+        """enqueue targetsV2 into queue"""
 
-        already_queued = (
-            db.session.connection().execute(select(Target.target).filter(Target.queue == self.queue)).scalars().all()
-        )
-        enqueue = list(set(data) - set(already_queued))
+        query = db.session.connection().execute(select(Target.target).filter(Target.queue == self.queue)).scalars()
+        already_queued = TargetManager.from_list(query.all())
+
+        enqueue = list(set(targets) - set(already_queued))
         QueueManager.enqueue(self.queue, enqueue)
         current_app.logger.info(f'{self.__class__.__name__} enqueued {len(enqueue)} targets to "{self.queue.name}"')
 
@@ -167,7 +168,7 @@ class Netlist(Schedule):
 
         hosts = []
         for net in self.netlist:
-            hosts += enumerate_network(net)
+            hosts += TargetManager.from_list(enumerate_network(net))
         current_app.logger.info(f"{self.__class__.__name__} enumerated {len(hosts)} hosts")
         for stage in self.next_stages:
             stage.task(hosts)
@@ -227,13 +228,13 @@ class StorageSixEnumTargetlist(Schedule):
         self.filternets = filternets
 
     @staticmethod
-    def _project_sixenum_targets(hosts):
+    def _project_sixenum_targets(addresses):
         """project targets for six_enum_discover agent from list of ipv6 addresses"""
 
         targets = set()
 
-        for host in hosts:
-            exploded = IPv6Address(host).exploded
+        for addr in addresses:
+            exploded = IPv6Address(addr).exploded
 
             # do not enumerate EUI-64 hosts/nets
             if exploded[27:32] == "ff:fe":
@@ -244,9 +245,9 @@ class StorageSixEnumTargetlist(Schedule):
             exploded[-1] = "0-ffff"
             target = ":".join(exploded)
 
-            targets.add(str(SixenumTarget(target)))
+            targets.add(SixenumTarget(target))
 
-        return list(targets)
+        return targets
 
     def _run(self):
         """run"""
@@ -274,7 +275,7 @@ class StorageServiceScanTargetlist(Schedule):
 
         targets, ids = [], []
         for service in StorageManager.get_services(self.filternets, rescan_horizont):
-            targets.append(str(ServiceTarget(service.host.address, service.proto, service.port)))
+            targets.append(ServiceTarget(service.host.address, service.proto, service.port))
             ids.append(service.id)
 
         for item in self.servicescan_stages:
@@ -296,7 +297,7 @@ class StorageServiceTargetlist(Schedule):
 
         targets = []
         for service in StorageManager.get_services(self.filternets, None):
-            targets.append(str(ServiceTarget(service.host.address, service.proto, service.port)))
+            targets.append(ServiceTarget(service.host.address, service.proto, service.port))
 
         self.next_stage.task(targets)
 
@@ -340,7 +341,7 @@ class StorageHostRescan(Schedule):
 
         targets, ids = [], []
         for host in StorageManager.get_hosts(self.filternets, rescan_horizont):
-            targets.append(host.address)
+            targets.append(HostTarget(host.address))
             ids.append(host.id)
 
         current_app.logger.info(f"{self.__class__.__name__} rescaning {len(targets)} hosts")
@@ -360,7 +361,7 @@ class StorageSixTargetlist(Schedule):
     def _run(self):
         """run"""
 
-        targets = [f"[{item}]" for item in StorageManager.get_six_addresses(self.filternets)]
+        targets = [HostTarget(item) for item in StorageManager.get_six_addresses(self.filternets)]
         current_app.logger.info(f"{self.__class__.__name__} enumerated {len(targets)} targets")
         self.next_stage.task(targets)
 
@@ -405,7 +406,7 @@ class AurorHostnamesTrigger(Schedule):
         """run"""
 
         current_app.logger.info(f"{self.__class__.__name__} triggered")
-        self.next_stage.task(["tick"])
+        self.next_stage.task(GenericTarget("tick"))
 
 
 class AurorHostnamesStorageLoader(QueueHandler):

@@ -169,9 +169,9 @@ class QueueManager:
         enqueued = []
         enqueued_hashvals = set()
 
-        for target in filter(None, map(str.strip, targets)):
-            thashval = SchedulerService.hashval(target)
-            enqueued.append({'queue_id': queue.id, 'target': target, 'hashval': thashval})
+        for target in targets:
+            thashval = target.hashval()
+            enqueued.append({"queue_id": queue.id, "target": str(target), "hashval": thashval})
             enqueued_hashvals.add(thashval)
 
         if enqueued:
@@ -284,7 +284,7 @@ class JobManager:
     def repeat(job):
         """job repeat; reschedule targets"""
 
-        QueueManager.enqueue(job.queue, json.loads(job.assignment)['targets'])
+        QueueManager.enqueue(job.queue, TargetManager.from_list(json.loads(job.assignment)["targets"]))
 
     @staticmethod
     def parse(job):

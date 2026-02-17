@@ -16,6 +16,7 @@ from sner.server.scheduler.forms import QueueEnqueueForm, QueueForm
 from sner.server.scheduler.models import Job, Queue, Target
 from sner.server.scheduler.views import blueprint
 from sner.server.utils import filter_query, error_response
+from sner.targets import TargetManager
 
 
 @blueprint.route('/queue/list.json', methods=['GET', 'POST'])
@@ -105,7 +106,8 @@ def queue_enqueue_route(queue_id):
     form = QueueEnqueueForm()
 
     if form.validate_on_submit():
-        QueueManager.enqueue(db.session.get(Queue, queue_id), form.data['targets'])
+        targets = list(filter(None, map(str.strip, form.data["targets"])))
+        QueueManager.enqueue(db.session.get(Queue, queue_id), TargetManager.from_list(targets))
         return jsonify({"message": "success"})
 
     return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)

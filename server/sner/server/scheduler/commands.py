@@ -12,6 +12,7 @@ from flask.cli import with_appcontext
 
 from sner.server.scheduler.core import enumerate_network, QueueManager, SchedulerService
 from sner.server.scheduler.models import Queue
+from sner.targets import TargetManager
 
 
 @click.group(name='scheduler', help='sner.server scheduler management')
@@ -52,6 +53,7 @@ def rangetocidr_command(start, end):
 def queue_enqueue_command(queue_name, targets, **kwargs):
     """enqueue targets to queue"""
 
+    # TODO: refactor pattern
     queue = Queue.query.filter(Queue.name == queue_name).one_or_none()
     if not queue:
         current_app.logger.error('no such queue')
@@ -62,7 +64,9 @@ def queue_enqueue_command(queue_name, targets, **kwargs):
         targets.extend(kwargs['file'].read().splitlines())
     if not targets:
         targets.extend(sys.stdin.readlines())
-    QueueManager.enqueue(queue, targets)
+    targets = list(filter(None, map(str.strip, targets)))
+
+    QueueManager.enqueue(queue, TargetManager.from_list(targets))
     sys.exit(0)
 
 
