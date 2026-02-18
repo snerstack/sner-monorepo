@@ -5,6 +5,7 @@ parsers to import from agent outputs to storage
 
 import json
 import sys
+from datetime import datetime
 from pprint import pprint
 
 from pathlib import Path
@@ -20,6 +21,7 @@ class ParserModule(ParserBase):
         """parse path and returns list of hosts/addresses"""
 
         pidb = ParsedItemsDb()
+        now = datetime.now()
 
         if is_zip(path):
             data = file_from_zip(path, "output.json")
@@ -29,7 +31,7 @@ class ParserModule(ParserBase):
         # output.json = {"IP": [hostname1, hostname2]}
         results = json.loads(data)
         for address, hostnames in results.items():
-            pidb.upsert_note(address, xtype="auror.hostnames", data=json.dumps(hostnames))
+            pidb.upsert_note(address, xtype="auror.hostnames", data=json.dumps(hostnames), import_time=now)
 
         return pidb
 

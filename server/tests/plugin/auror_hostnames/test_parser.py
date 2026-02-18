@@ -6,17 +6,15 @@ auror_hostnames output parser tests
 from sner.plugin.auror_hostnames.parser import ParserModule
 
 
-def test_host_list():
-    """check host list extraction"""
+def test_parse_path():
+    """test auror_testssl parser"""
 
     expected_hosts = ["127.0.0.1", "::1"]
     json_file_path = "tests/server/data/parser-auror_hostnames-output.json"
     zip_file_path = "tests/server/data/parser-auror_hostnames-job.zip"
 
     pidb = ParserModule.parse_path(json_file_path)
-
-    assert [x.address for x in pidb.hosts] == expected_hosts
+    assert [item.address for item in pidb.hosts] == expected_hosts
 
     pidb = ParserModule.parse_path(zip_file_path)
-
-    assert [x.address for x in pidb.hosts] == expected_hosts
+    assert [item.address for item in pidb.hosts] == expected_hosts
