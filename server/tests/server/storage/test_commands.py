@@ -4,7 +4,6 @@ storage.commands tests
 """
 
 import csv
-import json
 from io import StringIO
 
 from sner.server.storage.commands import command

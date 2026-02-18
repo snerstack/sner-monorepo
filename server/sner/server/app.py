@@ -78,7 +78,7 @@ DEFAULT_CONFIG = {
     'SNER_MAINTENANCE': False,
     'SNER_HEATMAP_HOT_LEVEL': 0,
     'SNER_EXCLUSIONS': [
-        ['regex', r'^tcp://.*:22$'],
+        ['regex', r'^.*,proto=tcp,port=22,.*$'],
         ['network', '127.66.66.0/26']
     ],
 

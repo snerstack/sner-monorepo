@@ -24,7 +24,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sner.server.extensions import db
 from sner.server.parser import REGISTERED_PARSERS
 from sner.server.scheduler.models import Heatmap, Job, Queue, Readynet, Target
-from sner.targets import TargetManager, ServiceTarget, SixenumTarget
+from sner.targets import TargetManager, ServiceTarget, SixenumTarget, NamedServiceTarget, HostTarget, GenericTarget
 
 
 SCHEDULER_LOCK_NUMBER = 1
@@ -79,11 +79,15 @@ class ExclMatcher():
             for family, value in config
         ]
 
-    def match(self, value):
+    def match(self, targetstr):
         """match value against all exclusions/matchers"""
-
+        # matcher is called only from SchedulerService with
+        # raw value from storage, it's parsed and both raw and parsed
+        # values are passed to matcher implementation so it is not necessary
+        # to recompute values for each instance call
+        target = TargetManager.from_str(targetstr)
         for excl in self.excls:
-            if excl.match(value):
+            if excl.match(target, targetstr):
                 return True
         return False
 
@@ -91,15 +95,13 @@ class ExclMatcher():
 class ExclMatcherImplBase(ABC):
     """base interface which must  be implemented by all available matchers"""
 
+    @abstractmethod
     def __init__(self, match_to):
-        self.match_to = self._initialize(match_to)
+        """initialize matcher"""
+        self.match_to = match_to
 
     @abstractmethod
-    def _initialize(self, match_to):
-        """initialize matcher impl"""
-
-    @abstractmethod
-    def match(self, value):
+    def match(self, target, targetstr):
         """returns bool if value matches the initialized match_to"""
 
     def __repr__(self):
@@ -110,8 +112,8 @@ class ExclMatcherImplBase(ABC):
 class NetworkExclMatcher(ExclMatcherImplBase):
     """network matcher"""
 
-    def _initialize(self, match_to):
-        return ip_network(match_to)
+    def __init__(self, match_to):
+        self.match_to = ip_network(match_to)
 
     def _test_addr(self, value):
         try:
@@ -119,20 +121,15 @@ class NetworkExclMatcher(ExclMatcherImplBase):
         except ValueError:
             return False
 
-    def match(self, value):
-        # test value as plain address
-        if self._test_addr(value):
-            return True
+    def match(self, target, _targetstr):
+        if isinstance(target, GenericTarget):
+            return self._test_addr(target.value)
 
-        tmptarget = TargetManager.from_str(value)
+        if any(isinstance(target, item) for item in [HostTarget, ServiceTarget, NamedServiceTarget]):
+            return self._test_addr(target.address)
 
-        # test value as service target
-        if isinstance(tmptarget, ServiceTarget):
-            return self._test_addr(tmptarget.address)
-
-        # test value as sixenum target
-        if isinstance(tmptarget, SixenumTarget):
-            first, last = tmptarget.boundaries()
+        if isinstance(target, SixenumTarget):
+            first, last = target.boundaries()
 
             # first or last enum addr is in excluded range
             if self._test_addr(first) or self._test_addr(last):
@@ -152,11 +149,11 @@ class NetworkExclMatcher(ExclMatcherImplBase):
 class RegexExclMatcher(ExclMatcherImplBase):
     """regex matcher"""
 
-    def _initialize(self, match_to):
-        return re.compile(match_to)
+    def __init__(self, match_to):
+        self.match_to = re.compile(match_to)
 
-    def match(self, value):
-        return bool(self.match_to.search(value))
+    def match(self, _target, targetstr):
+        return bool(self.match_to.search(targetstr))
 
 
 class QueueManager:
@@ -520,7 +517,7 @@ class SchedulerService:
 
         assignment = {}  # nowork
         assigned_targets = []
-        blacklist = ExclMatcher(current_app.config['SNER_EXCLUSIONS'])
+        exclist = ExclMatcher(current_app.config['SNER_EXCLUSIONS'])
 
         queue = cls._get_assignment_queue(queue_name, agent_caps)
         if not queue:
@@ -531,7 +528,7 @@ class SchedulerService:
             rtarget = cls._pop_random_target(queue)
             if not rtarget:
                 break
-            if blacklist.match(rtarget.target):
+            if exclist.match(rtarget.target):
                 continue
             assigned_targets.append(rtarget.target)
             cls.heatmap_put(rtarget.hashval)
