@@ -8,7 +8,6 @@ import string
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-from sner.lib import format_host_address
 from sner.server.extensions import db
 from sner.server.storage.models import Vuln
 from tests.selenium import dt_inrow_delete, dt_rendered, dt_count_rows, dt_wait_processing, webdriver_waituntil, frontend_url, wait_for_js
@@ -204,7 +203,7 @@ def test_vuln_view_route_service_endpoint_dropdown(frontend_server, sl_operator,
     check_service_endpoint_dropdown(
         sl_operator,
         sl_operator.find_element(By.XPATH, '//td[contains(@class, "service_endpoint_dropdown")]'),
-        f'<Service {test_vuln.service.id}: {format_host_address(test_vuln.host.address)} {test_vuln.service.proto}.{test_vuln.service.port}>'
+        f'<Service {test_vuln.service.id}: {test_vuln.host.address} {test_vuln.service.proto}.{test_vuln.service.port}>'
     )
 
 

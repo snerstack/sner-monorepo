@@ -37,21 +37,16 @@ auror,2001:db8::10,mail.example.com,ip=,port=25,tls=implicit
 """
 
 import re
-import ipaddress
 from dataclasses import dataclass
+from ipaddress import ip_address, ip_network
 
 
 def address_hashval(value):
     """return address hashval for scheduling heatmap"""
 
-    addr = ipaddress.ip_address(value)
-    if isinstance(addr, ipaddress.IPv4Address):
-        prefix = 24
-    elif isinstance(addr, ipaddress.IPv6Address):
-        prefix = 48
-    else:
-        raise TypeError("invalid address")
-    return str(ipaddress.ip_network(f"{addr}/{prefix}", strict=False))
+    addr = ip_address(value)
+    prefix = (48 if addr.version == 6 else 24)
+    return str(ip_network(f"{addr}/{prefix}", strict=False))
 
 
 @dataclass
@@ -80,10 +75,10 @@ class GenericTarget:
     def is_ipv6_address(self):
         """ipv4/ipv6 address family check"""
         try:
-            addr = ipaddress.ip_address(self.value)
+            addr = ip_address(self.value)
         except ValueError:
             return False
-        return isinstance(addr, ipaddress.IPv6Address)
+        return addr.version == 6
 
 
 @dataclass
@@ -108,7 +103,7 @@ class HostTarget:
 
     def is_ipv6_address(self):
         """ipv4/ipv6 address family check"""
-        return isinstance(ipaddress.ip_address(self.address), ipaddress.IPv6Address)
+        return ip_address(self.address).version == 6
 
 
 @dataclass
@@ -135,7 +130,7 @@ class ServiceTarget:
 
     def is_ipv6_address(self):
         """ipv4/ipv6 address family check"""
-        return isinstance(ipaddress.ip_address(self.address), ipaddress.IPv6Address)
+        return ip_address(self.address).version == 6
 
 
 @dataclass
@@ -190,9 +185,9 @@ class SixenumTarget:
             tmp = first.split(':')
             tmp[-1] = enumend
             last = ':'.join(tmp)
-            return ipaddress.ip_address(first), ipaddress.ip_address(last)
+            return ip_address(first), ip_address(last)
 
-        tmp = ipaddress.ip_network(self.value)
+        tmp = ip_network(self.value)
         return tmp.network_address, tmp.broadcast_address
 
 
