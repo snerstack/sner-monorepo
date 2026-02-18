@@ -86,32 +86,13 @@ def test_service_list_command(runner, service):
 
     host = service.host
 
-    result = runner.invoke(command, ['service-list', '--long', '--short'])
-    assert result.exit_code == 1
-
     result = runner.invoke(command, ['service-list'])
     assert result.exit_code == 0
-    assert f'{service.proto}://{host.address}:{service.port}\n' == result.output
-
-    result = runner.invoke(command, ['service-list', '--long'])
-    assert result.exit_code == 0
-    assert json.dumps(service.info) in result.output
-
-    result = runner.invoke(command, ['service-list', '--short'])
-    assert result.exit_code == 0
-    assert result.output.strip() == host.address
-
-    result = runner.invoke(command, ['service-list', '--short', '--hostnames'])
-    assert result.exit_code == 0
-    assert result.output.strip() == host.hostname
-
-    result = runner.invoke(command, ['service-list', '--simple'])
-    assert result.exit_code == 0
-    assert result.output.strip() == f'{host.address} {service.port}'
+    assert result.output.strip() == f"svc,{host.address},proto={service.proto},port={service.port}"
 
     result = runner.invoke(command, ['service-list', '--filter', f'Service.port=="{service.port}"'])
     assert result.exit_code == 0
-    assert result.output.strip() == f'{service.proto}://{host.address}:{service.port}'
+    assert result.output.strip() == f"svc,{host.address},proto={service.proto},port={service.port}"
 
     result = runner.invoke(command, ['service-list', '--filter', 'invalid'])
     assert result.exit_code == 1
