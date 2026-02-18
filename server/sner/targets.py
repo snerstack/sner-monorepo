@@ -198,6 +198,30 @@ class SixenumTarget(TargetBase):
         return tmp.network_address, tmp.broadcast_address
 
 
+@dataclass(frozen=True)
+class AurorTestsslTarget(TargetBase):
+    """auror_testssl target"""
+
+    REGEXP = re.compile(r"auror,(?P<address>\S+),port=(?P<port>\d+),hostname=(?P<hostname>\S+),enc=(?P<enc>(I|E))")
+
+    address: str
+    port: str
+    hostname: str
+    enc: str
+
+    def __str__(self):
+        return f"auror,{self.address},port={self.port},hostname={self.hostname},enc={self.enc}"
+
+    def hashval(self):
+        return address_hashval(self.address)
+
+    def scope(self):
+        return (self.address, "tcp", self.port, self.hostname)
+
+    def is_ipv6_address(self):
+        return is_ipv6_address(self.address)
+
+
 class TargetManager:
     """target manager"""
 
@@ -218,6 +242,11 @@ class TargetManager:
 
         if value.startswith("sixenum,") and SixenumTarget.REGEXP.match(value):
             return SixenumTarget(value.split(",", maxsplit=1)[1])
+
+        if value.startswith("auror,") and (match := AurorTestsslTarget.REGEXP.match(value)):
+            return AurorTestsslTarget(
+                match.group("address"), int(match.group("port")), match.group("hostname"), match.group("enc")
+            )
 
         return GenericTarget(value)
 

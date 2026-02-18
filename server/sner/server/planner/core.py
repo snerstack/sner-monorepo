@@ -71,22 +71,26 @@ from sqlalchemy import delete, not_, or_, select
 from sner.lib import TerminateContextMixin
 from sner.server.extensions import db
 from sner.server.planner.config import PlannerConfig
+from sner.server.planner.stages_auror import (
+    AurorHostnamesStorageLoader,
+    AurorHostnamesTrigger,
+    AurorTestsslStorageCleanup,
+    AurorTestsslStorageTargetlist
+)
 from sner.server.planner.stages import (
     Netlist,
+    PruningStorageLoader,
     RebuildVersioninfoMap,
     Schedule,
     ServiceDisco,
     SixDisco,
-    StorageCleanup,
-    StorageLoader,
-    AurorHostnamesTrigger,
-    AurorHostnamesStorageLoader,
     SportmapStorageLoader,
+    StorageCleanup,
     StorageHostRescan,
-    StorageSixEnumTargetlist,
-    StorageServiceTargetlist,
+    StorageLoader,
     StorageServiceScanTargetlist,
-    PruningStorageLoader,
+    StorageServiceTargetlist,
+    StorageSixEnumTargetlist,
 )
 from sner.server.storage.models import Host, Note, Vuln
 
@@ -235,7 +239,7 @@ class Planner(TerminateContextMixin):
         self.stages[name] = stage_cls(**kwargs)
         return self.stages[name]
 
-    def _setup_pipelines(self):
+    def _setup_pipelines(self):  # pylint: disable=too-many-branches
         """setup planner stages/pipelines"""
 
         plines = self.config.pipelines
@@ -352,17 +356,40 @@ class Planner(TerminateContextMixin):
                 next_stage=sportmap_scan_stage,
             )
 
-        # auror scan
-        if plines.auror_scan:
+        # auror: hostnames
+        if plines.auror_hostnames:
             auror_hostnames_stage = self._add_stage(
-                "auror:hostnames", AurorHostnamesStorageLoader, queue_name=plines.auror_scan.hostnames_queue
+                "auror:hostnames", AurorHostnamesStorageLoader, queue_name=plines.auror_hostnames.queue
             )
 
             self._add_stage(
-                "auror:hostnames_targetlist",
+                "auror:hostnames_trigger",
                 AurorHostnamesTrigger,
-                schedule=plines.auror_scan.hostnames_schedule,
+                schedule=plines.auror_hostnames.schedule,
                 next_stage=auror_hostnames_stage,
+            )
+
+        # auror: testssl
+        if plines.auror_testssl:
+            auror_testssl_stage = self._add_stage(
+                f"auror_testssl:{plines.auror_testssl.queue}",
+                PruningStorageLoader,
+                queue_name=plines.auror_testssl.queue
+            )
+
+            self._add_stage(
+                "auror_testssl:targetlist",
+                AurorTestsslStorageTargetlist,
+                schedule=plines.auror_testssl.targetlist_schedule,
+                next_stage=auror_testssl_stage,
+                ports_starttls=plines.auror_testssl.ports_starttls,
+                filternets=self.config.auror_testssl_ips
+            )
+
+            self._add_stage(
+                "auror_testssl:cleanup",
+                AurorTestsslStorageCleanup,
+                schedule=plines.auror_testssl.cleanup_schedule,
             )
 
         # storage cleanup

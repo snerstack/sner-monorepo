@@ -66,7 +66,11 @@ def test_loadmergeagreegatenetlists(app):  # pylint: disable=unused-argument
     """test load and merge agreegate configs"""
 
     Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}").write_text(
-        json.dumps({"sner/basic": ["127.6.6.0/24", "2001:db8::11/128", "invalid"]}),
+        json.dumps({
+            "sner/basic": ["127.6.6.0/24", "2001:db8::11/128", "invalid"],
+            "sner/nuclei": ["127.6.6.0/24"],
+            "auror": ["2001:db8::11/128"],
+        }),
         encoding="utf-8",
     )
 

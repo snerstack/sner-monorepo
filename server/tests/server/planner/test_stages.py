@@ -3,13 +3,13 @@
 planner stages tests
 """
 
+
 from unittest.mock import patch
 
 import pytest
 
 from sner.server.parser import ParsedItemsDb
 from sner.server.planner.stages import (
-    AurorHostnamesStorageLoader,
     DummyStage,
     filter_tarpits,
     Netlist,
@@ -172,28 +172,6 @@ def test_storage_loader_sportmap(app, queue, host_factory, note_factory):  # pyl
 
     assert Host.query.count() == 2
     assert Note.query.count() == 1
-
-
-def test_storage_loader_auror_hostnames(app, queue_factory, job_completed_factory, host_factory, note_factory):  # pylint: disable=unused-argument
-    """mock completed job with real data"""
-
-    host1 = host_factory.create(address='127.0.0.1')
-    note_factory.create(host=host1, xtype='auror.hostnames', data='["adummy1.hostname.test"]')
-    host2 = host_factory.create(address='127.0.0.2')
-    note_factory.create(host=host2, xtype='auror.hostnames', data='["adummy2.hostname.test"]')
-    host_factory.create(address='::1')
-    queue = queue_factory.create(
-        name='test queue',
-        config=yaml_dump({'module': 'auror_hostnames', 'git_key_path': 'dummy', 'git_key_server': 'dummy'}),
-    )
-    job_completed_factory.create(
-        queue=queue,
-        make_output="tests/server/data/parser-auror_hostnames-job.zip"
-    )
-
-    AurorHostnamesStorageLoader(queue_name=queue.name).run()
-
-    assert Note.query.count() == 2
 
 
 def test_versionscan(app, queue_factory):  # pylint: disable=unused-argument

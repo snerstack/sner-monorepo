@@ -3,13 +3,15 @@
 scheduler module functions
 """
 
+import json
 from csv import DictWriter, QUOTE_ALL
+from collections import namedtuple
 from http import HTTPStatus
 from io import StringIO
 from typing import Union
 
 from flask import current_app
-from sqlalchemy import case, cast, delete, func, or_, not_, select, update, tuple_
+from sqlalchemy import and_, case, cast, delete, func, or_, not_, select, update, tuple_
 from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY
 from sqlalchemy.sql.functions import coalesce
 
@@ -609,3 +611,62 @@ class StorageManager:
         db.session.commit()
 
         return len(vulns_to_delete)
+
+    @staticmethod
+    def get_tls_services(filternets):
+        """returns services which are supposedly of TLS/SSL type, resp. having nmap.ssl-cert note"""
+
+        query = (
+            select(Service)
+            .join(Note, Note.service_id == Service.id)
+            .filter(Service.proto == "tcp", Service.state.ilike("open:%"), Note.xtype == "nmap.ssl-cert")
+        )
+        if filternets:
+            restrict = [Host.address.op("<<=")(net) for net in filternets]
+            query = query.join(Host, Service.host_id == Host.id).filter(or_(*restrict))
+
+        return db.session.execute(query).scalars()
+
+    @staticmethod
+    def get_hostnames_map(host_ids=None):
+        """returns host-hostnames map"""
+
+        MapItem = namedtuple("HostnamesMapItem", ["address", "hostnames"])
+        hostnames_map = {}
+
+        query = (
+            select(Host.id, Host.address, Host.hostname, Note.data)
+            .select_from(Host)
+            .outerjoin(Note, and_(Note.host_id == Host.id, Note.xtype == "auror.hostnames"))
+        )
+        if host_ids:
+            query = query.filter(Host.id.in_(host_ids))
+
+        for host_id, host_address, host_hostname, data in db.session.execute(query):
+            hostnames = set()
+            if data:
+                hostnames.update(json.loads(data))
+            if not hostnames:
+                hostnames.add(host_hostname or host_address)
+            hostnames_map[host_id] = MapItem(host_address, hostnames)
+
+        return hostnames_map
+
+    @staticmethod
+    def get_aurortestssl_notesmap():
+        """returns map for auror.testssl.% notes per-host"""
+
+        MapKey = namedtuple("MapKey", ["host_id", "via_target"])
+        notes_map = {}
+
+        query = (
+            select(Note.host_id, Note.via_target, func.array_agg(Note.id))
+            .select_from(Note)
+            .filter(Note.xtype.ilike("auror.testssl.%"))
+            .group_by(Note.host_id, Note.via_target)
+        )
+
+        for host_id, via_target, note_ids in db.session.execute(query):
+            notes_map[MapKey(host_id, via_target)] = note_ids
+
+        return notes_map

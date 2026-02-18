@@ -24,7 +24,15 @@ from sqlalchemy.exc import SQLAlchemyError
 from sner.server.extensions import db
 from sner.server.parser import REGISTERED_PARSERS
 from sner.server.scheduler.models import Heatmap, Job, Queue, Readynet, Target
-from sner.targets import TargetManager, ServiceTarget, SixenumTarget, NamedServiceTarget, HostTarget, GenericTarget
+from sner.targets import (
+    AurorTestsslTarget,
+    GenericTarget,
+    HostTarget,
+    NamedServiceTarget,
+    ServiceTarget,
+    SixenumTarget,
+    TargetManager,
+)
 
 
 SCHEDULER_LOCK_NUMBER = 1
@@ -125,7 +133,7 @@ class NetworkExclMatcher(ExclMatcherImplBase):
         if isinstance(target, GenericTarget):
             return self._test_addr(target.value)
 
-        if any(isinstance(target, item) for item in [HostTarget, ServiceTarget, NamedServiceTarget]):
+        if any(isinstance(target, item) for item in [HostTarget, ServiceTarget, NamedServiceTarget, AurorTestsslTarget]):
             return self._test_addr(target.address)
 
         if isinstance(target, SixenumTarget):
