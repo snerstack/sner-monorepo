@@ -259,7 +259,7 @@ class StorageSixEnumTargetlist(Schedule):
 
 
 class StorageServiceScanTargetlist(Schedule):
-    """list targets for service scan"""
+    """list and task service-targets for basic service scans accounting rescan_time"""
 
     def __init__(self, schedule, lockname, service_interval, filternets, servicescan_stages):
         super().__init__(schedule, lockname)
@@ -285,7 +285,7 @@ class StorageServiceScanTargetlist(Schedule):
 
 
 class StorageServiceTargetlist(Schedule):
-    """list all services as ServiceTarget in filternets"""
+    """list storage services for advanced(vulnerability) scanning"""
 
     def __init__(self, schedule, lockname, filternets, next_stage):
         super().__init__(schedule, lockname)

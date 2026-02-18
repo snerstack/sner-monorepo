@@ -345,7 +345,7 @@ class Planner(TerminateContextMixin):
             )
 
             self._add_stage(
-                "nuclei_scan:storage_targetlist",
+                "sportmap_scan:storage_targetlist",
                 StorageServiceTargetlist,
                 schedule=plines.nuclei_scan.schedule,
                 filternets=self.config.sportmap_nets_ipv4 + self.config.sportmap_nets_ipv6,
