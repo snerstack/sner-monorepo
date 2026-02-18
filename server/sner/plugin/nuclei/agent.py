@@ -8,7 +8,7 @@ from pathlib import Path
 from schema import Schema
 
 from sner.agent.modules import ModuleBase
-from sner.lib import format_host_address
+from sner.lib import uri_ipv6_address
 from sner.targets import ServiceTarget, NamedServiceTarget
 
 
@@ -30,7 +30,8 @@ class AgentModule(ModuleBase):
         targets = []
         for _, target in self.enumerate_targets(assignment):
             if isinstance(target, ServiceTarget):
-                targets.append(f"{format_host_address(target.address)}:{target.port}")
+                address = uri_ipv6_address(target.address) if target.is_ipv6_address() else target.address
+                targets.append(f"{address}:{target.port}")
                 continue
             if isinstance(target, NamedServiceTarget):
                 targets.append(f"{target.hostname}:{target.port}")

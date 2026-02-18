@@ -47,9 +47,9 @@ def files_from_zip(zippath, regexp):
                 yield file_from_zip(zippath, filename)
 
 
-def format_host_address(value):
-    """format ipv4 vs ipv6 address to string"""
-    return value if ':' not in value else f'[{value}]'
+def uri_ipv6_address(value):
+    """format ipv6 address to brackets"""
+    return f"[{value}]"
 
 
 class TerminateContextMixin:

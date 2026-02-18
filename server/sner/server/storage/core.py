@@ -13,7 +13,6 @@ from sqlalchemy import case, cast, delete, func, or_, not_, select, update, tupl
 from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY
 from sqlalchemy.sql.functions import coalesce
 
-from sner.lib import format_host_address
 from sner.server.extensions import db
 from sner.server.storage.forms import AnnotateForm
 from sner.server.storage.models import Host, Note, Service, Vuln, SeverityEnum
@@ -376,12 +375,12 @@ class StorageManager:
             Service.port,
             Host.address.label('host_address')
         ).join(Host).filter(not_(Service.state.ilike('open:%')))).all()
-        for service in services_to_delete:
+        for srow in services_to_delete:
             current_app.logger.info(
-                    'storage update delete service '
-                    f'<Service {service.id}: {format_host_address(service.host_address)} {service.proto}.{service.port}>'
+                    "storage update delete service "
+                    f"<Service {srow.id}: {srow.host_address} {srow.proto}.{srow.port}>"
             )
-        conn.execute(delete(Service).filter(Service.id.in_([x[0] for x in services_to_delete])))
+        conn.execute(delete(Service).filter(Service.id.in_([srow.id for srow in services_to_delete])))
 
         # remove hosts without any data attribute, service, vuln or note
         hosts_noinfo = conn.execute(

@@ -9,7 +9,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 from sner.server.extensions import db
-from sner.lib import format_host_address
 from sner.server.storage.models import Note
 from tests.selenium import dt_inrow_delete, dt_rendered, webdriver_waituntil, frontend_url, wait_for_js, dt_count_rows, dt_wait_processing
 from tests.selenium.storage import (
@@ -125,7 +124,7 @@ def test_note_view_route_service_endpoint_dropdown(frontend_server, sl_operator,
     check_service_endpoint_dropdown(
         sl_operator,
         sl_operator.find_element(By.XPATH, '//td[contains(@class, "service_endpoint_dropdown")]'),
-        f'<Service {test_note.service.id}: {format_host_address(test_note.host.address)} {test_note.service.proto}.{test_note.service.port}>'
+        f'<Service {test_note.service.id}: {test_note.host.address} {test_note.service.proto}.{test_note.service.port}>'
     )
 
 

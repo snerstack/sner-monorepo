@@ -34,7 +34,6 @@ from datetime import datetime
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
-from sner.lib import format_host_address
 from sner.server.extensions import db
 from sner.server.models import SelectableEnum
 
@@ -100,7 +99,7 @@ class Service(StorageModelBase):
     notes = relationship('Note', back_populates='service', cascade='delete,delete-orphan', passive_deletes=True)
 
     def __repr__(self):
-        host = format_host_address(self.host.address) if self.host else None
+        host = self.host.address if self.host else None
         return f'<Service {self.id}: {host} {self.proto}.{self.port}>'
 
     def ident(self):
@@ -144,9 +143,9 @@ class Vuln(StorageModelBase):
     service = relationship('Service', back_populates='vulns')
 
     def __repr__(self):
-        host = format_host_address(self.host.address) if self.host else None
-        service = f'{self.service.proto}.{self.service.port}' if self.service else None
-        return f'<Vuln {self.id}: {host} {service} {self.xtype}>'
+        host = self.host.address if self.host else None
+        service = f"{self.service.proto}.{self.service.port}" if self.service else None
+        return f"<Vuln {self.id}: {host} {service} {self.xtype}>"
 
     def ident(self):
         """get storage upsert key; composite key"""
@@ -174,9 +173,9 @@ class Note(StorageModelBase):
     service = relationship('Service', back_populates='notes')
 
     def __repr__(self):
-        host = format_host_address(self.host.address) if self.host else None
-        service = f'{self.service.proto}.{self.service.port}' if self.service else None
-        return f'<Note {self.id}: {host} {service} {self.xtype}>'
+        host = self.host.address if self.host else None
+        service = f"{self.service.proto}.{self.service.port}" if self.service else None
+        return f"<Note {self.id}: {host} {service} {self.xtype}>"
 
     def ident(self):
         """get storage upsert key; composite key"""
