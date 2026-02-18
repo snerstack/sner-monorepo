@@ -106,24 +106,33 @@ def split_ip_networks(networks):
     return ipv4_networks, ipv6_networks
 
 
+def _sorted_merge(config, key, appendix):
+    """do merge and sort of lists from config, handle case where key does not exist yet"""
+    return sorted(list(set(config.get(key, []) + appendix)))
+
+
 def load_merge_agreegate_netlists(config):
     """load and merge netlists from agreegate file into planner config dict"""
 
     agreegate_netlists_path = Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}")
-
     if agreegate_netlists_path.exists():
         current_app.logger.debug("merging agreegate netlists")
         ag_netlists = json.loads(agreegate_netlists_path.read_text(encoding="utf-8"))
 
-        ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/basic", []))
-        config["basic_nets_ipv4"] = sorted(list(set(config.get("basic_nets_ipv4", []) + ipv4_networks)))
-        config["basic_nets_ipv6"] = sorted(list(set(config.get("basic_nets_ipv6", []) + ipv6_networks)))
+        if ag_sner_basic := ag_netlists.get("sner/basic"):
+            ipv4_networks, ipv6_networks = split_ip_networks(ag_sner_basic)
+            config["basic_nets_ipv4"] = _sorted_merge(config, "basic_nets_ipv4", ipv4_networks)
+            config["basic_nets_ipv6"] = _sorted_merge(config, "basic_nets_ipv6", ipv6_networks)
 
-        ipv4_networks, ipv6_networks = split_ip_networks(ag_netlists.get("sner/nuclei", []))
-        config["nuclei_nets_ipv4"] = sorted(list(set(config.get("nuclei_nets_ipv4", []) + ipv4_networks)))
-        config["nuclei_nets_ipv6"] = sorted(list(set(config.get("nuclei_nets_ipv6", []) + ipv6_networks)))
-        config["sportmap_nets_ipv4"] = sorted(list(set(config.get("sportmap_nets_ipv4", []) + ipv4_networks)))
-        config["sportmap_nets_ipv6"] = sorted(list(set(config.get("sportmap_nets_ipv6", []) + ipv6_networks)))
+        if ag_sner_nuclei := ag_netlists.get("sner/nuclei"):
+            ipv4_networks, ipv6_networks = split_ip_networks(ag_sner_nuclei)
+            config["nuclei_nets_ipv4"] = _sorted_merge(config, "nuclei_nets_ipv4", ipv4_networks)
+            config["nuclei_nets_ipv6"] = _sorted_merge(config, "nuclei_nets_ipv6", ipv6_networks)
+            config["sportmap_nets_ipv4"] = _sorted_merge(config, "sportmap_nets_ipv4", ipv4_networks)
+            config["sportmap_nets_ipv6"] = _sorted_merge(config, "sportmap_nets_ipv6", ipv6_networks)
+
+        if ag_auror := ag_netlists.get("auror"):
+            config["auror_testssl_ips"] = _sorted_merge(config, "auror_testssl_ips", ag_auror)
 
     return config
 

@@ -72,6 +72,9 @@ def test_excl_matcher(app):  # pylint: disable=unused-argument
     # test value outsite matcher
     assert not matcher.match("sixenum,2001:db8:aa:300::0-ffff")
 
+    # test auror_testssl
+    assert matcher.match('auror,127.66.66.2,port=11,hostname=hostname,enc=I')
+
     for item in matcher.excls:
         repr(item)
 

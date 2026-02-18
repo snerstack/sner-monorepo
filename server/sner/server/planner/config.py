@@ -46,9 +46,35 @@ class SportmapScan(BaseModel):
     queue: str
 
 
-class AurorScan(BaseModel):
-    hostnames_schedule: str
-    hostnames_queue: str
+class AurorHostnames(BaseModel):
+    schedule: str
+    queue: str
+
+
+class AurorTestsslScan(BaseModel):
+    targetlist_schedule: str
+    queue: str
+    cleanup_schedule: str
+    connect_timeout: int = 5
+    openssl_timeout: int = 5
+    ports_starttls: dict = {
+        21: "ftp",
+        23: "telnet",
+        24: "lmtp",
+        25: "smtp",
+        110: "pop3",
+        119: "nntp",
+        143: "imap",
+        389: "ldap",
+        587: "smtp",
+        # 674: "acap",
+        3306: "mysql",
+        4190: "sieve",
+        5222: "xmpp",
+        5269: "xmpp-server",
+        5432: "postgres",
+        6667: "irc",
+    }
 
 
 class StorageCleanup(BaseModel):
@@ -67,7 +93,8 @@ class Pipelines(BaseModel):
     host_rescan: Optional[HostRescan] = None
     nuclei_scan: Optional[NucleiScan] = None
     sportmap_scan: Optional[SportmapScan] = None
-    auror_scan: Optional[AurorScan] = None
+    auror_hostnames: Optional[AurorHostnames] = None
+    auror_testssl: Optional[AurorTestsslScan] = None
     storage_cleanup: Optional[StorageCleanup] = None
     rebuild_versioninfo_map: Optional[RebuildVersionInfoMap] = None
 
@@ -80,5 +107,7 @@ class PlannerConfig(BaseModel):
     nuclei_nets_ipv6: List[str] = []
     sportmap_nets_ipv4: List[str] = []
     sportmap_nets_ipv6: List[str] = []
+
+    auror_testssl_ips: List[str] = []
 
     pipelines: Optional[Pipelines] = None

@@ -73,6 +73,15 @@ planner:
       schedule: 7days
       queue: sner.sportmap.rolling
 
+    auror_hostnames:
+      schedule: 1day
+      queue: auror.hostnames
+
+    auror_testssl:
+      targetlist_schedule: 1day
+      queue: auror.testssl
+      cleanup_schedule: 1day
+
     storage_cleanup:
       enabled: true
 

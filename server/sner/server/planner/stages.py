@@ -5,7 +5,6 @@ planner stages
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from ipaddress import ip_address, ip_network, IPv6Address
 from pathlib import Path
@@ -13,7 +12,7 @@ from pathlib import Path
 from flask import current_app
 from littletable import Table
 from pytimeparse import parse as timeparse
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.orm.exc import NoResultFound
 
 # from sner.lib import format_host_address
@@ -24,7 +23,7 @@ from sner.server.scheduler.models import Queue, Job, Target
 from sner.server.storage.core import StorageManager
 from sner.server.storage.models import Host, Note
 from sner.server.storage.versioninfo import VersioninfoManager
-from sner.targets import TargetManager, HostTarget, GenericTarget
+from sner.targets import TargetManager, HostTarget
 
 
 def filter_tarpits(pidb, threshold=200):
@@ -183,6 +182,25 @@ class ServiceDisco(QueueHandler):
             tmpdb = filter_tarpits(pidb)
             StorageManager.import_parsed(tmpdb, source=self.queue.name)
             log_parsed(f"{self.__class__.__name__}:{self.queue.name}", pidb)
+
+
+class StorageTestsslTargetlist(Schedule):  # pylint: disable=too-few-public-methods
+    """enumerates testssl targets from storage data"""
+
+    def __init__(self, schedule, lockname, next_stage):
+        super().__init__(schedule, lockname)
+        self.next_stage = next_stage
+
+    def _run(self):
+        """run"""
+
+        targets = [
+            f"{svc.proto}://{format_host_address(svc.host.address)}:{svc.port}"
+            for svc in
+            Service.query.filter(Service.proto == "tcp", Service.port == 443, Service.state.ilike("open:%")).all()
+        ]
+        current_app.logger.info(f'{self.__class__.__name__} projected {len(targets)} targets')
+        self.next_stage.task(targets)
 
 
 class SixDisco(QueueHandler):
@@ -373,6 +391,7 @@ class SportmapStorageLoader(QueueHandler):
         """run"""
 
         for pidb in self._drain():
+            # TODO: better logging
             current_app.logger.info(
                 f"{self.__class__.__name__} loading {len(pidb.hosts)} "
                 f"hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes"
@@ -393,90 +412,6 @@ class SportmapStorageLoader(QueueHandler):
             current_app.logger.info(f"{self.__class__.__name__} prunned {affected_rows} old notes")
             db.session.commit()
             db.session.expire_all()
-
-
-class AurorHostnamesTrigger(Schedule):
-    """emit target to next task"""
-
-    def __init__(self, schedule, lockname, next_stage):
-        super().__init__(schedule, lockname)
-        self.next_stage = next_stage
-
-    def _run(self):
-        """run"""
-
-        current_app.logger.info(f"{self.__class__.__name__} triggered")
-        self.next_stage.task(GenericTarget("tick"))
-
-
-class AurorHostnamesStorageLoader(QueueHandler):
-    """load auror.hostnames queue to storage"""
-
-    @dataclass
-    class NoteMapItem:
-        """helper class"""
-
-        host_id: int
-        note_id: int
-
-    def run(self):
-        """run"""
-
-        for pidb in self._drain():
-            current_app.logger.info(
-                f"{self.__class__.__name__} loading {len(pidb.hosts)} "
-                f"hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes"
-            )
-
-            # Fetch existing host-note mappings
-            existing_notes = db.session.execute(
-                select(Host.address, Host.id, Note.id).outerjoin(
-                    Note, and_(Note.host_id == Host.id, Note.xtype == "auror.hostnames")
-                )
-            ).all()
-
-            notes_map = {address: self.NoteMapItem(host_id, note_id) for address, host_id, note_id in existing_notes}
-
-            # Prepare and do batch updates and inserts
-            updated_host_ids = set()
-            note_updates = []
-            note_inserts = []
-
-            for note in pidb.notes:
-                if host_item := notes_map.get(pidb.hosts[note.host_iid].address):
-                    updated_host_ids.add(host_item.host_id)
-
-                    if host_item.note_id:
-                        note_updates.append(
-                            {"id": host_item.note_id, "data": note.data, "import_time": datetime.utcnow()}
-                        )
-                    else:
-                        note_inserts.append(
-                            {
-                                "host_id": host_item.host_id,
-                                "xtype": "auror.hostnames",
-                                "data": note.data,
-                                "import_time": datetime.utcnow(),
-                            }
-                        )
-
-            if note_updates:
-                db.session.bulk_update_mappings(Note, note_updates)
-            if note_inserts:
-                db.session.bulk_insert_mappings(Note, note_inserts)
-
-            # Prune old notes
-            affected_rows = (
-                db.session.query(Note)
-                .filter(Note.xtype == "auror.hostnames", Note.host_id.notin_(updated_host_ids))
-                .delete(synchronize_session=False)
-            )
-
-            db.session.commit()
-            db.session.expire_all()
-            current_app.logger.info(
-                f"{self.__class__.__name__} updated {len(updated_host_ids)} hosts, pruned {affected_rows} notes"
-            )
 
 
 class RebuildVersioninfoMap(Schedule):
