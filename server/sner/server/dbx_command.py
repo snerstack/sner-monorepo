@@ -64,13 +64,6 @@ def initdata_prod():
             'reqs': ['default'],
         },
         {
-            'name': 'sner.testssl',
-            'config': {'module': 'testssl', 'delay': 0},
-            'group_size': 1,
-            'priority': QueuePrio.LOW,
-            'reqs': ['testssl'],
-        },
-        {
             'name': 'sner.sportmap',
             'config': {'module': 'sportmap', 'delay': 0},
             'group_size': 1,

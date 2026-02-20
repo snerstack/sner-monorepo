@@ -10,8 +10,8 @@ install:
 	sh bin/install_nmap.sh
 	sh bin/install_ipv6toolkit.sh
 	sh bin/install_jarm.sh
-	sh bin/install_testssl.sh
 	sh bin/install_nuclei.sh
+	sh bin/install_auror_testssl.sh
 
 install-dev:
 	sh bin/install_selenium.sh
