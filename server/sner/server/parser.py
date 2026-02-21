@@ -136,20 +136,25 @@ class ParsedNote(ParsedItemBase):
         return (host.address, *service_ref, self.xtype, self.via_target)
 
 
+class ParsedItemsTable(LittleTable):
+    """LittleTable with custom magics"""
+    def __str__(self):
+        return str(list(map(str, self)))
+
+
 class ParsedItemsDb:
     """container for parsed items"""
 
     def __init__(self):
-        self.hosts = LittleTable()
+        self.hosts = ParsedItemsTable()
         self.hosts.create_index('iid', unique=True)
-        self.services = LittleTable()
+        self.services = ParsedItemsTable()
         self.services.create_index('iid', unique=True)
-        self.vulns = LittleTable()
+        self.vulns = ParsedItemsTable()
         self.vulns.create_index('iid', unique=True)
-        self.notes = LittleTable()
+        self.notes = ParsedItemsTable()
         self.notes.create_index('iid', unique=True)
-
-        self.targets = LittleTable()
+        self.targets = ParsedItemsTable()
 
     @staticmethod
     def _first(alist):

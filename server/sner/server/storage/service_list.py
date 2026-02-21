@@ -58,7 +58,7 @@ def service_list(filterstr, formatstr):
     """returns formatted list of services"""
     # list can be big, stream the output
 
-    query = Service.query.outerjoin(Host)
+    query = Service.query.join(Host)
     query = filter_query(query, filterstr)
     format_func = FORMAT_FUNCTIONS.get(formatstr)
     yield from (format_func(svc) for svc in query.all())

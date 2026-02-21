@@ -3,6 +3,7 @@
 shared functions
 """
 
+import logging
 import re
 import os
 import signal
@@ -86,4 +87,14 @@ def is_address(addr):
         ip_address(addr)
         return True
     except ValueError:
+        return False
+
+
+def is_ipv6_address(addr):
+    """ipv6 address helper"""
+
+    try:
+        return ip_address(addr).version == 6
+    except ValueError:
+        logging.warning("Invalid IP address: %s", addr)
         return False
