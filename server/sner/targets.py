@@ -31,26 +31,48 @@ sixenum,2001:db8::0-ffff
 
 ### Auror
 
-auror,192.0.2.10,hostname=mail,port=25,tls=explicit
-auror,2001:db8::10,mail.example.com,ip=,port=25,tls=implicit
+auror,192.0.2.10,port=25,hostname=mail,enc=E
+auror,2001:db8::10,port=995,hostname=mail.example.com,enc=I
 
 """
 
 import re
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from ipaddress import ip_address, ip_network
+
+from sner.lib import is_ipv6_address
 
 
 def address_hashval(value):
     """return address hashval for scheduling heatmap"""
 
-    addr = ip_address(value)
-    prefix = (48 if addr.version == 6 else 24)
-    return str(ip_network(f"{addr}/{prefix}", strict=False))
+    prefix = 48 if is_ipv6_address(value) else 24
+    return str(ip_network(f"{value}/{prefix}", strict=False))
 
 
-@dataclass
-class GenericTarget:
+class TargetBase(ABC):
+    """defines common interface for targets"""
+
+    @abstractmethod
+    def __str__(self):
+        """target-to-text serialization. str-form is used in database and in job assignment protocol"""
+
+    @abstractmethod
+    def hashval(self):
+        """value used by scheduler heatmap to track destination network scanning throughtput"""
+
+    @abstractmethod
+    def scope(self):
+        """storage aggregation key (composite key) which is used by storagemanager to upsert/prune data"""
+
+    @abstractmethod
+    def is_ipv6_address(self):
+        """ipv6 address helper"""
+
+
+@dataclass(frozen=True)
+class GenericTarget(TargetBase):
     """generic/legacy target"""
 
     value: str
@@ -58,31 +80,24 @@ class GenericTarget:
     def __str__(self):
         return self.value
 
-    def __hash__(self):
-        return hash(str(self))
-
-    def scope(self):
-        """get target scope"""
-        return self.value
-
     def hashval(self):
-        """return scheduling hashval"""
         try:
             return address_hashval(self.value)
         except ValueError:
             return self.value
 
+    def scope(self):
+        return self.value
+
     def is_ipv6_address(self):
-        """ipv4/ipv6 address family check"""
         try:
-            addr = ip_address(self.value)
+            return is_ipv6_address(self.value)
         except ValueError:
             return False
-        return addr.version == 6
 
 
-@dataclass
-class HostTarget:
+@dataclass(frozen=True)
+class HostTarget(TargetBase):
     """address based target"""
 
     address: str
@@ -90,25 +105,21 @@ class HostTarget:
     def __str__(self):
         return f"host,{self.address}"
 
-    def __hash__(self):
-        return hash(str(self))
-
-    def scope(self):
-        """get target scope"""
-        return (self.address,)
-
     def hashval(self):
-        """return scheduling hashval"""
         return address_hashval(self.address)
 
+    def scope(self):
+        return (self.address,)
+
     def is_ipv6_address(self):
-        """ipv4/ipv6 address family check"""
-        return ip_address(self.address).version == 6
+        return is_ipv6_address(self.address)
 
 
-@dataclass
-class ServiceTarget:
+@dataclass(frozen=True)
+class ServiceTarget(TargetBase):
     """internet tcp/udp endpoint target"""
+
+    REGEXP = re.compile(r"svc,(?P<address>\S+),proto=(?P<proto>\S+),port=(?P<port>\d+)")
 
     address: str
     proto: str
@@ -117,25 +128,21 @@ class ServiceTarget:
     def __str__(self):
         return f"svc,{self.address},proto={self.proto},port={self.port}"
 
-    def __hash__(self):
-        return hash(str(self))
-
-    def scope(self):
-        """get target scope"""
-        return (self.address, self.proto, self.port, self.address)
-
     def hashval(self):
-        """return scheduling hashval"""
         return address_hashval(self.address)
 
+    def scope(self):
+        return (self.address, self.proto, self.port, self.address)
+
     def is_ipv6_address(self):
-        """ipv4/ipv6 address family check"""
-        return ip_address(self.address).version == 6
+        return is_ipv6_address(self.address)
 
 
-@dataclass
-class NamedServiceTarget:
+@dataclass(frozen=True)
+class NamedServiceTarget(TargetBase):
     """internet endpoint target using also hostname"""
+
+    REGEXP = re.compile(r"named,(?P<address>\S+),proto=(?P<proto>\S+),port=(?P<port>\d+),hostname=(?P<hostname>\S+)")
 
     address: str
     proto: str
@@ -145,20 +152,18 @@ class NamedServiceTarget:
     def __str__(self):
         return f"named,{self.address},proto={self.proto},port={self.port},hostname={self.hostname}"
 
-    def __hash__(self):
-        return hash(str(self))
-
-    def scope(self):
-        """get target scope"""
-        return (self.address, self.proto, self.port, self.hostname)
-
     def hashval(self):
-        """return scheduling hashval"""
         return address_hashval(self.address)
 
+    def scope(self):
+        return (self.address, self.proto, self.port, self.hostname)
 
-@dataclass
-class SixenumTarget:
+    def is_ipv6_address(self):
+        return is_ipv6_address(self.address)
+
+
+@dataclass(frozen=True)
+class SixenumTarget(TargetBase):
     """scan6 ipv6 enumeration target"""
 
     REGEXP = re.compile(r"sixenum,(?P<scan6dst>[0-9a-fA-F:]{3,45}(\-[0-9a-fA-F]{1,4})?)")
@@ -167,12 +172,14 @@ class SixenumTarget:
     def __str__(self):
         return f"sixenum,{self.value}"
 
-    def __hash__(self):
-        return hash(str(self))
-
     def hashval(self):
-        """return scheduling hashval"""
         return address_hashval(self.value.split("-")[0])
+
+    def scope(self):
+        raise NotImplementedError
+
+    def is_ipv6_address(self):
+        raise NotImplementedError
 
     def boundaries(self):
         """
@@ -180,11 +187,11 @@ class SixenumTarget:
         only last hextet range supported
         """
 
-        if '-' in self.value:
-            first, enumend = self.value.split('-')
-            tmp = first.split(':')
+        if "-" in self.value:
+            first, enumend = self.value.split("-")
+            tmp = first.split(":")
             tmp[-1] = enumend
-            last = ':'.join(tmp)
+            last = ":".join(tmp)
             return ip_address(first), ip_address(last)
 
         tmp = ip_network(self.value)
@@ -201,14 +208,10 @@ class TargetManager:
         if value.startswith("host,"):
             return HostTarget(value.split(",", maxsplit=1)[1])
 
-        if value.startswith("svc,"):
-            regex = r"svc,(?P<address>\S+),proto=(?P<proto>\S+),port=(?P<port>\d+)"
-            match = re.match(regex, value)
+        if value.startswith("svc,") and (match := ServiceTarget.REGEXP.match(value)):
             return ServiceTarget(match.group("address"), match.group("proto"), int(match.group("port")))
 
-        if value.startswith("named,"):
-            regex = r"named,(?P<address>\S+),proto=(?P<proto>\S+),port=(?P<port>\d+),hostname=(?P<hostname>\S+)"
-            match = re.match(regex, value)
+        if value.startswith("named,") and (match := NamedServiceTarget.REGEXP.match(value)):
             return NamedServiceTarget(
                 match.group("address"), match.group("proto"), int(match.group("port")), match.group("hostname")
             )
