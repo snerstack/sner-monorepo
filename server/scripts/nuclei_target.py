@@ -73,10 +73,11 @@ def main():
     args = parser.parse_args()
 
     server_address = ('127.0.0.7', 80)
-    httpd = ThreadingHTTPServer(
-        server_address,
-        HandlerPhase2 if args.phase == "phase2" else HandlerPhase1
-    )
+    handlers = {
+        "phase1": HandlerPhase1,
+        "phase2": HandlerPhase2,
+    }
+    httpd = ThreadingHTTPServer(server_address, handlers[args.phase])
     print(f"Serving on {server_address} ...")
     httpd.serve_forever()
 
