@@ -173,7 +173,7 @@ class Netlist(Schedule):
             stage.task(hosts)
 
 
-class ServiceDisco(QueueHandler):
+class ServiceDiscoStorageLoader(QueueHandler):
     """do service discovery on targets"""
 
     def run(self):
@@ -218,7 +218,7 @@ class SixDisco(QueueHandler):
             self.next_stage.task(hosts)
 
 
-class StorageSixEnumTargetlist(Schedule):
+class SixEnumStorageTargetlist(Schedule):
     """generates target for six_enum_discovery module"""
 
     def __init__(self, schedule, lockname, next_stage, filternets=None):
@@ -257,7 +257,7 @@ class StorageSixEnumTargetlist(Schedule):
         self.next_stage.task(targets)
 
 
-class StorageServiceScanTargetlist(Schedule):
+class ServiceScanStorageTargetlist(Schedule):
     """list and task service-targets for basic service scans accounting rescan_time"""
 
     def __init__(self, schedule, lockname, service_interval, filternets, servicescan_stages):
@@ -283,7 +283,7 @@ class StorageServiceScanTargetlist(Schedule):
         StorageManager.update_services_rescantime(ids, now)
 
 
-class StorageServiceTargetlist(Schedule):
+class ServiceStorageTargetlist(Schedule):
     """list storage services for advanced(vulnerability) scanning"""
 
     def __init__(self, schedule, lockname, filternets, next_stage):
@@ -316,7 +316,7 @@ class PruningStorageLoader(QueueHandler):
             )
 
 
-class StorageHostRescan(Schedule):
+class HostRescanStorageTargetlist(Schedule):
     """storage host rescan"""
 
     def __init__(
@@ -349,7 +349,7 @@ class StorageHostRescan(Schedule):
         StorageManager.update_hosts_rescantime(ids, now)
 
 
-class StorageSixTargetlist(Schedule):
+class SixStorageTargetlist(Schedule):
     """generates filtered ipv6 host addresses for scans"""
 
     def __init__(self, schedule, lockname, filternets, next_stage):
@@ -395,7 +395,7 @@ class SportmapStorageLoader(QueueHandler):
             db.session.expire_all()
 
 
-class RebuildVersioninfoMap(Schedule):
+class VersioninfoRebuild(Schedule):
     """recount versioninfo map"""
 
     def _run(self):

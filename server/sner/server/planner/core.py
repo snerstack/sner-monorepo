@@ -80,17 +80,17 @@ from sner.server.planner.stages_auror import (
 from sner.server.planner.stages import (
     Netlist,
     PruningStorageLoader,
-    RebuildVersioninfoMap,
+    VersioninfoRebuild,
     Schedule,
-    ServiceDisco,
+    ServiceDiscoStorageLoader,
     SixDisco,
     SportmapStorageLoader,
     StorageCleanup,
-    StorageHostRescan,
+    HostRescanStorageTargetlist,
     StorageLoader,
-    StorageServiceScanTargetlist,
-    StorageServiceTargetlist,
-    StorageSixEnumTargetlist,
+    ServiceScanStorageTargetlist,
+    ServiceStorageTargetlist,
+    SixEnumStorageTargetlist,
 )
 from sner.server.storage.models import Host, Note, Vuln
 
@@ -255,7 +255,7 @@ class Planner(TerminateContextMixin):
         if plines.service_disco:
             service_disco_stage = self._add_stage(
                 "basic_scan:service_disco",
-                ServiceDisco,
+                ServiceDiscoStorageLoader,
                 queue_name=plines.service_disco.queue,
             )
 
@@ -295,7 +295,7 @@ class Planner(TerminateContextMixin):
 
             self._add_stage(
                 "basic_scan:sixdisco_storage_enum_targetlist",
-                StorageSixEnumTargetlist,
+                SixEnumStorageTargetlist,
                 schedule=plines.six_disco.storage_enum_schedule,
                 filternets=self.config.basic_nets_ipv6,
                 next_stage=six_disco_enum_stage,
@@ -310,7 +310,7 @@ class Planner(TerminateContextMixin):
 
             self._add_stage(
                 "basic_scan:service_scan_targetlist",
-                StorageServiceScanTargetlist,
+                ServiceScanStorageTargetlist,
                 schedule=plines.service_scan.schedule,
                 service_interval=plines.service_scan.service_interval,
                 filternets=self.config.basic_nets_ipv4 + self.config.basic_nets_ipv6,
@@ -321,7 +321,7 @@ class Planner(TerminateContextMixin):
         if plines.host_rescan:
             self._add_stage(
                 "basic_scan:storage_host_rescan",
-                StorageHostRescan,
+                HostRescanStorageTargetlist,
                 schedule=plines.host_rescan.schedule,
                 filternets=self.config.basic_nets_ipv4 + self.config.basic_nets_ipv6,
                 host_interval=plines.host_rescan.host_interval,
@@ -336,7 +336,7 @@ class Planner(TerminateContextMixin):
 
             self._add_stage(
                 "nuclei_scan:storage_targetlist",
-                StorageServiceTargetlist,
+                ServiceStorageTargetlist,
                 schedule=plines.nuclei_scan.schedule,
                 filternets=self.config.nuclei_nets_ipv4 + self.config.nuclei_nets_ipv6,
                 next_stage=nuclei_scan_stage,
@@ -350,7 +350,7 @@ class Planner(TerminateContextMixin):
 
             self._add_stage(
                 "sportmap_scan:storage_targetlist",
-                StorageServiceTargetlist,
+                ServiceStorageTargetlist,
                 schedule=plines.nuclei_scan.schedule,
                 filternets=self.config.sportmap_nets_ipv4 + self.config.sportmap_nets_ipv6,
                 next_stage=sportmap_scan_stage,
@@ -399,7 +399,7 @@ class Planner(TerminateContextMixin):
         # rebuild versioninfo
         if plines.rebuild_versioninfo_map:
             self._add_stage(
-                "rebuild_versioninfo_map", RebuildVersioninfoMap, schedule=plines.rebuild_versioninfo_map.schedule
+                "versioninfo_map_rebuild", VersioninfoRebuild, schedule=plines.rebuild_versioninfo_map.schedule
             )
 
     def terminate(
