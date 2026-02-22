@@ -12,16 +12,15 @@ from sner.server.parser import ParsedItemsDb
 from sner.server.planner.stages import (
     DummyStage,
     filter_tarpits,
+    HostRescanStorageTargetlist,
     Netlist,
     PruningStorageLoader,
-    ServiceDisco,
     SixDisco,
+    SixEnumStorageTargetlist,
+    SixStorageTargetlist,
     SportmapStorageLoader,
     StorageCleanup,
-    StorageHostRescan,
     StorageLoader,
-    StorageSixEnumTargetlist,
-    StorageSixTargetlist,
 )
 from sner.server.storage.models import Host, Note, Service, Vuln
 from sner.server.utils import yaml_dump
@@ -48,13 +47,13 @@ def test_netlist(app):  # pylint: disable=unused-argument
     assert dummy.task_args == TargetManager.from_list(['127.0.0.0', '127.0.0.1'])
 
 
-def test_storagesixtargetlist(app, host_factory):  # pylint: disable=unused-argument
-    """test StorageSixTargetlist"""
+def test_sixstoragetargetlist(app, host_factory):  # pylint: disable=unused-argument
+    """test SixStorageTargetlist"""
 
     host_factory.create(address='2001:db8:aa::1')
     host_factory.create(address='2001:db8:bb::1')
     dummy = DummyStage()
-    StorageSixTargetlist(
+    SixStorageTargetlist(
         schedule='0s',
         lockname='dummylock',
         filternets=['2001:db8:aa::0/64'],
@@ -65,14 +64,14 @@ def test_storagesixtargetlist(app, host_factory):  # pylint: disable=unused-argu
     assert sorted(dummy.task_args) == sorted(expected)
 
 
-def test_storagesixenumtargetlist(app, host_factory):  # pylint: disable=unused-argument
-    """test StorageSixEnumTargetlist"""
+def test_sixenumstoragetargetlist(app, host_factory):  # pylint: disable=unused-argument
+    """test SixEnumStorageTargetlist"""
 
     host_factory.create(address='2001:db8:aa::')
     host_factory.create(address='2001:db8:bb::')
 
     dummy = DummyStage()
-    StorageSixEnumTargetlist(
+    SixEnumStorageTargetlist(
         schedule='0s',
         lockname='dummylock',
         filternets=['::/0'],
@@ -83,13 +82,13 @@ def test_storagesixenumtargetlist(app, host_factory):  # pylint: disable=unused-
     assert sorted(map(str, dummy.task_args)) == sorted(expected)
 
 
-def test_storagehostrescan(app, host_factory, service_factory, queue_factory):  # pylint: disable=unused-argument
-    """test rescan_services pipeline"""
+def test_hostrescanstoragetargetlist(app, host_factory, service_factory, queue_factory):  # pylint: disable=unused-argument
+    """test hostrescan"""
 
     service_factory.create(host=host_factory.create(address='127.0.0.1'))
     service_factory.create(host=host_factory.create(address='::1'))
     sdisco_dummy = DummyStage()
-    StorageHostRescan(
+    HostRescanStorageTargetlist(
         schedule='0s',
         lockname='dummylock',
         filternets=["127.0.0.0/8", "::1/128"],
@@ -100,8 +99,8 @@ def test_storagehostrescan(app, host_factory, service_factory, queue_factory):  
     assert len(sdisco_dummy.task_args) == 2
 
 
-def test_sixdiscoqueuehandler(app, job_completed_sixenumdiscover):  # pylint: disable=unused-argument
-    """test SixDiscoQueueHandle"""
+def test_sixdisco(app, job_completed_sixenumdiscover):  # pylint: disable=unused-argument
+    """test SixDisco queue handler"""
 
     dummy = DummyStage()
     SixDisco(
@@ -125,9 +124,9 @@ def test_storageloader(app, job_completed_nmap):  # pylint: disable=unused-argum
 
 
 def test_queuehandler(app, queue):  # pylint: disable=unused-argument
-    """test queue handler"""
+    """test queue handler, must test through final class"""
 
-    stage = ServiceDisco(queue.name)
+    stage = StorageLoader(queue.name)
     target = GenericTarget("dummy")
 
     stage.task([target])
@@ -137,25 +136,25 @@ def test_queuehandler(app, queue):  # pylint: disable=unused-argument
     assert len(queue.targets) == 1
 
 
-def test_queuehandler_nxqueue(app, job_completed_nmap):  # pylint: disable=unused-argument
+def test_queuehandler_nxqueue(app):  # pylint: disable=unused-argument
     """test exception handling"""
 
     with pytest.raises(ValueError):
         StorageLoader(queue_name='nx queue')
 
 
-def test_storagecleanup(app, host_factory, service_factory):  # pylint: disable=unused-argument
-    """test planners cleanup storage stage"""
+def test_storagecleanup(app, service_factory):  # pylint: disable=unused-argument
+    """test storage cleanup stage"""
 
-    host_factory.create(address='127.127.127.134', hostname=None, os=None, comment=None)
     service_factory.create(state='closed:test')
+
     StorageCleanup().run()
 
     assert Service.query.count() == 0
     assert Host.query.count() == 1
 
 
-def test_storage_loader_sportmap(app, queue, host_factory, note_factory):  # pylint: disable=unused-argument
+def test_sportmapstorageloader(app, queue, host_factory, note_factory):  # pylint: disable=unused-argument
     """mock completed job with real data"""
 
     host1 = host_factory.create(address='127.3.4.6')
