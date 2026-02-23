@@ -75,13 +75,12 @@ from sner.server.planner.stages_auror import (
     AurorHostnamesStorageLoader,
     AurorHostnamesTrigger,
     AurorTestsslStorageCleanup,
-    AurorTestsslStorageTargetlist
+    AurorTestsslStorageTargetlist,
 )
 from sner.server.planner.stages import (
     Netlist,
     PruningStorageLoader,
     VersioninfoRebuild,
-    Schedule,
     ServiceDiscoStorageLoader,
     SixDisco,
     SportmapStorageLoader,
@@ -211,11 +210,11 @@ def outofscope_check(prune=False):
 
 
 class Planner(TerminateContextMixin):
-    """planner"""
+    """Continual scanning orchestrator."""
 
     LOOPSLEEP = 60
 
-    def __init__(self, config=None, oneshot=False):
+    def __init__(self, config=None):
         configure_logging()
         self.log = current_app.logger
         self.log.setLevel(logging.DEBUG if current_app.config["DEBUG"] else logging.INFO)
@@ -224,215 +223,254 @@ class Planner(TerminateContextMixin):
         self.original_signal_handlers = {}
 
         self.loop = None
-        self.oneshot = oneshot
 
         self.config = PlannerConfig(**config)
         self.stages = {}
-
+        self._cp = self.config.pipelines
         self._setup_pipelines()
 
-    def _add_stage(self, name, stage_cls, **kwargs):
-        """add stage to planner helper"""
+    # ------------------------------------------------------------------
+    # Pipelines and builders
+    # ------------------------------------------------------------------
 
-        if issubclass(stage_cls, Schedule) and ("lockname" not in kwargs):
-            kwargs["lockname"] = name
-        self.stages[name] = stage_cls(**kwargs)
-        return self.stages[name]
+    def _add_stage(self, stage):
+        """Add stage to runtime container."""
+        self.stages[stage.name] = stage
+        return stage
 
-    def _setup_pipelines(self):  # pylint: disable=too-many-branches
-        """setup planner stages/pipelines"""
+    def _get_stage(self, name):
+        """Resolve a cross-pipeline stage dependency by name."""
+        try:
+            return self.stages[name]
+        except KeyError:
+            raise RuntimeError(f"stage '{name}' not found") from None
 
-        plines = self.config.pipelines
-        if not plines:
+    def _setup_standalone_queues(self):
+        if not self._cp.standalone_queues:
             return
 
-        # standalone queues
-        if plines.standalone_queues:
-            for qname in plines.standalone_queues.queues:
-                self._add_stage(f"standalone:{qname}", StorageLoader, queue_name=qname)
+        for qname in self._cp.standalone_queues.queues:
+            self._add_stage(StorageLoader(f"standalone:{qname}", qname))
 
-        # basic_scan: host and service discovery
-        if plines.service_disco:
-            service_disco_stage = self._add_stage(
-                "basic_scan:service_disco",
-                ServiceDiscoStorageLoader,
-                queue_name=plines.service_disco.queue,
-            )
+    def _setup_service_disco(self):
+        if not self._cp.service_disco:
+            return
 
-            self._add_stage(
+        loader = self._add_stage(
+            ServiceDiscoStorageLoader("basic_scan:service_disco", self._cp.service_disco.queue)
+        )
+        self._add_stage(
+            Netlist(
                 "basic_scan:netlist",
-                Netlist,
-                schedule=plines.service_disco.netlist_schedule,
+                schedule=self._cp.service_disco.netlist_schedule,
                 netlist=self.config.basic_nets_ipv4,
-                next_stages=[service_disco_stage],
+                next_stages=[loader],
             )
+        )
 
-        # basic_scan: IPv6 discovery, DNS and neighbors enumerations
-        if plines.six_disco:
-            six_disco_dns_stage = self._add_stage(
+    def _setup_six_disco(self):
+        if not self._cp.six_disco:
+            return
+
+        service_disco = self._get_stage("basic_scan:service_disco")
+
+        dns_stage = self._add_stage(
+            SixDisco(
                 "basic_scan:sixdisco_dns",
-                SixDisco,
-                queue_name=plines.six_disco.dns_disco_queue,
+                queue_name=self._cp.six_disco.dns_disco_queue,
                 filternets=self.config.basic_nets_ipv6,
-                next_stage=service_disco_stage,
+                next_stage=service_disco,
             )
-
-            self._add_stage(
+        )
+        self._add_stage(
+            Netlist(
                 "basic_scan:sixdisco_dns_netlist",
-                Netlist,
-                schedule=plines.six_disco.dns_netlist_schedule,
+                schedule=self._cp.six_disco.dns_netlist_schedule,
                 netlist=self.config.basic_nets_ipv4,
-                next_stages=[six_disco_dns_stage],
+                next_stages=[dns_stage],
             )
+        )
 
-            six_disco_enum_stage = self._add_stage(
+        enum_stage = self._add_stage(
+            SixDisco(
                 "basic_scan:sixdisco_storage_enum",
-                SixDisco,
-                queue_name=plines.six_disco.storage_enum_queue,
+                queue_name=self._cp.six_disco.storage_enum_queue,
                 filternets=self.config.basic_nets_ipv6,
-                next_stage=service_disco_stage,
+                next_stage=service_disco,
             )
-
-            self._add_stage(
+        )
+        self._add_stage(
+            SixEnumStorageTargetlist(
                 "basic_scan:sixdisco_storage_enum_targetlist",
-                SixEnumStorageTargetlist,
-                schedule=plines.six_disco.storage_enum_schedule,
+                schedule=self._cp.six_disco.storage_enum_schedule,
                 filternets=self.config.basic_nets_ipv6,
-                next_stage=six_disco_enum_stage,
+                next_stage=enum_stage,
             )
+        )
 
-        # basic_scan: version scan and other fingerprinting
-        if plines.service_scan:
-            servicescan_stages = [
-                self._add_stage(f"basic_scan:{sscan_qname}", PruningStorageLoader, queue_name=sscan_qname)
-                for sscan_qname in plines.service_scan.queues
-            ]
+    def _setup_service_scan(self):
+        if not self._cp.service_scan:
+            return
 
-            self._add_stage(
+        loaders = [
+            self._add_stage(PruningStorageLoader(f"basic_scan:{qname}", qname))
+            for qname in self._cp.service_scan.queues
+        ]
+        self._add_stage(
+            ServiceScanStorageTargetlist(
                 "basic_scan:service_scan_targetlist",
-                ServiceScanStorageTargetlist,
-                schedule=plines.service_scan.schedule,
-                service_interval=plines.service_scan.service_interval,
+                schedule=self._cp.service_scan.schedule,
+                service_interval=self._cp.service_scan.service_interval,
                 filternets=self.config.basic_nets_ipv4 + self.config.basic_nets_ipv6,
-                servicescan_stages=servicescan_stages,
+                servicescan_stages=loaders,
             )
+        )
 
-        # basic_scan: rescan of hosts and services in storage
-        if plines.host_rescan:
-            self._add_stage(
+    def _setup_host_rescan(self):
+        if not self._cp.host_rescan:
+            return
+
+        self._add_stage(
+            HostRescanStorageTargetlist(
                 "basic_scan:storage_host_rescan",
-                HostRescanStorageTargetlist,
-                schedule=plines.host_rescan.schedule,
+                schedule=self._cp.host_rescan.schedule,
                 filternets=self.config.basic_nets_ipv4 + self.config.basic_nets_ipv6,
-                host_interval=plines.host_rescan.host_interval,
-                servicedisco_stage=service_disco_stage,
+                host_interval=self._cp.host_rescan.host_interval,
+                servicedisco_stage=self._get_stage("basic_scan:service_disco"),
             )
+        )
 
-        # nuclei_scan: scan
-        if plines.nuclei_scan:
-            nuclei_scan_stage = self._add_stage(
-                f"nuclei_scan:{plines.nuclei_scan.queue}", PruningStorageLoader, queue_name=plines.nuclei_scan.queue
-            )
+    def _setup_nuclei_scan(self):
+        if not self._cp.nuclei_scan:
+            return
 
-            self._add_stage(
+        loader = self._add_stage(
+            PruningStorageLoader(f"nuclei_scan:{self._cp.nuclei_scan.queue}", self._cp.nuclei_scan.queue)
+        )
+        self._add_stage(
+            ServiceStorageTargetlist(
                 "nuclei_scan:storage_targetlist",
-                ServiceStorageTargetlist,
-                schedule=plines.nuclei_scan.schedule,
+                schedule=self._cp.nuclei_scan.schedule,
                 filternets=self.config.nuclei_nets_ipv4 + self.config.nuclei_nets_ipv6,
-                next_stage=nuclei_scan_stage,
+                next_stage=loader,
             )
+        )
 
-        # nuclei_scan: source port scan
-        if plines.sportmap_scan:
-            sportmap_scan_stage = self._add_stage(
-                "sportmap_scan:scan", SportmapStorageLoader, queue_name=plines.sportmap_scan.queue
-            )
+    def _setup_sportmap_scan(self):
+        if not self._cp.sportmap_scan:
+            return
 
-            self._add_stage(
+        loader = self._add_stage(SportmapStorageLoader("sportmap_scan:scan", self._cp.sportmap_scan.queue))
+        self._add_stage(
+            ServiceStorageTargetlist(
                 "sportmap_scan:storage_targetlist",
-                ServiceStorageTargetlist,
-                schedule=plines.nuclei_scan.schedule,
+                schedule=self._cp.nuclei_scan.schedule,  # NOTE: intentionally reuses nuclei schedule
                 filternets=self.config.sportmap_nets_ipv4 + self.config.sportmap_nets_ipv6,
-                next_stage=sportmap_scan_stage,
+                next_stage=loader,
             )
+        )
 
-        # auror: hostnames
-        if plines.auror_hostnames:
-            auror_hostnames_stage = self._add_stage(
-                "auror:hostnames", AurorHostnamesStorageLoader, queue_name=plines.auror_hostnames.queue
-            )
+    def _setup_auror_hostnames(self):
+        if not self._cp.auror_hostnames:
+            return
 
-            self._add_stage(
+        loader = self._add_stage(AurorHostnamesStorageLoader("auror:hostnames", self._cp.auror_hostnames.queue))
+        self._add_stage(
+            AurorHostnamesTrigger(
                 "auror:hostnames_trigger",
-                AurorHostnamesTrigger,
-                schedule=plines.auror_hostnames.schedule,
-                next_stage=auror_hostnames_stage,
+                schedule=self._cp.auror_hostnames.schedule,
+                next_stage=loader,
             )
+        )
 
-        # auror: testssl
-        if plines.auror_testssl:
-            auror_testssl_stage = self._add_stage(
-                f"auror_testssl:{plines.auror_testssl.queue}",
-                PruningStorageLoader,
-                queue_name=plines.auror_testssl.queue
-            )
+    def _setup_auror_testssl(self):
+        if not self._cp.auror_testssl:
+            return
 
-            self._add_stage(
+        loader = self._add_stage(
+            PruningStorageLoader(f"auror_testssl:{self._cp.auror_testssl.queue}", self._cp.auror_testssl.queue)
+        )
+        self._add_stage(
+            AurorTestsslStorageTargetlist(
                 "auror_testssl:targetlist",
-                AurorTestsslStorageTargetlist,
-                schedule=plines.auror_testssl.targetlist_schedule,
-                next_stage=auror_testssl_stage,
-                ports_starttls=plines.auror_testssl.ports_starttls,
-                filternets=self.config.auror_testssl_ips
+                schedule=self._cp.auror_testssl.targetlist_schedule,
+                filternets=self.config.auror_testssl_ips,
+                ports_starttls=self._cp.auror_testssl.ports_starttls,
+                next_stage=loader,
             )
-
-            self._add_stage(
+        )
+        self._add_stage(
+            AurorTestsslStorageCleanup(
                 "auror_testssl:cleanup",
-                AurorTestsslStorageCleanup,
-                schedule=plines.auror_testssl.cleanup_schedule,
+                schedule=self._cp.auror_testssl.cleanup_schedule,
             )
+        )
 
-        # storage cleanup
-        if plines.storage_cleanup and plines.storage_cleanup.enabled:
-            self._add_stage("storage_cleanup", StorageCleanup)
+    def _setup_storage_cleanup(self):
+        if self._cp.storage_cleanup and self._cp.storage_cleanup.enabled:
+            self._add_stage(StorageCleanup())
 
-        # rebuild versioninfo
-        if plines.rebuild_versioninfo_map:
-            self._add_stage(
-                "versioninfo_map_rebuild", VersioninfoRebuild, schedule=plines.rebuild_versioninfo_map.schedule
+    def _setup_versioninfo_rebuild(self):
+        if not self._cp.rebuild_versioninfo_map:
+            return
+        self._add_stage(
+            VersioninfoRebuild(
+                "versioninfo_map_rebuild",
+                schedule=self._cp.rebuild_versioninfo_map.schedule,
             )
+        )
 
-    def terminate(
-        self, signum=None, frame=None
-    ):  # pragma: no cover  pylint: disable=unused-argument  ; running over multiprocessing
-        """terminate at once"""
+    def _setup_pipelines(self):
+        if not self._cp:
+            return
+        self._setup_standalone_queues()
+        self._setup_service_disco()
+        self._setup_six_disco()
+        self._setup_service_scan()
+        self._setup_host_rescan()
+        self._setup_nuclei_scan()
+        self._setup_sportmap_scan()
+        self._setup_auror_hostnames()
+        self._setup_auror_testssl()
+        self._setup_storage_cleanup()
+        self._setup_versioninfo_rebuild()
 
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def terminate(self, _signum=None, _frame=None):
+        """terminate planner"""
         self.log.info("received terminate")
         self.loop = False
 
-    def run(self):
-        """run planner loop"""
+    def _run_stages(self):
+        for name, stage in self.stages.items():
+            try:
+                current_app.logger.debug(f"stage run {name} {stage}")
+                stage.run()
+            except Exception as exc:  # pragma: nocover  pylint: disable=broad-except
+                current_app.logger.error(f"stage failed, {name} {stage}, {exc}", exc_info=True)
+                db.session.rollback()
+
+    def _interruptible_sleep(self, oneshot):
+        if oneshot:
+            self.loop = False
+            return
+        for _ in range(self.LOOPSLEEP):  # pragma: no cover
+            if self.loop:
+                sleep(1)
+
+    def run(self, oneshot=False):
+        """main planner loop"""
 
         self.log.info(f"startup, {len(self.stages)} configured stages")
         self.loop = True
 
         with self.terminate_context():
             while self.loop:
-                for name, stage in self.stages.items():
-                    try:
-                        current_app.logger.debug(f"stage run {name} {stage}")
-                        stage.run()
-                    except Exception as exc:  # pragma: no cover  ; pylint: disable=broad-except
-                        current_app.logger.error(f"stage failed, {name} {stage}, {exc}", exc_info=True)
-                        db.session.rollback()
-
-                if self.oneshot:
-                    self.loop = False
-                else:  # pragma: no cover ; running over multiprocessing
-                    # support for long loops, but allow fast shutdown
-                    for _ in range(self.LOOPSLEEP):
-                        if self.loop:
-                            sleep(1)
+                self._run_stages()
+                self._interruptible_sleep(oneshot)
 
         self.log.info("exit")
         return 0

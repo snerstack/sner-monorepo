@@ -21,7 +21,7 @@ def test_auror_hostnames_trigger(app):  # pylint: disable=unused-argument
     """test stage"""
 
     dummy = DummyStage()
-    AurorHostnamesTrigger(schedule="1d", lockname="dummylock", next_stage=dummy).run()
+    AurorHostnamesTrigger("AurorHostnamesTrigger", schedule="1d", next_stage=dummy).run()
 
     assert len(dummy.task_args) == 1
 
@@ -53,7 +53,7 @@ def test_auror_hostnames_storage_loader(app, queue_factory, job_completed_factor
     )
     job_completed_factory.create(queue=queue, make_output="tests/server/data/parser-auror_hostnames-job.zip")
 
-    AurorHostnamesStorageLoader(queue_name=queue.name).run()
+    AurorHostnamesStorageLoader("AurorHostnamesStorageLoader", queue.name).run()
 
     assert Note.query.count() == 2
     assert hostnames_for("127.0.0.1") == ["localhost", "test.localdomain"]
@@ -86,8 +86,8 @@ def test_auror_testssl_storage_targetlist(app, host_factory, note_factory, servi
     dummy = DummyStage()
 
     AurorTestsslStorageTargetlist(
+        "AurorTestsslStorageTargetlist",
         schedule="1d",
-        lockname="dummylock",
         filternets=["127.0.0.0/8", "::1"],
         ports_starttls={25: "smtp"},
         next_stage=dummy,
@@ -109,7 +109,7 @@ def test_aurortestssl_cleanup(app, host, note_factory):  # pylint: disable=unuse
     note_factory.create(host=host, xtype="auror.testssl.explicit", via_target="dummy1", data="dummy")
     note_factory.create(host=host, xtype="auror.testssl.implicit", via_target="dummy2", data="dummy")
 
-    AurorTestsslStorageCleanup(schedule="1d", lockname="dummy").run()
+    AurorTestsslStorageCleanup("AurorTestsslStorageCleanup", schedule="1d").run()
 
     assert Note.query.count() == 2
     assert Note.query.filter_by(xtype="auror.hostnames").count() == 1

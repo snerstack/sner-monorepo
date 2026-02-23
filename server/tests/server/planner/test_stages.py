@@ -39,9 +39,10 @@ def test_netlist(app):  # pylint: disable=unused-argument
     """test Netlist"""
 
     dummy = DummyStage()
-    Netlist(schedule='600s', lockname='dummylock', netlist=['127.0.0.0/31'], next_stages=[dummy]).run()
+    stage = Netlist("netlist", schedule='600s', netlist=['127.0.0.0/31'], next_stages=[dummy])
+    stage.run()
     # trigger schedule timing code, must not affect output stages
-    Netlist(schedule='600s', lockname='dummylock', netlist=['127.0.0.0/31'], next_stages=[dummy]).run()
+    stage.run()
 
     assert dummy.task_count == 1
     assert dummy.task_args == TargetManager.from_list(['127.0.0.0', '127.0.0.1'])
@@ -54,8 +55,8 @@ def test_sixstoragetargetlist(app, host_factory):  # pylint: disable=unused-argu
     host_factory.create(address='2001:db8:bb::1')
     dummy = DummyStage()
     SixStorageTargetlist(
+        "SixStorageTargetlist",
         schedule='0s',
-        lockname='dummylock',
         filternets=['2001:db8:aa::0/64'],
         next_stage=dummy
     ).run()
@@ -72,8 +73,8 @@ def test_sixenumstoragetargetlist(app, host_factory):  # pylint: disable=unused-
 
     dummy = DummyStage()
     SixEnumStorageTargetlist(
+        "SixEnumStorageTargetlist",
         schedule='0s',
-        lockname='dummylock',
         filternets=['::/0'],
         next_stage=dummy
     ).run()
@@ -89,8 +90,8 @@ def test_hostrescanstoragetargetlist(app, host_factory, service_factory, queue_f
     service_factory.create(host=host_factory.create(address='::1'))
     sdisco_dummy = DummyStage()
     HostRescanStorageTargetlist(
+        "HostRescanStorageTargetlist",
         schedule='0s',
-        lockname='dummylock',
         filternets=["127.0.0.0/8", "::1/128"],
         host_interval='0s',
         servicedisco_stage=sdisco_dummy,
@@ -104,9 +105,10 @@ def test_sixdisco(app, job_completed_sixenumdiscover):  # pylint: disable=unused
 
     dummy = DummyStage()
     SixDisco(
+        "SixDisco",
         queue_name=job_completed_sixenumdiscover.queue.name,
+        filternets=['127.0.0.0/24', '::1/128'],
         next_stage=dummy,
-        filternets=['127.0.0.0/24', '::1/128']
     ).run()
 
     assert dummy.task_count == 1
@@ -116,7 +118,7 @@ def test_sixdisco(app, job_completed_sixenumdiscover):  # pylint: disable=unused
 def test_storageloader(app, job_completed_nmap):  # pylint: disable=unused-argument
     """test test_stage_StandaloneQueues"""
 
-    StorageLoader(queue_name=job_completed_nmap.queue.name).run()
+    StorageLoader("StorageLoader", job_completed_nmap.queue.name).run()
 
     assert Host.query.count() == 1
     assert Service.query.count() == 6
@@ -126,7 +128,7 @@ def test_storageloader(app, job_completed_nmap):  # pylint: disable=unused-argum
 def test_queuehandler(app, queue):  # pylint: disable=unused-argument
     """test queue handler, must test through final class"""
 
-    stage = StorageLoader(queue.name)
+    stage = StorageLoader("StorageLoader", queue.name)
     target = GenericTarget("dummy")
 
     stage.task([target])
@@ -140,7 +142,7 @@ def test_queuehandler_nxqueue(app):  # pylint: disable=unused-argument
     """test exception handling"""
 
     with pytest.raises(ValueError):
-        StorageLoader(queue_name='nx queue')
+        StorageLoader("StorageLoader", "nx queue")
 
 
 def test_storagecleanup(app, service_factory):  # pylint: disable=unused-argument
@@ -164,7 +166,7 @@ def test_sportmapstorageloader(app, queue, host_factory, note_factory):  # pylin
     pidb.upsert_host('127.3.4.6')
     pidb.upsert_note('127.3.4.2', xtype='sportmap', data='dummy')
 
-    loader = SportmapStorageLoader(queue_name=queue.name)
+    loader = SportmapStorageLoader("sportmap_scan", queue.name)
     with patch.object(loader, '_drain') as drain_mock:
         drain_mock.return_value = [pidb]
         loader.run()
@@ -177,7 +179,7 @@ def test_versionscan(app, queue_factory):  # pylint: disable=unused-argument
     """test version scan stage"""
 
     queue1 = queue_factory.create(name="queue1")
-    stage = PruningStorageLoader(queue1.name)
+    stage = PruningStorageLoader("version_scan", queue1.name)
 
     pidb = ParsedItemsDb()
     pidb.insert_target("svc,127.0.0.1,proto=tcp,port=1")
@@ -215,7 +217,7 @@ def test_nucleiscan(app, queue_factory, job_completed_factory, vuln_factory):  #
         make_output="tests/server/data/nuclei_v2_movingtarget_phase1.job.zip",
     )
 
-    stage = PruningStorageLoader(queue_name=queue.name)
+    stage = PruningStorageLoader("nuclei_scan", queue_name=queue.name)
     stage.run()
 
     assert Host.query.count() == 1
