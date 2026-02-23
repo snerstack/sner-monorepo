@@ -34,13 +34,13 @@ from sner.targets import GenericTarget, AurorTestsslTarget
 class AurorHostnamesTrigger(Schedule):
     """emit target to next task"""
 
-    def __init__(self, schedule, lockname, next_stage):
-        super().__init__(schedule, lockname)
+    def __init__(self, name, schedule, next_stage):
+        super().__init__(name, schedule)
         self.next_stage = next_stage
 
     def _run(self):
         """run"""
-        current_app.logger.info(f"{self.__class__.__name__} triggered")
+        current_app.logger.info(f"{self.name} triggered")
         self.next_stage.task([GenericTarget("tick")])
 
 
@@ -123,15 +123,15 @@ class AurorHostnamesStorageLoader(QueueHandler):
             db.session.commit()
             db.session.expire_all()
             current_app.logger.info(
-                f"{self.__class__.__name__} updated {len(updated_host_ids)} hosts, pruned {affected_rows} notes"
+                f"{self.name} updated {len(updated_host_ids)} hosts, pruned {affected_rows} notes"
             )
 
 
 class AurorTestsslStorageTargetlist(Schedule):
     """enumerates auror_testssl targets from storage data"""
 
-    def __init__(self, schedule, lockname, filternets, ports_starttls, next_stage):
-        super().__init__(schedule, lockname)
+    def __init__(self, name, schedule, filternets, ports_starttls, next_stage):
+        super().__init__(name, schedule)
         self.filternets = filternets
         self.ports_starttls = ports_starttls
         self.next_stage = next_stage
@@ -151,7 +151,7 @@ class AurorTestsslStorageTargetlist(Schedule):
                 if service.name in self.ports_starttls.values():
                     targets.append(AurorTestsslTarget(host_item.address, service.port, hostname, "E"))
 
-        current_app.logger.info(f"{self.__class__.__name__} projected {len(targets)} targets")
+        current_app.logger.info(f"{self.name} projected {len(targets)} targets")
         self.next_stage.task(targets)
 
 
@@ -192,5 +192,5 @@ class AurorTestsslStorageCleanup(Schedule):
             db.session.expire_all()
 
         current_app.logger.info(
-            f"{self.__class__.__name__} prunned {affected_rows} notes"
+            f"{self.name} prunned {affected_rows} notes"
         )

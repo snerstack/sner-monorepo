@@ -6,10 +6,7 @@ planner core tests
 import yaml
 from flask import current_app
 
-from sner.server.planner.core import (
-    outofscope_check,
-    Planner,
-)
+from sner.server.planner.core import outofscope_check, Planner
 from sner.server.storage.models import Host, Note, Vuln
 
 
@@ -22,7 +19,6 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     queue_factory.create(name="sner.six_enum_discover")
     queue_factory.create(name="standalone")
     queue_factory.create(name="sner.nuclei.rolling")
-    queue_factory.create(name="sner.testssl")
     queue_factory.create(name="sner.sportmap.rolling")
     queue_factory.create(name="auror.hostnames")
     queue_factory.create(name="auror.testssl")
@@ -91,8 +87,8 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
       """
     )
 
-    planner = Planner(config, oneshot=True)
-    planner.run()
+    planner = Planner(config)
+    planner.run(oneshot=True)
 
 
 def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pylint: disable=unused-argument

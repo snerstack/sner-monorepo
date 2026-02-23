@@ -22,7 +22,8 @@ def command():
 def run_command(**kwargs):
     """run planner daemon"""
 
-    Planner(current_app.config['SNER_PLANNER'], kwargs['oneshot']).run()
+    planner = Planner(current_app.config['SNER_PLANNER'])
+    planner.run(kwargs['oneshot'])
 
 
 @command.command(name='fetch-agreegate-netlists', help='fetch networks to be scanned from agreegate API')

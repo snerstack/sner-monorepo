@@ -59,6 +59,9 @@ def log_parsed(caller, pidb):
 class Stage(ABC):
     """planner stage base"""
 
+    def __init__(self, name):
+        self.name = name
+
     @abstractmethod
     def run(self):
         """stage main runnable"""
@@ -67,9 +70,10 @@ class Stage(ABC):
 class Schedule(Stage):
     """schedule base"""
 
-    def __init__(self, schedule, lockname):
+    def __init__(self, name, schedule):
+        super().__init__(name)
         self.schedule = schedule
-        self.lastrun_path = Path(f"{current_app.config['SNER_VAR']}/lastrun.{lockname}")
+        self.lastrun_path = Path(f"{current_app.config['SNER_VAR']}/lastrun.{name}")
 
     def run(self):
         """run only on configured schedule"""
@@ -90,17 +94,18 @@ class Schedule(Stage):
 class QueueHandler(Stage):
     """queue handler base"""
 
-    def __init__(self, queue_name):
+    def __init__(self, name, queue_name):
+        super().__init__(name)
         try:
             self.queue = Queue.query.filter(Queue.name == queue_name).one()
         except NoResultFound:
-            raise ValueError(f'missing queue "{queue_name}"') from None
+            raise ValueError(f'queue "{queue_name}" does not exist') from None
 
     def _drain(self):
         """drain queue and yield PIDBs"""
 
         for aajob in Job.query.filter(Job.queue_id == self.queue.id, Job.retval == 0).all():
-            current_app.logger.info(f"{self.__class__.__name__} drain {aajob.id} ({aajob.queue.name})")
+            current_app.logger.info(f"{self.name} drain {aajob.id} ({aajob.queue.name})")
             try:
                 parsed = JobManager.parse(aajob)
             except Exception as exc:  # pylint: disable=broad-except
@@ -122,13 +127,14 @@ class QueueHandler(Stage):
 
         enqueue = list(set(targets) - set(already_queued))
         QueueManager.enqueue(self.queue, enqueue)
-        current_app.logger.info(f'{self.__class__.__name__} enqueued {len(enqueue)} targets to "{self.queue.name}"')
+        current_app.logger.info(f'{self.name} enqueued {len(enqueue)} targets to "{self.queue.name}"')
 
 
 class DummyStage(Stage):
     """dummy testing stage"""
 
-    def __init__(self):
+    def __init__(self, name="dummy"):
+        super().__init__(name)
         self.task_count = 0
         self.task_args = None
         self.run_count = 0
@@ -151,14 +157,14 @@ class StorageLoader(QueueHandler):
         """run"""
         for pidb in self._drain():
             StorageManager.import_parsed(pidb, source=self.queue.name)
-            log_parsed(f"{self.__class__.__name__}:{self.queue.name}", pidb)
+            log_parsed(f"{self.name}:{self.queue.name}", pidb)
 
 
 class Netlist(Schedule):
     """periodic host discovery via list of ipv4 networks"""
 
-    def __init__(self, schedule, lockname, netlist, next_stages):
-        super().__init__(schedule, lockname)
+    def __init__(self, name, schedule, netlist, next_stages):
+        super().__init__(name, schedule)
         self.netlist = netlist
         self.next_stages = next_stages
 
@@ -168,7 +174,7 @@ class Netlist(Schedule):
         hosts = []
         for net in self.netlist:
             hosts += TargetManager.from_list(enumerate_network(net))
-        current_app.logger.info(f"{self.__class__.__name__} enumerated {len(hosts)} hosts")
+        current_app.logger.info(f"{self.name} enumerated {len(hosts)} hosts")
         for stage in self.next_stages:
             stage.task(hosts)
 
@@ -181,14 +187,14 @@ class ServiceDiscoStorageLoader(QueueHandler):
         for pidb in self._drain():
             tmpdb = filter_tarpits(pidb)
             StorageManager.import_parsed(tmpdb, source=self.queue.name)
-            log_parsed(f"{self.__class__.__name__}:{self.queue.name}", pidb)
+            log_parsed(f"{self.name}:{self.queue.name}", pidb)
 
 
 class SixDisco(QueueHandler):
     """cleanup list host ipv6 hosts (drop any outside scope) and pass it to service discovery"""
 
-    def __init__(self, queue_name, next_stage, filternets=None):
-        super().__init__(queue_name)
+    def __init__(self, name, queue_name, next_stage, filternets=None):
+        super().__init__(name,  queue_name)
         self.next_stage = next_stage
         self.filternets = filternets or []
         self._whitelist = [ip_network(net) for net in self.filternets]
@@ -214,15 +220,15 @@ class SixDisco(QueueHandler):
             hosts = [item.address for item in pidb.hosts]
             if self.filternets:
                 hosts = self._filter_external_hosts(hosts)
-            current_app.logger.info(f"{self.__class__.__name__} tasking {len(hosts)} hosts to {self.next_stage}")
+            current_app.logger.info(f"{self.name} tasking {len(hosts)} hosts to {self.next_stage}")
             self.next_stage.task(hosts)
 
 
 class SixEnumStorageTargetlist(Schedule):
     """generates target for six_enum_discovery module"""
 
-    def __init__(self, schedule, lockname, next_stage, filternets=None):
-        super().__init__(schedule, lockname)
+    def __init__(self, name, schedule, next_stage, filternets=None):
+        super().__init__(name, schedule)
         self.next_stage = next_stage
         self.filternets = filternets
 
@@ -253,15 +259,15 @@ class SixEnumStorageTargetlist(Schedule):
 
         all_v6_addresses = StorageManager.get_six_addresses(self.filternets)
         targets = self._project_sixenum_targets(all_v6_addresses)
-        current_app.logger.info(f"{self.__class__.__name__} tasking {len(targets)} targets to {self.next_stage}")
+        current_app.logger.info(f"{self.name} tasking {len(targets)} targets to {self.next_stage}")
         self.next_stage.task(targets)
 
 
 class ServiceScanStorageTargetlist(Schedule):
     """list and task service-targets for basic service scans accounting rescan_time"""
 
-    def __init__(self, schedule, lockname, service_interval, filternets, servicescan_stages):
-        super().__init__(schedule, lockname)
+    def __init__(self, name, schedule, service_interval, filternets, servicescan_stages):
+        super().__init__(name, schedule)
         self.service_interval = service_interval
         self.filternets = filternets
         self.servicescan_stages = servicescan_stages
@@ -286,8 +292,8 @@ class ServiceScanStorageTargetlist(Schedule):
 class ServiceStorageTargetlist(Schedule):
     """list storage services for advanced(vulnerability) scanning"""
 
-    def __init__(self, schedule, lockname, filternets, next_stage):
-        super().__init__(schedule, lockname)
+    def __init__(self, name, schedule, filternets, next_stage):
+        super().__init__(name, schedule)
         self.filternets = filternets
         self.next_stage = next_stage
 
@@ -307,12 +313,12 @@ class PruningStorageLoader(QueueHandler):
     def run(self):
         for pidb in self._drain():
             StorageManager.import_parsed(pidb, source=self.queue.name)
-            log_parsed(f"{self.__class__.__name__}:{self.queue.name}", pidb)
+            log_parsed(f"{self.name}:{self.queue.name}", pidb)
 
             count_notes = StorageManager.prune_scoped_notes(pidb, source=self.queue.name)
             count_vulns = StorageManager.prune_scoped_vulns(pidb, source=self.queue.name)
             current_app.logger.info(
-                f"{self.__class__.__name__}:{self.queue.name} prunned old items, vulns:{count_vulns} notes:{count_notes}"
+                f"{self.name}:{self.queue.name} prunned old items, vulns:{count_vulns} notes:{count_notes}"
             )
 
 
@@ -321,13 +327,13 @@ class HostRescanStorageTargetlist(Schedule):
 
     def __init__(
         self,
+        name,
         schedule,
-        lockname,
         filternets,
         host_interval,
         servicedisco_stage,
     ):
-        super().__init__(schedule, lockname)
+        super().__init__(name, schedule)
         self.filternets = filternets
         self.host_interval = host_interval
         self.servicedisco_stage = servicedisco_stage
@@ -343,7 +349,7 @@ class HostRescanStorageTargetlist(Schedule):
             targets.append(HostTarget(host.address))
             ids.append(host.id)
 
-        current_app.logger.info(f"{self.__class__.__name__} rescaning {len(targets)} hosts")
+        current_app.logger.info(f"{self.name} rescaning {len(targets)} hosts")
         self.servicedisco_stage.task(targets)
 
         StorageManager.update_hosts_rescantime(ids, now)
@@ -352,8 +358,8 @@ class HostRescanStorageTargetlist(Schedule):
 class SixStorageTargetlist(Schedule):
     """generates filtered ipv6 host addresses for scans"""
 
-    def __init__(self, schedule, lockname, filternets, next_stage):
-        super().__init__(schedule, lockname)
+    def __init__(self, name, schedule, filternets, next_stage):
+        super().__init__(name, schedule)
         self.filternets = filternets
         self.next_stage = next_stage
 
@@ -361,7 +367,7 @@ class SixStorageTargetlist(Schedule):
         """run"""
 
         targets = [HostTarget(item) for item in StorageManager.get_six_addresses(self.filternets)]
-        current_app.logger.info(f"{self.__class__.__name__} enumerated {len(targets)} targets")
+        current_app.logger.info(f"{self.name} enumerated {len(targets)} targets")
         self.next_stage.task(targets)
 
 
@@ -374,7 +380,7 @@ class SportmapStorageLoader(QueueHandler):
         for pidb in self._drain():
             # TODO: better logging
             current_app.logger.info(
-                f"{self.__class__.__name__} loading {len(pidb.hosts)} "
+                f"{self.name} loading {len(pidb.hosts)} "
                 f"hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes"
             )
 
@@ -390,7 +396,7 @@ class SportmapStorageLoader(QueueHandler):
                 Note.xtype == "sportmap",
                 Note.host_id.in_(db.session.query(Host.id).filter(Host.address.in_(prune_addrs))),
             ).delete(synchronize_session=False)
-            current_app.logger.info(f"{self.__class__.__name__} prunned {affected_rows} old notes")
+            current_app.logger.info(f"{self.name} prunned {affected_rows} old notes")
             db.session.commit()
             db.session.expire_all()
 
@@ -402,14 +408,17 @@ class VersioninfoRebuild(Schedule):
         """run"""
 
         VersioninfoManager.rebuild()
-        current_app.logger.info(f"{self.__class__.__name__} finished")
+        current_app.logger.info(f"{self.name} finished")
 
 
 class StorageCleanup(Stage):
     """cleanup storage"""
 
+    def __init__(self, name="StorageCleanup"):
+        super().__init__(name)
+
     def run(self):
         """cleanup storage"""
 
         StorageManager.cleanup_storage()
-        current_app.logger.debug(f"{self.__class__.__name__} finished")
+        current_app.logger.debug(f"{self.name} finished")
