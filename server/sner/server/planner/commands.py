@@ -9,6 +9,7 @@ from flask.cli import with_appcontext
 
 from sner.server.agreegate import fetch_agreegate_netlists
 from sner.server.planner.core import outofscope_check, Planner
+from sner.server.planner.pgraph import generate_graph
 
 
 @click.group(name='planner', help='sner.server planner commands')
@@ -41,3 +42,12 @@ def outofscope_check_command(prune):  # pragma nocover  ; won't test
     """fetch networks to be scanned from agreegate API"""
 
     return outofscope_check(prune)
+
+
+@command.command(name='pipelines-graph', help="generate pipeline graph using graphviz")
+@with_appcontext
+def pipelines_graph_command():  # pragma nocover  ; won't test
+    """generate pipeline graph using graphviz"""
+
+    planner = Planner(current_app.config['SNER_PLANNER'])
+    return generate_graph(planner)
