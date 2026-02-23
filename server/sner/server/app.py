@@ -164,6 +164,10 @@ def configure_logging():
                 'format': 'sner.server %(remote_addr)s - %(user)s [%(asctime)s] %(levelname)s %(message)s',
                 'datefmt': '%d/%b/%Y:%H:%M:%S %z'
             },
+            'formatter_command': {
+                'class': 'sner.server.app.LogFormatter',
+                'format': '%(levelname)s %(message)s',
+            },
             'formatter_werkzeug': {
                 'format': 'werkzeug %(message)s'
             }
@@ -173,6 +177,11 @@ def configure_logging():
                 'class': 'logging.StreamHandler',
                 'stream': 'ext://sys.stdout',
                 'formatter': 'formatter_server'
+            },
+            'console_command': {
+                'class': 'logging.StreamHandler',
+                'stream': 'ext://sys.stdout',
+                'formatter': 'formatter_command'
             },
             'console_werkzeug': {
                 'class': 'logging.StreamHandler',
@@ -184,6 +193,10 @@ def configure_logging():
             'sner.server': {
                 'level': 'INFO',
                 'handlers': ['console_server']
+            },
+            'sner_command': {
+                'level': 'INFO',
+                'handlers': ['console_command']
             },
             'werkzeug': {
                 'handlers': ['console_werkzeug']

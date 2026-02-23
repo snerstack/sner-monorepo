@@ -3,6 +3,7 @@
 storage commands
 """
 
+import logging
 import sys
 from pathlib import Path
 
@@ -17,6 +18,9 @@ from sner.server.storage.core import StorageManager, vuln_export, vuln_report
 from sner.server.storage.models import Host, Versioninfo
 from sner.server.storage.service_list import service_list
 from sner.server.storage.versioninfo import VersioninfoManager
+
+
+logger = logging.getLogger("sner_command")
 
 
 @click.group(name="storage", help="sner.server storage management")
@@ -34,7 +38,7 @@ def storage_import(path, parser, **kwargs):
     """import data"""
 
     if parser not in REGISTERED_PARSERS:
-        current_app.logger.error("no such parser")
+        logger.error("no such parser")
         sys.exit(1)
 
     parser_impl = REGISTERED_PARSERS[parser]
@@ -50,8 +54,6 @@ def storage_import(path, parser, **kwargs):
                 StorageManager.import_parsed(parser_impl.parse_path(item), list(kwargs["addtag"]))
         except Exception as exc:  # pylint: disable=broad-except
             current_app.logger.warning(f"failed to parse {item}, {repr(exc)}")
-
-    sys.exit(0)
 
 
 @command.command(name="flush", help="flush all objects from storage")

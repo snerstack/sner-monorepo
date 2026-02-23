@@ -15,7 +15,6 @@ from pytimeparse import parse as timeparse
 from sqlalchemy import select
 from sqlalchemy.orm.exc import NoResultFound
 
-# from sner.lib import format_host_address
 from sner.targets import SixenumTarget, ServiceTarget
 from sner.server.extensions import db
 from sner.server.scheduler.core import enumerate_network, JobManager, QueueManager
@@ -49,11 +48,9 @@ def filter_tarpits(pidb, threshold=200):
     return pidb
 
 
-def log_parsed(caller, pidb):
-    """log number of items parsed/imported to storage"""
-    current_app.logger.info(
-        f"{caller} imported pidb hosts:{len(pidb.hosts)} services:{len(pidb.services)} vulns:{len(pidb.vulns)} notes:{len(pidb.notes)}"
-    )
+def pidb_logmesg(pidb):
+    """return pidb stats for logging"""
+    return f"hosts:{len(pidb.hosts)} services:{len(pidb.services)} vulns:{len(pidb.vulns)} notes:{len(pidb.notes)}"
 
 
 class Stage(ABC):
@@ -157,7 +154,7 @@ class StorageLoader(QueueHandler):
         """run"""
         for pidb in self._drain():
             StorageManager.import_parsed(pidb, source=self.queue.name)
-            log_parsed(f"{self.name}:{self.queue.name}", pidb)
+            current_app.logger.info(f"{self.name}:{self.queue.name} imported {pidb_logmesg(pidb)}")
 
 
 class Netlist(Schedule):
@@ -187,7 +184,7 @@ class ServiceDiscoStorageLoader(QueueHandler):
         for pidb in self._drain():
             tmpdb = filter_tarpits(pidb)
             StorageManager.import_parsed(tmpdb, source=self.queue.name)
-            log_parsed(f"{self.name}:{self.queue.name}", pidb)
+            current_app.logger.info(f"{self.name}:{self.queue.name} imported {pidb_logmesg(pidb)}")
 
 
 class SixDisco(QueueHandler):
@@ -313,7 +310,7 @@ class PruningStorageLoader(QueueHandler):
     def run(self):
         for pidb in self._drain():
             StorageManager.import_parsed(pidb, source=self.queue.name)
-            log_parsed(f"{self.name}:{self.queue.name}", pidb)
+            current_app.logger.info(f"{self.name}:{self.queue.name} imported {pidb_logmesg(pidb)}")
 
             count_notes = StorageManager.prune_scoped_notes(pidb, source=self.queue.name)
             count_vulns = StorageManager.prune_scoped_vulns(pidb, source=self.queue.name)
@@ -378,11 +375,7 @@ class SportmapStorageLoader(QueueHandler):
         """run"""
 
         for pidb in self._drain():
-            # TODO: better logging
-            current_app.logger.info(
-                f"{self.name} loading {len(pidb.hosts)} "
-                f"hosts {len(pidb.services)} services {len(pidb.vulns)} vulns {len(pidb.notes)} notes"
-            )
+            current_app.logger.info(f"{self.name}:{self.queue.name} processing {pidb_logmesg(pidb)}")
 
             # do not import empty hosts
             all_addrs = set(pidb.hosts.all.address)
