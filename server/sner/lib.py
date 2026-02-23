@@ -7,6 +7,7 @@ import logging
 import re
 import os
 import signal
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from ipaddress import ip_address
 from pathlib import Path
@@ -53,8 +54,11 @@ def uri_ipv6_address(value):
     return f"[{value}]"
 
 
-class TerminateContextMixin:
-    """terminate context mixin"""
+class TerminateContextRunner(ABC):
+    """terminate context parent"""
+
+    def __init__(self):
+        self.original_signal_handlers = {}
 
     @contextmanager
     def terminate_context(self):
@@ -67,6 +71,10 @@ class TerminateContextMixin:
         finally:
             signal.signal(signal.SIGINT, self.original_signal_handlers[signal.SIGINT])
             signal.signal(signal.SIGTERM, self.original_signal_handlers[signal.SIGTERM])
+
+    @abstractmethod
+    def terminate(self, signum=None, frame=None):
+        """terminate implementation"""
 
 
 def get_nested_key(data, *keys):
