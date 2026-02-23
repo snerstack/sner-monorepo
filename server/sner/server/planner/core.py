@@ -68,7 +68,7 @@ from time import sleep
 from flask import current_app
 from sqlalchemy import delete, not_, or_, select
 
-from sner.lib import TerminateContextMixin
+from sner.lib import TerminateContextRunner
 from sner.server.extensions import db
 from sner.server.planner.config import PlannerConfig
 from sner.server.planner.stages_auror import (
@@ -209,18 +209,16 @@ def outofscope_check(prune=False):
     return 0
 
 
-class Planner(TerminateContextMixin):
+class Planner(TerminateContextRunner):
     """Continual scanning orchestrator."""
 
     LOOPSLEEP = 60
 
     def __init__(self, config=None):
+        super().__init__()
         configure_logging()
         self.log = current_app.logger
         self.log.setLevel(logging.DEBUG if current_app.config["DEBUG"] else logging.INFO)
-
-        # TODO: refactor to mixin ?
-        self.original_signal_handlers = {}
 
         self.loop = None
 

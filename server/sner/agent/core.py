@@ -10,7 +10,7 @@ import logging.config
 import os
 import shutil
 import signal
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from argparse import ArgumentParser
 from base64 import b64encode
 from contextlib import contextmanager
@@ -24,7 +24,7 @@ import requests
 import yaml
 
 from sner.server.api.schema import JobAssignmentSchema
-from sner.lib import load_yaml, TerminateContextMixin
+from sner.lib import load_yaml, TerminateContextRunner
 from sner.agent.modules import load_agent_plugins, REGISTERED_MODULES
 from sner.version import __version__
 
@@ -104,13 +104,13 @@ def zipdir(path, zipto):
                     output_zip.write(filepath, arcname)
 
 
-class AgentBase(ABC, TerminateContextMixin):
+class AgentBase(TerminateContextRunner):
     """base agent impl containing main (sub)process handling code"""
 
     def __init__(self):
+        super().__init__()
         self.log = logging.getLogger(LOGGER_NAME)
         self.module_instance = None
-        self.original_signal_handlers = {}
         self.loop = None
 
         load_agent_plugins()
@@ -119,7 +119,7 @@ class AgentBase(ABC, TerminateContextMixin):
     def run(self, **kwargs):
         """abstract run method; must be implemented by specific agent"""
 
-    def terminate(self, signum=None, frame=None):  # pragma: no cover  pylint: disable=unused-argument  ; running over multiprocessing
+    def terminate(self, _signum=None, _frame=None):  # pragma: no cover  ; running over multiprocessing
         """terminate at once"""
 
         self.log.info('received terminate')
