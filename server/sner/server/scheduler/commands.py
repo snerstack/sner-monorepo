@@ -3,16 +3,27 @@
 scheduler commands
 """
 
+import logging
 import sys
 from ipaddress import ip_address, summarize_address_range
 
 import click
-from flask import current_app
 from flask.cli import with_appcontext
 
 from sner.server.scheduler.core import enumerate_network, QueueManager, SchedulerService
 from sner.server.scheduler.models import Queue
 from sner.targets import TargetManager
+
+
+logger = logging.getLogger("sner_command")
+
+
+def _queue_by_name(name):
+    """return queue by name"""
+    queue = Queue.query.filter(Queue.name == name).one_or_none()
+    if not queue:
+        logger.error("no such queue")
+    return queue
 
 
 @click.group(name='scheduler', help='sner.server scheduler management')
@@ -53,10 +64,7 @@ def rangetocidr_command(start, end):
 def queue_enqueue_command(queue_name, targets, **kwargs):
     """enqueue targets to queue"""
 
-    # TODO: refactor pattern
-    queue = Queue.query.filter(Queue.name == queue_name).one_or_none()
-    if not queue:
-        current_app.logger.error('no such queue')
+    if not (queue := _queue_by_name(queue_name)):
         sys.exit(1)
 
     targets = list(targets)
@@ -67,7 +75,6 @@ def queue_enqueue_command(queue_name, targets, **kwargs):
     targets = list(filter(None, map(str.strip, targets)))
 
     QueueManager.enqueue(queue, TargetManager.from_list(targets))
-    sys.exit(0)
 
 
 @command.command(name='queue-flush', help='flush all targets from queue')
@@ -76,13 +83,9 @@ def queue_enqueue_command(queue_name, targets, **kwargs):
 def queue_flush_command(queue_name):
     """flush targets from queue"""
 
-    queue = Queue.query.filter(Queue.name == queue_name).one_or_none()
-    if not queue:
-        current_app.logger.error('no such queue')
+    if not (queue := _queue_by_name(queue_name)):
         sys.exit(1)
-
     QueueManager.flush(queue)
-    sys.exit(0)
 
 
 @command.command(name='queue-prune', help='delete all associated jobs')
@@ -91,13 +94,9 @@ def queue_flush_command(queue_name):
 def queue_prune_command(queue_name):
     """delete all jobs associated with queue"""
 
-    queue = Queue.query.filter(Queue.name == queue_name).one_or_none()
-    if not queue:
-        current_app.logger.error('no such queue')
+    if not (queue := _queue_by_name(queue_name)):
         sys.exit(1)
-
     QueueManager.prune(queue)
-    sys.exit(0)
 
 
 @command.command(name='readynet-recount', help='refresh readynets for current heatmap_hot_level')
@@ -106,7 +105,6 @@ def readynet_recount_command():
     """refresh readynets for current heatmap_hot_level"""
 
     SchedulerService.readynet_recount()
-    sys.exit(0)
 
 
 @command.command(name='heatmap-check', help='check heatmap if corresponds with running jobs')
@@ -115,9 +113,8 @@ def heatmap_check_command():
     """check heatmap if corresponds with running jobs"""
 
     if not SchedulerService.heatmap_check():
-        current_app.logger.error('heatmap not correct')
+        logger.error("heatmap not correct")
         sys.exit(1)
-    sys.exit(0)
 
 
 @command.command(name='repeat-failed-jobs', help='repeat and prune failed jobs (deployment helper)')
@@ -126,7 +123,6 @@ def repeat_failed_jobs_command():
     """repeat and prune failed jobs"""
 
     SchedulerService.repeat_failed_jobs()
-    sys.exit(0)
 
 
 @command.command(name='recover-heatmap', help='recover inconsistent heatmap state (deployment helper)')
@@ -135,4 +131,3 @@ def recover_heatmap_command():
     """recover heatmap"""
 
     SchedulerService.recover_heatmap()
-    sys.exit(0)

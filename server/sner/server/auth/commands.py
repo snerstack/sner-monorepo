@@ -3,17 +3,20 @@
 auth commands
 """
 
+import logging
 import sys
 from uuid import uuid4
 
 import click
-from flask import current_app
 from flask.cli import with_appcontext
 
 from sner.server.agreegate import sync_agreegate_allowed_networks
 from sner.server.auth.models import User
 from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
+
+
+logger = logging.getLogger("sner_command")
 
 
 @click.group(name='auth', help='sner.server auth management')
@@ -29,7 +32,7 @@ def reset_password(username):
 
     user = User.query.filter(User.username == username).one_or_none()
     if not user:
-        current_app.logger.error('no such user')
+        logger.error("no such user")
         sys.exit(1)
 
     new_password = PWS.generate()
