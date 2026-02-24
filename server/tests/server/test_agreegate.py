@@ -16,10 +16,10 @@ from flask import current_app
 import sner.server.agreegate
 from sner.server.agreegate import (
     agreegate_apicall,
-    AGREEGATE_NETLISTS_FILE,
+    NETLISTS_FILE,
     AgreegateApiError,
     fetch_agreegate_netlists,
-    load_merge_agreegate_netlists,
+    init_agreegate_netlists,
     sync_agreegate_allowed_networks,
 )
 from sner.server.auth.models import User
@@ -54,7 +54,7 @@ def test_aggregate_apicall_failure(app):  # pylint: disable=unused-argument
         agreegate_apicall("POST", "/fail")
 
 
-def test_fetchagreegatenetlists(app):  # pylint: disable=unused-argument
+def test_fetch_agreegate_netlists(app):  # pylint: disable=unused-argument
     """test fetch agreegate netlists"""
 
     mock_response = Mock(return_value={"sner/basic": ["127.6.6.0/24"]})
@@ -62,10 +62,10 @@ def test_fetchagreegatenetlists(app):  # pylint: disable=unused-argument
         assert fetch_agreegate_netlists() == 0
 
 
-def test_loadmergeagreegatenetlists(app):  # pylint: disable=unused-argument
+def test_init_agreegate_netlists(app):  # pylint: disable=unused-argument
     """test load and merge agreegate configs"""
 
-    Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}").write_text(
+    Path(f"{current_app.config['SNER_VAR']}/{NETLISTS_FILE}").write_text(
         json.dumps({
             "sner/basic": ["127.6.6.0/24", "2001:db8::11/128", "invalid"],
             "sner/nuclei": ["127.6.6.0/24"],
@@ -74,16 +74,11 @@ def test_loadmergeagreegatenetlists(app):  # pylint: disable=unused-argument
         encoding="utf-8",
     )
 
-    config = yaml.safe_load(
-        """
-      basic_nets_ipv4: ['127.0.0.11/32']
-      basic_nets_ipv6: ['::1/128']
-    """
-    )
+    init_agreegate_netlists(app)
 
-    config = load_merge_agreegate_netlists(config)
-    assert len(config["basic_nets_ipv4"]) == 2
-    assert len(config["basic_nets_ipv6"]) == 2
+    assert len(app.config["SNER_PLANNER"]["basic_nets_ipv4"]) == 2
+    assert len(app.config["SNER_PLANNER"]["basic_nets_ipv6"]) == 1
+    assert len(app.config["SNER_PLANNER"]["auror_testssl_ips"]) == 1
 
 
 def test_sync_agreegate_allowed_networks(app, user_factory):  # pylint: disable=unused-argument
