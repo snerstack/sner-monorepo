@@ -38,7 +38,7 @@ def test_parse_agent_output():
 
     vuln = pidb.vulns.where(xtype='nuclei.openssh-detect')[0]
     assert 'SSH-2.0-OpenSSH_OpenSSH_8.4p1 Debian-5+deb11u1' in vuln.descr
-    assert pidb.services[vuln.service_iid].port == 22
+    assert pidb.services.by.iid[vuln.service_iid].port == 22
 
 
 def test_parse_missing_report_ip():

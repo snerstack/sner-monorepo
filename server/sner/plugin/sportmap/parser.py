@@ -43,7 +43,7 @@ class ParserModule(ParserBase):
                 continue
 
             for svc in sport_pidb.services:
-                address = sport_pidb.hosts[svc.host_iid].address
+                address = sport_pidb.hosts.by.iid[svc.host_iid].address
                 pidb.upsert_host(address)
 
                 default_state = list(allparsed["default"].services.where(proto=svc.proto, port=svc.port))
