@@ -27,9 +27,9 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
         """
       basic_nets_ipv4: []
       basic_nets_ipv6: ['::1/128']
-      auror_testssl_ips: []
       nuclei_nets_ipv4: []
       sportmap_nets_ipv4: []
+      auror_testssl_ips: []
 
       pipelines:
           standalone_queues:
@@ -59,10 +59,6 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
           nuclei_scan:
             schedule: 5days
             queue: sner.nuclei.rolling
-
-          testssl_scan:
-            schedule: 7days
-            queue: sner.testssl
 
           sportmap_scan:
             schedule: 13days
