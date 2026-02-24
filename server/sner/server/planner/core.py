@@ -233,6 +233,8 @@ class Planner(TerminateContextRunner):
 
     def _add_stage(self, stage):
         """Add stage to runtime container."""
+        if stage.name in self.stages:
+            raise RuntimeError(f"stage {stage.name} already defined")
         self.stages[stage.name] = stage
         return stage
 

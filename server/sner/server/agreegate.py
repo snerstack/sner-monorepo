@@ -22,6 +22,7 @@ from sner.server.extensions import db
 
 NETLISTS_FILE = "agreegate_netlists.json"
 
+
 # keep name, reused from AG
 class Group(BaseModel):
     """Group model for adding/editing groups"""
@@ -30,6 +31,7 @@ class Group(BaseModel):
     description: Optional[str] = None
     external_id: Optional[str] = None
     allowed_networks: list[str]
+
 
 # keep name, reused from AG
 class UserGroupsResponse(BaseModel):

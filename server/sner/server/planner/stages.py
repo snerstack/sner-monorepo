@@ -217,7 +217,7 @@ class SixDisco(QueueHandler):
             hosts = [item.address for item in pidb.hosts]
             if self.filternets:
                 hosts = self._filter_external_hosts(hosts)
-            current_app.logger.info(f"{self.name} tasking {len(hosts)} hosts to {self.next_stage}")
+            current_app.logger.info(f"{self.name} tasking {len(hosts)} hosts to {self.next_stage.name}")
             self.next_stage.task(hosts)
 
 
@@ -256,7 +256,7 @@ class SixEnumStorageTargetlist(Schedule):
 
         all_v6_addresses = StorageManager.get_six_addresses(self.filternets)
         targets = self._project_sixenum_targets(all_v6_addresses)
-        current_app.logger.info(f"{self.name} tasking {len(targets)} targets to {self.next_stage}")
+        current_app.logger.info(f"{self.name} tasking {len(targets)} targets to {self.next_stage.name}")
         self.next_stage.task(targets)
 
 
@@ -315,7 +315,7 @@ class PruningStorageLoader(QueueHandler):
             count_notes = StorageManager.prune_scoped_notes(pidb, source=self.queue.name)
             count_vulns = StorageManager.prune_scoped_vulns(pidb, source=self.queue.name)
             current_app.logger.info(
-                f"{self.name}:{self.queue.name} prunned old items, vulns:{count_vulns} notes:{count_notes}"
+                f"{self.name} prunned old items, vulns:{count_vulns} notes:{count_notes}"
             )
 
 

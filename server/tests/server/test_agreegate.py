@@ -10,7 +10,6 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
-import yaml
 from flask import current_app
 
 import sner.server.agreegate
