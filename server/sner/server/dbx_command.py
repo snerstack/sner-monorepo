@@ -58,7 +58,7 @@ def initdata_prod():
         # standalone_queues
         {
             'name': 'sner.nuclei',
-            'config': {'module': 'nuclei', 'args': '-rate-limit 15 -no-mhe -disable-unsigned-templates'},
+            'config': {'module': 'nuclei', 'args': '-rate-limit 50 -disable-unsigned-templates'},
             'group_size': 5,
             'priority': QueuePrio.NORMAL,
             'reqs': ['default'],
@@ -87,6 +87,13 @@ def initdata_prod():
             'reqs': ['default'],
         },
         {
+            'name': 'sner.six_enum_discover',
+            'config': {'module': 'six_enum_discover', 'rate': 100},
+            'group_size': 5,
+            'priority': QueuePrio.NORMAL,
+            'reqs': ['default'],
+        },
+        {
             'name': 'sner.nmap.serviceversion',
             'config': {'module': 'manymap', 'args': '-sV --version-intensity 4 -O -Pn', 'delay': 0},
             'group_size': 10,
@@ -111,26 +118,14 @@ def initdata_prod():
             'priority': QueuePrio.HIGH,
             'reqs': ['default'],
         },
-
-        # storage_six_enum
-        {
-            'name': 'sner.six_enum_discover',
-            'config': {'module': 'six_enum_discover', 'rate': 100},
-            'group_size': 5,
-            'priority': QueuePrio.NORMAL,
-            'reqs': ['default'],
-        },
-
-        # nuclei_scan
+        # nuclei_scan & sportmap_scan
         {
             'name': 'sner.nuclei.rolling',
-            'config': {'module': 'nuclei', 'args': '-rate-limit 20 -disable-unsigned-templates'},
+            'config': {'module': 'nuclei', 'args': '-rate-limit 30 -disable-unsigned-templates'},
             'group_size': 1,
             'priority': QueuePrio.HIGH,
             'reqs': ['nuclei'],
         },
-
-        # sportmap_scan
         {
             'name': 'sner.sportmap.rolling',
             'config': {'module': 'sportmap', 'delay': 0},
@@ -143,13 +138,6 @@ def initdata_prod():
         {
             'name': 'sner.nmap.udpscan',
             'config': {'module': 'nmap', 'args': '-sU -F -sV --version-intensity 0 -Pn --open --max-retries 1'},
-            'group_size': 50,
-            'priority': QueuePrio.HIGH,
-            'reqs': ['default'],
-        },
-        {
-            'name': 'sner.quicmap',
-            'config': {'module': 'quicmap', 'args': '--ports 1-1024'},
             'group_size': 50,
             'priority': QueuePrio.HIGH,
             'reqs': ['default'],
