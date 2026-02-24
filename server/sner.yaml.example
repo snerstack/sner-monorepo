@@ -36,6 +36,8 @@ planner:
   sportmap_nets_ipv4: []
   sportmap_nets_ipv6: []
 
+  auror_testssl_nets: []
+
   pipelines:
     standalone_queues:
       queues:
@@ -45,7 +47,7 @@ planner:
 
     service_disco:
       netlist_schedule: 5days
-      service_disco_queue: sner.nmap.servicedisco
+      queue: sner.nmap.servicedisco
 
     six_disco:
       dns_netlist_schedule: 2days

@@ -6,52 +6,56 @@ planner config schema
 
 
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class StandaloneQueues(BaseModel):
+class PlannerConfigBase(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class StandaloneQueues(PlannerConfigBase):
     queues: List[str]
 
 
-class ServiceDisco(BaseModel):
+class ServiceDisco(PlannerConfigBase):
     netlist_schedule: str
     queue: str
 
 
-class SixDisco(BaseModel):
+class SixDisco(PlannerConfigBase):
     dns_netlist_schedule: str
     dns_disco_queue: str
     storage_enum_schedule: str
     storage_enum_queue: str
 
 
-class ServiceScan(BaseModel):
+class ServiceScan(PlannerConfigBase):
     schedule: str
     queues: List[str]
     service_interval: str
 
 
-class HostRescan(BaseModel):
+class HostRescan(PlannerConfigBase):
     schedule: str
     host_interval: str
 
 
-class NucleiScan(BaseModel):
+class NucleiScan(PlannerConfigBase):
     schedule: str
     queue: str
 
 
-class SportmapScan(BaseModel):
+class SportmapScan(PlannerConfigBase):
     schedule: str
     queue: str
 
 
-class AurorHostnames(BaseModel):
+class AurorHostnames(PlannerConfigBase):
     schedule: str
     queue: str
 
 
-class AurorTestsslScan(BaseModel):
+class AurorTestsslScan(PlannerConfigBase):
     targetlist_schedule: str
     queue: str
     cleanup_schedule: str
@@ -77,15 +81,15 @@ class AurorTestsslScan(BaseModel):
     }
 
 
-class StorageCleanup(BaseModel):
+class StorageCleanup(PlannerConfigBase):
     enabled: bool
 
 
-class RebuildVersionInfoMap(BaseModel):
+class RebuildVersionInfoMap(PlannerConfigBase):
     schedule: str
 
 
-class Pipelines(BaseModel):
+class Pipelines(PlannerConfigBase):
     standalone_queues: Optional[StandaloneQueues] = None
     service_disco: Optional[ServiceDisco] = None
     six_disco: Optional[SixDisco] = None
@@ -102,12 +106,9 @@ class Pipelines(BaseModel):
 class PlannerConfig(BaseModel):
     basic_nets_ipv4: List[str] = []
     basic_nets_ipv6: List[str] = []
-
     nuclei_nets_ipv4: List[str] = []
     nuclei_nets_ipv6: List[str] = []
     sportmap_nets_ipv4: List[str] = []
     sportmap_nets_ipv6: List[str] = []
-
     auror_testssl_ips: List[str] = []
-
     pipelines: Optional[Pipelines] = None
