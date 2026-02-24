@@ -20,9 +20,9 @@ from sner.server.auth.models import User
 from sner.server.extensions import db
 
 
-AGREEGATE_NETLISTS_FILE = "agreegate_netlists.json"
+NETLISTS_FILE = "agreegate_netlists.json"
 
-
+# keep name, reused from AG
 class Group(BaseModel):
     """Group model for adding/editing groups"""
 
@@ -31,7 +31,7 @@ class Group(BaseModel):
     external_id: Optional[str] = None
     allowed_networks: list[str]
 
-
+# keep name, reused from AG
 class UserGroupsResponse(BaseModel):
     """Model for syncing users/groups.allowed_networs with SNER instance"""
 
@@ -79,7 +79,7 @@ def fetch_agreegate_netlists():
         current_app.logger.error("failed to fetch agreegate netlists")
         return 1
 
-    agreegate_netlists_path = Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}")
+    agreegate_netlists_path = Path(f"{current_app.config['SNER_VAR']}/{NETLISTS_FILE}")
     agreegate_netlists_path.write_text(
         json.dumps(netlists_json, indent=4),
         encoding="utf-8"
@@ -87,7 +87,7 @@ def fetch_agreegate_netlists():
     return 0
 
 
-def split_ip_networks(networks):
+def _split_ip_networks(networks):
     """split ipv4/ipv6 addrs helper"""
 
     ipv4_networks = []
@@ -106,35 +106,40 @@ def split_ip_networks(networks):
     return ipv4_networks, ipv6_networks
 
 
-def _sorted_merge(config, key, appendix):
-    """do merge and sort of lists from config, handle case where key does not exist yet"""
-    return sorted(list(set(config.get(key, []) + appendix)))
+def _merge_config(app, merge_to, add_netlist):
+    """merge app and AG netlist in planner config"""
+    current = app.config["SNER_PLANNER"].get(merge_to, [])
+    current = sorted(list(set(current + add_netlist)))
+    app.config["SNER_PLANNER"][merge_to] = current
 
 
-def load_merge_agreegate_netlists(config):
-    """load and merge netlists from agreegate file into planner config dict"""
+def init_agreegate_netlists(app):
+    """
+    load and merge netlists from agreegate file into planner config.
+    uses extension pattern ext.init_app(app)
+    """
 
-    agreegate_netlists_path = Path(f"{current_app.config['SNER_VAR']}/{AGREEGATE_NETLISTS_FILE}")
-    if agreegate_netlists_path.exists():
-        current_app.logger.debug("merging agreegate netlists")
-        ag_netlists = json.loads(agreegate_netlists_path.read_text(encoding="utf-8"))
+    netlists_path = Path(f"{app.config['SNER_VAR']}/{NETLISTS_FILE}")
+    if (not app.config['SNER_AGREEGATE_USE_NETLISTS']) or (not netlists_path.exists()):
+        return
 
-        if ag_sner_basic := ag_netlists.get("sner/basic"):
-            ipv4_networks, ipv6_networks = split_ip_networks(ag_sner_basic)
-            config["basic_nets_ipv4"] = _sorted_merge(config, "basic_nets_ipv4", ipv4_networks)
-            config["basic_nets_ipv6"] = _sorted_merge(config, "basic_nets_ipv6", ipv6_networks)
+    app.logger.debug("merging agreegate netlists")
+    netlists = json.loads(netlists_path.read_text(encoding="utf-8"))
 
-        if ag_sner_nuclei := ag_netlists.get("sner/nuclei"):
-            ipv4_networks, ipv6_networks = split_ip_networks(ag_sner_nuclei)
-            config["nuclei_nets_ipv4"] = _sorted_merge(config, "nuclei_nets_ipv4", ipv4_networks)
-            config["nuclei_nets_ipv6"] = _sorted_merge(config, "nuclei_nets_ipv6", ipv6_networks)
-            config["sportmap_nets_ipv4"] = _sorted_merge(config, "sportmap_nets_ipv4", ipv4_networks)
-            config["sportmap_nets_ipv6"] = _sorted_merge(config, "sportmap_nets_ipv6", ipv6_networks)
+    if ag_sner_basic := netlists.get("sner/basic"):
+        ipv4_networks, ipv6_networks = _split_ip_networks(ag_sner_basic)
+        _merge_config(app, "basic_nets_ipv4", ipv4_networks)
+        _merge_config(app, "basic_nets_ipv6", ipv6_networks)
 
-        if ag_auror := ag_netlists.get("auror"):
-            config["auror_testssl_ips"] = _sorted_merge(config, "auror_testssl_ips", ag_auror)
+    if ag_sner_nuclei := netlists.get("sner/nuclei"):
+        ipv4_networks, ipv6_networks = _split_ip_networks(ag_sner_nuclei)
+        _merge_config(app, "nuclei_nets_ipv4", ipv4_networks)
+        _merge_config(app, "nuclei_nets_ipv6", ipv6_networks)
+        _merge_config(app, "sportmap_nets_ipv4", ipv4_networks)
+        _merge_config(app, "sportmap_nets_ipv6", ipv6_networks)
 
-    return config
+    if ag_auror := netlists.get("auror"):
+        _merge_config(app, "auror_testssl_ips", ag_auror)
 
 
 def ensure_user(username, email, full_name):

@@ -21,7 +21,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from sner.agent.modules import load_agent_plugins
 from sner.lib import load_yaml
-from sner.server.agreegate import load_merge_agreegate_netlists
+from sner.server.agreegate import init_agreegate_netlists
 from sner.server.extensions import api, db, migrate, login_manager, oauth, webauthn
 from sner.server.parser import load_parser_plugins
 from sner.server.scheduler.core import ExclMatcher
@@ -85,6 +85,7 @@ DEFAULT_CONFIG = {
     # other sner subsystems
     'SNER_PLANNER': {},
     'SNER_METRICS_STALE_HORIZONT': '1day',
+    'SNER_AGREEGATE_USE_NETLISTS': True,
     'SNER_AGREEGATE_URL': None,
     'SNER_AGREEGATE_APIKEY': None,
 
@@ -251,9 +252,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
     load_agent_plugins()
     load_parser_plugins()
     # load agreegate external config
-    with app.app_context():
-        app.config['SNER_PLANNER'] = load_merge_agreegate_netlists(app.config['SNER_PLANNER'])
-
+    init_agreegate_netlists(app)
     # check exclusion matcher config
     ExclMatcher(app.config['SNER_EXCLUSIONS'])
 
