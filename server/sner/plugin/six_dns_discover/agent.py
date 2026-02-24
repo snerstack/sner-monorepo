@@ -11,6 +11,7 @@ from time import sleep
 from schema import Or, Schema
 
 from sner.agent.modules import ModuleBase
+from sner.targets import GenericTarget
 
 
 class AgentModule(ModuleBase):
@@ -53,7 +54,8 @@ class AgentModule(ModuleBase):
 
         result = {}
         for _, target in self.enumerate_targets(assignment):
-            for v6addr, hostname, via_ipv4 in self.find_ipv6_by_hostname(target.address):
+            addr = target.value if isinstance(target, GenericTarget) else target.address
+            for v6addr, hostname, via_ipv4 in self.find_ipv6_by_hostname(addr):
                 result[v6addr] = (hostname, via_ipv4)
 
             sleep(assignment['config']['delay'])
