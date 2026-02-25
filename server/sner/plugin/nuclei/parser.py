@@ -78,7 +78,7 @@ class ParserModule(ParserBase):
 
         host_address = dnsptr_to_ip(report['host'])
         hostname = report['extracted-results'][0].rstrip('.')
-        pidb.upsert_host(host_address, hostname=hostname, hostnames=[hostname])
+        pidb.upsert_host(host_address, hostname=hostname)
         return pidb
 
     @classmethod

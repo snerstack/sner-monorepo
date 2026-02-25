@@ -48,8 +48,7 @@ class ParserModule(ParserBase):
             # parse host
             host_data = {}
             if ihost.hostnames:
-                host_data['hostnames'] = list(set(ihost.hostnames))
-                host_data['hostname'] = host_data['hostnames'][0]
+                host_data['hostname'] = ihost.hostnames[0]
 
             for osmatch in [item for item in ihost.os_match_probabilities() if item.accuracy == 100]:
                 host_data['os'] = osmatch.name
