@@ -44,8 +44,7 @@ class ParserModule(ParserBase):
             if ('host-rdns' in report_item) and (not is_address(report_item['host-rdns'])):
                 hostnames.add(report_item['host-rdns'])
             if hostnames:
-                host_data['hostnames'] = list(hostnames)
-                host_data['hostname'] = host_data['hostnames'][0]
+                host_data['hostname'] = list(hostnames)[0]
 
             if 'operating-system' in report_item:
                 host_data['os'] = report_item['operating-system']

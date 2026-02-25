@@ -58,7 +58,6 @@ class ParsedHost(ParsedItemBase):
 
     address: str
     hostname: str = None
-    hostnames: list = None
     os: str = None  # pylint: disable=invalid-name
     iid: int = None
 
