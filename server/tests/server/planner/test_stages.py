@@ -3,7 +3,7 @@
 planner stages tests
 """
 
-
+from collections import namedtuple
 from unittest.mock import patch
 
 import pytest
@@ -11,10 +11,10 @@ import pytest
 from sner.server.parser import ParsedItemsDb
 from sner.server.planner.stages import (
     DummyStage,
-    filter_tarpits,
     HostRescanStorageTargetlist,
     Netlist,
     PruningStorageLoader,
+    ServiceDiscoStorageLoader,
     SixDisco,
     SixEnumStorageTargetlist,
     SixStorageTargetlist,
@@ -30,9 +30,35 @@ from sner.targets import TargetManager, HostTarget, GenericTarget
 def test_filter_tarpits(sample_pidb):
     """test filter_tarpits"""
 
-    pidb = filter_tarpits(sample_pidb)
+    pidb = ServiceDiscoStorageLoader._filter_tarpits(sample_pidb)  # pylint: disable=protected-access
     assert len(pidb.hosts) == 1
     assert len(pidb.services) == 1
+
+
+def test_filter_closed_services():
+    """test filter_closed_services"""
+
+    TestData = namedtuple("TestData", ["address", "port", "state", "note", "vuln"])
+    test_data = [
+        TestData("127.0.0.2", 2, "closed:test", None, None),
+        TestData("127.0.0.3", 3, "closed:test", "notedummy3", "vulndummy3"),
+        TestData("127.0.0.4", 4, "open:test", "notedummy4", "vulndummy4"),
+        TestData("127.0.0.4", 5, "closed:test", "notedummy5", "vulndummy5"),
+    ]
+    pidb = ParsedItemsDb()
+    for item in test_data:
+        pidb.upsert_host(item.address)
+        pidb.upsert_service(item.address, "tcp", item.port, state=item.state)
+        if item.note:
+            pidb.upsert_note(item.address, item.note, "tcp", item.port, data=item.note)
+        if item.vuln:
+            pidb.upsert_vuln(item.address, item.vuln, item.vuln, "tcp", item.port)
+
+    pidb = ServiceDiscoStorageLoader._filter_closed_services(pidb)  # pylint: disable=protected-access
+    assert len(pidb.hosts) == 1
+    assert len(pidb.services) == 1
+    assert len(pidb.vulns) == 1
+    assert len(pidb.notes) == 1
 
 
 def test_netlist(app):  # pylint: disable=unused-argument
