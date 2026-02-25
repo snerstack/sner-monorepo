@@ -25,29 +25,6 @@ from sner.server.storage.versioninfo import VersioninfoManager
 from sner.targets import TargetManager, HostTarget
 
 
-def filter_tarpits(pidb, threshold=200):
-    """filter filter hosts with too much services detected"""
-
-    host_services_count = defaultdict(int)
-    for service in pidb.services:
-        host_services_count[pidb.hosts.by.iid[service.host_iid].address] += 1
-    hosts_over_threshold = dict(filter(lambda x: x[1] > threshold, host_services_count.items()))
-
-    if hosts_over_threshold:
-        for collection in ["services", "vulns", "notes"]:
-            # list() should provide copy for list-in-loop pruning
-            for item in list(getattr(pidb, collection)):
-                if pidb.hosts.by.iid[item.host_iid].address in hosts_over_threshold:
-                    getattr(pidb, collection).remove(item)
-
-        # list() should provide copy for list-in-loop pruning
-        for host in list(pidb.hosts):
-            if host.address in hosts_over_threshold:
-                pidb.hosts.remove(host)
-
-    return pidb
-
-
 def pidb_logmesg(pidb):
     """return pidb stats for logging"""
     return f"hosts:{len(pidb.hosts)} services:{len(pidb.services)} vulns:{len(pidb.vulns)} notes:{len(pidb.notes)}"
@@ -179,10 +156,70 @@ class Netlist(Schedule):
 class ServiceDiscoStorageLoader(QueueHandler):
     """do service discovery on targets"""
 
+    @staticmethod
+    def _filter_tarpits(pidb, threshold=200):
+        """filter filter hosts with too much services detected"""
+
+        host_services_count = defaultdict(int)
+        for service in pidb.services:
+            host_services_count[service.host_iid] += 1
+        hosts_over_threshold = {hostiid: val for hostiid, val in host_services_count.items() if val > threshold}
+
+        if hosts_over_threshold:
+            services_to_delete = [svc for svc in pidb.services if svc.host_iid in hosts_over_threshold]
+            vulns_to_delete = [vuln for vuln in pidb.vulns if vuln.host_iid in hosts_over_threshold]
+            notes_to_delete = [note for note in pidb.notes if note.host_iid in hosts_over_threshold]
+            for item in notes_to_delete:
+                pidb.notes.remove(item)
+            for item in vulns_to_delete:
+                pidb.vulns.remove(item)
+            for item in services_to_delete:
+                pidb.services.remove(item)
+
+            hosts_to_delete = [host for host in pidb.hosts if host.iid in hosts_over_threshold]
+            for item in hosts_to_delete:
+                pidb.hosts.remove(item)
+
+        return pidb
+
+    @staticmethod
+    def _filter_closed_services(pidb):
+        """filter closed services, they would be cleaned up anyway"""
+
+        # remove services and coresponding vulns/notes (there should be none)
+        services_to_delete = [svc for svc in pidb.services if svc.state.startswith("closed:")]
+        services_to_delete_ids = [svc.iid for svc in services_to_delete]
+        vulns_to_delete = [vuln for vuln in pidb.vulns if vuln.service_iid in services_to_delete_ids]
+        notes_to_delete = [note for note in pidb.notes if note.service_iid in services_to_delete_ids]
+
+        for item in notes_to_delete:
+            pidb.notes.remove(item)
+        for item in vulns_to_delete:
+            pidb.vulns.remove(item)
+        for item in services_to_delete:
+            pidb.services.remove(item)
+
+        # remove hosts without any related items
+        host_item_count = {
+            host.iid: (
+                len(pidb.services.where(host_iid=host.iid))
+                + len(pidb.vulns.where(host_iid=host.iid))
+                + len(pidb.notes.where(host_iid=host.iid))
+            )
+            for host in pidb.hosts
+        }
+        hosts_to_delete_ids = [hostid for hostid, count in host_item_count.items() if count == 0]
+        hosts_to_delete = [host for host in pidb.hosts if host.iid in hosts_to_delete_ids]
+        for item in hosts_to_delete:
+            pidb.hosts.remove(item)
+
+        return pidb
+
     def run(self):
         """run"""
         for pidb in self._drain():
-            tmpdb = filter_tarpits(pidb)
+            tmpdb = self._filter_tarpits(pidb)
+            tmpdb = self._filter_closed_services(pidb)
             StorageManager.import_parsed(tmpdb, source=self.queue.name)
             current_app.logger.info(f"{self.name}:{self.queue.name} imported {pidb_logmesg(pidb)}")
 
