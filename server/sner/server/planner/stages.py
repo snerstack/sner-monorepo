@@ -255,7 +255,7 @@ class SixDisco(QueueHandler):
             if self.filternets:
                 hosts = self._filter_external_hosts(hosts)
             current_app.logger.info(f"{self.name} tasking {len(hosts)} hosts to {self.next_stage.name}")
-            self.next_stage.task(hosts)
+            self.next_stage.task(TargetManager.from_list(hosts))
 
 
 class SixEnumStorageTargetlist(Schedule):
