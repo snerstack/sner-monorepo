@@ -40,6 +40,7 @@ from sner.server.visuals.views import blueprint as visuals_blueprint
 
 from sner.server.auth.commands import command as auth_command
 from sner.server.dbx_command import command as dbx_command
+from sner.server.nessus_command import command as nessus_command
 from sner.server.planner.commands import command as planner_command
 from sner.server.psql_command import command as psql_command
 from sner.server.scheduler.commands import command as scheduler_command
@@ -88,10 +89,13 @@ DEFAULT_CONFIG = {
     'SNER_AGREEGATE_USE_NETLISTS': True,
     'SNER_AGREEGATE_URL': None,
     'SNER_AGREEGATE_APIKEY': None,
+    'SNER_NESSUS_URL': None,
+    'SNER_NESSUS_ACCESS_KEY': None,
+    'SNER_NESSUS_SECRET_KEY': None,
 
     # smorest api
-    'API_TITLE': 'sner4 api',
-    'API_VERSION': 'vX',
+    'API_TITLE': 'SNER API',
+    'API_VERSION': __version__,
     'OPENAPI_VERSION': '3.0.3',
     'OPENAPI_URL_PREFIX': '/api/doc',
     'OPENAPI_SWAGGER_UI_PATH': '/swagger',
@@ -273,6 +277,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
 
     app.cli.add_command(auth_command)
     app.cli.add_command(dbx_command)
+    app.cli.add_command(nessus_command)
     app.cli.add_command(planner_command)
     app.cli.add_command(psql_command)
     app.cli.add_command(scheduler_command)

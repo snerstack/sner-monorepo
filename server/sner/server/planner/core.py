@@ -78,18 +78,20 @@ from sner.server.planner.stages_auror import (
     AurorTestsslStorageTargetlist,
 )
 from sner.server.planner.stages import (
+    HostRescanStorageTargetlist,
+    HostStorageTargetlist,
     Netlist,
     PruningStorageLoader,
-    VersioninfoRebuild,
+    PruningStrategyType,
     ServiceDiscoStorageLoader,
-    SixDisco,
-    SportmapStorageLoader,
-    StorageCleanup,
-    HostRescanStorageTargetlist,
-    StorageLoader,
     ServiceScanStorageTargetlist,
     ServiceStorageTargetlist,
+    SixDisco,
     SixEnumStorageTargetlist,
+    SportmapStorageLoader,
+    StorageCleanup,
+    StorageLoader,
+    VersioninfoRebuild,
 )
 from sner.server.storage.models import Host, Note, Vuln
 
@@ -356,6 +358,26 @@ class Planner(TerminateContextRunner):
             )
         )
 
+    def _setup_nessus_scan(self):
+        if not self._cp.nessus_scan:
+            return
+
+        loader = self._add_stage(
+            PruningStorageLoader(
+                f"nessus_scan:{self._cp.nessus_scan.queue}",
+                self._cp.nessus_scan.queue,
+                strategy=PruningStrategyType.HOST
+            )
+        )
+        self._add_stage(
+            HostStorageTargetlist(
+                "nessus_scan:storage_targetlist",
+                schedule=self._cp.nessus_scan.schedule,
+                filternets=self.config.nessus_ips,
+                next_stage=loader,
+            )
+        )
+
     def _setup_sportmap_scan(self):
         if not self._cp.sportmap_scan:
             return
@@ -429,6 +451,7 @@ class Planner(TerminateContextRunner):
         self._setup_service_scan()
         self._setup_host_rescan()
         self._setup_nuclei_scan()
+        self._setup_nessus_scan()
         self._setup_sportmap_scan()
         self._setup_auror_hostnames()
         self._setup_auror_testssl()

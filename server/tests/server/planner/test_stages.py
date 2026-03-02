@@ -14,6 +14,7 @@ from sner.server.planner.stages import (
     HostRescanStorageTargetlist,
     Netlist,
     PruningStorageLoader,
+    PruningStrategyType,
     ServiceDiscoStorageLoader,
     SixDisco,
     SixEnumStorageTargetlist,
@@ -232,7 +233,7 @@ def test_versionscan(app, queue_factory):  # pylint: disable=unused-argument
 
 
 def test_nucleiscan(app, queue_factory, job_completed_factory, vuln_factory):  # pylint: disable=unused-argument
-    """mock completed job with real data"""
+    """test nuclei_scan loader"""
 
     queue = queue_factory.create(
         name="nuclei.rolling.test",
@@ -273,3 +274,29 @@ def test_nucleiscan(app, queue_factory, job_completed_factory, vuln_factory):  #
     assert Vuln.query.filter_by(xtype="nuclei.http-missing-security-headers.x-frame-options").count() == 0
     assert Vuln.query.filter_by(xtype="nuclei.readme-md").count() == 0
     assert Vuln.query.filter_by(xtype="dummy").count() == 1
+
+
+def test_nessusscan(app, queue_factory, job_completed_factory, host_factory, service_factory, vuln_factory):  # pylint: disable=unused-argument
+    """test nessus scan loader"""
+
+    queue = queue_factory.create(
+        name="nessus.rolling.test",
+        config=yaml_dump({"module": "nessus"}),
+    )
+    job_completed_factory.create(
+        queue=queue,
+        make_output="tests/server/data/parser-nessus-job.zip",
+    )
+
+    host = host_factory.create(address="127.0.0.1")
+    service = service_factory.create(host=host, proto="tcp", port=22, state="open:dummy")
+    vuln_factory.create(host=host, service=service, source=queue.name, xtype="nessus.delete_dummy", data="dummy")
+
+    stage = PruningStorageLoader("nessus_scan", queue_name=queue.name, strategy=PruningStrategyType.HOST)
+    stage.run()
+
+    assert Host.query.count() == 1
+    assert Vuln.query.count() == 2
+    assert Vuln.query.filter_by(xtype="nessus.14272").count() == 1
+    assert Vuln.query.filter_by(xtype="nessus.45590").count() == 1
+    assert Vuln.query.filter_by(xtype="nessus.delete_dummy").count() == 0

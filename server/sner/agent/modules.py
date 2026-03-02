@@ -57,12 +57,21 @@ class ModuleBase(ABC):
         self.log = logging.getLogger(f'sner.agent.module.{self.__class__.__name__}')
         self.process = None
 
+    def init_job(self, assignment):
+        """initialize job, returns validated config"""
+
+        Path('assignment.json').write_text(json.dumps(assignment), encoding='utf-8')
+
+        # TODO: deprecated, Schema will be replaced with pydantic
+        if isinstance(self.CONFIG_SCHEMA, Schema):
+            return self.CONFIG_SCHEMA.validate(assignment["config"])
+        return self.CONFIG_SCHEMA.model_validate(assignment["config"])
+
     @abstractmethod
     def run(self, assignment):
         """run module for assignment"""
-
-        Path('assignment.json').write_text(json.dumps(assignment), encoding='utf-8')
-        self.CONFIG_SCHEMA.validate(assignment['config'])
+        # TODO: deprecate, modules should call init_job instead
+        return self.init_job(assignment)
 
     @abstractmethod
     def terminate(self):
