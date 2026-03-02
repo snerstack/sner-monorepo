@@ -5,11 +5,12 @@ parsers to import from agent outputs to storage
 
 import json
 import sys
+from io import BytesIO
 from pprint import pprint
 
 from tenable.reports import NessusReportv2
 
-from sner.lib import is_address
+from sner.lib import file_from_zip, is_address, is_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
 from sner.server.storage.models import SeverityEnum
 from sner.server.utils import SnerJSONEncoder
@@ -23,6 +24,10 @@ class ParserModule(ParserBase):
     @classmethod
     def parse_path(cls, path):
         """parse path"""
+
+        if is_zip(path):
+            filedata = file_from_zip(path, "output.nessus")
+            return cls._parse_report(NessusReportv2(BytesIO(filedata)))
 
         return cls._parse_report(NessusReportv2(path))
 

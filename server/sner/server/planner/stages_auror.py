@@ -192,5 +192,5 @@ class AurorTestsslStorageCleanup(Schedule):
             db.session.expire_all()
 
         current_app.logger.info(
-            f"{self.name} prunned {affected_rows} notes"
+            f"{self.name} pruned {affected_rows} notes"
         )

@@ -118,11 +118,18 @@ def initdata_prod():
             'priority': QueuePrio.HIGH,
             'reqs': ['default'],
         },
-        # nuclei_scan & sportmap_scan
+        # nuclei_scan & nessus_scan & sportmap_scan
         {
             'name': 'sner.nuclei.rolling',
             'config': {'module': 'nuclei', 'args': '-rate-limit 30 -disable-unsigned-templates'},
             'group_size': 1,
+            'priority': QueuePrio.HIGH,
+            'reqs': ['nuclei'],
+        },
+        {
+            'name': 'sner.nessus.rolling',
+            'config': {'module': 'nessus'},
+            'group_size': 5,
             'priority': QueuePrio.HIGH,
             'reqs': ['nuclei'],
         },

@@ -399,6 +399,7 @@ class StorageManager:
             current_app.logger.info(f'storage update delete host <Host {host.id}: {host.address} {host.hostname}>')
         conn.execute(delete(Host).filter(Host.id.in_(hosts_to_delete)))
 
+        # TODO: REMOVE, xtype hostnames were dropped
         # also remove all hosts not having any info but one note xtype hostnames
         hosts_only_one_note = conn.execute(select(Host.id).outerjoin(Note).having(func.count(Note.id) == 1).group_by(Host.id)).scalars().all()
         hosts_only_note_hostnames = conn.execute(
@@ -559,58 +560,57 @@ class StorageManager:
                 print(f"storage update new note: {item}")
 
     @staticmethod
-    def prune_scoped_notes(pidb, source):
-        """
-        Prune notes according to PIDB target scopes and queue.
+    def prune_service_scoped_items(item_model, pidb, source):
+        """prune items from storage based on pidb target scope, queue name and service idents"""
 
-        :return: Number of items that were deleted.
-        :rtype: int
-        """
-
+        # select storage items by pidb scanning scope
         target_scopes = pidb.target_scopes()
-        upsert_map = pidb.idents(pidb.notes)
-
-        notes_to_check = (
-            Note.query.outerjoin(Host, Note.host_id == Host.id)
-            .outerjoin(Service, Note.service_id == Service.id)
+        items_to_check = (
+            item_model.query.outerjoin(Host, item_model.host_id == Host.id)
+            .outerjoin(Service, item_model.service_id == Service.id)
             .filter(
-                tuple_(Host.address, Service.proto, Service.port, Note.via_target).in_(target_scopes),
-                Note.source == source,
+                tuple_(Host.address, Service.proto, Service.port, item_model.via_target).in_(target_scopes),
+                item_model.source == source,
             )
-            .all()
         )
-        notes_to_delete = [item.id for item in notes_to_check if item.ident() not in upsert_map]
-        Note.query.filter(Note.id.in_(notes_to_delete)).delete()
-        db.session.commit()
 
-        return len(notes_to_delete)
+        # select items to delete, items from target scope not present in pidb
+        collection = {Note: "notes", Vuln: "vulns"}
+        upsert_map = pidb.idents(getattr(pidb, collection[item_model]))
+        items_to_delete = [item.id for item in items_to_check if item.ident() not in upsert_map]
+
+        # prune storage
+        if items_to_delete:
+            item_model.query.filter(item_model.id.in_(items_to_delete)).delete()
+            db.session.commit()
+
+        return len(items_to_delete)
 
     @staticmethod
-    def prune_scoped_vulns(pidb, source):
-        """
-        Prune vulns according to PIDB target scopes and queue.
+    def prune_host_scoped_items(item_model, pidb, source):
+        """prune storage items based on pidb target scope, queue name and host idents"""
 
-        :return: Number of items that were deleted.
-        :rtype: int
-        """
-
+        # select storage items by pidb scanning scope
         target_scopes = pidb.target_scopes()
-        upsert_map = pidb.idents(pidb.vulns)
-
-        vulns_to_check = (
-            Vuln.query.outerjoin(Host, Vuln.host_id == Host.id)
-            .outerjoin(Service, Vuln.service_id == Service.id)
+        items_to_check = (
+            item_model.query.outerjoin(Host, item_model.host_id == Host.id)
             .filter(
-                tuple_(Host.address, Service.proto, Service.port, Vuln.via_target).in_(target_scopes),
-                Vuln.source == source,
+                Host.address.in_(target_scopes),
+                item_model.source == source,
             )
-            .all()
         )
-        vulns_to_delete = [item.id for item in vulns_to_check if item.ident() not in upsert_map]
-        Vuln.query.filter(Vuln.id.in_(vulns_to_delete)).delete()
-        db.session.commit()
 
-        return len(vulns_to_delete)
+        # select items to delete, items from target scope not present in pidb
+        collection_name = {Note: "notes", Vuln: "vulns"}
+        upsert_map = pidb.idents(getattr(pidb, collection_name[item_model]))
+        items_to_delete = [item.id for item in items_to_check if item.ident() not in upsert_map]
+
+        # prune storage
+        if items_to_delete:
+            item_model.query.filter(item_model.id.in_(items_to_delete)).delete()
+            db.session.commit()
+
+        return len(items_to_delete)
 
     @staticmethod
     def get_tls_services(filternets):

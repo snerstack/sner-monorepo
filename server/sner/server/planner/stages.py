@@ -6,6 +6,7 @@ planner stages
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
+from enum import Enum
 from ipaddress import ip_address, ip_network, IPv6Address
 from pathlib import Path
 
@@ -20,7 +21,7 @@ from sner.server.extensions import db
 from sner.server.scheduler.core import enumerate_network, JobManager, QueueManager
 from sner.server.scheduler.models import Queue, Job, Target
 from sner.server.storage.core import StorageManager
-from sner.server.storage.models import Host, Note
+from sner.server.storage.models import Host, Note, Vuln
 from sner.server.storage.versioninfo import VersioninfoManager
 from sner.targets import TargetManager, HostTarget
 
@@ -341,18 +342,35 @@ class ServiceStorageTargetlist(Schedule):
         self.next_stage.task(targets)
 
 
+class PruningStrategyType(Enum):
+    """pruning scope enum"""
+    SERVICE = "service"
+    HOST = "host"
+
+
 class PruningStorageLoader(QueueHandler):
     """import pidb and prune items on targets scope and source key"""
+
+    PRUNE_STRATEGIES = {
+        PruningStrategyType.SERVICE: StorageManager.prune_service_scoped_items,
+        PruningStrategyType.HOST: StorageManager.prune_host_scoped_items,
+    }
+
+    def __init__(self, name, queue_name, strategy=PruningStrategyType.SERVICE):
+        super().__init__(name, queue_name)
+        self.strategy = strategy
 
     def run(self):
         for pidb in self._drain():
             StorageManager.import_parsed(pidb, source=self.queue.name)
             current_app.logger.info(f"{self.name}:{self.queue.name} imported {pidb_logmesg(pidb)}")
 
-            count_notes = StorageManager.prune_scoped_notes(pidb, source=self.queue.name)
-            count_vulns = StorageManager.prune_scoped_vulns(pidb, source=self.queue.name)
+            prune_strategy = self.PRUNE_STRATEGIES[self.strategy]
+            count_notes = prune_strategy(Note, pidb, self.queue.name)
+            count_vulns = prune_strategy(Vuln, pidb, self.queue.name)
+
             current_app.logger.info(
-                f"{self.name} prunned old items, vulns:{count_vulns} notes:{count_notes}"
+                f"{self.name} pruned old items, vulns:{count_vulns} notes:{count_notes}"
             )
 
 
@@ -426,7 +444,7 @@ class SportmapStorageLoader(QueueHandler):
                 Note.xtype == "sportmap",
                 Note.host_id.in_(db.session.query(Host.id).filter(Host.address.in_(prune_addrs))),
             ).delete(synchronize_session=False)
-            current_app.logger.info(f"{self.name} prunned {affected_rows} old notes")
+            current_app.logger.info(f"{self.name} pruned {affected_rows} old notes")
             db.session.commit()
             db.session.expire_all()
 
@@ -452,3 +470,20 @@ class StorageCleanup(Stage):
 
         StorageManager.cleanup_storage()
         current_app.logger.debug(f"{self.name} finished")
+
+
+class HostStorageTargetlist(Schedule):
+    """project hosts to be scanned by pipeline"""
+
+    def __init__(self, name, schedule, filternets, next_stage):
+        super().__init__(name, schedule)
+        self.filternets = filternets
+        self.next_stage = next_stage
+
+    def _run(self):
+        """run"""
+
+        hosts = StorageManager.get_hosts(self.filternets, None)
+        targets = [HostTarget(host.address) for host in hosts]
+        current_app.logger.info(f"{self.name} tasking {len(targets)} targets")
+        self.next_stage.task(targets)

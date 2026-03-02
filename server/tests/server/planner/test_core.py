@@ -19,6 +19,7 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     queue_factory.create(name="sner.six_enum_discover")
     queue_factory.create(name="standalone")
     queue_factory.create(name="sner.nuclei.rolling")
+    queue_factory.create(name="sner.nessus.rolling")
     queue_factory.create(name="sner.sportmap.rolling")
     queue_factory.create(name="auror.hostnames")
     queue_factory.create(name="auror.testssl")
@@ -59,6 +60,10 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
           nuclei_scan:
             schedule: 5days
             queue: sner.nuclei.rolling
+
+          nessus_scan:
+            schedule: 5days
+            queue: sner.nessus.rolling
 
           sportmap_scan:
             schedule: 13days

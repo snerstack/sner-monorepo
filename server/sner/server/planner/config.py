@@ -45,6 +45,11 @@ class NucleiScan(PlannerConfigBase):
     queue: str
 
 
+class NessusScan(PlannerConfigBase):
+    schedule: str
+    queue: str
+
+
 class SportmapScan(PlannerConfigBase):
     schedule: str
     queue: str
@@ -96,6 +101,7 @@ class Pipelines(PlannerConfigBase):
     service_scan: Optional[ServiceScan] = None
     host_rescan: Optional[HostRescan] = None
     nuclei_scan: Optional[NucleiScan] = None
+    nessus_scan: Optional[NessusScan] = None
     sportmap_scan: Optional[SportmapScan] = None
     auror_hostnames: Optional[AurorHostnames] = None
     auror_testssl: Optional[AurorTestsslScan] = None
@@ -106,8 +112,10 @@ class Pipelines(PlannerConfigBase):
 class PlannerConfig(BaseModel):
     basic_nets_ipv4: List[str] = []
     basic_nets_ipv6: List[str] = []
+    # TODO: with separate service discovery, it's no longer needed to split ipv4/ipv6
     nuclei_nets_ipv4: List[str] = []
     nuclei_nets_ipv6: List[str] = []
+    nessus_ips: List[str] = []
     sportmap_nets_ipv4: List[str] = []
     sportmap_nets_ipv6: List[str] = []
     auror_testssl_ips: List[str] = []
