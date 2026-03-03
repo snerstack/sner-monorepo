@@ -26,9 +26,8 @@ from abc import ABC, abstractmethod
 from importlib import import_module
 from pathlib import Path
 
-from schema import Schema
-
 import sner.plugin
+from sner.config import ConfigBase
 from sner.targets import TargetManager
 
 
@@ -44,14 +43,17 @@ def load_agent_plugins():
         REGISTERED_MODULES[plugin_name] = getattr(module, 'AgentModule')
 
 
+class Config(ConfigBase):
+    """auror_hostnames agent plugin config"""
+    module: str
+
+
 class ModuleBase(ABC):
     """
     Base class for agent modules.
     """
 
-    CONFIG_SCHEMA = Schema({
-        'module': str
-    })
+    CONFIG_SCHEMA = Config
 
     def __init__(self):
         self.log = logging.getLogger(f'sner.agent.module.{self.__class__.__name__}')
@@ -59,19 +61,12 @@ class ModuleBase(ABC):
 
     def init_job(self, assignment):
         """initialize job, returns validated config"""
-
-        Path('assignment.json').write_text(json.dumps(assignment), encoding='utf-8')
-
-        # TODO: deprecated, Schema will be replaced with pydantic
-        if isinstance(self.CONFIG_SCHEMA, Schema):
-            return self.CONFIG_SCHEMA.validate(assignment["config"])
+        Path("assignment.json").write_text(json.dumps(assignment), encoding="utf-8")
         return self.CONFIG_SCHEMA.model_validate(assignment["config"])
 
     @abstractmethod
     def run(self, assignment):
         """run module for assignment"""
-        # TODO: deprecate, modules should call init_job instead
-        return self.init_job(assignment)
 
     @abstractmethod
     def terminate(self):

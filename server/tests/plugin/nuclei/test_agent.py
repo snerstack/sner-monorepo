@@ -32,9 +32,9 @@ def test_basic(tmpworkdir, httpserver):
     vuln_server = VulnerableServer(httpserver)
 
     test_a = {
-        'id': str(uuid4()),
-        'config': {'module': 'nuclei', 'args': '-pt http -id flir-path-traversal'},
-        'targets': [f'http://127.0.0.1:{vuln_server.server.port}']
+        "id": str(uuid4()),
+        "config": {"module": "nuclei", "args": ["-pt", "http", "-id", "flir-path-traversal"]},
+        "targets": [f"http://127.0.0.1:{vuln_server.server.port}"]
     }
 
     result = agent_main(['--assignment', json.dumps(test_a), '--debug'])

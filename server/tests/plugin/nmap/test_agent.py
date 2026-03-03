@@ -15,8 +15,8 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
 
     test_a = {
         'id': str(uuid4()),
-        'config': {'module': 'nmap', 'args': '-sL', 'timing_perhost': 1},
-        'targets': ['127.0.0.1', '::1', '[ip6-localhost]']
+        'config': {'module': 'nmap', 'args': ['-sL'], 'timing_perhost': 1},
+        'targets': ['127.0.0.1', '::1']
     }
 
     result = agent_main(['--assignment', json.dumps(test_a), '--debug'])

@@ -3,13 +3,21 @@
 sner agent nmap module
 """
 
-import shlex
 from pathlib import Path
-
-from schema import Schema, Optional
+from typing import Literal, Optional
 
 from sner.agent.modules import ModuleBase
+from sner.config import ConfigBase
 from sner.targets import GenericTarget
+
+
+class Config(ConfigBase):
+    """nmap agent plugin config"""
+    module: str = Literal["nmap"]
+    args: list[str]
+    timing_perhost: Optional[int] = None
+    max_retries: int = 3
+    script_timeout: str = "10m"
 
 
 class AgentModule(ModuleBase):
@@ -20,11 +28,7 @@ class AgentModule(ModuleBase):
     targetsV2 GenericTarget | HostTarget
     """
 
-    CONFIG_SCHEMA = Schema({
-        'module': 'nmap',
-        'args': str,
-        Optional('timing_perhost'): int
-    })
+    CONFIG_SCHEMA = Config
 
     def __init__(self):
         super().__init__()
@@ -45,7 +49,7 @@ class AgentModule(ModuleBase):
 
     def run_scan(
         self,
-        assignment,
+        asg_config,
         targets,
         targets_file,
         output_file,
@@ -53,39 +57,39 @@ class AgentModule(ModuleBase):
     ):
         """run scan"""
 
-        Path(targets_file).write_text('\n'.join(targets), encoding='utf-8')
+        Path(targets_file).write_text("\n".join(targets), encoding="utf-8")
 
         timing_args = []
-        if 'timing_perhost' in assignment['config']:
-            output_rate = assignment['config']['timing_perhost'] * len(targets)
+        if asg_config.timing_perhost is not None:
+            output_rate = asg_config.timing_perhost * len(targets)
             timing_args = [
-                '--max-retries', '3',
-                '--script-timeout', '10m',
-                '--min-hostgroup', str(len(targets)),
-                '--min-rate', str(output_rate),
-                '--max-rate', str(int(output_rate * 1.05))
+                "--max-retries", str(asg_config.max_retries),
+                "--script-timeout", asg_config.script_timeout,
+                "--min-hostgroup", str(len(targets)),
+                "--min-rate", str(output_rate),
+                "--max-rate", str(int(output_rate * 1.05))
             ]
 
-        output_args = ['-oA', output_file, '--reason']
-        target_args = ['-iL', targets_file]
+        output_args = ["-oA", output_file, "--reason"]
+        target_args = ["-iL", targets_file]
 
-        cmd = ['nmap'] + (extra_args or []) + shlex.split(assignment['config']['args']) + timing_args + output_args + target_args
+        cmd = ["nmap"] + (extra_args or []) + asg_config.args + timing_args + output_args + target_args
         return self._execute(cmd, output_file)
 
     def run(self, assignment):
         """run the agent"""
 
-        super().run(assignment)
+        asg_config = self.init_job(assignment)
         ret = 0
 
         enumerated_targets = [target for _, target in self.enumerate_targets(assignment)]
         targets, targets6 = self.split_by_address_family(enumerated_targets)
 
         if targets and self.loop:
-            ret |= self.run_scan(assignment, targets, 'targets', 'output')
+            ret |= self.run_scan(asg_config, targets, "targets", "output")
 
         if targets6 and self.loop:
-            ret |= self.run_scan(assignment, targets6, 'targets6', 'output6', extra_args=['-6'])
+            ret |= self.run_scan(asg_config, targets6, "targets6", "output6", extra_args=["-6"])
 
         return ret
 

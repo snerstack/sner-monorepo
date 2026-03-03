@@ -58,14 +58,14 @@ def initdata_prod():
         # standalone_queues
         {
             'name': 'sner.nuclei',
-            'config': {'module': 'nuclei', 'args': '-rate-limit 50 -disable-unsigned-templates'},
+            'config': {'module': 'nuclei', 'args': ['-rate-limit', '50', '-disable-unsigned-templates']},
             'group_size': 5,
             'priority': QueuePrio.NORMAL,
             'reqs': ['default'],
         },
         {
             'name': 'sner.sportmap',
-            'config': {'module': 'sportmap', 'delay': 0},
+            'config': {'module': 'sportmap'},
             'group_size': 1,
             'priority': QueuePrio.NORMAL,
             'reqs': ['sportmap'],
@@ -74,35 +74,35 @@ def initdata_prod():
         # basic scan
         {
             'name': 'sner.nmap.servicedisco',
-            'config': {'module': 'nmap', 'args': '-sS --top-ports 10000 -Pn', 'timing_perhost': 2},
+            'config': {'module': 'nmap', 'args': ['-sS', '--top-ports', '10000', '-Pn'], 'timing_perhost': 2},
             'group_size': 1000,
             'priority': QueuePrio.NORMAL,
             'reqs': ['default'],
         },
         {
             'name': 'sner.six_dns_discover',
-            'config': {'module': 'six_dns_discover', 'delay': 1},
+            'config': {'module': 'six_dns_discover'},
             'group_size': 1000,
             'priority': QueuePrio.NORMAL,
             'reqs': ['default'],
         },
         {
             'name': 'sner.six_enum_discover',
-            'config': {'module': 'six_enum_discover', 'rate': 100},
+            'config': {'module': 'six_enum_discover'},
             'group_size': 5,
             'priority': QueuePrio.NORMAL,
             'reqs': ['default'],
         },
         {
             'name': 'sner.nmap.serviceversion',
-            'config': {'module': 'manymap', 'args': '-sV --version-intensity 4 -O -Pn', 'delay': 0},
+            'config': {'module': 'manymap', 'args': ['-sV', '--version-intensity', '4', '-O', '-Pn']},
             'group_size': 10,
             'priority': QueuePrio.HIGH,
             'reqs': ['default'],
         },
         {
             'name': 'sner.jarm',
-            'config': {'module': 'jarm', 'delay': 0},
+            'config': {'module': 'jarm'},
             'group_size': 10,
             'priority': QueuePrio.HIGH,
             'reqs': ['default'],
@@ -111,8 +111,7 @@ def initdata_prod():
             'name': 'sner.nmap.script',
             'config': {
                 'module': 'manymap',
-                'args': '-sS --script default,http-headers,ldap-rootdse,ssl-enum-ciphers,ssh-auth-methods --script-timeout 10m -Pn',
-                'delay': 0
+                'args': ['-sS', '--script', 'default,http-headers,ldap-rootdse,ssl-enum-ciphers,ssh-auth-methods', '--script-timeout', '10m', '-Pn'],
             },
             'group_size': 1,
             'priority': QueuePrio.HIGH,
@@ -121,7 +120,7 @@ def initdata_prod():
         # nuclei_scan & nessus_scan & sportmap_scan
         {
             'name': 'sner.nuclei.rolling',
-            'config': {'module': 'nuclei', 'args': '-rate-limit 30 -disable-unsigned-templates'},
+            'config': {'module': 'nuclei', 'args': ['-rate-limit', '30', '-disable-unsigned-templates']},
             'group_size': 1,
             'priority': QueuePrio.HIGH,
             'reqs': ['nuclei'],
@@ -135,7 +134,7 @@ def initdata_prod():
         },
         {
             'name': 'sner.sportmap.rolling',
-            'config': {'module': 'sportmap', 'delay': 0},
+            'config': {'module': 'sportmap'},
             'group_size': 1,
             'priority': QueuePrio.LOW,
             'reqs': ['sportmap'],
@@ -144,7 +143,7 @@ def initdata_prod():
         # other queues
         {
             'name': 'sner.nmap.udpscan',
-            'config': {'module': 'nmap', 'args': '-sU -F -sV --version-intensity 0 -Pn --open --max-retries 1'},
+            'config': {'module': 'nmap', 'args': ['-sU', '-F', '-sV', '--version-intensity', '0', '-Pn', '--open', '--max-retries', '1']},
             'group_size': 50,
             'priority': QueuePrio.HIGH,
             'reqs': ['default'],
@@ -153,7 +152,22 @@ def initdata_prod():
             'name': 'pentest.nmap.fullsynscan',
             'config': {
                 'module': 'nmap',
-                'args': '-sS -A -p1-65535 -Pn --max-retries 3 --script-timeout 10m --min-hostgroup 20 --min-rate 900 --max-rate 1500'
+                'args': [
+                    '-sS',
+                    '-A',
+                    '-p1-65535',
+                    '-Pn',
+                    '--max-retries',
+                    '3',
+                    '--script-timeout',
+                    '10m',
+                    '--min-hostgroup',
+                    '20',
+                    '--min-rate',
+                    '900',
+                    '--max-rate',
+                    '1500'
+                ],
             },
             'group_size': 20,
             'priority': QueuePrio.NORMAL,
@@ -194,10 +208,7 @@ def initdata_dev():
 
     queue = Queue(**{
         'name': 'dev.dummy',
-        'config': yaml_dump({
-            'module': 'dummy',
-            'args': '--dummyparam 1'
-        }),
+        'config': yaml_dump({'module': 'dummy', 'args': ['--dummyparam', '1']}),
         'group_size': 2,
         'priority': QueuePrio.NORMAL,
         'reqs': [],

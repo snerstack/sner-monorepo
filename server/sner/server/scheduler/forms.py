@@ -5,7 +5,7 @@ flask forms
 
 import yaml
 from flask_wtf import FlaskForm
-from schema import SchemaError
+from pydantic import ValidationError as PydanticValidationError
 from wtforms import BooleanField, IntegerField, SubmitField, ValidationError
 from wtforms.validators import InputRequired, Length, NumberRange
 
@@ -25,8 +25,9 @@ def valid_agent_config(_, field):
         raise ValidationError('Invalid module specified')
 
     try:
-        REGISTERED_MODULES[config['module']].CONFIG_SCHEMA.validate(config)
-    except SchemaError as exc:
+        module = REGISTERED_MODULES[config['module']]
+        return module.CONFIG_SCHEMA.model_validate(config)
+    except PydanticValidationError as exc:
         raise ValidationError(f'Invalid config: {str(exc)}') from None
 
 

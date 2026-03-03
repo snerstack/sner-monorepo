@@ -3,13 +3,19 @@
 sner agent manymap module
 """
 
-import shlex
 from time import sleep
-
-from schema import Schema
+from typing import Literal
 
 from sner.agent.modules import ModuleBase
+from sner.config import ConfigBase
 from sner.targets import ServiceTarget
+
+
+class Config(ConfigBase):
+    """manymap agent plugin config"""
+    module: str = Literal["manymap"]
+    args: list[str]
+    delay: int = 0
 
 
 class AgentModule(ModuleBase):
@@ -20,11 +26,7 @@ class AgentModule(ModuleBase):
     targetsV2 ServiceTarget
     """
 
-    CONFIG_SCHEMA = Schema({
-        'module': 'manymap',
-        'args': str,
-        'delay': int,
-    })
+    CONFIG_SCHEMA = Config
 
     def __init__(self):
         super().__init__()
@@ -33,7 +35,7 @@ class AgentModule(ModuleBase):
     def run(self, assignment):
         """run the agent"""
 
-        super().run(assignment)
+        asg_config = self.init_job(assignment)
         ret = 0
 
         for idx, target in self.enumerate_targets(assignment):
@@ -45,14 +47,14 @@ class AgentModule(ModuleBase):
 
             target_args = ["-p", f"{target.proto[0].upper()}:{target.port}"]
             if target.is_ipv6_address():
-                target_args += ['-6', target.address]
+                target_args += ["-6", target.address]
             else:
                 target_args += [target.address]
 
-            cmd = ['nmap'] + shlex.split(assignment['config']['args']) + output_args + target_args
-            ret |= self._execute(cmd, f'output-{idx}')
+            cmd = ["nmap"] + asg_config.args + output_args + target_args
+            ret |= self._execute(cmd, f"output-{idx}")
 
-            sleep(assignment['config']['delay'])
+            sleep(asg_config.delay)
             if not self.loop:  # pragma: no cover  ; not tested
                 ret |= 2
                 break

@@ -5,28 +5,32 @@ Sner agent auror_testssl module
 
 import logging
 import socket
-
-from schema import Schema, Optional
+from typing import Literal
 
 from sner.agent.modules import ModuleBase
+from sner.config import ConfigBase
 from sner.version import __version__ as sner_version
 
 logger = logging.getLogger(__name__)
 
 
+class Config(ConfigBase):
+    """auror_testssl agent plugin config"""
+    module: str = Literal["auror_testssl"]
+    args: list[str] = ["--full"]
+    connect_timeout: int = 5
+    openssl_timeout: int = 5
+
+
 class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
     """auror_testssl module implementation"""
 
-    CONFIG_SCHEMA = Schema({
-        "module": "auror_testssl",
-        Optional('args'): list
-    })
+    CONFIG_SCHEMA = Config
 
     def __init__(self):
         super().__init__()
         self.loop = True
 
-    # pylint: disable=duplicate-code
     def _filter_exit_codes(self, value):
         """Cope with testssl return values, not all !=0 values means job really failed
         https://github.com/drwetter/testssl.sh/blob/3.2/doc/testssl.1.md#exit-status
@@ -50,8 +54,6 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
 
         return value
 
-    # pylint: enable=duplicate-code
-
     def run(self, assignment):
         """Run the agent.
 
@@ -62,22 +64,17 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
             int: The return code.
         """
 
-        super().run(assignment)
+        asg_config = self.init_job(assignment)
         ret = 0
-
-        # TODO: refactor schema to pydantic which does have default values
-        connect_timeout = assignment["config"].get("connect_timeout", 5)
-        openssl_timeout = assignment["config"].get("openssl_timeout", 5)
-        args = assignment["config"].get("args", ["--full"])
 
         for idx, target in self.enumerate_targets(assignment):
             params = [
                 "testssl.sh",
                 "--quiet",
                 "--connect-timeout",
-                str(connect_timeout),
+                str(asg_config.connect_timeout),
                 "--openssl-timeout",
-                str(openssl_timeout),
+                str(asg_config.openssl_timeout),
                 "--phone-out",
                 "--hints",
                 "--overwrite",
@@ -96,7 +93,7 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
                 target.address,
                 f"{target.hostname}:{target.port}",
             ]
-            cmd = params + args + target_args
+            cmd = params + asg_config.args + target_args
             logger.debug("Running command: %s", " ".join(cmd))
             ret |= self._filter_exit_codes(self._execute(cmd, f"output-{idx}"))
 

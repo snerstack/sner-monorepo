@@ -36,7 +36,6 @@ pytimeparse
 pyyaml
 requests
 ruff
-schema
 soft-webauthn
 sqlalchemy-datatables
 # editable keeps git ref for freeze

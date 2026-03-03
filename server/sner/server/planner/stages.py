@@ -311,10 +311,10 @@ class ServiceScanStorageTargetlist(Schedule):
         """run"""
 
         now = datetime.now(timezone.utc)
-        rescan_horizont = now - timedelta(seconds=timeparse(self.service_interval))
+        rescan_horizon = now - timedelta(seconds=timeparse(self.service_interval))
 
         targets, ids = [], []
-        for service in StorageManager.get_services(self.filternets, rescan_horizont):
+        for service in StorageManager.get_services(self.filternets, rescan_horizon):
             targets.append(ServiceTarget(service.host.address, service.proto, service.port))
             ids.append(service.id)
 
@@ -394,10 +394,10 @@ class HostRescanStorageTargetlist(Schedule):
         """run"""
 
         now = datetime.utcnow()
-        rescan_horizont = now - timedelta(seconds=timeparse(self.host_interval))
+        rescan_horizon = now - timedelta(seconds=timeparse(self.host_interval))
 
         targets, ids = [], []
-        for host in StorageManager.get_hosts(self.filternets, rescan_horizont):
+        for host in StorageManager.get_hosts(self.filternets, rescan_horizon):
             targets.append(HostTarget(host.address))
             ids.append(host.id)
 

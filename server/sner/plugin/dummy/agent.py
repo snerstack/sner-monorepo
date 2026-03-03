@@ -3,9 +3,16 @@
 sner agent dummy module
 """
 
-from schema import Schema
+from typing import Literal
 
 from sner.agent.modules import ModuleBase
+from sner.config import ConfigBase
+
+
+class Config(ConfigBase):
+    """dummy agent plugin config"""
+    module: str = Literal["dummy"]
+    args: list[str]
 
 
 class AgentModule(ModuleBase):
@@ -13,18 +20,14 @@ class AgentModule(ModuleBase):
     testing module implementation
 
     ## target specification
-    target = simple-target
+    targetsV2 GenericTarget
     """
 
-    CONFIG_SCHEMA = Schema({
-        'module': 'dummy',
-        'args': str
-    })
+    CONFIG_SCHEMA = Config
 
     def run(self, assignment):
         """simply write assignment and return"""
-
-        super().run(assignment)
+        self.init_job(assignment)
         return 0
 
     def terminate(self):
