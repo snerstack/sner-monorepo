@@ -25,7 +25,6 @@ elasticsearch==8.17.2
 factory_boy==3.3.3
 Faker==37.0.0
 fido2==1.2.0
-file-magic==0.4.1
 flake8==7.1.2
 Flask==3.1.0
 flask-cors==5.0.1
@@ -82,6 +81,7 @@ pytest_httpserver==1.1.2
 python-box==7.3.2
 python-dateutil==2.9.0.post0
 python-libnmap @ git+https://github.com/snerstack/python-libnmap@9a40fe62bd27ebcad8e7bf7d88a4a65b3d7d20ee
+python-magic==0.4.27
 pytimeparse==1.1.8
 PyYAML==6.0.2
 requests==2.32.3

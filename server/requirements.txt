@@ -6,7 +6,6 @@ defusedxml
 dnspython
 elasticsearch
 fido2
-file-magic
 flake8
 flask
 flask-login
@@ -32,6 +31,7 @@ pytest-httpserver
 pytest-selenium
 # editable keeps git ref for freeze
 -e git+https://github.com/snerstack/python-libnmap@snerstack#egg=python-libnmap
+python-magic
 pytimeparse
 pyyaml
 requests

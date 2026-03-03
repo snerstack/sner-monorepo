@@ -27,7 +27,7 @@ def load_yaml(filename):
 
 def is_zip(path):
     """detect if path is zip archive"""
-    return magic.detect_from_filename(path).mime_type == 'application/zip'
+    return magic.from_file(path, mime=True) == 'application/zip'
 
 
 def file_from_zip(zippath, filename):
