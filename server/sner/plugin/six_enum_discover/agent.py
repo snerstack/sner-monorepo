@@ -4,11 +4,18 @@ sner agent six enum from storage discover
 """
 
 from ipaddress import ip_address, ip_network
+from typing import Literal
 
 from pyroute2 import NDB  # pylint: disable=no-name-in-module
-from schema import Schema
 
 from sner.agent.modules import ModuleBase
+from sner.config import ConfigBase
+
+
+class Config(ConfigBase):
+    """six_enum_discover agent plugin config"""
+    module: str = Literal["six_enum_discover"]
+    rate: int = 100
 
 
 class AgentModule(ModuleBase):
@@ -25,10 +32,7 @@ class AgentModule(ModuleBase):
     targetsV2 SixEnumTarget
     """
 
-    CONFIG_SCHEMA = Schema({
-        'module': 'six_enum_discover',
-        'rate': int,
-    })
+    CONFIG_SCHEMA = Config
 
     def __init__(self):
         super().__init__()
@@ -55,16 +59,16 @@ class AgentModule(ModuleBase):
     def run(self, assignment):
         """run the agent"""
 
-        super().run(assignment)
+        asg_config = self.init_job(assignment)
         ret = 0
 
         for idx, target in self.enumerate_targets(assignment):
             # detect if scan has to be performed with --dst-addr or --local-scan
             first, _last = target.boundaries()
             is_localnet, iface = self._is_localnet(first)
-            args = ['--local-scan', '--print-type', 'global', '-i', iface] if is_localnet else ['--dst-addr', target.value]
+            args = ["--local-scan", "--print-type", "global", "-i", iface] if is_localnet else ["--dst-addr", target.value]
 
-            ret |= self._execute(['scan6', '--rate-limit', f'{assignment["config"]["rate"]}pps'] + args, f'output-{idx}.txt')
+            ret |= self._execute(["scan6", "--rate-limit", f"{asg_config.rate}pps"] + args, f"output-{idx}.txt")
             if not self.loop:  # pragma: no cover  ; not tested
                 break
 

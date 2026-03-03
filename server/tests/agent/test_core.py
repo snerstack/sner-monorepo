@@ -25,7 +25,7 @@ def test_version(tmpworkdir):  # pylint: disable=unused-argument
 def test_commandline_assignment(tmpworkdir):  # pylint: disable=unused-argument
     """test custom assignment passed from command line"""
 
-    test_a = {'id': str(uuid4()), 'config': {'module': 'dummy', 'args': '--arg1'}, 'targets': []}
+    test_a = {'id': str(uuid4()), 'config': {'module': 'dummy', 'args': ['--arg1']}, 'targets': []}
 
     result = agent_main(['--assignment', json.dumps(test_a)])
     assert result == 0

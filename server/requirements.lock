@@ -88,7 +88,6 @@ requests==2.32.3
 requests-toolbelt==1.0.0
 restfly==1.5.1
 ruff==0.14.10
-schema==0.7.7
 selenium==4.29.0
 semver==3.0.4
 six==1.17.0

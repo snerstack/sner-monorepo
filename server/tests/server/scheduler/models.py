@@ -30,7 +30,7 @@ class QueueFactory(BaseModelFactory):
         model = Queue
 
     name = "testqueue"
-    config = yaml_dump({"module": "dummy", "args": "--arg1 abc --arg2"})
+    config = yaml_dump({"module": "dummy", "args": ["--arg1"]})
     group_size = 1
     priority = 10
     active = True

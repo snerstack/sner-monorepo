@@ -17,7 +17,7 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
         'id': str(uuid4()),
         'config': {
             'module': 'manymap',
-            'args': '-sV',
+            'args': ['-sV'],
             'delay': 1
         },
         'targets': ['invalid', 'svc,127.0.0.1,proto=tcp,port=1', 'svc,::1,proto=udp,port=2']

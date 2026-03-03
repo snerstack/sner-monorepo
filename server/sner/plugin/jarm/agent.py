@@ -4,10 +4,16 @@ sner agent jarm module
 """
 
 from time import sleep
-
-from schema import Schema
+from typing import Literal
 
 from sner.agent.modules import ModuleBase
+from sner.config import ConfigBase
+
+
+class Config(ConfigBase):
+    """jarm agent plugin config"""
+    module: str = Literal["jarm"]
+    delay: int = 0
 
 
 class AgentModule(ModuleBase):
@@ -18,10 +24,7 @@ class AgentModule(ModuleBase):
     targetsV2 ServiceTarget
     """
 
-    CONFIG_SCHEMA = Schema({
-        'module': 'jarm',
-        'delay': int,
-    })
+    CONFIG_SCHEMA = Config
 
     def __init__(self):
         super().__init__()
@@ -30,7 +33,7 @@ class AgentModule(ModuleBase):
     def run(self, assignment):
         """run the agent"""
 
-        super().run(assignment)
+        asg_config = self.init_job(assignment)
         ret = 0
 
         for idx, target in self.enumerate_targets(assignment):
@@ -42,7 +45,7 @@ class AgentModule(ModuleBase):
             cmd = ['jarm', '-v'] + target_args
 
             ret |= self._execute(cmd, f'output-{idx}.out')
-            sleep(assignment['config']['delay'])
+            sleep(asg_config.delay)
 
             if not self.loop:  # pragma: no cover  ; not tested
                 break

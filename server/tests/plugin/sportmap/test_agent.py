@@ -14,10 +14,10 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     """sportmap module execution test"""
 
     test_a = {
-        'id': str(uuid4()),
+        "id": str(uuid4()),
         # omiting -sS -sU here allows to be run with non-root user (github actions)
-        'config': {'module': 'sportmap', 'args': '-Pn -n --max-retries 0 --top-ports 1', 'source_ports': [80, 53]},
-        'targets': ['127.0.0.1', '::1'],
+        "config": {"module": "sportmap", "args": ["-Pn", "-n", "--max-retries", "0", "--top-ports", "1"], "source_ports": [80, 53]},
+        "targets": ["127.0.0.1", "::1"],
     }
 
     result = agent_main(['--assignment', json.dumps(test_a), '--debug'])

@@ -7,11 +7,17 @@ import json
 from pathlib import Path
 from socket import AF_INET6, getaddrinfo, gethostbyaddr
 from time import sleep
-
-from schema import Or, Schema
+from typing import Literal, Union
 
 from sner.agent.modules import ModuleBase
+from sner.config import ConfigBase
 from sner.targets import GenericTarget
+
+
+class Config(ConfigBase):
+    """nessus agent plugin config"""
+    module: str = Literal["six_dns_discover"]
+    delay: Union[int, float] = 1
 
 
 class AgentModule(ModuleBase):
@@ -22,10 +28,7 @@ class AgentModule(ModuleBase):
     targetsV2 HostTarget
     """
 
-    CONFIG_SCHEMA = Schema({
-        'module': 'six_dns_discover',
-        'delay': Or(int, float)
-    })
+    CONFIG_SCHEMA = Config
 
     def __init__(self):
         super().__init__()
@@ -49,8 +52,7 @@ class AgentModule(ModuleBase):
     # pylint: disable=duplicate-code
     def run(self, assignment):
         """run the agent"""
-
-        super().run(assignment)
+        asg_config = self.init_job(assignment)
 
         result = {}
         for _, target in self.enumerate_targets(assignment):
@@ -58,15 +60,13 @@ class AgentModule(ModuleBase):
             for v6addr, hostname, via_ipv4 in self.find_ipv6_by_hostname(addr):
                 result[v6addr] = (hostname, via_ipv4)
 
-            sleep(assignment['config']['delay'])
-
             if not self.loop:  # pragma: no cover  ; not tested
                 break
+            sleep(asg_config.delay)
 
-        Path('output.json').write_text(json.dumps(result), encoding='utf-8')
+        Path("output.json").write_text(json.dumps(result), encoding="utf-8")
         return 0
 
     def terminate(self):  # pragma: no cover  ; not tested / running over multiprocessing
         """terminate scanner if running"""
-
         self.loop = False

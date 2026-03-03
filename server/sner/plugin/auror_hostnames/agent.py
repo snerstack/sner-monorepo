@@ -2,10 +2,19 @@
 """
 sner agent auror_hostnames module
 """
-from schema import Schema
+
+from typing import Literal
 
 from sner.agent.modules import ModuleBase
+from sner.config import ConfigBase
 from sner.plugin.auror_hostnames import core
+
+
+class Config(ConfigBase):
+    """auror_hostnames agent plugin config"""
+    module: str = Literal["auror_hostnames"]
+    git_key_path: str = "/etc/sner.auror_hostnames.pubkey"
+    git_server: str = "server.hostname"
 
 
 class AgentModule(ModuleBase):
@@ -15,17 +24,11 @@ class AgentModule(ModuleBase):
     target = simple-target
     """
 
-    CONFIG_SCHEMA = Schema({
-        "module": "auror_hostnames",
-        "git_key_path": str,
-        "git_server": str
-    })
+    CONFIG_SCHEMA = Config
 
     def run(self, assignment):
         """simply write assignment and return"""
-
-        super().run(assignment)
-
+        self.init_job(assignment)
         return core.run(assignment)
 
     def terminate(self):

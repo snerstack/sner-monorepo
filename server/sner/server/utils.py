@@ -31,9 +31,9 @@ class SnerJSONEncoder(json.JSONEncoder):
         return super().default(o)  # pragma: no cover  ; no such elements
 
 
-def yaml_dump(data):
+def yaml_dump(data, **kwargs):
     """dump data with style"""
-    return yaml.dump(data, sort_keys=False, indent=4, width=80)
+    return yaml.dump(data, sort_keys=False, indent=4, width=80, **kwargs)
 
 
 def windowed_query(query, column, windowsize=5000):

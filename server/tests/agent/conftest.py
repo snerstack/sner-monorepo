@@ -31,7 +31,7 @@ def dummy_target(queue_factory, target_factory):  # pylint: disable=redefined-ou
 
     config = {
         'module': 'dummy',
-        'args': '--arg1',
+        'args': ['--arg1'],
     }
 
     queue = queue_factory.create(name='testqueue', config=yaml_dump(config))
@@ -44,12 +44,12 @@ def longrun_a():
     """longrun assignment fixture"""
 
     yield {
-        'id': str(uuid4()),
-        'config': {
-            'module': 'nmap',
-            'args': '-Pn --reason -sT --max-rate 1 --data-string MARKEDPROCESS'
+        "id": str(uuid4()),
+        "config": {
+            "module": "nmap",
+            "args": ["-Pn", "--reason", "-sT", "--max-rate", "1", "--data-string", "MARKEDPROCESS"]
         },
-        'targets': ['127.0.0.127']
+        "targets": ["127.0.0.127"]
     }
 
 

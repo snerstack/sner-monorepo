@@ -80,14 +80,14 @@ def test_queue_add_route_config_validation(cl_operator, queue_factory):
 
     form_data = [
         ("name", aqueue.name),
-        ("config", "module: 'dummy'\nadditionalKey: 'value'\n"),
+        ("config", "module: 'dummy'\n"),
         ("group_size", aqueue.group_size),
         ("priority", aqueue.priority),
     ]
     response = cl_operator.post(url_for("scheduler.queue_add_route"), params=form_data, expect_errors=True)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert "Invalid config: Missing key: 'args'" in response.json["error"]["errors"]["config"]
+    assert "Field required" in response.json["error"]["errors"]["config"][0]
 
 
 def test_queue_edit_route(cl_operator, queue):
