@@ -146,7 +146,8 @@ class AurorTestsslStorageTargetlist(Schedule):
 
         for service in services:
             host_item = hostnames_map[service.host_id]
-            for hostname in host_item.hostnames:
+            hostnames = host_item.hostnames or [host_item.address]
+            for hostname in hostnames:
                 targets.append(AurorTestsslTarget(host_item.address, service.port, hostname, "I"))
                 if service.name in self.ports_starttls.values():
                     targets.append(AurorTestsslTarget(host_item.address, service.port, hostname, "E"))

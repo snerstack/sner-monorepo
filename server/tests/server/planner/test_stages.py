@@ -172,14 +172,15 @@ def test_queuehandler_nxqueue(app):  # pylint: disable=unused-argument
         StorageLoader("StorageLoader", "nx queue")
 
 
-def test_storagecleanup(app, service_factory):  # pylint: disable=unused-argument
+def test_storagecleanup(app, host_factory, service_factory):  # pylint: disable=unused-argument
     """test storage cleanup stage"""
 
-    service_factory.create(state='closed:test')
+    service_factory.create(host=host_factory.create(address="127.0.0.2"), state="closed:test")
+    service_factory.create(host=host_factory.create(address="127.0.0.3"), state="open:test")
 
     StorageCleanup().run()
 
-    assert Service.query.count() == 0
+    assert Service.query.count() == 1
     assert Host.query.count() == 1
 
 

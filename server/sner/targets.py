@@ -87,7 +87,7 @@ class GenericTarget(TargetBase):
             return self.value
 
     def scope(self):
-        return self.value
+        return (self.value,)
 
     def is_ipv6_address(self):
         try:

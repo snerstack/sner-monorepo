@@ -11,7 +11,7 @@ from io import StringIO
 from typing import Union
 
 from flask import current_app
-from sqlalchemy import and_, case, cast, delete, func, or_, not_, select, update, tuple_
+from sqlalchemy import and_, case, cast, delete, exists, func, or_, not_, select, update, tuple_
 from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY
 from sqlalchemy.sql.functions import coalesce
 
@@ -316,11 +316,11 @@ class StorageManager:
             restrict = [Host.address.op('<<=')(net) for net in filternets]
             query = query.filter(or_(*restrict))
 
-        return db.session.connection().execute(query).scalars().all()
+        return db.session.execute(query).scalars().all()
 
     @staticmethod
-    def get_hosts(filternets, rescan_horizont):
-        """query all hosts in filternets and/or with host.rescan_time over rescan_horizont"""
+    def get_hosts(filternets, rescan_horizon):
+        """query all hosts in filternets and/or with host.rescan_time over rescan_horizon"""
 
         query = Host.query
 
@@ -328,8 +328,8 @@ class StorageManager:
             restrict = [Host.address.op('<<=')(net) for net in filternets]
             query = query.filter(or_(*restrict))
 
-        if rescan_horizont:
-            query = query.filter(or_(Host.rescan_time < rescan_horizont, Host.rescan_time == None))  # noqa: E711,E501  pylint: disable=singleton-comparison
+        if rescan_horizon:
+            query = query.filter(or_(Host.rescan_time < rescan_horizon, Host.rescan_time.is_(None)))
 
         yield from windowed_query(query, Host.id)
 
@@ -342,8 +342,8 @@ class StorageManager:
         db.session.expire_all()
 
     @staticmethod
-    def get_services(filternets, rescan_horizont):
-        """query all services in filternets and/or service.rescan_time rescan_horizont"""
+    def get_services(filternets, rescan_horizon):
+        """query all services in filternets and/or service.rescan_time rescan_horizon"""
 
         query = Service.query.filter(Service.state.ilike("open:%"))
 
@@ -351,8 +351,8 @@ class StorageManager:
             restrict = [Host.address.op("<<=")(net) for net in filternets]
             query = query.join(Host).filter(or_(*restrict))
 
-        if rescan_horizont:
-            query = query.filter(or_(Service.rescan_time < rescan_horizont, Service.rescan_time == None))  # noqa: E711,E501  pylint: disable=singleton-comparison
+        if rescan_horizon:
+            query = query.filter(or_(Service.rescan_time < rescan_horizon, Service.rescan_time.is_(None)))
 
         yield from windowed_query(query, Service.id)
 
@@ -371,45 +371,32 @@ class StorageManager:
         conn = db.session.connection()
 
         # remove any but open:* state services
-        services_to_delete = conn.execute(select(
-            Service.id,
-            Service.proto,
-            Service.port,
-            Host.address.label('host_address')
-        ).join(Host).filter(not_(Service.state.ilike('open:%')))).all()
+        services_to_delete = (
+            conn.execute(
+                select(Service.id, Service.proto, Service.port, Host.address.label("host_address"))
+                .join(Host)
+                .filter(not_(Service.state.ilike("open:%")))
+            )
+            .all()
+        )
+        conn.execute(delete(Service).filter(Service.id.in_([srow.id for srow in services_to_delete])))
         for srow in services_to_delete:
             current_app.logger.info(
-                    "storage update delete service "
+                    "cleanup_storage deleted service "
                     f"<Service {srow.id}: {srow.host_address} {srow.proto}.{srow.port}>"
             )
-        conn.execute(delete(Service).filter(Service.id.in_([srow.id for srow in services_to_delete])))
 
-        # remove hosts without any data attribute, service, vuln or note
-        hosts_noinfo = conn.execute(
-            select(Host.id).filter(or_(Host.os == '', Host.os == None), or_(Host.comment == '', Host.comment == None))  # noqa: E501,E711  pylint: disable=singleton-comparison
-        ).scalars().all()
-        hosts_noservices = conn.execute(
-            select(Host.id).outerjoin(Service).having(func.count(Service.id) == 0).group_by(Host.id)
-        ).scalars().all()
-        hosts_novulns = conn.execute(select(Host.id).outerjoin(Vuln).having(func.count(Vuln.id) == 0).group_by(Host.id)).scalars().all()
-        hosts_nonotes = conn.execute(select(Host.id).outerjoin(Note).having(func.count(Note.id) == 0).group_by(Host.id)).scalars().all()
-
-        hosts_to_delete = list(set(hosts_noinfo) & set(hosts_noservices) & set(hosts_novulns) & set(hosts_nonotes))
-        for host in conn.execute(select(Host.id, Host.address, Host.hostname).filter(Host.id.in_(hosts_to_delete))).all():
-            current_app.logger.info(f'storage update delete host <Host {host.id}: {host.address} {host.hostname}>')
-        conn.execute(delete(Host).filter(Host.id.in_(hosts_to_delete)))
-
-        # TODO: REMOVE, xtype hostnames were dropped
-        # also remove all hosts not having any info but one note xtype hostnames
-        hosts_only_one_note = conn.execute(select(Host.id).outerjoin(Note).having(func.count(Note.id) == 1).group_by(Host.id)).scalars().all()
-        hosts_only_note_hostnames = conn.execute(
-            select(Host.id).join(Note).filter(Host.id.in_(hosts_only_one_note), Note.xtype == 'hostnames')
-        ).scalars().all()
-
-        hosts_to_delete = list(set(hosts_noinfo) & set(hosts_noservices) & set(hosts_novulns) & set(hosts_only_note_hostnames))
-        for host in conn.execute(select(Host.id, Host.address, Host.hostname).filter(Host.id.in_(hosts_to_delete))).all():
-            current_app.logger.info(f'storage update delete host <Host {host.id}: {host.address} {host.hostname}>')
-        conn.execute(delete(Host).filter(Host.id.in_(hosts_to_delete)))
+        # remove hosts without any service, vuln or note
+        hosts_to_delete = conn.execute(
+            select(Host.id, Host.address, Host.hostname).where(
+                not_(exists(select(Service.id).where(Service.host_id == Host.id))),
+                not_(exists(select(Vuln.id).where(Vuln.host_id == Host.id))),
+                not_(exists(select(Note.id).where(Note.host_id == Host.id))),
+            )
+        ).all()
+        conn.execute(delete(Host).filter(Host.id.in_([host.id for host in hosts_to_delete])))
+        for host in hosts_to_delete:
+            current_app.logger.info(f"cleanup_storage deleted host <Host {host.id}: {host.address} {host.hostname}>")
 
         db.session.commit()
         db.session.expire_all()
@@ -419,6 +406,7 @@ class StorageManager:
         """get'n'create storage host"""
         host = Host.query.filter(Host.address == address).one_or_none()
         if create and not host:
+            # does not have conflict protection
             host = Host(address=address)
             if addtags:
                 tag_add(host, addtags)
@@ -435,6 +423,7 @@ class StorageManager:
             .one_or_none()
         )
         if create and not service:
+            # does not have conflict protection
             host = StorageManager.get_host(address, addtags=addtags)
             service = Service(host=host, proto=proto, port=port)
             if addtags:
@@ -463,6 +452,7 @@ class StorageManager:
 
         vuln = query.one_or_none()
         if create and not vuln:
+            # does not have conflict protection
             host = StorageManager.get_host(address, addtags=addtags)
             service = (
                 StorageManager.get_service(address=address, proto=proto, port=port, addtags=addtags)
@@ -503,6 +493,7 @@ class StorageManager:
 
         note = query.one_or_none()
         if create and not note:
+            # does not have conflict protection
             host = StorageManager.get_host(address, addtags=addtags)
             service = (
                 StorageManager.get_service(address=address, proto=proto, port=port, addtags=addtags)
@@ -581,8 +572,9 @@ class StorageManager:
 
         # prune storage
         if items_to_delete:
-            item_model.query.filter(item_model.id.in_(items_to_delete)).delete()
+            item_model.query.filter(item_model.id.in_(items_to_delete)).delete(synchronize_session=False)
             db.session.commit()
+            db.session.expire_all()
 
         return len(items_to_delete)
 
@@ -595,7 +587,7 @@ class StorageManager:
         items_to_check = (
             item_model.query.outerjoin(Host, item_model.host_id == Host.id)
             .filter(
-                Host.address.in_(target_scopes),
+                tuple_(Host.address,).in_(target_scopes),
                 item_model.source == source,
             )
         )
@@ -607,8 +599,9 @@ class StorageManager:
 
         # prune storage
         if items_to_delete:
-            item_model.query.filter(item_model.id.in_(items_to_delete)).delete()
+            item_model.query.filter(item_model.id.in_(items_to_delete)).delete(synchronize_session=False)
             db.session.commit()
+            db.session.expire_all()
 
         return len(items_to_delete)
 
@@ -646,8 +639,8 @@ class StorageManager:
             hostnames = set()
             if data:
                 hostnames.update(json.loads(data))
-            if not hostnames:
-                hostnames.add(host_hostname or host_address)
+            if host_hostname:
+                hostnames.add(host_hostname)
             hostnames_map[host_id] = MapItem(host_address, hostnames)
 
         return hostnames_map
