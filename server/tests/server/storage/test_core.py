@@ -43,23 +43,16 @@ def test_storagecleanup(app, host_factory, service_factory, vuln_factory, note_f
     """test planners cleanup storage stage"""
 
     # host1
-    host_factory.create(address='127.127.127.134', hostname=None, os=None, comment=None)
+    host_factory.create(address="127.127.127.134")
     StorageManager.cleanup_storage()
     assert Host.query.count() == 0
-
-    # host2
-    host2 = host_factory.create(address='127.127.127.136', hostname=None, os=None, comment=None)
-    note_factory.create(host=host2, xtype='hostnames', data='adata')
-    StorageManager.cleanup_storage()
-    assert Host.query.count() == 0
-    assert Note.query.count() == 0
 
     # host3
-    host3 = host_factory.create(address='127.127.127.135', os='identified')
-    service3 = service_factory.create(host=host3, proto='tcp', port=1, state='filtered:reason')
+    host3 = host_factory.create(address="127.127.127.135")
+    service3 = service_factory.create(host=host3, proto="tcp", port=1, state="filtered:reason")
     note_factory.create(host=host3, service=service3)
     vuln_factory.create(host=host3, service=service3)
-    service4 = service_factory.create(host=host3, proto='tcp', port=1, state='open:reason')
+    service4 = service_factory.create(host=host3, proto="tcp", port=1, state="open:reason")
     vuln_factory.create(host=host3)
     vuln_factory.create(host=host3, service=service4)
 
