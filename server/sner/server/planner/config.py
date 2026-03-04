@@ -4,63 +4,59 @@ planner config schema
 """
 # pylint: disable=missing-class-docstring
 
+from typing import Optional
 
-from typing import List, Optional
-from pydantic import BaseModel, ConfigDict
-
-
-class PlannerConfigBase(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+from sner.config import ConfigBase
 
 
-class StandaloneQueues(PlannerConfigBase):
-    queues: List[str]
+class StandaloneQueues(ConfigBase):
+    queues: list[str]
 
 
-class ServiceDisco(PlannerConfigBase):
+class ServiceDisco(ConfigBase):
     netlist_schedule: str
     queue: str
 
 
-class SixDisco(PlannerConfigBase):
+class SixDisco(ConfigBase):
     dns_netlist_schedule: str
     dns_disco_queue: str
     storage_enum_schedule: str
     storage_enum_queue: str
 
 
-class ServiceScan(PlannerConfigBase):
+class ServiceScan(ConfigBase):
     schedule: str
-    queues: List[str]
+    queues: list[str]
     service_interval: str
 
 
-class HostRescan(PlannerConfigBase):
+class HostRescan(ConfigBase):
     schedule: str
     host_interval: str
 
 
-class NucleiScan(PlannerConfigBase):
+class NucleiScan(ConfigBase):
     schedule: str
     queue: str
 
 
-class NessusScan(PlannerConfigBase):
+class NessusScan(ConfigBase):
     schedule: str
     queue: str
 
 
-class SportmapScan(PlannerConfigBase):
+class SportmapScan(ConfigBase):
     schedule: str
     queue: str
 
 
-class AurorHostnames(PlannerConfigBase):
+class AurorHostnames(ConfigBase):
     schedule: str
     queue: str
 
 
-class AurorTestsslScan(PlannerConfigBase):
+class AurorTestsslScan(ConfigBase):
     targetlist_schedule: str
     queue: str
     cleanup_schedule: str
@@ -86,15 +82,15 @@ class AurorTestsslScan(PlannerConfigBase):
     }
 
 
-class StorageCleanup(PlannerConfigBase):
+class StorageCleanup(ConfigBase):
     enabled: bool
 
 
-class RebuildVersionInfoMap(PlannerConfigBase):
+class RebuildVersionInfoMap(ConfigBase):
     schedule: str
 
 
-class Pipelines(PlannerConfigBase):
+class Pipelines(ConfigBase):
     standalone_queues: Optional[StandaloneQueues] = None
     service_disco: Optional[ServiceDisco] = None
     six_disco: Optional[SixDisco] = None
@@ -109,14 +105,11 @@ class Pipelines(PlannerConfigBase):
     rebuild_versioninfo_map: Optional[RebuildVersionInfoMap] = None
 
 
-class PlannerConfig(BaseModel):
-    basic_nets_ipv4: List[str] = []
-    basic_nets_ipv6: List[str] = []
-    # TODO: with separate service discovery, it's no longer needed to split ipv4/ipv6
-    nuclei_nets_ipv4: List[str] = []
-    nuclei_nets_ipv6: List[str] = []
-    nessus_ips: List[str] = []
-    sportmap_nets_ipv4: List[str] = []
-    sportmap_nets_ipv6: List[str] = []
-    auror_testssl_ips: List[str] = []
+class PlannerConfig(ConfigBase):
+    basic_nets: list[str] = []
+    nuclei_nets: list[str] = []
+    sportmap_nets: list[str] = []
+    nessus_nets: list[str] = []
+    auror_testssl_nets: list[str] = []
+
     pipelines: Optional[Pipelines] = None

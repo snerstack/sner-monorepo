@@ -3,12 +3,12 @@
 shared functions
 """
 
-import re
 import os
+import re
 import signal
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from ipaddress import ip_address
+from ipaddress import ip_address, ip_network
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -102,5 +102,15 @@ def is_ipv6_address(addr):
 
     try:
         return ip_address(addr).version == 6
+    except ValueError:
+        return False
+
+
+def is_network(addr):
+    """is_network helper"""
+
+    try:
+        ip_network(addr)
+        return True
     except ValueError:
         return False

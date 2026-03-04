@@ -3,22 +3,21 @@
 agreegate related functions
 """
 
-import ipaddress
 import itertools
 import json
 import re
 from http import HTTPStatus
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import requests
 from flask import current_app
 from pydantic import BaseModel, Field, TypeAdapter
 from sqlalchemy import func
 
+from sner.lib import is_network
 from sner.server.auth.models import User
 from sner.server.extensions import db
-
 
 NETLISTS_FILE = "agreegate_netlists.json"
 
@@ -45,8 +44,8 @@ class UserGroupsResponse(BaseModel):
     enabled: bool = Field(False, description="User enabled flag")
 
 
-AGAPI_GroupsResponseAdapter = TypeAdapter(List[Group])
-AGAPI_UserGroupsResponseAdapter = TypeAdapter(List[UserGroupsResponse])
+AGAPI_GroupsResponseAdapter = TypeAdapter(list[Group])
+AGAPI_UserGroupsResponseAdapter = TypeAdapter(list[UserGroupsResponse])
 
 
 class AgreegateApiError(Exception):
@@ -89,25 +88,6 @@ def fetch_agreegate_netlists():
     return 0
 
 
-def _split_ip_networks(networks):
-    """split ipv4/ipv6 addrs helper"""
-
-    ipv4_networks = []
-    ipv6_networks = []
-
-    for net in networks:
-        try:
-            ip_net = ipaddress.ip_network(net, strict=False)
-            if ip_net.version == 4:
-                ipv4_networks.append(net)
-            else:
-                ipv6_networks.append(net)
-        except ValueError:
-            current_app.logger.error("Invalid network: %s", net)
-
-    return ipv4_networks, ipv6_networks
-
-
 def _merge_config(app, merge_to, add_netlist):
     """merge app and AG netlist in planner config"""
     current = app.config["SNER_PLANNER"].get(merge_to, [])
@@ -129,19 +109,17 @@ def init_agreegate_netlists(app):
     netlists = json.loads(netlists_path.read_text(encoding="utf-8"))
 
     if ag_sner_basic := netlists.get("sner/basic"):
-        ipv4_networks, ipv6_networks = _split_ip_networks(ag_sner_basic)
-        _merge_config(app, "basic_nets_ipv4", ipv4_networks)
-        _merge_config(app, "basic_nets_ipv6", ipv6_networks)
+        filtered = list(filter(is_network, ag_sner_basic))
+        _merge_config(app, "basic_nets", filtered)
 
     if ag_sner_nuclei := netlists.get("sner/nuclei"):
-        ipv4_networks, ipv6_networks = _split_ip_networks(ag_sner_nuclei)
-        _merge_config(app, "nuclei_nets_ipv4", ipv4_networks)
-        _merge_config(app, "nuclei_nets_ipv6", ipv6_networks)
-        _merge_config(app, "sportmap_nets_ipv4", ipv4_networks)
-        _merge_config(app, "sportmap_nets_ipv6", ipv6_networks)
+        filtered = list(filter(is_network, ag_sner_nuclei))
+        _merge_config(app, "nuclei_nets", filtered)
+        _merge_config(app, "sportmap_nets", filtered)
 
     if ag_auror := netlists.get("auror"):
-        _merge_config(app, "auror_testssl_ips", ag_auror)
+        filtered = list(filter(is_network, ag_auror))
+        _merge_config(app, "auror_testssl_nets", filtered)
 
 
 def ensure_user(username, email, full_name):

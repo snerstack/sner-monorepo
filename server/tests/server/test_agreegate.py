@@ -75,9 +75,9 @@ def test_init_agreegate_netlists(app):  # pylint: disable=unused-argument
 
     init_agreegate_netlists(app)
 
-    assert len(app.config["SNER_PLANNER"]["basic_nets_ipv4"]) == 2
-    assert len(app.config["SNER_PLANNER"]["basic_nets_ipv6"]) == 1
-    assert len(app.config["SNER_PLANNER"]["auror_testssl_ips"]) == 1
+    assert len(app.config["SNER_PLANNER"]["basic_nets"]) == 3
+    assert len(app.config["SNER_PLANNER"]["nuclei_nets"]) == 1
+    assert len(app.config["SNER_PLANNER"]["auror_testssl_nets"]) == 1
 
 
 def test_sync_agreegate_allowed_networks(app, user_factory):  # pylint: disable=unused-argument

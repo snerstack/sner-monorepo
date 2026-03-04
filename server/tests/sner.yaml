@@ -17,4 +17,4 @@ server:
   oidc_default_client_secret: 'dummy'
 
 planner:
-  basic_nets_ipv4: ['127.13.13.1/32']
+  basic_nets: ['127.13.13.1/32']
