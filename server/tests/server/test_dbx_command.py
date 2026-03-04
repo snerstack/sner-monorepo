@@ -21,8 +21,10 @@ def test_init_command(runner):
     assert result.exit_code == 0
 
 
-def test_initdata_command(runner):
+def test_initdata_command(runner, queue_factory):
     """dbx initdata test"""
+
+    queue_factory.create(name="dev.dummy")
 
     result = runner.invoke(command, ['init-data'])
     assert result.exit_code == 0
@@ -51,4 +53,13 @@ def test_update_prod_queues_command(runner):
     """dbx update-prod-queues test"""
 
     result = runner.invoke(command, ['update-prod-queues'])
+    assert result.exit_code == 0
+
+
+def test_check_prod_queues_command(runner, queue_factory):
+    """dbx check-prod-queues test"""
+
+    queue_factory.create(name="sner.nmap.servicedisco")
+
+    result = runner.invoke(command, ['check-prod-queues'])
     assert result.exit_code == 0

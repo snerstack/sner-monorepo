@@ -376,12 +376,13 @@ def initdata_dev():
     db.session.commit()
 
 
-def check_queues():
+def check_prod_queues():
     """check diff of current and DEFAULT_PROD_QUEUES settings"""
 
     for queue_def in DEFAULT_PROD_QUEUES:
         if not (queue := Queue.query.filter_by(name=queue_def.name).one_or_none()):
             print(f"queue missing, {queue_def.name}")
+            continue
 
         for item in fields(queue_def):
             default_value = getattr(queue_def, item.name)
@@ -448,8 +449,8 @@ def update_prod_queues_command():
     initdata_prod()
 
 
-@command.command(name="check-queues", help="check if queue settings differs from defaults (deployment helper)")
+@command.command(name="check-prod-queues", help="check if queue settings differs from defaults (deployment helper)")
 @with_appcontext
 def check_queues_command():
     """check queues"""
-    check_queues()
+    check_prod_queues()
