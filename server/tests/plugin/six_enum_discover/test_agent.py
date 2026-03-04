@@ -19,26 +19,23 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     """six_enum_discover test"""
 
     test_a = {
-        'id': str(uuid4()),
-        'config': {
-            'module': 'six_enum_discover',
-            'rate': 100
-        },
-        'targets': ['sixenum,::1-2', 'sixenum,::01']
+        "id": str(uuid4()),
+        "config": {"module": "six_enum_discover", "rate": 100},
+        "targets": ["sixenum,::1-2", "sixenum,::01", "sixenum,fe80::1-2"],
     }
 
-    result = agent_main(['--assignment', json.dumps(test_a), '--debug'])
+    result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
 
-    # no support for IPv6 in GH Actions
-    if 'GITHUB_ACTIONS' in os.environ:
+    # allow to fail in GitHub Action, would require to call sudo
+    if "GITHUB_ACTIONS" in os.environ:
         assert result == 1
         return
 
     assert result == 0
-    assert '::1' in file_from_zip(f'{test_a["id"]}.zip', 'output-0.txt').decode('utf-8')
+    assert "::1" in file_from_zip(f"{test_a['id']}.zip", "output-0.txt").decode("utf-8")
 
 
-@pytest.mark.skipif('PYTEST_IPV6' not in os.environ, reason='ipv6 requires global connectivity')
+@pytest.mark.skipif("PYTEST_IPV6" not in os.environ, reason="ipv6 requires global connectivity")
 def test_enum_simple(tmpworkdir):  # pylint: disable=unused-argument
     """
     six_enum_discover test for LAN
@@ -50,20 +47,17 @@ def test_enum_simple(tmpworkdir):  # pylint: disable=unused-argument
     """
 
     addr = list(filter(lambda x: x.family == AF_INET6 and x.scope == 0, NDB().addresses.dump()))
-    assert addr, 'No IPv6 address found'
+    assert addr, "No IPv6 address found"
     addr = addr[0].address
 
     test_a = {
-        'id': str(uuid4()),
-        'config': {
-            'module': 'six_enum_discover',
-            'rate': 100
-        },
-        'targets': [f'sixenum://{addr}']
+        "id": str(uuid4()),
+        "config": {"module": "six_enum_discover", "rate": 100},
+        "targets": [f"sixenum://{addr}"],
     }
 
-    result = agent_main(['--assignment', json.dumps(test_a), '--debug'])
+    result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
 
-    data = file_from_zip(f'{test_a["id"]}.zip', 'output-0.txt').decode('utf-8')
+    data = file_from_zip(f"{test_a['id']}.zip", "output-0.txt").decode("utf-8")
     assert len(data.splitlines()) > 1
