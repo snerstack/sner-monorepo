@@ -26,11 +26,10 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
 
     config = yaml.safe_load(
         """
-      basic_nets_ipv4: []
-      basic_nets_ipv6: ['::1/128']
-      nuclei_nets_ipv4: []
-      sportmap_nets_ipv4: []
-      auror_testssl_ips: []
+      basic_nets: ['::1/128']
+      nuclei_nets: []
+      sportmap_nets: []
+      auror_testssl_nets: []
 
       pipelines:
           standalone_queues:
@@ -97,10 +96,9 @@ def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pyli
 
     current_app.config["SNER_PLANNER"] = yaml.safe_load(
         """
-      basic_nets_ipv4: ['127.0.0.11/32']
-      basic_nets_ipv6: ['2001:db8::11/128']
-      nuclei_nets_ipv4: ['127.3.3.0/24']
-      sportmap_nets_ipv6: ['2001:db8:eeee::12/64']
+      basic_nets: ['127.0.0.11/32', '2001:db8::11/128']
+      nuclei_nets: ['127.3.3.0/24']
+      sportmap_nets: ['2001:db8:eeee::12/64']
     """
     )
 
@@ -122,4 +120,5 @@ def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pyli
 def test_outofscopecheck_emptyscope(app):  # pylint: disable=unused-argument
     """test hosts_outside_scope with empty scope"""
 
+    current_app.config["SNER_PLANNER"] = {}
     assert outofscope_check(prune=False) == 0

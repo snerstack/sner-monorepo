@@ -28,14 +28,10 @@ agent:
 
 
 planner:
-  basic_nets_ipv4: []
-  basic_nets_ipv6: []
-
-  nuclei_nets_ipv4: []
-  nuclei_nets_ipv6: []
-  sportmap_nets_ipv4: []
-  sportmap_nets_ipv6: []
-
+  basic_nets: []
+  nuclei_nets: []
+  sportmap_nets: []
+  nessus_nets: []
   auror_testssl_nets: []
 
   pipelines:
