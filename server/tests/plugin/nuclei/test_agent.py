@@ -58,7 +58,8 @@ def test_target_handling(tmpworkdir):
             "svc,127.0.0.1,proto=tcp,port=1",
             "svc,::1,proto=tcp,port=2",
             "named,127.0.0.1,proto=tcp,port=3,hostname=localhost",
-            "http://127.0.0.1:4",
+            "named,::1,proto=tcp,port=4,hostname=localhost",
+            "http://127.0.0.1:5",
         ],
     }
 

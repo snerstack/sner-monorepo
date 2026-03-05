@@ -28,7 +28,7 @@ from sner.server.extensions import db
 from sner.server.planner.stages import QueueHandler, Schedule
 from sner.server.storage.core import StorageManager
 from sner.server.storage.models import Host, Note
-from sner.targets import GenericTarget, AurorTestsslTarget
+from sner.targets import AurorTestsslTarget, GenericTarget
 
 
 class AurorHostnamesTrigger(Schedule):
