@@ -6,6 +6,14 @@ test parser api
 from sner.server.parser import ParsedItemsDb
 
 
+def test_pidb_str():
+    """test str"""
+
+    pidb = ParsedItemsDb()
+    pidb.upsert_host(address='192.0.2.1')
+    assert str(pidb.hosts)
+
+
 def test_upsert_host():
     """test upsert host"""
 
