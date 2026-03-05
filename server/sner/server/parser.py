@@ -8,6 +8,7 @@ implement ParserBase interface.
 """
 
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from importlib import import_module
@@ -18,17 +19,16 @@ from littletable import Table as LittleTable
 import sner.plugin
 from sner.targets import TargetManager
 
-
 REGISTERED_PARSERS = {}
 
 
 def load_parser_plugins():
     """load all parser plugins/modules"""
 
-    for plugin_path in Path(sner.plugin.__file__).parent.glob('*/parser.py'):
+    for plugin_path in Path(sner.plugin.__file__).parent.glob("*/parser.py"):
         plugin_name = plugin_path.parent.name
-        module = import_module(f'sner.plugin.{plugin_name}.parser')
-        REGISTERED_PARSERS[plugin_name] = getattr(module, 'ParserModule')
+        module = import_module(f"sner.plugin.{plugin_name}.parser")
+        REGISTERED_PARSERS[plugin_name] = module.ParserModule
 
 
 class ParsedItemBase:
@@ -40,12 +40,6 @@ class ParsedItemBase:
         for key, value in obj.__dict__.items():
             # do not overwrite with None value
             if value is None:
-                continue
-
-            # merge lists
-            if isinstance(value, list):
-                new_value = (getattr(self, key) or []) + value
-                setattr(self, key, new_value)
                 continue
 
             # set new value
@@ -63,7 +57,7 @@ class ParsedHost(ParsedItemBase):
 
     def ident(self, _pidb_container):
         """get storage upsert key; composite key"""
-        return (self.address, )
+        return (self.address,)
 
 
 @dataclass
@@ -105,9 +99,12 @@ class ParsedVuln(ParsedItemBase):  # pylint: disable=too-many-instance-attribute
         """get storage upsert key; composite key"""
         host = pidb_container.hosts.by.iid[self.host_iid]
         service_ref = (
-            (pidb_container.services.by.iid[self.service_iid].proto, pidb_container.services.by.iid[self.service_iid].port)
-            if self.service_iid is not None else
-            (None, None)
+            (
+                pidb_container.services.by.iid[self.service_iid].proto,
+                pidb_container.services.by.iid[self.service_iid].port,
+            )
+            if self.service_iid is not None
+            else (None, None)
         )
         return (host.address, *service_ref, self.xtype, self.name, self.via_target)
 
@@ -128,15 +125,19 @@ class ParsedNote(ParsedItemBase):
         """get storage upsert key; composite key"""
         host = pidb_container.hosts.by.iid[self.host_iid]
         service_ref = (
-            (pidb_container.services.by.iid[self.service_iid].proto, pidb_container.services.by.iid[self.service_iid].port)
-            if self.service_iid is not None else
-            (None, None)
+            (
+                pidb_container.services.by.iid[self.service_iid].proto,
+                pidb_container.services.by.iid[self.service_iid].port,
+            )
+            if self.service_iid is not None
+            else (None, None)
         )
         return (host.address, *service_ref, self.xtype, self.via_target)
 
 
 class ParsedItemsTable(LittleTable):
     """LittleTable with custom magics"""
+
     def __str__(self):
         return str(list(map(str, self)))
 
@@ -146,14 +147,15 @@ class ParsedItemsDb:
 
     def __init__(self):
         self.hosts = ParsedItemsTable()
-        self.hosts.create_index('iid', unique=True)
+        self.hosts.create_index("iid", unique=True)
         self.services = ParsedItemsTable()
-        self.services.create_index('iid', unique=True)
+        self.services.create_index("iid", unique=True)
         self.vulns = ParsedItemsTable()
-        self.vulns.create_index('iid', unique=True)
+        self.vulns.create_index("iid", unique=True)
         self.notes = ParsedItemsTable()
-        self.notes.create_index('iid', unique=True)
+        self.notes.create_index("iid", unique=True)
         self.targets = ParsedItemsTable()
+        self._autoiids = defaultdict(lambda: -1)
 
     @staticmethod
     def _first(alist):
@@ -163,11 +165,8 @@ class ParsedItemsDb:
 
     def _next_iid(self, table_name):
         """get next auto-id"""
-
-        table = getattr(self, table_name)
-        if len(table) == 0:
-            return 0
-        return max(item.iid for item in table) + 1
+        self._autoiids[table_name] += 1
+        return self._autoiids[table_name]
 
     def insert_target(self, target):
         """insert target"""
@@ -185,7 +184,7 @@ class ParsedItemsDb:
             pidb_host.update(host)
             return pidb_host
 
-        host.iid = len(self.hosts)
+        host.iid = self._next_iid("hosts")
         self.hosts.insert(host)
         return host
 
@@ -195,67 +194,75 @@ class ParsedItemsDb:
         pidb_host = self.upsert_host(host_address)
         service = ParsedService(pidb_host.iid, proto, port, **kwargs)
 
-        pidb_service = self._first(self.services.where(host_iid=service.host_iid, proto=service.proto, port=service.port))
+        pidb_service = self._first(
+            self.services.where(host_iid=service.host_iid, proto=service.proto, port=service.port)
+        )
         if pidb_service:
             pidb_service.update(service)
             return pidb_service
 
-        service.iid = len(self.services)
+        service.iid = self._next_iid("services")
         self.services.insert(service)
         return service
 
-    def upsert_vuln(
-        self,
-        host_address,
-        name,
-        xtype,
-        service_proto=None,
-        service_port=None,
-        via_target=None,
-        **kwargs
-    ):
+    def upsert_vuln(self, host_address, name, xtype, service_proto=None, service_port=None, via_target=None, **kwargs):
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)
-        pidb_service = self.upsert_service(host_address, service_proto, service_port) if (service_proto and service_port) else None
-        vuln = ParsedVuln(pidb_host.iid, name, xtype, service_iid=pidb_service.iid if pidb_service else None, via_target=via_target, **kwargs)
+        pidb_service = (
+            self.upsert_service(host_address, service_proto, service_port) if (service_proto and service_port) else None
+        )
+        vuln = ParsedVuln(
+            pidb_host.iid,
+            name,
+            xtype,
+            service_iid=pidb_service.iid if pidb_service else None,
+            via_target=via_target,
+            **kwargs,
+        )
 
-        pidb_vuln = self._first(self.vulns.where(
-            host_iid=vuln.host_iid,
-            name=vuln.name,
-            xtype=vuln.xtype,
-            service_iid=vuln.service_iid,
-            via_target=vuln.via_target
-        ))
+        pidb_vuln = self._first(
+            self.vulns.where(
+                host_iid=vuln.host_iid,
+                name=vuln.name,
+                xtype=vuln.xtype,
+                service_iid=vuln.service_iid,
+                via_target=vuln.via_target,
+            )
+        )
         if pidb_vuln:
             pidb_vuln.update(vuln)
             return pidb_vuln
 
-        vuln.iid = len(self.vulns)
+        vuln.iid = self._next_iid("vulns")
         self.vulns.insert(vuln)
         return vuln
 
-    def upsert_note(
-        self,
-        host_address,
-        xtype,
-        service_proto=None,
-        service_port=None,
-        via_target=None,
-        **kwargs
-    ):
+    def upsert_note(self, host_address, xtype, service_proto=None, service_port=None, via_target=None, **kwargs):
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)
-        pidb_service = self.upsert_service(host_address, service_proto, service_port) if (service_proto and service_port) else None
-        note = ParsedNote(pidb_host.iid, xtype, service_iid=pidb_service.iid if pidb_service else None, via_target=via_target, **kwargs)
+        pidb_service = (
+            self.upsert_service(host_address, service_proto, service_port) if (service_proto and service_port) else None
+        )
+        note = ParsedNote(
+            pidb_host.iid,
+            xtype,
+            service_iid=pidb_service.iid if pidb_service else None,
+            via_target=via_target,
+            **kwargs,
+        )
 
-        pidb_note = self._first(self.notes.where(host_iid=note.host_iid, xtype=note.xtype, service_iid=note.service_iid, via_target=note.via_target))
+        pidb_note = self._first(
+            self.notes.where(
+                host_iid=note.host_iid, xtype=note.xtype, service_iid=note.service_iid, via_target=note.via_target
+            )
+        )
         if pidb_note:
             pidb_note.update(note)
             return pidb_note
 
-        note.iid = len(self.notes)
+        note.iid = self._next_iid("notes")
         self.notes.insert(note)
         return note
 
