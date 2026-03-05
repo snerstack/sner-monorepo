@@ -86,23 +86,38 @@ def test_netlist(app):  # pylint: disable=unused-argument
     """test Netlist"""
 
     dummy = DummyStage()
-    stage = Netlist("netlist", schedule='600s', netlist=['127.0.0.0/31'], next_stages=[dummy])
+    stage = Netlist("netlist", schedule="600s", netlist=["127.0.0.0/31"], next_stages=[dummy])
     stage.run()
     # trigger schedule timing code, must not affect output stages
     stage.run()
 
     assert dummy.task_count == 1
-    assert dummy.task_args == TargetManager.from_list(['127.0.0.0', '127.0.0.1'])
+    assert dummy.task_args == TargetManager.from_list(["host,127.0.0.0", "host,127.0.0.1"])
 
 
-def test_servicediscostorageloader(app, queue):   # pylint: disable=unused-argument
+def test_hosttarget_processing(app, queue_factory, job_completed_factory):  # pylint: disable=unused-argument
+    """test HostTarget features, namely str and scope"""
+
+    queue = queue_factory.create(name="qname", config=yaml_dump({"module": "nmap"}))
+    job_completed_factory.create(queue=queue, make_output="tests/server/data/parser-nmap-servicedisco-job.zip")
+
+    loader = PruningStorageLoader("loader", queue.name, PruningStrategyType.HOST)
+    loader.run()
+
+    stage = Netlist("netlist", schedule="0s", netlist=["127.0.0.0/31"], next_stages=[loader])
+    stage.run()
+
+    assert len(queue.targets) == 2
+
+
+def test_servicediscostorageloader(app, queue):  # pylint: disable=unused-argument
     """test ServiceDiscoStorageLoader"""
 
     pidb = ParsedItemsDb()
-    pidb.upsert_service("127.3.4.2","tcp", 11, state="open:test")
+    pidb.upsert_service("127.3.4.2", "tcp", 11, state="open:test")
 
     loader = ServiceDiscoStorageLoader("loader_test", queue.name)
-    with patch.object(loader, '_drain') as drain_mock:
+    with patch.object(loader, "_drain") as drain_mock:
         drain_mock.return_value = [pidb]
         loader.run()
 

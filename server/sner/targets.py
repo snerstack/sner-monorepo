@@ -89,7 +89,7 @@ class GenericTarget(TargetBase):
     def scope(self):
         return (self.value,)
 
-    def is_ipv6_address(self):
+    def is_ipv6_address(self):  # pragma: nocover  ; planned
         try:
             return is_ipv6_address(self.value)
         except ValueError:
@@ -111,7 +111,7 @@ class HostTarget(TargetBase):
     def scope(self):
         return (self.address,)
 
-    def is_ipv6_address(self):
+    def is_ipv6_address(self):  # pragma: nocover  ; won't test
         return is_ipv6_address(self.address)
 
 
@@ -152,13 +152,13 @@ class NamedServiceTarget(TargetBase):
     def __str__(self):
         return f"named,{self.address},proto={self.proto},port={self.port},hostname={self.hostname}"
 
-    def hashval(self):  # pragma: nocover  ; prepared, not used
+    def hashval(self):  # pragma: nocover  ; planned
         return address_hashval(self.address)
 
     def scope(self):
         return (self.address, self.proto, self.port, self.hostname)
 
-    def is_ipv6_address(self):
+    def is_ipv6_address(self):  # pragma: nocover  ; planned
         return is_ipv6_address(self.address)
 
 
@@ -175,10 +175,10 @@ class SixenumTarget(TargetBase):
     def hashval(self):
         return address_hashval(self.value.split("-")[0])
 
-    def scope(self):
+    def scope(self):  # pragma: nocover
         raise NotImplementedError
 
-    def is_ipv6_address(self):
+    def is_ipv6_address(self):  # pragma: nocover
         raise NotImplementedError
 
     def boundaries(self):

@@ -6,7 +6,7 @@ planner auror stages tests
 import json
 from collections import namedtuple
 
-from sner.server.planner.stages import DummyStage
+from sner.server.planner.stages import DummyStage, PruningStorageLoader, PruningStrategyType
 from sner.server.planner.stages_auror import (
     AurorHostnamesStorageLoader,
     AurorHostnamesTrigger,
@@ -69,15 +69,11 @@ def test_auror_testssl_storage_targetlist(app, host_factory, note_factory, servi
         test_models = [
             TestData("127.0.0.1", None, 443, "https", []),
             TestData("::1", "localhost.localdomain", 25, "smtp", []),
-            TestData(
-                "127.0.0.3", "localhost.localdomain", 80, "http", ["localhost.localdomain", "localhost.localdomain"]
-            ),
+            TestData("127.0.0.3", "localhost.localdomain", 80, "http", ["localhost.localdomain", "localhost.localdomain"]),
         ]
         for item in test_models:
             host = host_factory.create(address=item.address, hostname=item.hostname)
-            service = service_factory.create(
-                host=host, proto="tcp", port=item.port, name=item.port_name, state="open:test"
-            )
+            service = service_factory.create(host=host, proto="tcp", port=item.port, name=item.port_name, state="open:test")
             note_factory.create(host=host, service=service, xtype="nmap.ssl-cert", data="dummy")
             if item.hostnames:
                 note_factory.create(host=host, xtype="auror.hostnames", data=json.dumps(item.hostnames))
@@ -100,6 +96,32 @@ def test_auror_testssl_storage_targetlist(app, host_factory, note_factory, servi
         "auror,127.0.0.3,port=80,hostname=localhost.localdomain,enc=I",
     ]
     assert list(map(str, dummy.task_args)) == expected
+
+
+def test_aurortestssltarget_processing(app, queue_factory, job_completed_factory, host_factory, service_factory, note_factory):  # noqa: E501  pylint: disable=unused-argument
+    """test AurorTestsslTarget features (hashval, scope)"""
+
+    # scope
+    queue = queue_factory.create(name="qname", config=yaml_dump({"module": "auror_testssl"}))
+    job_completed_factory.create(queue=queue, make_output="tests/server/data/parser-auror_testssl-job.zip")
+
+    loader = PruningStorageLoader("loader", queue.name, PruningStrategyType.SERVICE)
+    loader.run()
+
+    assert Host.query.count() == 1
+
+    # hashval
+    host = host_factory.create(address="127.0.0.1", hostname=None)
+    service = service_factory.create(host=host, proto="tcp", port=123, state="open:test")
+    note_factory.create(host=host, service=service, xtype="nmap.ssl-cert", data="dummy")
+    note_factory.create(host=host, xtype="auror.hostnames", data=json.dumps(["localhost"]))
+
+    stage = AurorTestsslStorageTargetlist(
+        "auror:storage_targetlist", schedule="0s", filternets=["127.0.0.0/31"], ports_starttls={}, next_stage=loader
+    )
+    stage.run()
+
+    assert len(queue.targets) == 1
 
 
 def test_aurortestssl_cleanup(app, host, note_factory):  # pylint: disable=unused-argument

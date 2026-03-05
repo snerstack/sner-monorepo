@@ -101,8 +101,8 @@ def test_service_list_command(runner, service):
 def test_service_list_command_formats(runner, service):  # pylint: disable=unused-argument
     """test services listing formats"""
 
-    for format in FORMAT_FUNCTIONS:
-        result = runner.invoke(command, ['service-list', "--format", format])
+    for format_name in FORMAT_FUNCTIONS:
+        result = runner.invoke(command, ['service-list', "--format", format_name])
         assert result.exit_code == 0
 
 

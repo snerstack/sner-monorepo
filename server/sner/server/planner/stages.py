@@ -5,9 +5,9 @@ planner stages
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
-from ipaddress import ip_address, ip_network, IPv6Address
+from ipaddress import IPv6Address, ip_address, ip_network
 from pathlib import Path
 
 from flask import current_app
@@ -16,15 +16,13 @@ from pytimeparse import parse as timeparse
 from sqlalchemy import select
 from sqlalchemy.orm.exc import NoResultFound
 
-from sner.targets import SixenumTarget, ServiceTarget
 from sner.server.extensions import db
-from sner.server.scheduler.core import enumerate_network, JobManager, QueueManager
-from sner.server.scheduler.models import Queue, Job, Target
+from sner.server.scheduler.core import JobManager, QueueManager, enumerate_network
+from sner.server.scheduler.models import Job, Queue, Target
 from sner.server.storage.core import StorageManager
 from sner.server.storage.models import Host, Note, Vuln
 from sner.server.storage.versioninfo import VersioninfoManager
-from sner.targets import TargetManager, HostTarget
-
+from sner.targets import HostTarget, ServiceTarget, SixenumTarget, TargetManager
 
 TARPIT_THRESHOLD = 200
 
@@ -151,7 +149,7 @@ class Netlist(Schedule):
 
         hosts = []
         for net in self.netlist:
-            hosts += TargetManager.from_list(enumerate_network(net))
+            hosts += [HostTarget(item) for item in enumerate_network(net)]
         current_app.logger.info(f"{self.name} enumerated {len(hosts)} hosts")
         for stage in self.next_stages:
             stage.task(hosts)
