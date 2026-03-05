@@ -152,7 +152,7 @@ class NamedServiceTarget(TargetBase):
     def __str__(self):
         return f"named,{self.address},proto={self.proto},port={self.port},hostname={self.hostname}"
 
-    def hashval(self):
+    def hashval(self):  # pragma: nocover  ; prepared, not used
         return address_hashval(self.address)
 
     def scope(self):

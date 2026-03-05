@@ -23,7 +23,12 @@ class Config(ConfigBase):
 
 
 class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
-    """auror_testssl module implementation"""
+    """
+    auror_testssl module implementation
+
+    ## target specification
+    targetsV2 NamedServiceTarget
+    """
 
     CONFIG_SCHEMA = Config
 

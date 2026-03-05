@@ -72,10 +72,6 @@ class Host(StorageModelBase):
     def __repr__(self):
         return f'<Host {self.id}: {self.address} {self.hostname}>'
 
-    def ident(self):
-        """get storage upsert key; composite key"""
-        return (self.address, )
-
 
 class Service(StorageModelBase):
     """discovered host service"""
@@ -101,10 +97,6 @@ class Service(StorageModelBase):
     def __repr__(self):
         host = self.host.address if self.host else None
         return f'<Service {self.id}: {host} {self.proto}.{self.port}>'
-
-    def ident(self):
-        """get storage upsert key; composite key"""
-        return (self.host.address, self.proto, self.port)
 
 
 class SeverityEnum(SelectableEnum):

@@ -5,7 +5,7 @@ import json
 
 from sner.server.storage.models import Host, Service
 from sner.server.utils import filter_query
-from sner.targets import ServiceTarget, NamedServiceTarget
+from sner.targets import NamedServiceTarget, ServiceTarget
 
 
 def _format_servicetarget(svc):

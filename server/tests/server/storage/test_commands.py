@@ -8,6 +8,7 @@ from io import StringIO
 
 from sner.server.storage.commands import command
 from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
+from sner.server.storage.service_list import FORMAT_FUNCTIONS
 
 
 def test_import_command_errorhandling(runner):
@@ -95,6 +96,14 @@ def test_service_list_command(runner, service):
 
     result = runner.invoke(command, ['service-list', '--filter', 'invalid'])
     assert result.exit_code == 1
+
+
+def test_service_list_command_formats(runner, service):  # pylint: disable=unused-argument
+    """test services listing formats"""
+
+    for format in FORMAT_FUNCTIONS:
+        result = runner.invoke(command, ['service-list', "--format", format])
+        assert result.exit_code == 0
 
 
 def test_rebuild_versioninfo_command(runner):
