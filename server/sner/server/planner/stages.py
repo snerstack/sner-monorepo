@@ -26,6 +26,9 @@ from sner.server.storage.versioninfo import VersioninfoManager
 from sner.targets import TargetManager, HostTarget
 
 
+TARPIT_THRESHOLD = 200
+
+
 def pidb_logmesg(pidb):
     """return pidb stats for logging"""
     return f"hosts:{len(pidb.hosts)} services:{len(pidb.services)} vulns:{len(pidb.vulns)} notes:{len(pidb.notes)}"
@@ -158,7 +161,7 @@ class ServiceDiscoStorageLoader(QueueHandler):
     """do service discovery on targets"""
 
     @staticmethod
-    def _filter_tarpits(pidb, threshold=200):
+    def _filter_tarpits(pidb, threshold=TARPIT_THRESHOLD):
         """filter filter hosts with too much services detected"""
 
         host_services_count = defaultdict(int)
