@@ -449,7 +449,7 @@ class SportmapStorageLoader(QueueHandler):
             db.session.expire_all()
 
 
-class VersioninfoRebuild(Schedule):
+class RebuildVersioninfo(Schedule):
     """recount versioninfo map"""
 
     def _run(self):

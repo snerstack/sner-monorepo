@@ -86,7 +86,7 @@ class StorageCleanup(ConfigBase):
     enabled: bool
 
 
-class RebuildVersionInfoMap(ConfigBase):
+class RebuildVersioninfo(ConfigBase):
     schedule: str
 
 
@@ -102,7 +102,7 @@ class Pipelines(ConfigBase):
     auror_hostnames: Optional[AurorHostnames] = None
     auror_testssl: Optional[AurorTestsslScan] = None
     storage_cleanup: Optional[StorageCleanup] = None
-    rebuild_versioninfo_map: Optional[RebuildVersionInfoMap] = None
+    rebuild_versioninfo: Optional[RebuildVersioninfo] = None
 
 
 class PlannerConfig(ConfigBase):

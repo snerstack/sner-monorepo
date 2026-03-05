@@ -77,6 +77,7 @@ from sner.server.planner.stages import (
     Netlist,
     PruningStorageLoader,
     PruningStrategyType,
+    RebuildVersioninfo,
     ServiceDiscoStorageLoader,
     ServiceScanStorageTargetlist,
     ServiceStorageTargetlist,
@@ -85,7 +86,6 @@ from sner.server.planner.stages import (
     SportmapStorageLoader,
     StorageCleanup,
     StorageLoader,
-    VersioninfoRebuild,
 )
 from sner.server.planner.stages_auror import (
     AurorHostnamesStorageLoader,
@@ -130,9 +130,9 @@ def outofscope_check(prune=False):
         return f"{(value / total) * 100:.2f}%" if total else "N/A"
 
     planner_config = PlannerConfig(**current_app.config["SNER_PLANNER"])
-    outscope_host_ids = []
-    outscope_vuln_ids = []
-    outscope_note_ids = []
+    outscope_host_ids = set()
+    outscope_vuln_ids = set()
+    outscope_note_ids = set()
 
     # find hosts which are not in any scan scope
     scope = list(
@@ -149,7 +149,7 @@ def outofscope_check(prune=False):
     query = select(Host.id)
     if scope_query:
         query = query.filter(not_(or_(*scope_query)))
-    outscope_host_ids = db.session.execute(query).scalars().all()
+    outscope_host_ids.update(db.session.execute(query).scalars().all())
 
     # check nuclei/sportmap scope
     scope = list(set(planner_config.nuclei_nets + planner_config.sportmap_nets))
@@ -159,22 +159,22 @@ def outofscope_check(prune=False):
     query = select(Vuln.id).join(Host).filter(Vuln.xtype.ilike("nuclei.%"))
     if scope_query:
         query = query.filter(not_(or_(*scope_query)))
-    outscope_vuln_ids += db.session.execute(query).scalars().all()
+    outscope_vuln_ids.update(db.session.execute(query).scalars().all())
 
     query = select(Note.id).join(Host).filter(Note.xtype == "sportmap")
     if scope_query:
         query = query.filter(not_(or_(*scope_query)))
-    outscope_note_ids += db.session.execute(query).scalars().all()
+    outscope_note_ids.update(db.session.execute(query).scalars().all())
 
     # check nessus scope
     scope = planner_config.nessus_nets
-    current_app.logger.debug("nnessus scope: %s", scope)
+    current_app.logger.debug("nessus scope: %s", scope)
     scope_query = [Host.address.op("<<=")(net) for net in scope]
 
     query = select(Vuln.id).join(Host).filter(Vuln.xtype.ilike("nessus.%"))
     if scope_query:
         query = query.filter(not_(or_(*scope_query)))
-    outscope_vuln_ids += db.session.execute(query).scalars().all()
+    outscope_vuln_ids.update(db.session.execute(query).scalars().all())
 
     if current_app.debug:  # pragma: nocover  ; won't test
         for model, ids in [(Host, outscope_host_ids), (Vuln, outscope_vuln_ids), (Note, outscope_note_ids)]:
@@ -259,7 +259,7 @@ class Planner(TerminateContextRunner):
 
     def _add_stage(self, stage):
         """Add stage to runtime container."""
-        if stage.name in self.stages:
+        if stage.name in self.stages:  # pragma: nocover  ; won't test
             raise RuntimeError(f"stage {stage.name} already defined")
         self.stages[stage.name] = stage
         return stage
@@ -454,13 +454,13 @@ class Planner(TerminateContextRunner):
         if self._cp.storage_cleanup and self._cp.storage_cleanup.enabled:
             self._add_stage(StorageCleanup())
 
-    def _setup_versioninfo_rebuild(self):
-        if not self._cp.rebuild_versioninfo_map:
+    def _setup_rebuild_versioninfo(self):
+        if not self._cp.rebuild_versioninfo:
             return
         self._add_stage(
-            VersioninfoRebuild(
-                "versioninfo_map_rebuild",
-                schedule=self._cp.rebuild_versioninfo_map.schedule,
+           RebuildVersioninfo(
+                "rebuild_versioninfo",
+                schedule=self._cp.rebuild_versioninfo.schedule,
             )
         )
 
@@ -478,13 +478,13 @@ class Planner(TerminateContextRunner):
         self._setup_auror_hostnames()
         self._setup_auror_testssl()
         self._setup_storage_cleanup()
-        self._setup_versioninfo_rebuild()
+        self._setup_rebuild_versioninfo()
 
     # ------------------------------------------------------------------
     # Lifecycle
     # ------------------------------------------------------------------
 
-    def terminate(self, _signum=None, _frame=None):
+    def terminate(self, _signum=None, _frame=None):  # pragma: no cover  ; running over multiprocessing
         """terminate planner"""
         self.log.info("received terminate")
         self.loop = False
