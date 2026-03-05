@@ -34,7 +34,7 @@ class ServiceFactory(BaseModelFactory):
     host = SubFactory(HostFactory)
     proto = 'tcp'
     port = 22
-    state = 'up:syn-ack'
+    state = 'open:syn-ack'
     name = 'ssh'
     info = 'product: OpenSSH version: 7.4p1 Debian 10+deb9u4 extrainfo: protocol 2.0 ostype: Linux'
     comment = 'a test service comment'

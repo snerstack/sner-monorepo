@@ -10,12 +10,15 @@ import pytest
 
 from sner.server.parser import ParsedItemsDb
 from sner.server.planner.stages import (
+    TARPIT_THRESHOLD,
     DummyStage,
     HostRescanStorageTargetlist,
     Netlist,
     PruningStorageLoader,
     PruningStrategyType,
     ServiceDiscoStorageLoader,
+    ServiceScanStorageTargetlist,
+    ServiceStorageTargetlist,
     SixDisco,
     SixEnumStorageTargetlist,
     SixStorageTargetlist,
@@ -28,12 +31,29 @@ from sner.server.utils import yaml_dump
 from sner.targets import GenericTarget, HostTarget, TargetManager
 
 
-def test_filter_tarpits(sample_pidb):
+def test_filter_tarpits():
     """test filter_tarpits"""
 
-    pidb = ServiceDiscoStorageLoader._filter_tarpits(sample_pidb)  # pylint: disable=protected-access
+    def sample_pidb():
+        pidb = ParsedItemsDb()
+        host = pidb.upsert_host("127.0.3.1")
+        pidb.upsert_service(host.address, "tcp", 1)
+
+        host = pidb.upsert_host("127.0.4.1")
+        pidb.upsert_vuln(host.address, "dummyvuln", "dummyxtype", "tcp", 1)
+        pidb.upsert_note(host.address, "dummynote", "dummyxtype", "tcp", 1)
+        for port in range(TARPIT_THRESHOLD + 1):
+            pidb.upsert_service(host.address, "tcp", port)
+
+        return pidb
+
+    pidb = sample_pidb()
+    pidb = ServiceDiscoStorageLoader._filter_tarpits(pidb)  # pylint: disable=protected-access
+
     assert len(pidb.hosts) == 1
     assert len(pidb.services) == 1
+    assert len(pidb.notes) == 0
+    assert len(pidb.vulns) == 0
 
 
 def test_filter_closed_services():
@@ -75,6 +95,21 @@ def test_netlist(app):  # pylint: disable=unused-argument
     assert dummy.task_args == TargetManager.from_list(['127.0.0.0', '127.0.0.1'])
 
 
+def test_servicediscostorageloader(app, queue):   # pylint: disable=unused-argument
+    """test ServiceDiscoStorageLoader"""
+
+    pidb = ParsedItemsDb()
+    pidb.upsert_service("127.3.4.2","tcp", 11, state="open:test")
+
+    loader = ServiceDiscoStorageLoader("loader_test", queue.name)
+    with patch.object(loader, '_drain') as drain_mock:
+        drain_mock.return_value = [pidb]
+        loader.run()
+
+    assert Host.query.count() == 1
+    assert Service.query.count() == 1
+
+
 def test_sixstoragetargetlist(app, host_factory):  # pylint: disable=unused-argument
     """test SixStorageTargetlist"""
 
@@ -97,6 +132,7 @@ def test_sixenumstoragetargetlist(app, host_factory):  # pylint: disable=unused-
 
     host_factory.create(address='2001:db8:aa::')
     host_factory.create(address='2001:db8:bb::')
+    host_factory.create(address='2001:db8:cc::ddFF:FEdd:0')
 
     dummy = DummyStage()
     SixEnumStorageTargetlist(
@@ -110,11 +146,30 @@ def test_sixenumstoragetargetlist(app, host_factory):  # pylint: disable=unused-
     assert sorted(map(str, dummy.task_args)) == sorted(expected)
 
 
-def test_hostrescanstoragetargetlist(app, host_factory, service_factory, queue_factory):  # pylint: disable=unused-argument
+def test_servicescanstoragetargetlist(app, host_factory, service_factory, queue_factory):  # pylint: disable=unused-argument
+    """test servicescan targetlist"""
+
+    service_factory.create(host=host_factory.create(address="127.0.0.1"))
+    service_factory.create(host=host_factory.create(address="::1"))
+
+    sscan_dummy = DummyStage()
+    ServiceScanStorageTargetlist(
+        "ServiceScanStorageTargetlist",
+        schedule="0s",
+        service_interval="0s",
+        filternets=["127.0.0.0/8", "::1/128"],
+        servicescan_stages=[sscan_dummy],
+    ).run()
+
+    assert len(sscan_dummy.task_args) == 2
+
+
+def test_hostrescanstoragetargetlist(app, host_factory, service_factory):  # pylint: disable=unused-argument
     """test hostrescan"""
 
     service_factory.create(host=host_factory.create(address='127.0.0.1'))
     service_factory.create(host=host_factory.create(address='::1'))
+
     sdisco_dummy = DummyStage()
     HostRescanStorageTargetlist(
         "HostRescanStorageTargetlist",
@@ -150,6 +205,19 @@ def test_storageloader(app, job_completed_nmap):  # pylint: disable=unused-argum
     assert Host.query.count() == 1
     assert Service.query.count() == 6
     assert Note.query.count() == 20
+
+
+def test_storageloader_invalidjobs(app, queue_factory, job_completed_factory):  # pylint: disable=unused-argument
+    """test StorageLoader planner stage"""
+
+    queue = queue_factory.create(name='test queue', config=yaml_dump({'module': 'dummy'}))
+    job = job_completed_factory.create(queue=queue, make_output='tests/server/data/parser-dummy-job-invalidjson.zip')
+
+    assert job.retval == 0
+
+    StorageLoader(name="dummy", queue_name=queue.name).run()
+
+    assert job.retval == 1000
 
 
 def test_queuehandler(app, queue):  # pylint: disable=unused-argument
@@ -203,7 +271,7 @@ def test_sportmapstorageloader(app, queue, host_factory, note_factory):  # pylin
     assert Note.query.count() == 1
 
 
-def test_versionscan(app, queue_factory):  # pylint: disable=unused-argument
+def test_versionscan_loader(app, queue_factory):  # pylint: disable=unused-argument
     """test version scan stage"""
 
     queue1 = queue_factory.create(name="queue1")
@@ -233,7 +301,17 @@ def test_versionscan(app, queue_factory):  # pylint: disable=unused-argument
     assert Note.query.count() == 1
 
 
-def test_nucleiscan(app, queue_factory, job_completed_factory, vuln_factory):  # pylint: disable=unused-argument
+def test_servicestoragetargetlist(app, queue, service):  # pylint: disable=unused-argument
+    """test service storage targetlist generator"""
+
+    dummy = DummyStage()
+    stage = ServiceStorageTargetlist("serviceselector", schedule="0s", filternets=["0.0.0.0/0"], next_stage=dummy)
+    stage.run()
+
+    assert dummy.task_count == 1
+
+
+def test_nucleiscan_loader(app, queue_factory, job_completed_factory, vuln_factory):  # pylint: disable=unused-argument
     """test nuclei_scan loader"""
 
     queue = queue_factory.create(
@@ -277,7 +355,7 @@ def test_nucleiscan(app, queue_factory, job_completed_factory, vuln_factory):  #
     assert Vuln.query.filter_by(xtype="dummy").count() == 1
 
 
-def test_nessusscan(app, queue_factory, job_completed_factory, host_factory, service_factory, vuln_factory):  # pylint: disable=unused-argument
+def test_nessusscan_loader(app, queue_factory, job_completed_factory, host_factory, service_factory, vuln_factory):  # pylint: disable=unused-argument
     """test nessus scan loader"""
 
     queue = queue_factory.create(
