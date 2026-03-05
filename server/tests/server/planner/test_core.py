@@ -6,7 +6,7 @@ planner core tests
 import yaml
 from flask import current_app
 
-from sner.server.planner.core import outofscope_check, Planner
+from sner.server.planner.core import Planner, outofscope_check
 from sner.server.storage.models import Host, Note, Vuln
 
 
@@ -82,12 +82,19 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
           storage_cleanup:
             enabled: true
 
-          rebuild_versioninfo_map:
+          rebuild_versioninfo:
             schedule: 10minutes
       """
     )
 
     planner = Planner(config)
+    planner.run(oneshot=True)
+
+
+def test_planner_empty_config(app):  # pylint: disable=unused-argument
+    """try empty config"""
+
+    planner = Planner({"pipelines": {"storage_cleanup": {"enabled": True}}})
     planner.run(oneshot=True)
 
 
@@ -99,6 +106,7 @@ def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pyli
       basic_nets: ['127.0.0.11/32', '2001:db8::11/128']
       nuclei_nets: ['127.3.3.0/24']
       sportmap_nets: ['2001:db8:eeee::12/64']
+      nessus_nets: ['127.3.3.0/24']
     """
     )
 
@@ -109,6 +117,7 @@ def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pyli
     host_factory.create(address="2001:db8:aaaa::6")
 
     vuln_factory.create(host=host1, xtype="nuclei.test")
+    vuln_factory.create(host=host1, xtype="nessus.test")
     note_factory.create(host=host2, xtype="sportmap")
 
     outofscope_check(prune=True)

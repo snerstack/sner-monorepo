@@ -10,6 +10,7 @@ from pathlib import Path
 @dataclass
 class StageInfo:  # pylint: disable=too-many-instance-attributes
     """stage info container"""
+
     name: str
     namespace: str
     stage_name: str
@@ -75,7 +76,7 @@ def _get_connections(planner) -> dict[str, list[str]]:
                 try:
                     if attr_value in stage_set:
                         connections[name].append(attr_value.name)
-                except TypeError:
+                except TypeError:  # pragma: nocover  ; won't test
                     pass
 
     return connections

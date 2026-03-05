@@ -9,7 +9,7 @@ from sner.plugin.auror_hostnames.parser import ParserModule
 def test_parse_path():
     """test auror_testssl parser"""
 
-    expected_hosts = ["127.0.0.1", "::1"]
+    expected_hosts = ["127.0.0.1", "::1", "127.0.0.4"]
     json_file_path = "tests/server/data/parser-auror_hostnames-output.json"
     zip_file_path = "tests/server/data/parser-auror_hostnames-job.zip"
 

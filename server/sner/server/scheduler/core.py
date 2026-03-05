@@ -106,14 +106,14 @@ class ExclMatcherImplBase(ABC):
     @abstractmethod
     def __init__(self, match_to):
         """initialize matcher"""
-        self.match_to = match_to
+        self.match_to = match_to  # pragma: nocover  ; implementation shadows the statement
 
     @abstractmethod
     def match(self, target, targetstr):
         """returns bool if value matches the initialized match_to"""
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} {self.match_to}>'
+        return f"<{self.__class__.__name__} {self.match_to}>"
 
 
 @ExclMatcher.register(ExclFamily.NETWORK)

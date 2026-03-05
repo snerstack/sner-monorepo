@@ -13,7 +13,7 @@ from sner.server.planner.stages_auror import (
     AurorTestsslStorageCleanup,
     AurorTestsslStorageTargetlist,
 )
-from sner.server.storage.models import Note, Host
+from sner.server.storage.models import Host, Note
 from sner.server.utils import yaml_dump
 
 

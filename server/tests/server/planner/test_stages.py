@@ -25,7 +25,7 @@ from sner.server.planner.stages import (
 )
 from sner.server.storage.models import Host, Note, Service, Vuln
 from sner.server.utils import yaml_dump
-from sner.targets import TargetManager, HostTarget, GenericTarget
+from sner.targets import GenericTarget, HostTarget, TargetManager
 
 
 def test_filter_tarpits(sample_pidb):
