@@ -7,7 +7,6 @@ import json
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
-import sner.plugin.nessus.agent
 import sner.plugin.nessus.manager
 from sner.agent.core import main as agent_main
 from sner.lib import file_from_zip
