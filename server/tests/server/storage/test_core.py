@@ -27,8 +27,8 @@ def test_importparsed(app):  # pylint: disable=unused-argument
     """test import parsed addtags"""
 
     pidb = ParsedItemsDb()
-    pidb.upsert_vuln('192.0.2.1', 'name1', 'xtype1', 'tcp', 80, 'target1', severity=SeverityEnum.INFO, data='data1')
-    pidb.upsert_note('192.0.2.1', 'xtype1', 'tcp', 80, 'target1', data='data1')
+    pidb.upsert_vuln("192.0.2.1", "tcp", 80, "xtype1", "name1", "target1", severity=SeverityEnum.INFO, data="data1")
+    pidb.upsert_note("192.0.2.1", "tcp", 80, "xtype1", "target1", data="data1")
 
     StorageManager.import_parsed(pidb, addtags=['testtag'])
 

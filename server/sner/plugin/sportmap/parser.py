@@ -55,7 +55,7 @@ class ParserModule(ParserBase):
 
         # print(json.dumps(diffmap, indent=4))
         for address, data in diffmap.items():
-            pidb.upsert_note(address, xtype="sportmap", via_target=address, data=json.dumps(data))
+            pidb.upsert_note(address, None, None, "sportmap", address, data=json.dumps(data))
 
         # parsed items database contain all hosts
         # difference in source port scans for host/target is stored as note if any is detected

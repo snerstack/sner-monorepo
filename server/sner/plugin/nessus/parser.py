@@ -77,9 +77,6 @@ class ParserModule(ParserBase):
                 'refs': cls._parse_refs(report_item),
                 'import_time': report_item['HOST_START'],
             }
-            if service:
-                vuln_data['service_proto'] = service.proto
-                vuln_data['service_port'] = service.port
 
             if 'plugin_output' in report_item:
                 raw_data = json.dumps(report_item, cls=SnerJSONEncoder)
@@ -87,9 +84,11 @@ class ParserModule(ParserBase):
 
             pidb.upsert_vuln(
                 host_address,
-                report_item['plugin_name'],
+                service.proto if service else None,
+                service.port if service else None,
                 f'nessus.{report_item["pluginID"]}',
-                via_target=report_item['host-report-name'],
+                report_item['plugin_name'],
+                report_item['host-report-name'],
                 **vuln_data
             )
 

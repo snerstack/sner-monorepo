@@ -97,7 +97,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
 
         note_data = {"output": data, "auror_data": cls._process_testssl_result(json_data)}
 
-        pidb.upsert_note(host_address, f"auror.testssl.{tls_method}", service_proto, service_port, via_target, data=json.dumps(note_data))
+        pidb.upsert_note(host_address, service_proto, service_port, f"auror.testssl.{tls_method}", via_target, data=json.dumps(note_data))
 
         return pidb
 

@@ -22,7 +22,7 @@ class ParserModule(ParserBase):
         data = json.loads(file_from_zip(path, 'output.json'))
 
         for addr, via in data.items():
-            pidb.upsert_note(addr, 'six_dns_discover.via', data=json.dumps(via))
+            pidb.upsert_note(addr, None, None, "six_dns_discover.via", None, data=json.dumps(via))
 
         return pidb
 
