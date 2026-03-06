@@ -1,5 +1,12 @@
 # sner changelog
 
+## 1.2.2 - Uncrossed
+
+### Fixed
+
+* frontend: security; fix XSS with overlong note.data (no CVE)
+
+
 ## 1.2.1 - Scotty's fixes
 
 ### Changed
