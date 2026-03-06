@@ -124,7 +124,6 @@ class ParserModule(ParserBase):
                 refs.append('URL-' + reference)
 
         vuln_data = {
-            'via_target': via_target,
             'severity': str(SeverityEnum(report['info']['severity'])),
             'descr': f'## Description\n\n{report["info"].get("description")}\n\n'
                      + f'## Extracted results\n\n{report.get("extracted-results")}',
@@ -132,14 +131,14 @@ class ParserModule(ParserBase):
             'refs': refs,
             'import_time': report['timestamp'],
         }
-        if service:
-            vuln_data['service_proto'] = service.proto
-            vuln_data['service_port'] = service.port
 
         pidb.upsert_vuln(
             host_address,
-            name=report['info']['name'],
-            xtype=f"nuclei.{report['template-id']}{'.' + report['matcher-name'] if 'matcher-name' in report else ''}",
+            service.proto if service else None,
+            service.port if service else None,
+            f"nuclei.{report['template-id']}{'.' + report['matcher-name'] if 'matcher-name' in report else ''}",
+            report['info']['name'],
+            via_target,
             **vuln_data
         )
 

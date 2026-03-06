@@ -40,8 +40,8 @@ def test_filter_tarpits():
         pidb.upsert_service(host.address, "tcp", 1)
 
         host = pidb.upsert_host("127.0.4.1")
-        pidb.upsert_vuln(host.address, "dummyvuln", "dummyxtype", "tcp", 1)
-        pidb.upsert_note(host.address, "dummynote", "dummyxtype", "tcp", 1)
+        pidb.upsert_vuln(host.address, "tcp", 1, "dummyxtype", "dummyvuln", None)
+        pidb.upsert_note(host.address, "tcp", 1, "dummyxtype", None, data="dummynote")
         for port in range(TARPIT_THRESHOLD + 1):
             pidb.upsert_service(host.address, "tcp", port)
 
@@ -71,9 +71,9 @@ def test_filter_closed_services():
         pidb.upsert_host(item.address)
         pidb.upsert_service(item.address, "tcp", item.port, state=item.state)
         if item.note:
-            pidb.upsert_note(item.address, item.note, "tcp", item.port, data=item.note)
+            pidb.upsert_note(item.address, "tcp", item.port, item.note, None, data=item.note)
         if item.vuln:
-            pidb.upsert_vuln(item.address, item.vuln, item.vuln, "tcp", item.port)
+            pidb.upsert_vuln(item.address, "tcp", item.port, item.vuln, item.vuln, None)
 
     pidb = ServiceDiscoStorageLoader._filter_closed_services(pidb)  # pylint: disable=protected-access
     assert len(pidb.hosts) == 1
@@ -275,7 +275,7 @@ def test_sportmapstorageloader(app, queue, host_factory, note_factory):  # pylin
 
     pidb = ParsedItemsDb()
     pidb.upsert_host('127.3.4.6')
-    pidb.upsert_note('127.3.4.2', xtype='sportmap', data='dummy')
+    pidb.upsert_note('127.3.4.2', None, None, 'sportmap', None, data='dummy')
 
     loader = SportmapStorageLoader("sportmap_scan", queue.name)
     with patch.object(loader, '_drain') as drain_mock:
@@ -294,9 +294,9 @@ def test_versionscan_loader(app, queue_factory):  # pylint: disable=unused-argum
 
     pidb = ParsedItemsDb()
     pidb.insert_target("svc,127.0.0.1,proto=tcp,port=1")
-    pidb.upsert_note("127.0.0.1", "cpe", service_proto="tcp", service_port=1, via_target="127.0.0.1", data="dummy1")
-    pidb.upsert_note("127.0.0.1", "nmap.banner_dict", service_proto="tcp", service_port=1, via_target="127.0.0.1", data="dummy2")
-    pidb.upsert_note("127.0.0.1", "nmap.clock-skew", service_proto=None, service_port=None, via_target="127.0.0.1", data="dummy3")
+    pidb.upsert_note("127.0.0.1", "tcp", 1, "cpe", "127.0.0.1", data="dummy1")
+    pidb.upsert_note("127.0.0.1", "tcp", 1, "nmap.banner_dict", "127.0.0.1", data="dummy2")
+    pidb.upsert_note("127.0.0.1", "tcp", 1, "nmap.clock-skew", "127.0.0.1", data="dummy3")
 
     with patch.object(stage, "_drain", return_value=[pidb]):
         stage.run()
@@ -307,7 +307,7 @@ def test_versionscan_loader(app, queue_factory):  # pylint: disable=unused-argum
     pidb = ParsedItemsDb()
     pidb.insert_target("svc,127.0.0.1,proto=tcp,port=1")
     pidb.upsert_service("127.0.0.1", "tcp", 1, state="open")
-    pidb.upsert_note("127.0.0.1", "nmap.clock-skew", service_proto=None, service_port=None, via_target="127.0.0.1", data="dummy3")
+    pidb.upsert_note("127.0.0.1", "tcp", 1, "nmap.clock-skew", "127.0.0.1", data="dummy3")
 
     with patch.object(stage, "_drain", return_value=[pidb]):
         stage.run()
