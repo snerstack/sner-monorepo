@@ -7,6 +7,7 @@ import { httpClient } from '@/lib/httpClient'
 
 import { errorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
+import NoteViewPage from '@/routes/storage/note/view'
 
 const loader = () =>
   Promise.resolve({
@@ -24,7 +25,7 @@ const loader = () =>
     service_proto: 'tcp',
     tags: ['report', 'falsepositive', 'info'],
     via_target: null,
-    xtype: 'deb',
+    xtype: 'dummy note xtype',
   })
 
 describe('Note edit page', () => {
@@ -42,7 +43,7 @@ describe('Note edit page', () => {
       expect(screen.getByLabelText('Host ID')).toHaveValue(1)
       expect(screen.getByLabelText('Service ID')).toHaveValue(1)
       expect(screen.getByLabelText('Via target')).toHaveValue('')
-      expect(screen.getByLabelText('xType')).toHaveValue('deb')
+      expect(screen.getByLabelText('xType')).toHaveValue('dummy note xtype')
       expect(screen.getByLabelText('Data')).toHaveValue('["cpe:/o:microsoft:windows_nt:3.5.1"]')
       expect(screen.getByLabelText('Comment')).toHaveValue('')
     })
@@ -53,10 +54,13 @@ describe('Note edit page', () => {
       element: <NoteEditPage />,
       path: '/storage/note/edit/1',
       loader: loader,
-      routes: [{ element: <NoteListPage />, path: '/storage/note/list' }],
+      routes: [
+        { element: <NoteListPage />, path: '/storage/note/list' },
+        { element: <NoteViewPage />, loader: loader, path: '/storage/note/view/1' },
+      ],
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+    const postSpy = vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
       data: {
         message: 'Note has been successfully edited.',
       },
@@ -72,7 +76,11 @@ describe('Note edit page', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Note has been successfully edited.')).toBeInTheDocument()
-      expect(screen.getByRole('list')).toHaveTextContent('Notes')
+      const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
+      expect(listItems.includes('Note')).toBeTruthy()
+      expect(listItems.includes('dummy note xtype')).toBeTruthy()
+
+      expect(postSpy.mock.calls[0][0]).toBe('/backend/storage/note/edit/1')
     })
   })
 
@@ -96,9 +104,12 @@ describe('Note edit page', () => {
           service_proto: null,
           tags: ['report', 'falsepositive', 'info'],
           via_target: null,
-          xtype: 'deb',
+          xtype: 'dummy note xtype',
         }),
-      routes: [{ element: <NoteListPage />, path: '/storage/note/list' }],
+      routes: [
+        { element: <NoteListPage />, path: '/storage/note/list' },
+        { element: <NoteViewPage />, loader: loader, path: '/storage/note/view/1' }
+      ],
     })
 
     vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
@@ -117,7 +128,9 @@ describe('Note edit page', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Note has been successfully edited.')).toBeInTheDocument()
-      expect(screen.getByRole('list')).toHaveTextContent('Notes')
+      const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
+      expect(listItems.includes('Note')).toBeTruthy()
+      expect(listItems.includes('dummy note xtype')).toBeTruthy()
     })
   })
 

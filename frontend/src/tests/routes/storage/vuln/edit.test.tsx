@@ -68,7 +68,7 @@ describe('Vuln edit page', () => {
       ],
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
+    const postSpy = vi.spyOn(httpClient, 'post').mockResolvedValueOnce({
       data: {
         message: 'Vuln has been successfully edited.',
       },
@@ -87,6 +87,8 @@ describe('Vuln edit page', () => {
       const listItems = screen.getAllByRole('listitem').map((item) => item.textContent)
       expect(listItems.includes('Vuln')).toBeTruthy()
       expect(listItems.includes('aggregable vuln (x.agg)')).toBeTruthy()
+
+      expect(postSpy.mock.calls[0][0]).toBe('/backend/storage/vuln/edit/1')
     })
   })
 
@@ -208,13 +210,13 @@ describe('Vuln edit page', () => {
 
     vi.spyOn(httpClient, 'get')
       .mockRejectedValueOnce(errorResponse({ message: 'error message' })) // focus
-      .mockResolvedValueOnce({data: [{label: 'dummy', value: '1'}]})  // input
+      .mockResolvedValueOnce({ data: [{ label: 'dummy', value: '1' }] })  // input
 
     await waitFor(async () => {
       const labelElement = screen.getByText('Host, Service')
       await user.click(labelElement)
     })
-    
+
     await waitFor(async () => {
       const hostInput = screen.getByLabelText('Host ID')
       await user.type(hostInput, '1')

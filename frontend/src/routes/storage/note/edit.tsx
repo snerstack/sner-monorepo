@@ -42,11 +42,11 @@ const NoteEditPage = () => {
 
     try {
       const resp = await httpClient.post<{ message: string }>(
-        urlFor(`/storage/note/edit/${note.id}`),
+        urlFor(`/backend/storage/note/edit/${note.id}`),
         formData,
       )
 
-      navigate(-1)
+      navigate(`/storage/note/view/${note.id}`)
 
       toast.success(resp.data.message)
     } catch (err) {

@@ -157,7 +157,7 @@ const NoteListPage = () => {
 
       <Heading headings={['Notes']}>
         <div className="breadcrumb-buttons pl-2">
-        <div className='btn-group'>
+          <div className='btn-group'>
             <Link
               className="btn btn-outline-secondary"
               to='/storage/note/list?filter=Note.xtype=="testssl"'
