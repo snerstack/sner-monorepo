@@ -26,6 +26,9 @@ def db_remove():
     """remove database artefacts (including var content)"""
 
     db.session.close()
+    db.session.remove()
+    db.engine.dispose()
+
     db.drop_all()
     db.session.execute(text('DROP TABLE IF EXISTS alembic_version'))
     db.session.execute(text('DROP TYPE IF EXISTS severityenum'))
