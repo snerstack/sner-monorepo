@@ -52,13 +52,13 @@ class ParserModule(ParserBase):
 
             for osmatch in [item for item in ihost.os_match_probabilities() if item.accuracy == 100]:
                 host_data['os'] = osmatch.name
-                pidb.upsert_note(ihost.address, None, None, "cpe", None, data=json.dumps(osmatch.get_cpe()), import_time=import_time)
+                pidb.upsert_note(ihost.address, None, None, None, "cpe", data=json.dumps(osmatch.get_cpe()), import_time=import_time)
 
             pidb.upsert_host(ihost.address, **host_data)
 
             # parse host scripts
             for iscript in ihost.scripts_results:
-                pidb.upsert_note(ihost.address, None, None, f"nmap.{iscript['id']}", via_target, data=json.dumps(iscript), import_time=import_time)
+                pidb.upsert_note(ihost.address, None, None, via_target, f"nmap.{iscript['id']}", data=json.dumps(iscript), import_time=import_time)
 
             # parse services
             for iservice in ihost.services:
@@ -77,8 +77,8 @@ class ParserModule(ParserBase):
                         ihost.address,
                         iservice.protocol,
                         iservice.port,
-                        "cpe",
                         via_target,
+                        "cpe",
                         data=json.dumps([x.cpestring for x in iservice.cpelist]),
                         import_time=import_time
                     )
@@ -88,8 +88,8 @@ class ParserModule(ParserBase):
                         ihost.address,
                         iservice.protocol,
                         iservice.port,
-                        "nmap.banner_dict",
                         via_target,
+                        "nmap.banner_dict",
                         data=json.dumps(iservice.banner_dict),
                         import_time=import_time
                     )
@@ -100,8 +100,8 @@ class ParserModule(ParserBase):
                         ihost.address,
                         iservice.protocol,
                         iservice.port,
-                        f"nmap.{iscript['id']}",
                         via_target,
+                        f"nmap.{iscript['id']}",
                         data=json.dumps(iscript),
                         import_time=import_time,
                     )

@@ -40,11 +40,11 @@ def test_upsert_vuln():
     """test upsert vuln"""
 
     pidb = ParsedItemsDb()
-    pidb.upsert_vuln("192.0.2.1", None, None, "testxtype", "dns axfr", None)  # vuln1
-    pidb.upsert_vuln("192.0.2.2", "tcp", 21, "testxtype", "anonymous ftp", None)  # vuln2
-    pidb.upsert_vuln("192.0.2.3", "tcp", 80, "testxtype", "sqli", "webhost1", data="data1")  # vuln3
-    pidb.upsert_vuln("192.0.2.3", "tcp", 80, "testxtype", "sqli", "webhost1", data="data2")  # vuln3 update
-    pidb.upsert_vuln("192.0.2.3", "tcp", 80, "testxtype", "sqli", "webhost2", data="data3")  # vuln4
+    pidb.upsert_vuln("192.0.2.1", None, None, None, "testxtype", "dns axfr")  # vuln1
+    pidb.upsert_vuln("192.0.2.2", "tcp", 21, None, "testxtype", "anonymous ftp")  # vuln2
+    pidb.upsert_vuln("192.0.2.3", "tcp", 80, "webhost1", "testxtype", "sqli", data="data1")  # vuln3
+    pidb.upsert_vuln("192.0.2.3", "tcp", 80, "webhost1", "testxtype", "sqli", data="data2")  # vuln3 update
+    pidb.upsert_vuln("192.0.2.3", "tcp", 80, "webhost2", "testxtype", "sqli", data="data3")  # vuln4
 
     assert len(pidb.hosts) == 3
     assert len(pidb.services) == 2
@@ -56,9 +56,9 @@ def test_upsert_note():
 
     pidb = ParsedItemsDb()
 
-    pidb.upsert_note("192.0.2.1", None, None, "testxtype", None, data="axfr data")
-    pidb.upsert_note("192.0.2.2", "tcp", 11, "anothertype", None, data="data1")
-    pidb.upsert_note("192.0.2.2", "tcp", 11, "anothertype", None, data="data2")
+    pidb.upsert_note("192.0.2.1", None, None, None, "testxtype", data="axfr data")
+    pidb.upsert_note("192.0.2.2", "tcp", 11, None, "anothertype", data="data1")
+    pidb.upsert_note("192.0.2.2", "tcp", 11, None, "anothertype", data="data2")
 
     assert len(pidb.hosts) == 2
     assert len(pidb.services) == 1

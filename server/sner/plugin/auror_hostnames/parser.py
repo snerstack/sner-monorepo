@@ -31,7 +31,7 @@ class ParserModule(ParserBase):
         # output.json = {"IP": [hostname1, hostname2]}
         results = json.loads(data)
         for address, hostnames in results.items():
-            pidb.upsert_note(address, None, None, "auror.hostnames", None, data=json.dumps(hostnames), import_time=now)
+            pidb.upsert_note(address, None, None, None, "auror.hostnames", data=json.dumps(hostnames), import_time=now)
 
         return pidb
 

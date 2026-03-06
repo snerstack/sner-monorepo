@@ -48,7 +48,7 @@ class ParserModule(ParserBase):
             if port and line.startswith('JARM:'):
                 jarm = line.split(' ')[-1]
                 if via_target and address and port and (jarm != '00000000000000000000000000000000000000000000000000000000000000'):
-                    pidb.upsert_note(address, "tcp", port, "jarm.fp", via_target, data=jarm)
+                    pidb.upsert_note(address, "tcp", port, via_target, "jarm.fp", data=jarm)
 
         return pidb
 
