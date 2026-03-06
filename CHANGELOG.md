@@ -1,5 +1,33 @@
 # sner changelog
 
+## 1.2.1 - Scotty's fixes
+
+### Changed
+
+* plugin: six_dns_discover, allow sub-second delay
+* server: storage service-list join Host (and other models as in web GUI)
+* agreegate: match current agreegate single-role user model/api
+* server: initializes queues parameters match prod
+* server: manage users according to AG enablement
+
+### Fixed
+
+* frontend: maintenance mode not UI visible
+* frontend: content does not reload (on quickjump between hosts)
+* tests: make selenium tests more stable
+* server: lens json, fix sorting vulns when not linked to service
+* server: fix, report error 500 when vuln.descr is None
+* server: planner, outofscope fix empty scope case
+* frontend: hoovering typo fix
+* docker: fix TTY usage in docker helpers
+
+### Added
+
+* frontend: versioninfo add timestamp (preps)
+* server: Endpoint "range" - add item "modified"
+* frontend: versioninfo add timestamp (implementation)
+
+
 ## 1.2.0 - on the road [BC BREAK]
 
 ### Changed
