@@ -434,7 +434,7 @@ class StorageManager:
         return service
 
     @staticmethod
-    def get_vuln(address, proto, port, xtype, name, via_target, source=None, addtags=None, create=True):  # noqa: E501  pylint: disable=too-many-arguments,too-many-positional-arguments
+    def get_vuln(address, proto, port, via_target, xtype, name, source=None, addtags=None, create=True):  # noqa: E501  pylint: disable=too-many-arguments,too-many-positional-arguments
         """get'n'create storage vuln"""
         query = (
             Vuln.query.outerjoin(Host, Vuln.host_id == Host.id)
@@ -476,7 +476,7 @@ class StorageManager:
         return vuln
 
     @staticmethod
-    def get_note(address, proto, port, xtype, via_target, source=None, addtags=None, create=True):  # noqa: E501  pylint: disable=too-many-arguments,too-many-positional-arguments
+    def get_note(address, proto, port, via_target, xtype, source=None, addtags=None, create=True):  # noqa: E501  pylint: disable=too-many-arguments,too-many-positional-arguments
         """get'n'create storage note"""
         query = (
             Note.query.outerjoin(Host, Note.host_id == Host.id)

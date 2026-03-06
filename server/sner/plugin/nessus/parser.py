@@ -86,9 +86,9 @@ class ParserModule(ParserBase):
                 host_address,
                 service.proto if service else None,
                 service.port if service else None,
+                report_item['host-report-name'],
                 f'nessus.{report_item["pluginID"]}',
                 report_item['plugin_name'],
-                report_item['host-report-name'],
                 **vuln_data
             )
 

@@ -142,7 +142,7 @@ class Vuln(StorageModelBase):
     def ident(self):
         """get storage upsert key; composite key"""
         service_refs = (self.service.proto, self.service.port) if self.service else (None, None)
-        return (self.host.address, *service_refs, self.xtype, self.name, self.via_target)
+        return (self.host.address, *service_refs, self.via_target, self.xtype, self.name)
 
 
 class Note(StorageModelBase):
@@ -172,7 +172,7 @@ class Note(StorageModelBase):
     def ident(self):
         """get storage upsert key; composite key"""
         service_refs = (self.service.proto, self.service.port) if self.service else (None, None)
-        return (self.host.address, *service_refs, self.xtype, self.via_target)
+        return (self.host.address, *service_refs, self.via_target, self.xtype)
 
 
 class Versioninfo(StorageModelBase):

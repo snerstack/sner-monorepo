@@ -106,7 +106,7 @@ class ParsedVuln(ParsedItemBase):  # pylint: disable=too-many-instance-attribute
             if self.service_iid is not None
             else (None, None)
         )
-        return (host.address, *service_ref, self.xtype, self.name, self.via_target)
+        return (host.address, *service_ref, self.via_target, self.xtype, self.name)
 
 
 @dataclass
@@ -132,7 +132,7 @@ class ParsedNote(ParsedItemBase):
             if self.service_iid is not None
             else (None, None)
         )
-        return (host.address, *service_ref, self.xtype, self.via_target)
+        return (host.address, *service_ref, self.via_target, self.xtype)
 
 
 class ParsedItemsTable(LittleTable):
@@ -205,7 +205,7 @@ class ParsedItemsDb:
         self.services.insert(service)
         return service
 
-    def upsert_vuln(self, host_address, service_proto, service_port, xtype, name, via_target, **kwargs):
+    def upsert_vuln(self, host_address, service_proto, service_port, via_target, xtype, name, **kwargs):
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)
@@ -238,7 +238,7 @@ class ParsedItemsDb:
         self.vulns.insert(vuln)
         return vuln
 
-    def upsert_note(self, host_address, service_proto, service_port, xtype, via_target, **kwargs):
+    def upsert_note(self, host_address, service_proto, service_port, via_target, xtype, **kwargs):
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)

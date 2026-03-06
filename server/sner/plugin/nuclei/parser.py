@@ -136,9 +136,9 @@ class ParserModule(ParserBase):
             host_address,
             service.proto if service else None,
             service.port if service else None,
+            via_target,
             f"nuclei.{report['template-id']}{'.' + report['matcher-name'] if 'matcher-name' in report else ''}",
             report['info']['name'],
-            via_target,
             **vuln_data
         )
 
