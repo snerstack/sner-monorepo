@@ -15,6 +15,7 @@
 * frontend: maintenance mode not UI visible
 * frontend: content does not reload (on quickjump between hosts)
 * tests: make selenium tests more stable
+* tests: hard drop all sqlalchemy connection pool, fixes selenium stability in CI
 * server: lens json, fix sorting vulns when not linked to service
 * server: fix, report error 500 when vuln.descr is None
 * server: planner, outofscope fix empty scope case
