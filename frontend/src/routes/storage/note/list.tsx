@@ -1,4 +1,3 @@
-import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
 import { Fragment, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -11,17 +10,17 @@ import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, toolboxe
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
+import EllipsisCell from '@/components/EllipsisCell'
 import { FilterForm } from '@/components/FilterForm'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
+import { EditButton, ViewButton } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
-import { EditButton } from '@/components/buttons/BasicButtons'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
-import { ViewButton } from '@/components/buttons/BasicButtons'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 
@@ -73,15 +72,10 @@ const NoteListPage = () => {
     Column('xtype'),
     Column('data', {
       className: 'forcewrap',
-      render: (data: string) => {
-        if (!data) return ''
-
-        if (data.length >= 4096) {
-          return data.substring(0, 4095) + '...'
-        }
-
-        return escapeHtml(data)
-      },
+      createdCell: (cell, _data, row: NoteRow) => {
+        if (!row["data"]) return null
+        renderElements(cell, <EllipsisCell data={row["data"]} />)
+      }
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',

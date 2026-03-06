@@ -1,4 +1,3 @@
-import { escapeHtml } from '@/utils'
 import clsx from 'clsx'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
@@ -12,6 +11,7 @@ import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColor
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
+import EllipsisCell from '@/components/EllipsisCell'
 import Heading from '@/components/Heading'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
@@ -335,15 +335,10 @@ const HostViewPage = () => {
     Column('xtype'),
     Column('data', {
       className: 'forcewrap',
-      render: (data: string) => {
-        if (!data) return
-
-        if (data.length >= 4096) {
-          return data.substring(0, 4095) + '...'
-        }
-
-        return escapeHtml(data)
-      },
+      createdCell: (cell, _data, row: NoteRow) => {
+        if (!row["data"]) return null
+        renderElements(cell, <EllipsisCell data={row["data"]} />)
+      }
     }),
     Column('tags', {
       className: 'abutton_annotate_dt',
