@@ -26,7 +26,7 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     mock.scan_status.side_effect = ["running", "completed"]
     mock.scan_report.return_value = "dummy_report_content"
 
-    patch_manager = patch.object(sner.plugin.nessus.manager.NessusManager, "from_creds_file", return_value=mock)
+    patch_manager = patch.object(sner.plugin.nessus.manager.NessusManager, "from_env", return_value=mock)
     patch_poll_time = patch("sner.plugin.nessus.agent.SCAN_POLL_INTERVAL", 0)
 
     with patch_manager, patch_poll_time:
