@@ -21,7 +21,6 @@ class Config(ConfigBase):
     """nessus agent plugin config"""
     module: str = Literal["nessus"]
     policy_name: str = "sner-basic"
-    creds_path: str = "/etc/sner.nessus.yml"
 
 
 class AgentModule(ModuleBase):
@@ -53,7 +52,7 @@ class AgentModule(ModuleBase):
 
     def run(self, assignment):
         asg_config = self.init_job(assignment)
-        self.nessus = NessusManager.from_creds_file(asg_config.creds_path)
+        self.nessus = NessusManager.from_env()
 
         targets = [
             target.value if isinstance(target, GenericTarget) else target.address

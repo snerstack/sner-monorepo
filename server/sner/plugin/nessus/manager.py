@@ -3,7 +3,7 @@
 sner nessus manager module
 """
 
-from pathlib import Path
+import os
 
 import yaml
 from flask import current_app
@@ -26,10 +26,10 @@ class NessusManager:
         self.nessus = Nessus(url=url, access_key=access_key, secret_key=secret_key)
 
     @classmethod
-    def from_creds_file(cls, filename):
-        """factory, initialize from creds file"""
+    def from_env(cls, envname="SNER_NESSUS_CREDS"):
+        """factory, initialize from creds environment variable"""
 
-        data = yaml.safe_load(Path(filename).read_text(encoding="utf-8"))
+        data = yaml.safe_load(os.environ[envname])
         creds_config = CredsConfig.model_validate(data)
         return cls(**creds_config.model_dump())
 

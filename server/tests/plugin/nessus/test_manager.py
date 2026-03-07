@@ -3,8 +3,8 @@
 nessus plugin manager test
 """
 
+import os
 from io import BytesIO
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -69,8 +69,9 @@ def test_basic(app, tmpworkdir):  # pylint: disable=unused-argument
 def test_factories(app, tmpworkdir):  # pylint: disable=unused-argument
     """nessus manager factories test"""
 
-    Path("sner.nessus.yaml").write_text(yaml.safe_dump({"url": "http://dummy", "access_key": "dummy", "secret_key": "dummy"}), encoding="utf-8")
-    assert NessusManager.from_creds_file("sner.nessus.yaml")
+    dummy_creds = yaml.safe_dump({"url": "http://dummy", "access_key": "dummy", "secret_key": "dummy"})
+    with patch.dict(os.environ, {"SNER_NESSUS_CREDS": dummy_creds}):
+        assert NessusManager.from_env()
 
     current_app.config["SNER_NESSUS_URL"] = "http://dummy"
     current_app.config["SNER_NESSUS_ACCESS_KEY"] = "dummy"
