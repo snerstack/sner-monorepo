@@ -61,6 +61,7 @@ class AurorHostnamesStorageLoader(QueueHandler):
     not been updated are removed from storage (eg. DNS records been removed for
     such addresses).
     """
+
     def run(self):
         """run"""
 
@@ -121,9 +122,7 @@ class AurorHostnamesStorageLoader(QueueHandler):
 
             db.session.commit()
             db.session.expire_all()
-            current_app.logger.info(
-                f"{self.name} updated {len(updated_host_ids)} hosts, pruned {affected_rows} notes"
-            )
+            current_app.logger.info(f"{self.name} updated {len(updated_host_ids)} hosts, pruned {affected_rows} notes")
 
 
 class AurorTestsslStorageTargetlist(Schedule):
@@ -175,22 +174,13 @@ class AurorTestsslStorageCleanup(Schedule):
 
         notes_to_delete = []
         for key, notes_ids in notes_map.items():
-            if (
-                key.host_id not in hostnames_map
-                or key.via_target not in hostnames_map[key.host_id].hostnames
-            ):
+            if key.host_id not in hostnames_map or key.via_target not in hostnames_map[key.host_id].hostnames:
                 notes_to_delete += notes_ids
 
         affected_rows = 0
         if notes_to_delete:
-            affected_rows = (
-                db.session.query(Note)
-                .filter(Note.id.in_(notes_to_delete))
-                .delete(synchronize_session=False)
-            )
+            affected_rows = db.session.query(Note).filter(Note.id.in_(notes_to_delete)).delete(synchronize_session=False)
             db.session.commit()
             db.session.expire_all()
 
-        current_app.logger.info(
-            f"{self.name} pruned {affected_rows} notes"
-        )
+        current_app.logger.info(f"{self.name} pruned {affected_rows} notes")
