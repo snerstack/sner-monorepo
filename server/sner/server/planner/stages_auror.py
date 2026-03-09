@@ -92,16 +92,15 @@ class AurorHostnamesStorageLoader(QueueHandler):
 
                 # prepare upserts
                 if host_item.note_id:
-                    updates.append(
-                        {"id": host_item.note_id, "data": note.data, "import_time": now}
-                    )
+                    updates.append({"id": host_item.note_id, "data": note.data, "import_time": now, "source": self.queue.name})
                 else:
                     inserts.append(
                         {
                             "host_id": host_item.host_id,
                             "xtype": "auror.hostnames",
                             "data": note.data,
-                            "import_time": now
+                            "import_time": now,
+                            "source": self.queue.name,
                         }
                     )
 
