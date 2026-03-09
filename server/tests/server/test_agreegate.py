@@ -14,9 +14,9 @@ from flask import current_app
 
 import sner.server.agreegate
 from sner.server.agreegate import (
-    agreegate_apicall,
     NETLISTS_FILE,
     AgreegateApiError,
+    agreegate_apicall,
     fetch_agreegate_netlists,
     init_agreegate_netlists,
     sync_agreegate_allowed_networks,
@@ -68,6 +68,7 @@ def test_init_agreegate_netlists(app):  # pylint: disable=unused-argument
         json.dumps({
             "sner/basic": ["127.6.6.0/24", "2001:db8::11/128", "invalid"],
             "sner/nuclei": ["127.6.6.0/24"],
+            "sner/nessus": ["127.6.7.0/24"],
             "auror": ["2001:db8::11/128"],
         }),
         encoding="utf-8",
@@ -77,6 +78,7 @@ def test_init_agreegate_netlists(app):  # pylint: disable=unused-argument
 
     assert len(app.config["SNER_PLANNER"]["basic_nets"]) == 3
     assert len(app.config["SNER_PLANNER"]["nuclei_nets"]) == 1
+    assert len(app.config["SNER_PLANNER"]["nessus_nets"]) == 1
     assert len(app.config["SNER_PLANNER"]["auror_testssl_nets"]) == 1
 
 

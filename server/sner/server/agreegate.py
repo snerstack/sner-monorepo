@@ -117,6 +117,10 @@ def init_agreegate_netlists(app):
         _merge_config(app, "nuclei_nets", filtered)
         _merge_config(app, "sportmap_nets", filtered)
 
+    if ag_sner_nessus := netlists.get("sner/nessus"):
+        filtered = list(filter(is_network, ag_sner_nessus))
+        _merge_config(app, "nessus_nets", filtered)
+
     if ag_auror := netlists.get("auror"):
         filtered = list(filter(is_network, ag_auror))
         _merge_config(app, "auror_testssl_nets", filtered)
