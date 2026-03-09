@@ -83,5 +83,5 @@ planner:
     storage_cleanup:
       enabled: true
 
-    rebuild_versioninfo_map:
+    rebuild_versioninfo:
       schedule: 10minutes
