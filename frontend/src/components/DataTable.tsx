@@ -1,4 +1,5 @@
-import DataTables, { Config } from 'datatables.net-bs4'
+import DataTables, { Config as DTConfig } from 'datatables.net-bs4'
+import type { AjaxData as DTAjaxData } from 'datatables.net'
 import 'datatables.net-select-bs4'
 import { useCookie } from 'react-use'
 import { useEffect, useRef } from 'react'
@@ -10,7 +11,7 @@ import { toast } from 'react-toastify'
 
 type OrderArray = [number, 'asc' | 'desc']
 
-interface TableConfig extends Config {
+interface TableConfig extends DTConfig {
   id?: string
   ajax_url?: string
   order?: OrderArray[]
@@ -18,6 +19,10 @@ interface TableConfig extends Config {
 
 interface Column {
   name: string
+}
+
+interface DTSettings {
+  aoColumns: Column[]
 }
 
 const DataTable = ({ id, ...props }: TableConfig) => {
@@ -129,8 +134,8 @@ const DataTable = ({ id, ...props }: TableConfig) => {
   /**
    * adds ID column sorting (on every request)
    */
-  const sortingXhrHandler = (_event: object, settings: DataTables.Settings, data: DataTables.AjaxDataRequest): void => {
-    const idColumnIndex = findIdColumnIndex((settings as { aoColumns: Column[] }).aoColumns)
+  const sortingXhrHandler = (_event: object, settings: DTSettings, data: DTAjaxData): void => {
+    const idColumnIndex = findIdColumnIndex(settings.aoColumns)
     if (idColumnIndex !== -1) {
       data.order.push({ column: idColumnIndex, dir: 'asc' })
     }
