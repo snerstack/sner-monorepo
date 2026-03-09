@@ -45,7 +45,7 @@ describe('Login Webauthn page', () => {
       credentials: {
         get: vi.fn().mockResolvedValue({
           rawId: new ArrayBuffer(64),
-          id: arrayBufferToBase64(publicKeyCredentialIdMock),
+          id: arrayBufferToBase64(publicKeyCredentialIdMock as Buffer),
           response: {
             authenticatorData: new ArrayBuffer(32),
             clientDataJSON: new ArrayBuffer(128),

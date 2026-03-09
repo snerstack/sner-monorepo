@@ -2,7 +2,7 @@ declare global {
   // required by webauthn login helpers to make tsx happy
   interface Window {
     // required by tsx for webauthn
-    base64ToArrayBuffer: (base64: string) => ArrayBuffer
+    base64ToArrayBuffer: (base64: string) => Uint8Array
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cborDecode: (messagePack: Buffer | Uint8Array) => any
 
