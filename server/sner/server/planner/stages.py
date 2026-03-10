@@ -254,9 +254,9 @@ class SixDisco(QueueHandler):
 
         for pidb in self._drain():
             hosts = [item.address for item in pidb.hosts]
-            hosts = self._filter_external_hosts(hosts)
-            current_app.logger.info(f"{self.name} tasking {len(hosts)} hosts to {self.next_stage.name}")
-            self.next_stage.task(TargetManager.from_list(hosts))
+            targets = [HostTarget(item) for item in self._filter_external_hosts(hosts)]
+            current_app.logger.info(f"{self.name} tasking {len(targets)} targets to {self.next_stage.name}")
+            self.next_stage.task(targets)
 
 
 class SixEnumStorageTargetlist(Schedule):
@@ -436,7 +436,7 @@ class SixStorageTargetlist(Schedule):
         """run"""
 
         targets = [HostTarget(item) for item in StorageManager.get_six_addresses(self.filternets)]
-        current_app.logger.info(f"{self.name} enumerated {len(targets)} targets")
+        current_app.logger.info(f"{self.name} tasking {len(targets)} targets to {self.next_stage.name}")
         self.next_stage.task(targets)
 
 

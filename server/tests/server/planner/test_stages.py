@@ -204,12 +204,12 @@ def test_sixdisco(app, job_completed_sixenumdiscover):  # pylint: disable=unused
     SixDisco(
         "SixDisco",
         queue_name=job_completed_sixenumdiscover.queue.name,
-        filternets=['127.0.0.0/24', '::1/128'],
+        filternets=["127.0.0.0/24", "::1/128"],
         next_stage=dummy,
     ).run()
 
     assert dummy.task_count == 1
-    assert '::1' in map(str, dummy.task_args)
+    assert HostTarget("::1") in dummy.task_args
 
 
 def test_storageloader(app, job_completed_nmap):  # pylint: disable=unused-argument
