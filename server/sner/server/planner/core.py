@@ -36,20 +36,26 @@ generatin too much noise on scanning unused addresses.
 
 ## 3. Vulnerability scanning
 
-Nuclei scan (and eventually Nessus scan) scans known services in similar manner as
-"Service scanning" pipeline, but can be configured with different set of networks to scan.
+Nuclei scan scans known services in similar manner as "Service scanning" pipeline, but can
+be configured with different set of networks to scan.
 
 This pipeline uses "Service discovery" results to find open services.
+
+Nessus scan scans known hosts with respective scanner (scanner only allow to scan on host/ip basis).
 
 
 ## 4. Source-port scanning
 
-TODO
+Scans selected services from selected well-known ports for possible firewall misconfigurations.
+This pipeline uses "Service discovery" results to find open services and shares scope with sner/nuclei.
 
 
-## 5. Auror (TLS scanning)
+## 5. Auror
 
-TODO
+Auror performs TLS scanning and evaluations on known services mostly based on testssl.sh project.
+
+* https://auror.cesnet.cz/about
+* https://csirt.cesnet.cz/en/auror-scanner
 
 
 ## 6. Maintenance pipelines
