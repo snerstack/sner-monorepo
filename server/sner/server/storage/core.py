@@ -308,13 +308,15 @@ class StorageManager:
     """storage app logic"""
 
     @staticmethod
-    def get_six_addresses(filternets=None):
+    def get_six_addresses(filternets):
         """return all host ipv6 addresses"""
 
+        if not filternets:
+            return []
+
         query = select(Host.address).filter(func.family(Host.address) == 6)
-        if filternets:
-            restrict = [Host.address.op('<<=')(net) for net in filternets]
-            query = query.filter(or_(*restrict))
+        restrict = [Host.address.op('<<=')(net) for net in filternets]
+        query = query.filter(or_(*restrict))
 
         return db.session.execute(query).scalars().all()
 
@@ -322,11 +324,12 @@ class StorageManager:
     def get_hosts(filternets, rescan_horizon):
         """query all hosts in filternets and/or with host.rescan_time over rescan_horizon"""
 
-        query = Host.query
+        if not filternets:
+            return
 
-        if filternets:
-            restrict = [Host.address.op('<<=')(net) for net in filternets]
-            query = query.filter(or_(*restrict))
+        query = Host.query
+        restrict = [Host.address.op('<<=')(net) for net in filternets]
+        query = query.filter(or_(*restrict))
 
         if rescan_horizon:
             query = query.filter(or_(Host.rescan_time < rescan_horizon, Host.rescan_time.is_(None)))
@@ -342,14 +345,15 @@ class StorageManager:
         db.session.expire_all()
 
     @staticmethod
-    def get_services(filternets, rescan_horizon):
+    def get_open_services(filternets, rescan_horizon):
         """query all services in filternets and/or service.rescan_time rescan_horizon"""
 
-        query = Service.query.filter(Service.state.ilike("open:%"))
+        if not filternets:
+            return
 
-        if filternets:
-            restrict = [Host.address.op("<<=")(net) for net in filternets]
-            query = query.join(Host).filter(or_(*restrict))
+        query = Service.query.filter(Service.state.ilike("open:%"))
+        restrict = [Host.address.op("<<=")(net) for net in filternets]
+        query = query.join(Host).filter(or_(*restrict))
 
         if rescan_horizon:
             query = query.filter(or_(Service.rescan_time < rescan_horizon, Service.rescan_time.is_(None)))

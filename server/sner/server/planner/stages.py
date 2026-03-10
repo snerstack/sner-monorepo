@@ -229,10 +229,10 @@ class ServiceDiscoStorageLoader(QueueHandler):
 class SixDisco(QueueHandler):
     """cleanup list host ipv6 hosts (drop any outside scope) and pass it to service discovery"""
 
-    def __init__(self, name, queue_name, next_stage, filternets=None):
+    def __init__(self, name, queue_name, next_stage, filternets):
         super().__init__(name,  queue_name)
         self.next_stage = next_stage
-        self.filternets = filternets or []
+        self.filternets = filternets
         self._whitelist = [ip_network(net) for net in self.filternets]
 
     def _filter_external_hosts(self, hosts):
@@ -254,8 +254,7 @@ class SixDisco(QueueHandler):
 
         for pidb in self._drain():
             hosts = [item.address for item in pidb.hosts]
-            if self.filternets:
-                hosts = self._filter_external_hosts(hosts)
+            hosts = self._filter_external_hosts(hosts)
             current_app.logger.info(f"{self.name} tasking {len(hosts)} hosts to {self.next_stage.name}")
             self.next_stage.task(TargetManager.from_list(hosts))
 
@@ -315,7 +314,7 @@ class ServiceScanStorageTargetlist(Schedule):
         rescan_horizon = now - timedelta(seconds=timeparse(self.service_interval))
 
         targets, ids = [], []
-        for service in StorageManager.get_services(self.filternets, rescan_horizon):
+        for service in StorageManager.get_open_services(self.filternets, rescan_horizon):
             targets.append(ServiceTarget(service.host.address, service.proto, service.port))
             ids.append(service.id)
 
@@ -337,9 +336,26 @@ class ServiceStorageTargetlist(Schedule):
         """run"""
 
         targets = []
-        for service in StorageManager.get_services(self.filternets, None):
+        for service in StorageManager.get_open_services(self.filternets, None):
             targets.append(ServiceTarget(service.host.address, service.proto, service.port))
 
+        self.next_stage.task(targets)
+
+
+class HostStorageTargetlist(Schedule):
+    """project hosts to be scanned by pipeline"""
+
+    def __init__(self, name, schedule, filternets, next_stage):
+        super().__init__(name, schedule)
+        self.filternets = filternets
+        self.next_stage = next_stage
+
+    def _run(self):
+        """run"""
+
+        hosts = StorageManager.get_hosts(self.filternets, None)
+        targets = [HostTarget(host.address) for host in hosts]
+        current_app.logger.info(f"{self.name} tasking {len(targets)} targets")
         self.next_stage.task(targets)
 
 
@@ -471,20 +487,3 @@ class StorageCleanup(Stage):
 
         StorageManager.cleanup_storage()
         current_app.logger.debug(f"{self.name} finished")
-
-
-class HostStorageTargetlist(Schedule):
-    """project hosts to be scanned by pipeline"""
-
-    def __init__(self, name, schedule, filternets, next_stage):
-        super().__init__(name, schedule)
-        self.filternets = filternets
-        self.next_stage = next_stage
-
-    def _run(self):
-        """run"""
-
-        hosts = StorageManager.get_hosts(self.filternets, None)
-        targets = [HostTarget(host.address) for host in hosts]
-        current_app.logger.info(f"{self.name} tasking {len(targets)} targets")
-        self.next_stage.task(targets)

@@ -6,27 +6,27 @@ planner core tests
 import yaml
 from flask import current_app
 
-from sner.server.planner.core import Planner, outofscope_check
+from sner.server.planner.core import Planner, _split_ip_networks, outofscope_check
 from sner.server.storage.models import Host, Note, Vuln
 
 
 def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     """try somewhat default config"""
 
-    queue_factory.create(name="sner.nmap.serviceversion")
+    queue_factory.create(name="standalone")
     queue_factory.create(name="sner.nmap.servicedisco")
     queue_factory.create(name="sner.six_dns_discover")
     queue_factory.create(name="sner.six_enum_discover")
-    queue_factory.create(name="standalone")
+    queue_factory.create(name="sner.nmap.serviceversion")
     queue_factory.create(name="sner.nuclei.rolling")
-    queue_factory.create(name="sner.nessus.rolling")
     queue_factory.create(name="sner.sportmap.rolling")
+    queue_factory.create(name="sner.nessus.rolling")
     queue_factory.create(name="auror.hostnames")
     queue_factory.create(name="auror.testssl")
 
     config = yaml.safe_load(
         """
-      basic_nets: ['::1/128']
+      basic_nets: []
       nuclei_nets: []
       sportmap_nets: []
       auror_testssl_nets: []
@@ -131,3 +131,12 @@ def test_outofscopecheck_emptyscope(app):  # pylint: disable=unused-argument
 
     current_app.config["SNER_PLANNER"] = {}
     assert outofscope_check(prune=False) == 0
+
+
+def test_split_ip_networks():
+    """test utility function"""
+
+    addr4, addr6 = _split_ip_networks(["127.0.0.1", "::1"])
+
+    assert len(addr4) == 1
+    assert len(addr6) == 1

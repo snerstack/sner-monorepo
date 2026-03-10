@@ -6,9 +6,9 @@ storage.core functions tests
 import pytest
 
 from sner.server.parser import ParsedItemsDb
-from sner.server.utils import FilterQueryError
-from sner.server.storage.core import get_related_models, StorageManager, vuln_report
+from sner.server.storage.core import StorageManager, get_related_models, vuln_report
 from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
+from sner.server.utils import FilterQueryError
 
 
 def test_get_related_models(app, service):  # pylint: disable=unused-argument
@@ -102,3 +102,15 @@ def test_vuln_report(app, host_factory, service_factory, vuln_factory):  # pylin
 
     with pytest.raises(FilterQueryError):
         output = vuln_report(qfilter='invalid')
+
+
+def test_storagemanager_empty_filternets(app, host_factory, service_factory):  # pylint: disable=unused-argument
+    """test empty filternets handling"""
+
+    host1 = host_factory.create(address="127.0.0.1")
+    service_factory.create(host=host1, port=1, state="open:test")
+    host_factory.create(address="::1")
+
+    assert len(StorageManager.get_six_addresses([])) == 0
+    assert len(list(StorageManager.get_hosts([], None))) == 0
+    assert len(list(StorageManager.get_open_services([], None))) == 0
