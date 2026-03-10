@@ -160,12 +160,6 @@ const NoteListPage = () => {
           <div className='btn-group'>
             <Link
               className="btn btn-outline-secondary"
-              to='/storage/note/list?filter=Note.xtype=="testssl"'
-            >
-              Testssl
-            </Link>
-            <Link
-              className="btn btn-outline-secondary"
               to='/storage/note/list?filter=Note.xtype=="sportmap"'
             >
               Sportmap
