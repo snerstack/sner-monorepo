@@ -6,7 +6,7 @@ import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getDTConfigValue } from '@/lib/sner/storage'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
@@ -33,7 +33,7 @@ const NoteListPage = () => {
   const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
   const columns = [
-    ColumnSelect({ visible: toolboxesVisible() }),
+    ColumnSelect({ visible: getDTConfigValue("dt_toolboxes_visible") }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
@@ -68,7 +68,7 @@ const NoteListPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: viaTargetVisible() }),
+    Column('via_target', { visible: getDTConfigValue("dt_viatarget_visible") }),
     Column('xtype'),
     Column('data', {
       className: 'forcewrap',
@@ -178,7 +178,7 @@ const NoteListPage = () => {
       </Heading>
 
       <div id="note_list_table_toolbar" className="dt_toolbar">
-        <div data-testid="note_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
+        <div data-testid="note_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}>
           <div className="btn-group">
             <a className="btn btn-outline-secondary">
               <i className="fas fa-check-square"></i>
@@ -286,7 +286,7 @@ const NoteListPage = () => {
         id="note_list_table"
         columns={columns}
         ajax_url={urlFor(`/backend/storage/note/list.json${toQueryString(searchParams)}`)}
-        select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
+        select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
         order={[[3, 'asc']]}
       />
 

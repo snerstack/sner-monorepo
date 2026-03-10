@@ -36,7 +36,7 @@ describe('Vuln list page', () => {
       expect(screen.getByText('another test vulnerability')).toBeInTheDocument()
     })
 
-    sessionStorage.setItem('dt_viatarget_column_visible', 'true')
+    sessionStorage.setItem('dt_viatarget_visible', 'true')
   })
 
   it('views host', async () => {

@@ -6,23 +6,22 @@ import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, viaTargetVisible } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getDTConfigValue, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
-import DataTable from '@/components/DataTable'
-import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
-import Heading from '@/components/Heading'
-import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
-import Tag from '@/components/Tag'
+import { EditButton, MultiCopyButton } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
-import { EditButton } from '@/components/buttons/BasicButtons'
-import { MultiCopyButton } from '@/components/buttons/BasicButtons'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
+import DataTable from '@/components/DataTable'
+import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
+import Heading from '@/components/Heading'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
+import Tag from '@/components/Tag'
 
 const VulnListPage = () => {
   const [appConfig,] = useRecoilState(appConfigState)
@@ -68,9 +67,7 @@ const VulnListPage = () => {
           />,
         ),
     }),
-    Column('via_target', {
-      visible: viaTargetVisible(),
-    }),
+    Column('via_target', { visible: getDTConfigValue("dt_viatarget_visible") }),
     Column('name', {
       createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(

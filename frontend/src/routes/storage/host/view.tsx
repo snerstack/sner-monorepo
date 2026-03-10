@@ -7,22 +7,22 @@ import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getTextForRef, getUrlForRef, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getDTConfigValue, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
-import DataTable from '@/components/DataTable'
-import EllipsisCell from '@/components/EllipsisCell'
-import Heading from '@/components/Heading'
-import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
-import Tag from '@/components/Tag'
 import { Button, EditButton, LensButton, MultiCopyButton, ViewButton } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
+import DataTable from '@/components/DataTable'
+import EllipsisCell from '@/components/EllipsisCell'
+import Heading from '@/components/Heading'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
+import Tag from '@/components/Tag'
 
 const HostViewPage = () => {
   const [appConfig] = useRecoilState(appConfigState)
@@ -69,7 +69,7 @@ const HostViewPage = () => {
   }
 
   const serviceColumns = [
-    ColumnSelect({ visible: toolboxesVisible() }),
+    ColumnSelect({ visible: getDTConfigValue("dt_toolboxes_visible") }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', { visible: false }),
@@ -170,7 +170,7 @@ const HostViewPage = () => {
   ]
 
   const vulnColumns = [
-    ColumnSelect({ visible: toolboxesVisible() }),
+    ColumnSelect({ visible: getDTConfigValue("dt_toolboxes_visible") }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', { visible: false }),
@@ -191,7 +191,7 @@ const HostViewPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: viaTargetVisible() }),
+    Column('via_target', { visible: getDTConfigValue("dt_viatarget_visible") }),
     Column('name', {
       createdCell: (cell, _data: string, row: VulnRow) =>
         renderElements(
@@ -310,7 +310,7 @@ const HostViewPage = () => {
   ]
 
   const noteColumns = [
-    ColumnSelect({ visible: toolboxesVisible() }),
+    ColumnSelect({ visible: getDTConfigValue("dt_toolboxes_visible") }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', { visible: false }),
@@ -331,7 +331,7 @@ const HostViewPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: viaTargetVisible() }),
+    Column('via_target', { visible: getDTConfigValue("dt_viatarget_visible") }),
     Column('xtype'),
     Column('data', {
       className: 'forcewrap',
@@ -412,7 +412,7 @@ const HostViewPage = () => {
     }),
   ]
   const versioninfoColumns = [
-    ColumnSelect({ visible: toolboxesVisible() }),
+    ColumnSelect({ visible: getDTConfigValue("dt_toolboxes_visible") }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', { visible: false }),
@@ -433,7 +433,7 @@ const HostViewPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: viaTargetVisible() }),
+    Column('via_target', { visible: getDTConfigValue("dt_viatarget_visible") }),
     Column('product'),
     Column('version'),
     Column('extra'),
@@ -661,7 +661,7 @@ const HostViewPage = () => {
               <div
                 id="host_view_service_table_toolbox"
                 data-testid="host_view_service_table_toolbox"
-                className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}
+                className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}
               >
                 <div className="btn-group">
                   <a className="btn btn-outline-secondary disabled">
@@ -763,7 +763,7 @@ const HostViewPage = () => {
               columns={serviceColumns}
               ajax_url={urlFor(`/backend/storage/service/list.json?filter=Host.id=="${host.id}"`)}
               order={[[5, 'asc']]}
-              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
+              select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
             />
           </div>
         </>
@@ -867,14 +867,14 @@ const HostViewPage = () => {
               columns={vulnColumns}
               ajax_url={urlFor(`/backend/storage/vuln/list.json?filter=Host.id=="${host.id}"`)}
               order={[[1, 'asc']]}
-              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
+              select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
             />
           </div>
         </>
         <>
           <div id="host_view_note_tab" className={clsx('tab-pane', activeTab === 'note' && 'active')}>
             <div id="host_view_note_table_toolbar" className="dt_toolbar">
-              <div data-testid="host_view_note_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
+              <div data-testid="host_view_note_table_toolbox" className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}>
                 <div className="btn-group">
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
@@ -970,14 +970,14 @@ const HostViewPage = () => {
               columns={noteColumns}
               ajax_url={urlFor(`/backend/storage/note/list.json?filter=Host.id=="${host.id}"`)}
               order={[[1, 'asc']]}
-              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
+              select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
             />
           </div>
         </>
         <>
           <div id="host_view_versioninfo_tab" className={clsx('tab-pane', activeTab === 'versioninfo' && 'active')}>
             <div id="host_view_versioninfo_table_toolbar" className="dt_toolbar">
-              <div data-testid="host_view_versioninfo_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
+              <div data-testid="host_view_versioninfo_table_toolbox" className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}>
                 <div className="btn-group">
                   <a className="btn btn-outline-secondary disabled">
                     <i className="fas fa-check-square"></i>
@@ -1070,7 +1070,7 @@ const HostViewPage = () => {
               columns={versioninfoColumns}
               ajax_url={urlFor(`/backend/storage/versioninfo/list.json?filter=Versioninfo.host_id=="${host.id}"`)}
               order={[[6, 'asc']]}
-              select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
+              select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
               drawCallback={(settings) => {
                 setVersionInfosCount((settings as { json: { recordsTotal: string } }).json.recordsTotal)
               }}

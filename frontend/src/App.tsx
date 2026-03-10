@@ -46,6 +46,7 @@ const App = () => {
       const configResp = await httpClient.get<DeepPartial<AppConfig>>(urlFor('/backend/frontend_config'))
       setAppConfig(lodash.mergeWith({}, appConfig, configResp.data, merger))
       tagsConfigInitialize(appConfig)
+      sessionStorage.getItem("dt_queueconfig_visible") ?? sessionStorage.setItem("dt_queueconfig_visible", 'true')
     } catch (error) {
       console.error('Boot config failed', error)
       return

@@ -35,7 +35,7 @@ describe('Note list page', () => {
 
   it('shows list of notes with toolboxes and via_target column', async () => {
     sessionStorage.setItem('dt_toolboxes_visible', 'true')
-    sessionStorage.setItem('dt_viatarget_column_visible', 'true')
+    sessionStorage.setItem('dt_viatarget_visible', 'true')
 
     renderWithProviders({ element: <NoteListPage />, path: '/storage/note/list' })
 

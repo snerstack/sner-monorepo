@@ -25,7 +25,7 @@ describe('Versioninfo list page', () => {
 
   it('shows list of versioninfos with toolboxes and via_target column', async () => {
     sessionStorage.setItem('dt_toolboxes_visible', 'true')
-    sessionStorage.setItem('dt_viatarget_column_visible', 'true')
+    sessionStorage.setItem('dt_viatarget_visible', 'true')
 
     renderWithProviders({ element: <VersionInfosListPage />, path: '/storage/versioninfo/list' })
 

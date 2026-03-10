@@ -70,7 +70,7 @@ describe('Host view page', () => {
 
   it('shows host with toolboxes and via_target column', async () => {
     sessionStorage.setItem('dt_toolboxes_visible', 'true')
-    sessionStorage.setItem('dt_viatarget_column_visible', 'true')
+    sessionStorage.setItem('dt_viatarget_visible', 'true')
     localStorage.setItem('host_view_tabs_active', 'service')
 
     renderWithProviders({ element: <HostViewPage />, path: '/storage/host/view/1', loader: loader })

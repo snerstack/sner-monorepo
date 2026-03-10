@@ -2,17 +2,17 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-import { urlFor } from '@/lib/urlHelper'
 import { Column, ColumnButtons, getTableApi, renderElements } from '@/lib/DataTables'
 import { httpClient } from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
 import CodeBlock from '@/components/CodeBlock'
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'
-import { Button } from '@/components/buttons/BasicButtons'
+import { Button, EditButton } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
-import { EditButton } from '@/components/buttons/BasicButtons'
+import { getDTConfigValue } from '@/lib/sner/storage'
 
 const QueueListPage = () => {
   const navigate = useNavigate()
@@ -22,6 +22,7 @@ const QueueListPage = () => {
     Column('name'),
     Column('config', {
       createdCell: (cell, data: string) => renderElements(cell, <CodeBlock language="language-yaml" data={data} />),
+      visible: getDTConfigValue("dt_queueconfig_visible")
     }),
     Column('group_size'),
     Column('priority'),

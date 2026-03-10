@@ -6,22 +6,22 @@ import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, getDTConfigValue } from '@/lib/sner/storage'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
-import DataTable from '@/components/DataTable'
-import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
-import Heading from '@/components/Heading'
-import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
-import Tag from '@/components/Tag'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DropdownButton from '@/components/buttons/DropdownButton'
 import TagButton from '@/components/buttons/TagButton'
 import TagsDropdownButton from '@/components/buttons/TagsDropdownButton'
+import DataTable from '@/components/DataTable'
 import SubmitField from '@/components/fields/SubmitField'
 import TextField from '@/components/fields/TextField'
+import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
+import Heading from '@/components/Heading'
 import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
+import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
+import Tag from '@/components/Tag'
 
 const VersionInfosListPage = () => {
   const [appConfig,] = useRecoilState(appConfigState)
@@ -46,7 +46,7 @@ const VersionInfosListPage = () => {
   }
 
   const columns = [
-    ColumnSelect({ visible: toolboxesVisible() }),
+    ColumnSelect({ visible: getDTConfigValue("dt_toolboxes_visible") }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', {
@@ -81,7 +81,7 @@ const VersionInfosListPage = () => {
           />,
         ),
     }),
-    Column('via_target', { visible: viaTargetVisible() }),
+    Column('via_target', { visible: getDTConfigValue("dt_viatarget_visible") }),
     Column('product'),
     Column('version'),
     Column('extra'),
@@ -189,7 +189,7 @@ const VersionInfosListPage = () => {
       </div>
 
       <div id="versioninfo_list_table_toolbar" className="dt_toolbar">
-        <div data-testid="versioninfo_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
+        <div data-testid="versioninfo_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}>
           <div className="btn-group">
             <a className="btn btn-outline-secondary">
               <i className="fas fa-check-square"></i>
@@ -280,7 +280,7 @@ const VersionInfosListPage = () => {
         columns={columns}
         ajax_url={urlFor(`/backend/storage/versioninfo/list.json${toQueryString(searchParams)}`)}
         order={[[2, 'asc']]}
-        select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
+        select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
       />
 
       <AnnotateModal annotate={annotate} setAnnotate={setAnnotate} />

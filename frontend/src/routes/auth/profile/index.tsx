@@ -13,6 +13,7 @@ import TagsConfig from '@/components/TagsConfig'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import { EditButton } from '@/components/buttons/BasicButtons'
+import ToggleDTConfig from '@/components/ToggleDTConfig'
 
 const ProfilePage = () => {
   const profile = useLoaderData() as Profile
@@ -148,6 +149,16 @@ const ProfilePage = () => {
             <tr>
               <th>Tag colors</th>
               <td><TagsConfig /></td>
+            </tr>
+            <tr>
+              <th>DT Columns</th>
+              <td>
+                <div>
+                  <ToggleDTConfig storageKey="dt_viatarget_visible" caption="DT via_target columns visible"/>
+                  <ToggleDTConfig storageKey="dt_toolboxes_visible" caption="DT toolboxes visible"/>
+                  <ToggleDTConfig storageKey="dt_queueconfig_visible" caption="Queue config column visible"/>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>

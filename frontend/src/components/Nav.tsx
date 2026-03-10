@@ -10,7 +10,6 @@ import { userState } from '@/atoms/userAtom'
 
 import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
-import { toolboxesVisible, viaTargetVisible } from '@/lib/sner/storage'
 
 
 const Nav = () => {
@@ -133,30 +132,6 @@ const Nav = () => {
       })
   }
 
-  const toggleViaTargetHandler = (e: MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()
-    sessionStorage.setItem(
-      'dt_viatarget_column_visible',
-      sessionStorage.getItem('dt_viatarget_column_visible') === 'true' ? 'false' : 'true',
-    )
-    Object.keys(sessionStorage)
-      .filter((key) => key.startsWith('DataTables_'))
-      .forEach((key) => sessionStorage.removeItem(key))
-    navigate(0)
-  }
-
-  const toggleToolboxesHandler = (e: MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()
-    sessionStorage.setItem(
-      'dt_toolboxes_visible',
-      sessionStorage.getItem('dt_toolboxes_visible') === 'true' ? 'false' : 'true',
-    )
-    Object.keys(sessionStorage)
-      .filter((key) => key.startsWith('DataTables_'))
-      .forEach((key) => sessionStorage.removeItem(key))
-    navigate(0)
-  }
-
   const handleCopyUsername = async (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
     try {
@@ -195,12 +170,6 @@ const Nav = () => {
                 </Link>
                 <Link className="dropdown-item" to="/storage/host/lookup">
                   Host lookup
-                </Link>
-                <Link className="dropdown-item" to="#" onClick={toggleViaTargetHandler}>
-                  {`UI: toggle via_target (${viaTargetVisible()})`}
-                </Link>
-                <Link className="dropdown-item" to="#" onClick={toggleToolboxesHandler}>
-                  {`UI: toggle DT toolboxes (${toolboxesVisible()})`}
                 </Link>
               </>
             )}

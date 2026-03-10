@@ -6,7 +6,7 @@ import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, toolboxesVisible } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getDTConfigValue } from '@/lib/sner/storage'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import { Button, EditButton, LensButton } from '@/components/buttons/BasicButtons'
@@ -32,7 +32,7 @@ const HostListPage = () => {
   const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
   const columns = [
-    ColumnSelect({ visible: toolboxesVisible() }),
+    ColumnSelect({ visible: getDTConfigValue("dt_toolboxes_visible") }),
     Column('id', { visible: false }),
     Column('address', {
       createdCell: (cell, data: string, row: HostRow) =>
@@ -138,7 +138,7 @@ const HostListPage = () => {
       </Heading>
 
       <div id="host_list_table_toolbar" className="dt_toolbar">
-        <div data-testid="host_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !toolboxesVisible() && 'collapse')}>
+        <div data-testid="host_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}>
           <div className="btn-group">
             <a className="btn btn-outline-secondary">
               <i className="fas fa-check-square"></i>
@@ -242,7 +242,7 @@ const HostListPage = () => {
         id="host_list_table"
         columns={columns}
         ajax_url={urlFor(`/backend/storage/host/list.json${toQueryString(searchParams)}`)}
-        select={toolboxesVisible() ? { style: 'multi', selector: 'td:first-child' } : false}
+        select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
         order={[[2, 'asc']]}
       />
 
