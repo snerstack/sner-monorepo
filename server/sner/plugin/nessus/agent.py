@@ -1,6 +1,10 @@
 # This file is part of sner4 project governed by MIT license, see the LICENSE.txt file.
 """
 sner agent nessus module
+
+## sner-basic policy description
+* Basic scan template
+* + Designate hosts by their DNS name
 """
 
 from pathlib import Path
@@ -11,7 +15,6 @@ from sner.agent.modules import ModuleBase
 from sner.config import ConfigBase
 from sner.plugin.nessus.manager import NessusManager
 from sner.targets import GenericTarget
-
 
 SCAN_POLL_INTERVAL = 10
 OUTPUT_FILENAME = "output.nessus"
