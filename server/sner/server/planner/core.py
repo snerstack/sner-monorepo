@@ -392,9 +392,9 @@ class Planner(TerminateContextRunner):
 
         loader = self._add_stage(SportmapStorageLoader("sportmap_scan:scan", self._cp.sportmap_scan.queue))
         self._add_stage(
-            ServiceStorageTargetlist(
+            HostStorageTargetlist(
                 "sportmap_scan:storage_targetlist",
-                schedule=self._cp.nuclei_scan.schedule,  # NOTE: intentionally reuses nuclei schedule
+                schedule=self._cp.sportmap_scan.schedule,
                 filternets=self.config.sportmap_nets,
                 next_stage=loader,
             )

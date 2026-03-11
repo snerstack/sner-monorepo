@@ -11,7 +11,6 @@ from sner.agent.modules import ModuleBase
 from sner.config import ConfigBase
 from sner.plugin.nmap.agent import AgentModule as NmapAgent
 
-
 DEFAULT_SPORT = -1
 
 
@@ -28,7 +27,7 @@ class AgentModule(ModuleBase):
     sportmap module
 
     ## target specification
-    target = host-target
+    targetsV2 GenericTarget | HostTarget
     """
 
     CONFIG_SCHEMA = Config
