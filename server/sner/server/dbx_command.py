@@ -61,9 +61,8 @@ class QueueDef(DefBase):
 def _dbqueue_to_dict(queue):
     return {fitem.name: getattr(queue, fitem.name) for fitem in fields(QueueDef)}
 
-DEFAULT_DEV_QUEUES = [
-    QueueDef("dev.dummy", {"module": "dummy", "args": ["--dummyparam", "1"]}, 2, QueuePrio.NORMAL, [])
-]
+
+DEFAULT_DEV_QUEUES = [QueueDef("dev.dummy", {"module": "dummy", "args": ["--dummyparam", "1"]}, 2, QueuePrio.NORMAL, [])]
 
 DEFAULT_PROD_QUEUES = [
     # basic scan
@@ -256,16 +255,12 @@ DEFAULT_DEV_STORAGE_DATA = [
                 state="closed:testreason",
                 name="svcx",
                 _vulns=[
-                    VulnDef(
-                        name="vulnerability3", xtype="testxtype.124", severity=SeverityEnum.UNKNOWN, tags=["report"]
-                    ),
+                    VulnDef(name="vulnerability3", xtype="testxtype.124", severity=SeverityEnum.UNKNOWN, tags=["report"]),
                     _AGGREGABLE_VULN,
                 ],
             )
         ],
-        _notes=[
-            NoteDef(xtype="sner.testnote", data="testnote data<script>alert(2);</script>", comment="test note comment")
-        ],
+        _notes=[NoteDef(xtype="sner.testnote", data="testnote data<script>alert(2);</script>", comment="test note comment")],
         _vulns=[
             VulnDef(
                 name="test vulnerability",
