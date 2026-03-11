@@ -170,7 +170,7 @@ const HostViewPage = () => {
   ]
 
   const vulnColumns = [
-    ColumnSelect({ visible: getDTConfigValue("dt_toolboxes_visible") }),
+    ColumnSelect({ visible: true }),
     Column('id', { visible: false }),
     Column('host_id', { visible: false }),
     Column('host_address', { visible: false }),
@@ -411,6 +411,7 @@ const HostViewPage = () => {
         ),
     }),
   ]
+
   const versioninfoColumns = [
     ColumnSelect({ visible: getDTConfigValue("dt_toolboxes_visible") }),
     Column('id', { visible: false }),
@@ -767,7 +768,6 @@ const HostViewPage = () => {
             />
           </div>
         </>
-
         <>
           <div id="host_view_vuln_tab" className={clsx('tab-pane', activeTab === 'vuln' && 'active')}>
             <div id="host_view_vuln_table_toolbar" className="dt_toolbar">
