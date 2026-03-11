@@ -33,7 +33,7 @@ class SnerJSONEncoder(json.JSONEncoder):
 
 def yaml_dump(data, **kwargs):
     """dump data with style"""
-    return yaml.dump(data, sort_keys=False, indent=4, width=80, **kwargs)
+    return yaml.safe_dump(data, sort_keys=False, indent=4, width=80, **kwargs)
 
 
 def windowed_query(query, column, windowsize=5000):
