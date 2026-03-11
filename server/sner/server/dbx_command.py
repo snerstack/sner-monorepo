@@ -4,6 +4,7 @@ sner.server db command module
 """
 # pylint: disable=missing-class-docstring,too-many-instance-attributes
 
+import difflib
 import json
 import os
 import shutil
@@ -11,6 +12,7 @@ from enum import IntEnum
 from dataclasses import dataclass, field, fields
 
 import click
+import yaml
 from flask import current_app
 from flask.cli import with_appcontext
 from sqlalchemy import text
@@ -45,10 +47,19 @@ class QueueDef(DefBase):
     group_size: int
     priority: QueuePrio
     reqs: list[str] = field(default_factory=list)
+    active: bool = True
 
     def __post_init__(self):
         self.config = yaml_dump(self.config)
 
+    def to_dict(self):
+        data = self.__dict__
+        data["priority"] = int(self.priority)
+        return data
+
+
+def _dbqueue_to_dict(queue):
+    return {fitem.name: getattr(queue, fitem.name) for fitem in fields(QueueDef)}
 
 DEFAULT_DEV_QUEUES = [
     QueueDef("dev.dummy", {"module": "dummy", "args": ["--dummyparam", "1"]}, 2, QueuePrio.NORMAL, [])
@@ -376,19 +387,24 @@ def initdata_dev():
     db.session.commit()
 
 
-def check_prod_queues():
+def check_queue_configs():
     """check diff of current and DEFAULT_PROD_QUEUES settings"""
 
-    for queue_def in DEFAULT_PROD_QUEUES:
-        if not (queue := Queue.query.filter_by(name=queue_def.name).one_or_none()):
+    def _dump(data):
+        # pyyaml doubles newlines in dumped multiline strings, get rid of them
+        return yaml.safe_dump(data, sort_keys=True).replace("\n\n", "\n")
+
+    for queue_def in DEFAULT_PROD_QUEUES + DEFAULT_DEV_QUEUES:
+        if not (queue_db := Queue.query.filter_by(name=queue_def.name).one_or_none()):
             print(f"queue missing, {queue_def.name}")
             continue
 
-        for item in fields(queue_def):
-            default_value = getattr(queue_def, item.name)
-            current_value = getattr(queue, item.name)
-            if default_value != current_value:
-                print(f"queue differ, {queue.name} field:{item.name} default:{default_value} current: {current_value}")
+        _queue_def = _dump(queue_def.to_dict())
+        _queue_db = _dump(_dbqueue_to_dict(queue_db))
+        diff = list(difflib.unified_diff(_queue_db.splitlines(), _queue_def.splitlines(), fromfile="queue_db", tofile="queue_def", lineterm=""))
+        if diff:
+            print(f"diff a/{queue_db.name} b/{queue_def.name} differs")
+            print("\n".join(diff))
 
 
 def db_remove():
@@ -449,8 +465,8 @@ def update_prod_queues_command():
     initdata_prod()
 
 
-@command.command(name="check-prod-queues", help="check if queue settings differs from defaults (deployment helper)")
+@command.command(name="check-queue-configs", help="check if queue settings differs from defaults (deployment helper)")
 @with_appcontext
-def check_queues_command():
+def check_queue_configs_command():
     """check queues"""
-    check_prod_queues()
+    check_queue_configs()

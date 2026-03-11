@@ -56,10 +56,10 @@ def test_update_prod_queues_command(runner):
     assert result.exit_code == 0
 
 
-def test_check_prod_queues_command(runner, queue_factory):
-    """dbx check-prod-queues test"""
+def test_check_queue_configs_command(runner, queue_factory):
+    """dbx check-queue-configs test"""
 
     queue_factory.create(name="sner.nmap.servicedisco")
 
-    result = runner.invoke(command, ['check-prod-queues'])
+    result = runner.invoke(command, ['check-queue-configs'])
     assert result.exit_code == 0
