@@ -180,9 +180,8 @@ def test_host_view_route_services_list_moredata_dropdown(frontend_server, sl_ope
 def test_host_view_route_services_list_selectrows(frontend_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
     """host view tabbed services dt test; selections"""
 
-    get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
     check_dt_toolbox_select_rows(
         sl_operator,
         frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
@@ -194,9 +193,8 @@ def test_host_view_route_services_list_selectrows(frontend_server, sl_operator, 
 def test_host_view_route_services_list_multiactions(frontend_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
     """host view tabbed services dt test; multiactions"""
 
-    get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
     check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
                                   'host_view_service_table', Service, load_route=False)
 
@@ -204,9 +202,8 @@ def test_host_view_route_services_list_multiactions(frontend_server, sl_operator
 def test_host_view_route_services_list_freetag(frontend_server, sl_operator, services_multiaction):  # pylint: disable=unused-argument
     """host view tabbed services dt test; freetag"""
 
-    get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, services_multiaction[0].host_id, services_multiaction[-1])
     check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{services_multiaction[0].host_id}'),
                              'host_view_service_table', Service, load_route=False)
 
@@ -254,9 +251,8 @@ def test_host_view_route_vulns_list_moredata_dropdown(frontend_server, sl_operat
 def test_host_view_route_vulns_list_selectrows(frontend_server, sl_operator, vulns_multiaction):  # pylint: disable=unused-argument
     """host view tabbed vulns dt test; selections"""
 
-    get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
     check_dt_toolbox_select_rows(
         sl_operator,
         frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
@@ -268,9 +264,8 @@ def test_host_view_route_vulns_list_selectrows(frontend_server, sl_operator, vul
 def test_host_view_route_vulns_list_multiactions(frontend_server, sl_operator, vulns_multiaction):  # pylint: disable=unused-argument
     """host view tabbed vulns dt test; multiactions"""
 
-    get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
     check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
                                   'host_view_vuln_table', Vuln, load_route=False)
 
@@ -278,9 +273,8 @@ def test_host_view_route_vulns_list_multiactions(frontend_server, sl_operator, v
 def test_host_view_route_vulns_list_freetag(frontend_server, sl_operator, vulns_multiaction):  # pylint: disable=unused-argument
     """host view tabbed vulns dt test; freetag"""
 
-    get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, vulns_multiaction[0].host_id, vulns_multiaction[-1])
     check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{vulns_multiaction[0].host_id}'),
                              'host_view_vuln_table', Vuln, load_route=False)
 
@@ -327,9 +321,8 @@ def test_host_view_route_notes_list_moredata_dropdown(frontend_server, sl_operat
 def test_host_view_route_notes_list_selectrows(frontend_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
     """host view tabbed notes dt test; selections"""
 
-    get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
     check_dt_toolbox_select_rows(
         sl_operator,
         frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'),
@@ -341,9 +334,8 @@ def test_host_view_route_notes_list_selectrows(frontend_server, sl_operator, not
 def test_host_view_route_notes_list_multiactions(frontend_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
     """host view tabbed notes dt test; multiactions"""
 
-    get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
     check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'),
                                   'host_view_note_table', Note, load_route=False)
 
@@ -351,9 +343,8 @@ def test_host_view_route_notes_list_multiactions(frontend_server, sl_operator, n
 def test_host_view_route_notes_list_freetag(frontend_server, sl_operator, notes_multiaction):  # pylint: disable=unused-argument
     """host view tabbed notes dt test; freetag"""
 
-    get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, notes_multiaction[0].host_id, notes_multiaction[-1])
     check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{notes_multiaction[0].host_id}'),
                              'host_view_note_table', Note, load_route=False)
 
@@ -367,9 +358,8 @@ def test_host_view_route_versioninfo_list(frontend_server, sl_operator, versioni
 def test_host_view_route_versioninfo_list_selectrows(frontend_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
     """host view tabbed versioninfo dt test; selections"""
 
-    get_host_view_tab(sl_operator, versioninfo_multiaction[0].host_id, versioninfo_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, versioninfo_multiaction[0].host_id, versioninfo_multiaction[-1])
     check_dt_toolbox_select_rows(
         sl_operator,
         frontend_url(f'/storage/host/view/{versioninfo_multiaction[0].host_id}'),
@@ -381,9 +371,8 @@ def test_host_view_route_versioninfo_list_selectrows(frontend_server, sl_operato
 def test_host_view_route_versioninfo_list_multiactions(frontend_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
     """host view tabbed versioninfo dt test; multiactions"""
 
-    get_host_view_tab(sl_operator, versioninfo_multiaction[0].host_id, versioninfo_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, versioninfo_multiaction[0].host_id, versioninfo_multiaction[-1])
     check_dt_toolbox_multiactions(sl_operator, frontend_url(f'/storage/host/view/{versioninfo_multiaction[0].host_id}'),
                                   'host_view_versioninfo_table', Versioninfo, load_route=False, test_delete=False)
 
@@ -391,8 +380,7 @@ def test_host_view_route_versioninfo_list_multiactions(frontend_server, sl_opera
 def test_host_view_route_versioninfo_list_freetag(frontend_server, sl_operator, versioninfo_multiaction):  # pylint: disable=unused-argument
     """host view tabbed versioninfo dt test; freetag"""
 
-    get_host_view_tab(sl_operator, versioninfo_multiaction[0].host_id, versioninfo_multiaction[-1])
     toggle_dt_toolboxes(sl_operator)
-    wait_for_js(sl_operator)
+    get_host_view_tab(sl_operator, versioninfo_multiaction[0].host_id, versioninfo_multiaction[-1])
     check_dt_toolbox_freetag(sl_operator, frontend_url(f'/storage/host/view/{versioninfo_multiaction[0].host_id}'),
                              'host_view_versioninfo_table', Versioninfo, load_route=False)

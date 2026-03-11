@@ -18,9 +18,8 @@ def check_dt_toolbox_select_rows(sclnt, route, dt_id, load_route=True):
     if load_route:
         # in case of main data tables, toggle visibility, load page and test
         # in host view vuln tab data table is page already prepared by callee
-        sclnt.get(route)
-        wait_for_js(sclnt)
         toggle_dt_toolboxes(sclnt)
+        sclnt.get(route)
         wait_for_js(sclnt)
 
     dt_elem = dt_wait_processing(sclnt, dt_id)
@@ -55,9 +54,8 @@ def check_dt_toolbox_multiactions(
     if load_route:
         # in case of main data tables, toggle visibility, load page and test
         # in host view vuln tab data table is page already prepared by callee
-        sclnt.get(route)
-        wait_for_js(sclnt)
         toggle_dt_toolboxes(sclnt)
+        sclnt.get(route)
         wait_for_js(sclnt)
 
     # there should be two rows in total
@@ -127,9 +125,8 @@ def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
     if load_route:
         # in case of main data tables, toggle visibility, load page and test
         # in host view vuln tab data table is page already prepared by callee
-        sclnt.get(route)
-        wait_for_js(sclnt)
         toggle_dt_toolboxes(sclnt)
+        sclnt.get(route)
         wait_for_js(sclnt)
 
     # there should be two rows in total
@@ -181,11 +178,10 @@ def check_dt_toolbox_visibility_toggle(sclnt, route, dt_id, model_factory):
 
     sclnt.get(route)
     wait_for_js(sclnt)
-    dt_rendered(sclnt, dt_id, getattr(test_model, 'comment'))
+    dt_rendered(sclnt, dt_id, test_model.comment)
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located(toolbox_elem))
 
     toggle_dt_toolboxes(sclnt)
-    wait_for_js(sclnt)
 
-    dt_rendered(sclnt, dt_id, getattr(test_model, 'comment'))
+    dt_rendered(sclnt, dt_id, test_model.comment)
     webdriver_waituntil(sclnt, EC.visibility_of_element_located(toolbox_elem))

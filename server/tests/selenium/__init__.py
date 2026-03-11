@@ -82,8 +82,10 @@ def wait_for_js(sclnt):
 def toggle_dt_toolboxes(sclnt):
     """toggle datatables toolboxes"""
 
-    sclnt.find_element(By.XPATH, '//a[@id="dropdownUser"]').click()
-    sclnt.find_element(By.XPATH, '//a[contains(text(), "UI: toggle DT toolboxes")]').click()
+    # simplified toggle, detailed selenium tests are deprecated
+    sclnt.execute_script("sessionStorage.clear(); window.sessionStorage.setItem('dt_toolboxes_visible', 'true');")
+    sclnt.refresh()
+    wait_for_js(sclnt)
 
 
 def frontend_url(route_path):

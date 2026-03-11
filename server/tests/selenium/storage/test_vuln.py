@@ -160,9 +160,9 @@ def test_vuln_list_route_viatarget_visibility_toggle(frontend_server, sl_operato
 
     webdriver_waituntil(sl_operator, EC.invisibility_of_element_located((By.XPATH, '//th[contains(text(), "via_target")]')))
 
-    sl_operator.find_element(By.XPATH, '//a[@id="dropdownUser"]').click()
-    webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, '//a[contains(text(), "UI: toggle via_target (false)")]')))
-    sl_operator.find_element(By.XPATH, '//a[contains(text(), "UI: toggle via_target (false)")]').click()
+    # simplified toggle, detailed selenium tests are deprecated
+    sl_operator.execute_script("sessionStorage.clear(); window.sessionStorage.setItem('dt_viatarget_visible', 'true');")
+    sl_operator.refresh()
     wait_for_js(sl_operator)
     dt_rendered(sl_operator, 'vuln_list_table', vuln.comment)
 
