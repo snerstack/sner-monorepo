@@ -13,7 +13,6 @@ from pprint import pprint
 from sner.lib import files_from_zip, is_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
 
-
 logger = logging.getLogger(__name__)
 
 SECTIONS = [
@@ -80,12 +79,7 @@ class ParserModule(ParserBase):  # pylint: disable=too-few-public-methods
 
         tls_method = "explicit" if "--starttls" in json_data["Invocation"] else "implicit"
 
-        if len(json_data["scanResult"]) == 1:
-            result = json_data["scanResult"][0]
-        else:
-            logger.error("testssl.sh scan includes %s results, %s", len(json_data), json_data)
-            raise ValueError("Multiple scan results found")
-
+        result = json_data["scanResult"][-1]
         if "ip" not in result:
             logger.warning("missing ip field, %s", result)
             return pidb

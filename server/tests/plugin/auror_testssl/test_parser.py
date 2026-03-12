@@ -4,12 +4,13 @@ auror_testssl output parser tests
 """
 
 import json
-import pytest
 from pathlib import Path
 from unittest.mock import patch
+
+import pytest
+
 from sner.plugin.auror_testssl.parser import ParserModule
 from sner.server.parser import ParsedItemsDb
-
 
 # @pytest.fixture
 # def pidb():
@@ -100,15 +101,6 @@ def test_process_testssl_result_key_error():
         ParserModule._process_testssl_result(bad_input)
         mock_logger.error.assert_called()
         assert "Results are missing some keys" in mock_logger.error.call_args[0][0]
-
-
-def test_parse_data_multiple_scan_results():
-    """Test _parse_data with multiple scan results."""
-
-    pidb = object()
-    json_data = json.dumps({"scanTime": 123, "Invocation": "", "scanResult": [{"ip": "1.2.3.4"}, {"ip": "5.6.7.8"}]})
-    with pytest.raises(ValueError, match="Multiple scan results found"):
-        ParserModule._parse_data(json_data, pidb)
 
 
 def test_parse_data_missing_ip():
