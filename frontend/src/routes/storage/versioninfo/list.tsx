@@ -22,6 +22,7 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
+import DTSelectionControls from '@/components/DTSelectionControls'
 
 const VersionInfosListPage = () => {
   const [appConfig,] = useRecoilState(appConfigState)
@@ -190,35 +191,8 @@ const VersionInfosListPage = () => {
 
       <div id="versioninfo_list_table_toolbar" className="dt_toolbar">
         <div data-testid="versioninfo_list_table_toolbox" className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}>
-          <div className="btn-group">
-            <a className="btn btn-outline-secondary">
-              <i className="fas fa-check-square"></i>
-            </a>
-            <a
-              className="btn btn-outline-secondary"
-              data-testid="versioninfo_select_all"
-              href="#"
-              title="select all"
-              onClick={() => {
-                const dt = getTableApi('versioninfo_list_table')
-                dt.rows({ page: 'current' }).select()
-              }}
-            >
-              All
-            </a>
-            <a
-              className="btn btn-outline-secondary"
-              data-testid="versioninfo_unselect_all"
-              href="#"
-              title="unselect all"
-              onClick={() => {
-                const dt = getTableApi('versioninfo_list_table')
-                dt.rows({ page: 'current' }).deselect()
-              }}
-            >
-              None
-            </a>
-          </div>{' '}
+          <DTSelectionControls tableId="versioninfo_list_table" />
+          {' '}
           <div className="btn-group">
             <a
               className="btn btn-outline-secondary abutton_freetag_set_multiid"

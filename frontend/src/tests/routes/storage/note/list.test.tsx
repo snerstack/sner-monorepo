@@ -9,6 +9,8 @@ import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
+import { testSelectAllRows } from '@/tests/helpers/testSelectAllRows'
+import { testSelectNoneRows } from '@/tests/helpers/testSelectNoneRows'
 
 describe('Note list page', () => {
   it('shows table of notes', async () => {
@@ -159,29 +161,15 @@ describe('Note list page', () => {
     })
   })
 
-  it('selects all notes', async () => {
+  it('selects and unselect all notes', async () => {
     renderWithProviders({
       element: <NoteListPage />,
       path: '/storage/note/list',
     })
 
     await waitFor(() => {
-      const selectAllButton = screen.getByTestId('note_select_all')
-
-      fireEvent.click(selectAllButton)
-    })
-  })
-
-  it('unselects all notes', async () => {
-    renderWithProviders({
-      element: <NoteListPage />,
-      path: '/storage/note/list',
-    })
-
-    await waitFor(() => {
-      const selectAllButton = screen.getByTestId('note_unselect_all')
-
-      fireEvent.click(selectAllButton)
+      testSelectAllRows({ buttonId: 'note_list_select_all' })
+      testSelectNoneRows({ buttonId: 'note_list_unselect_all' })
     })
   })
 

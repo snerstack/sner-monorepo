@@ -111,8 +111,8 @@ describe('Versioninfo list page', () => {
     })
 
     await waitFor(() => {
-      testSelectAllRows({ buttonId: 'versioninfo_select_all' })
-      testSelectNoneRows({ buttonId: 'versioninfo_unselect_all' })
+      testSelectAllRows({ buttonId: 'versioninfo_list_select_all' })
+      testSelectNoneRows({ buttonId: 'versioninfo_list_unselect_all' })
     })
   })
 

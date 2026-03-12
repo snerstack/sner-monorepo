@@ -6,7 +6,7 @@ import { useLocalStorage } from 'react-use'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
+import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getDTConfigValue, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -23,6 +23,7 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
+import DTSelectionControls from '@/components/DTSelectionControls'
 
 const HostViewPage = () => {
   const [appConfig] = useRecoilState(appConfigState)
@@ -664,33 +665,8 @@ const HostViewPage = () => {
                 data-testid="host_view_service_table_toolbox"
                 className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}
               >
-                <div className="btn-group">
-                  <a className="btn btn-outline-secondary disabled">
-                    <i className="fas fa-check-square"></i>
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary"
-                    href="#"
-                    data-testid="host_view_service_select_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_service_table')
-                      dt.rows({ page: 'current' }).select()
-                    }}
-                  >
-                    All
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary"
-                    href="#"
-                    data-testid="host_view_service_unselect_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_service_table')
-                      dt.rows({ page: 'current' }).deselect()
-                    }}
-                  >
-                    None
-                  </a>
-                </div>{' '}
+                <DTSelectionControls tableId="host_view_service_table" />
+                {' '}
                 <div className="btn-group">
                   <a
                     className="btn btn-outline-secondary"
@@ -772,33 +748,8 @@ const HostViewPage = () => {
           <div id="host_view_vuln_tab" className={clsx('tab-pane', activeTab === 'vuln' && 'active')}>
             <div id="host_view_vuln_table_toolbar" className="dt_toolbar">
               <div data-testid="host_view_vuln_table_toolbox" className="dt_toolbar_toolbox_alwaysvisible">
-                <div className="btn-group">
-                  <a className="btn btn-outline-secondary disabled">
-                    <i className="fas fa-check-square"></i>
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary"
-                    href="#"
-                    data-testid="host_view_vuln_select_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_vuln_table')
-                      dt.rows({ page: 'current' }).select()
-                    }}
-                  >
-                    All
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary abutton_selectnone"
-                    href="#"
-                    data-testid="host_view_vuln_unselect_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_vuln_table')
-                      dt.rows({ page: 'current' }).deselect()
-                    }}
-                  >
-                    None
-                  </a>
-                </div>{' '}
+                <DTSelectionControls tableId="host_view_vuln_table" />
+                {' '}
                 <div className="btn-group">
                   <a
                     className="btn btn-outline-secondary"
@@ -875,33 +826,8 @@ const HostViewPage = () => {
           <div id="host_view_note_tab" className={clsx('tab-pane', activeTab === 'note' && 'active')}>
             <div id="host_view_note_table_toolbar" className="dt_toolbar">
               <div data-testid="host_view_note_table_toolbox" className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}>
-                <div className="btn-group">
-                  <a className="btn btn-outline-secondary disabled">
-                    <i className="fas fa-check-square"></i>
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary abutton_selectall"
-                    href="#"
-                    data-testid="host_view_note_select_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_note_table')
-                      dt.rows({ page: 'current' }).select()
-                    }}
-                  >
-                    All
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary abutton_selectnone"
-                    href="#"
-                    data-testid="host_view_note_unselect_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_note_table')
-                      dt.rows({ page: 'current' }).deselect()
-                    }}
-                  >
-                    None
-                  </a>
-                </div>{' '}
+                <DTSelectionControls tableId="host_view_note_table" />
+                {' '}
                 <div className="btn-group">
                   <a
                     className="btn btn-outline-secondary"
@@ -978,33 +904,8 @@ const HostViewPage = () => {
           <div id="host_view_versioninfo_tab" className={clsx('tab-pane', activeTab === 'versioninfo' && 'active')}>
             <div id="host_view_versioninfo_table_toolbar" className="dt_toolbar">
               <div data-testid="host_view_versioninfo_table_toolbox" className={clsx('dt_toolbar_toolbox', !getDTConfigValue("dt_toolboxes_visible") && 'collapse')}>
-                <div className="btn-group">
-                  <a className="btn btn-outline-secondary disabled">
-                    <i className="fas fa-check-square"></i>
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary"
-                    href="#"
-                    data-testid="host_view_versioninfo_select_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_versioninfo_table')
-                      dt.rows({ page: 'current' }).select()
-                    }}
-                  >
-                    All
-                  </a>
-                  <a
-                    className="btn btn-outline-secondary abutton_selectnone"
-                    href="#"
-                    data-testid="host_view_versioninfo_unselect_all"
-                    onClick={() => {
-                      const dt = getTableApi('host_view_versioninfo_table')
-                      dt.rows({ page: 'current' }).deselect()
-                    }}
-                  >
-                    None
-                  </a>
-                </div>{' '}
+                <DTSelectionControls tableId="host_view_versioninfo_table" />
+                {' '}
                 <div className="btn-group">
                   <a
                     className="btn btn-outline-secondary"

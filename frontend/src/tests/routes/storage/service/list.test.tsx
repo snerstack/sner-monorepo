@@ -146,8 +146,8 @@ describe('Service list page', () => {
     })
 
     await waitFor(() => {
-      testSelectAllRows({ buttonId: 'service_select_all' })
-      testSelectNoneRows({ buttonId: 'service_unselect_all' })
+      testSelectAllRows({ buttonId: 'service_list_select_all' })
+      testSelectNoneRows({ buttonId: 'service_list_unselect_all' })
     })
   })
 

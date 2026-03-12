@@ -203,8 +203,8 @@ describe('Vuln list page', () => {
     })
 
     await waitFor(() => {
-      testSelectAllRows({ buttonId: 'vuln_select_all' })
-      testSelectNoneRows({ buttonId: 'vuln_unselect_all' })
+      testSelectAllRows({ buttonId: 'vuln_list_select_all' })
+      testSelectNoneRows({ buttonId: 'vuln_list_unselect_all' })
     })
   })
 

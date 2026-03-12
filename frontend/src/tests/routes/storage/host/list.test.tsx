@@ -178,8 +178,8 @@ describe('Host list page', () => {
     })
 
     await waitFor(() => {
-      testSelectAllRows({ buttonId: 'host_select_all' })
-      testSelectNoneRows({ buttonId: 'host_unselect_all' })
+      testSelectAllRows({ buttonId: 'host_list_select_all' })
+      testSelectNoneRows({ buttonId: 'host_list_unselect_all' })
     })
   })
 

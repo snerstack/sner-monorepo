@@ -33,11 +33,11 @@ def check_dt_toolbox_select_rows(sclnt, route, dt_id, load_route=True):
     assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr[contains(@class, "selected")]')) == 1
 
     # select all
-    toolbox_elem.find_element(By.XPATH, './/a[text()="All"]').click()
+    toolbox_elem.find_element(By.XPATH, f".//a[@data-testid='{dt_id.replace('_table', '_select_all')}']").click()
     assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr[contains(@class, "selected")]')) == 2
 
     # or deselect any of them
-    toolbox_elem.find_element(By.XPATH, './/a[text()="None"]').click()
+    toolbox_elem.find_element(By.XPATH, f".//a[@data-testid='{dt_id.replace('_table', '_unselect_all')}']").click()
     assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr[contains(@class, "selected")]')) == 0  # pylint: disable=len-as-condition
 
 
@@ -78,7 +78,7 @@ def check_dt_toolbox_multiactions(
     # assert model_class.query.filter(model_class.comment == 'comment2', model_class.tags.any('todo')).one()
 
     # test untagging
-    toolbox_elem.find_element(By.XPATH, './/a[text()="All"]').click()
+    toolbox_elem.find_element(By.XPATH, f".//a[@data-testid='{dt_id.replace('_table', '_select_all')}']").click()
     toolbox_elem.find_element(By.XPATH, './/a[contains(@class, "dropdown-toggle") and @title="remove tag dropdown"]').click()
     webdriver_waituntil(sclnt, EC.visibility_of_element_located(
         (By.XPATH, f'//div[@data-testid="{dt_id}_toolbox"]//a[text()="Todo" and @title="remove tag todo"]'))
@@ -89,7 +89,7 @@ def check_dt_toolbox_multiactions(
 
     # or deleted
     if test_delete:
-        toolbox_elem.find_element(By.XPATH, './/a[text()="All"]').click()
+        toolbox_elem.find_element(By.XPATH, f".//a[@data-testid='{dt_id.replace('_table', '_select_all')}']").click()
         toolbox_elem.find_element(By.XPATH, './/a[contains(@data-testid, "delete-row-btn")]').click()
         webdriver_waituntil(sclnt, EC.alert_is_present())
         sclnt.switch_to.alert.accept()
@@ -101,10 +101,10 @@ def check_dt_toolbox_multiactions(
         assert dt_elem.find_element(By.XPATH, './/tbody/tr/td[text()="No data available in table"]')
 
 
-def _ux_freetag_action(sclnt, toolbox_elem, button_id, modal_title):
+def _ux_freetag_action(sclnt, dt_id, toolbox_elem, button_id, modal_title):
     """free tag ux selenium automation"""
 
-    toolbox_elem.find_element(By.XPATH, './/a[text()="All"]').click()
+    toolbox_elem.find_element(By.XPATH, f".//a[@data-testid='{dt_id.replace('_table', '_select_all')}']").click()
     toolbox_elem.find_element(By.XPATH, f'.//a[contains(@data-testid, "{button_id}")]').click()
     webdriver_waituntil(sclnt, EC.visibility_of_element_located((By.XPATH, f'//*[contains(@class, "modal-title") and text()="{modal_title}"]')))
 
@@ -135,14 +135,14 @@ def check_dt_toolbox_freetag(sclnt, route, dt_id, model_class, load_route=True):
     assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 0
     assert len(dt_elem.find_elements(By.XPATH, './/tbody/tr')) == 2
 
-    _ux_freetag_action(sclnt, toolbox_elem, 'set_multiple_tag', 'Tag multiple items')
+    _ux_freetag_action(sclnt, dt_id, toolbox_elem, 'set_multiple_tag', 'Tag multiple items')
 
     assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 2
     assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 2
 
     webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.XPATH, '//div[contains(@class, "fade")]')))
 
-    _ux_freetag_action(sclnt, toolbox_elem, 'unset_multiple_tag', 'Untag multiple items')
+    _ux_freetag_action(sclnt, dt_id, toolbox_elem, 'unset_multiple_tag', 'Untag multiple items')
 
     assert model_class.query.filter(model_class.tags.any("dummy1")).count() == 0
     assert model_class.query.filter(model_class.tags.any("dummy2")).count() == 0

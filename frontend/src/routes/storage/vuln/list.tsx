@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
+import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getDTConfigValue, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
@@ -22,6 +22,7 @@ import AnnotateModal from '@/components/modals/AnnotateModal'
 import MultipleTagModal from '@/components/modals/MultipleTagModal'
 import ServiceEndpointDropdown from '@/components/ServiceEndpointDropdown'
 import Tag from '@/components/Tag'
+import DTSelectionControls from '@/components/DTSelectionControls'
 
 const VulnListPage = () => {
   const [appConfig,] = useRecoilState(appConfigState)
@@ -221,32 +222,8 @@ const VulnListPage = () => {
 
       <div id="vuln_list_table_toolbar" className="dt_toolbar">
         <div data-testid="vuln_list_table_toolbox" className="dt_toolbar_toolbox_alwaysvisible">
-          <div className="btn-group">
-            <a
-              className="btn btn-outline-secondary"
-              data-testid="vuln_select_all"
-              href="#"
-              title="select all"
-              onClick={() => {
-                const dt = getTableApi('vuln_list_table')
-                dt.rows({ page: 'current' }).select()
-              }}
-            >
-              Select all
-            </a>
-            <a
-              className="btn btn-outline-secondary"
-              data-testid="vuln_unselect_all"
-              href="#"
-              title="clear selection"
-              onClick={() => {
-                const dt = getTableApi('vuln_list_table')
-                dt.rows({ page: 'current' }).deselect()
-              }}
-            >
-              Clear selection
-            </a>
-          </div>{' '}
+          <DTSelectionControls tableId="vuln_list_table" />
+          {' '}
           <div className="btn-group">
             <a
               className="btn btn-outline-secondary"
