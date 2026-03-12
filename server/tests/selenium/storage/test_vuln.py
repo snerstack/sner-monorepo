@@ -289,6 +289,10 @@ def test_vuln_edit_route_autocomplete(frontend_server, sl_operator, vuln, host_f
 
     sl_operator.find_element(By.XPATH, '//form[@id="vuln_form"]//input[@type="submit"]').click()
 
+    elem_descrheading_xpath = "//h2[contains(text(), 'Description')]"
+    webdriver_waituntil(sl_operator, EC.visibility_of_element_located((By.XPATH, elem_descrheading_xpath)))
+    wait_for_js(sl_operator)
+
     db.session.refresh(vuln)
     assert vuln.host_id == host.id
     assert vuln.service_id == service.id
