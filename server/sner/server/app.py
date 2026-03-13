@@ -99,7 +99,7 @@ DEFAULT_CONFIG = {
     'OPENAPI_VERSION': '3.0.3',
     'OPENAPI_URL_PREFIX': '/api/doc',
     'OPENAPI_SWAGGER_UI_PATH': '/swagger',
-    'OPENAPI_SWAGGER_UI_URL': "https://cdn.jsdelivr.net/npm/swagger-ui-dist/",
+    'OPENAPI_SWAGGER_UI_URL': "/static/swagger/",
     # https://github.com/marshmallow-code/flask-smorest/issues/36
     # https://swagger.io/docs/specification/authentication/bearer-authentication/
     'API_SPEC_OPTIONS': {
@@ -108,9 +108,8 @@ DEFAULT_CONFIG = {
                 'ApiKeyAuth': {'type': 'apiKey', 'in': 'header', 'name': 'X-API-KEY'}
             }
         },
-        'security': [
-            {'ApiKeyAuth': []}
-        ],
+        'security': [{'ApiKeyAuth': []}],
+        'servers': [{"url": "/"}]
     },
 
     # oauth oidc
@@ -242,7 +241,9 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
     login_manager.login_view = 'auth.login_route'
     login_manager.login_message = 'Not logged in'
     login_manager.login_message_category = 'warning'
+
     migrate.init_app(app, db)
+
     oauth.init_app(app)
     if app.config['OIDC_NAME']:
         oauth.register(
@@ -254,6 +255,7 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
             }
         )
         app.config['SNER_FRONTEND_CONFIG']['oidc_enabled'] = True
+
     webauthn.init_app(app)
 
     app.config['SNER_FRONTEND_CONFIG']['maintenance'] = app.config["SNER_MAINTENANCE"]
@@ -267,8 +269,6 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
     ExclMatcher(app.config['SNER_EXCLUSIONS'])
 
     # initialize api blueprint; as side-effect overrides error handler
-    app.config['API_SPEC_OPTIONS']['servers'] = [{"url": "/"}]
-    app.config['OPENAPI_SWAGGER_UI_URL'] = "/static/swagger/"
     api.init_app(app)
     api.register_blueprint(api_blueprint, url_prefix='/api')
 
