@@ -14,14 +14,13 @@ import flask.cli
 import yaml
 from flask import current_app, Flask, has_request_context, request
 from flask_login import current_user
-from flask_wtf.csrf import generate_csrf, CSRFProtect, CSRFError
-from flask_cors import CORS
+from flask_wtf.csrf import generate_csrf, CSRFError
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from sner.agent.modules import load_agent_plugins
 from sner.lib import load_yaml
 from sner.server.agreegate import init_agreegate_netlists
-from sner.server.extensions import api, db, migrate, login_manager, oauth, sess, webauthn
+from sner.server.extensions import api, cors, csrf, db, migrate, login_manager, oauth, sess, webauthn
 from sner.server.parser import load_parser_plugins
 from sner.server.scheduler.core import ExclMatcher
 from sner.server.utils import error_response, FilterQueryError
@@ -227,8 +226,8 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
     if app.config['XFLASK_PROXYFIX']:
         app.wsgi_app = ProxyFix(app.wsgi_app)
 
-    CORS(app, supports_credentials=True)
-    csrf = CSRFProtect(app)
+    cors.init_app(app, supports_credentials=True)
+    csrf.init_app(app)
     csrf.exempt(api_blueprint)
 
     db.init_app(app)
@@ -314,7 +313,10 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
 
     @app.after_request
     def inject_csrf_token(response):
-        response.set_cookie('tokencsrf', generate_csrf(), samesite='Strict')
+        # Skip CSRF-exempt blueprints (e.g. API) to avoid creating (database persisted) sessions
+        # on every agent request
+        if current_app.blueprints.get(request.blueprint) not in csrf._exempt_blueprints:  # pylint: disable=protected-access
+            response.set_cookie('tokencsrf', generate_csrf(), samesite='Strict')
         return response
 
     @app.errorhandler(CSRFError)
