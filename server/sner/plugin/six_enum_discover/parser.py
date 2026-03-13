@@ -28,5 +28,5 @@ class ParserModule(ParserBase):
         return pidb
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     pprint(ParserModule.parse_path(sys.argv[1]))

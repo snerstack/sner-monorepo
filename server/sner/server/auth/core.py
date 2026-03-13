@@ -27,8 +27,8 @@ def regenerate_session():
     """regenerate session"""
 
     current_app.session_interface.regenerate(session)
-    if hasattr(g, 'csrf_token'):  # cleanup g, which is used by flask_wtf
-        delattr(g, 'csrf_token')
+    if hasattr(g, "csrf_token"):  # cleanup g, which is used by flask_wtf
+        delattr(g, "csrf_token")
 
 
 @login_manager.user_loader
@@ -37,7 +37,7 @@ def user_loader(user_id):
 
     user = User.query.filter(User.active, User.id == user_id).one_or_none()
     if user:
-        g.auth_method = 'session'
+        g.auth_method = "session"
         return user
     return None  # pragma: no cover  ; would require very-faked session
 
@@ -46,11 +46,11 @@ def user_loader(user_id):
 def load_user_from_request(req):
     """api authentication; load user form request"""
 
-    auth_header = req.headers.get('X-API-KEY')
+    auth_header = req.headers.get("X-API-KEY")
     if auth_header:
         user = User.query.filter(User.active, User.apikey == PWS.hash_simple(auth_header)).first()
         if user:
-            g.auth_method = 'apikey'
+            g.auth_method = "apikey"
             return user
     return None
 
@@ -64,12 +64,13 @@ def session_required(role):
             if not current_user.is_authenticated:
                 return login_manager.unauthorized()
 
-            if (g.auth_method != 'session') or (not current_user.has_role(role)):
-                return 'Forbidden', HTTPStatus.FORBIDDEN
+            if (g.auth_method != "session") or (not current_user.has_role(role)):
+                return "Forbidden", HTTPStatus.FORBIDDEN
 
             return fnc(*args, **kwargs)
 
         return decorated_view
+
     return _session_required
 
 
@@ -80,14 +81,15 @@ def apikey_required(role):
         @functools.wraps(fnc)
         def decorated_view(*args, **kwargs):
             if not current_user.is_authenticated:
-                return {'message': 'unauthorized'}, HTTPStatus.UNAUTHORIZED
+                return {"message": "unauthorized"}, HTTPStatus.UNAUTHORIZED
 
-            if (g.auth_method != 'apikey') or (not current_user.has_role(role)):
-                return {'message': 'forbidden'}, HTTPStatus.FORBIDDEN
+            if (g.auth_method != "apikey") or (not current_user.has_role(role)):
+                return {"message": "forbidden"}, HTTPStatus.FORBIDDEN
 
             return fnc(*args, **kwargs)
 
         return decorated_view
+
     return _apikey_required
 
 
@@ -108,7 +110,7 @@ class TOTPImpl(TOTP):
     @staticmethod
     def random_base32():
         """generate new secret, return base32 encoded representation"""
-        return b32encode(os.urandom(20)).decode('ascii')
+        return b32encode(os.urandom(20)).decode("ascii")
 
     def current_code(self):
         """generate current code"""
@@ -118,7 +120,7 @@ class TOTPImpl(TOTP):
         """verify code"""
 
         try:
-            super().verify(code.encode('ascii'), time())
+            super().verify(code.encode("ascii"), time())
         except InvalidTOTPToken:
             return False
         return True

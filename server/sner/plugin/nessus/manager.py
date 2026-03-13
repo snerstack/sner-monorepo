@@ -14,6 +14,7 @@ from sner.config import ConfigBase
 
 class CredsConfig(ConfigBase):
     """nessus credential file validation schema"""
+
     url: str
     access_key: str
     secret_key: str
@@ -36,11 +37,7 @@ class NessusManager:
     @classmethod
     def from_app_config(cls):
         """factory, initialize from app config"""
-        return cls(
-            current_app.config["SNER_NESSUS_URL"],
-            current_app.config["SNER_NESSUS_ACCESS_KEY"],
-            current_app.config["SNER_NESSUS_SECRET_KEY"]
-        )
+        return cls(current_app.config["SNER_NESSUS_URL"], current_app.config["SNER_NESSUS_ACCESS_KEY"], current_app.config["SNER_NESSUS_SECRET_KEY"])
 
     def list_scans(self):
         """list scans"""
@@ -52,15 +49,12 @@ class NessusManager:
         policies = self.nessus.policies.list()
         policy = next(item for item in policies if item["name"] == policy_name)
 
-        resp = self.nessus.scans.create(**{
-            "uuid": policy["template_uuid"],
-            "settings": {
-                "name": name,
-                "policy_id": policy["id"],
-                "enabled": True,
-                "text_targets": "\n".join(targets)
+        resp = self.nessus.scans.create(
+            **{
+                "uuid": policy["template_uuid"],
+                "settings": {"name": name, "policy_id": policy["id"], "enabled": True, "text_targets": "\n".join(targets)},
             }
-        })
+        )
         scan_id = resp["scan"]["id"]
         self.nessus.scans.launch(scan_id)
         return scan_id

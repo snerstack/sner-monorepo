@@ -11,16 +11,11 @@ import pytest
 from pytest_factoryboy import register as factoryboy_register
 
 from sner.server.app import create_app
-from sner.server.extensions import db
 from sner.server.dbx_command import db_remove
+from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 from tests.server.auth.models import UserFactory, WebauthnCredentialFactory
-from tests.server.scheduler.models import (
-    JobFactory,
-    JobCompletedFactory,
-    QueueFactory,
-    TargetFactory
-)
+from tests.server.scheduler.models import JobCompletedFactory, JobFactory, QueueFactory, TargetFactory
 from tests.server.storage.models import (
     HostFactory,
     NoteFactory,
@@ -34,7 +29,7 @@ from tests.server.storage.models import (
 def app():
     """yield application as pytest fixture"""
 
-    _app = create_app(config_file='tests/sner.yaml', config_env='dummy')
+    _app = create_app(config_file="tests/sner.yaml", config_env="dummy")
 
     with _app.app_context():
         db_remove()
@@ -54,7 +49,7 @@ def tmpworkdir():
     """
 
     cwd = os.getcwd()
-    tmpdir = mkdtemp(prefix='sner_agent_test-')
+    tmpdir = mkdtemp(prefix="sner_agent_test-")
     os.chdir(tmpdir)
     yield tmpdir
     os.chdir(cwd)
@@ -65,7 +60,7 @@ def apikey_in_roles(ufactory, roles):
     """create user apikey in role"""
 
     tmp_apikey = PWS.generate_apikey()
-    ufactory.create(username='pytest_user', apikey=PWS.hash_simple(tmp_apikey), roles=roles)
+    ufactory.create(username="pytest_user", apikey=PWS.hash_simple(tmp_apikey), roles=roles)
     return tmp_apikey
 
 
@@ -73,14 +68,14 @@ def apikey_in_roles(ufactory, roles):
 def apikey_agent(user_factory):
     """create user apikey agent"""
 
-    return apikey_in_roles(user_factory, ['agent'])
+    return apikey_in_roles(user_factory, ["agent"])
 
 
 @pytest.fixture
 def apikey_user(user_factory):
     """create user apikey user"""
 
-    return apikey_in_roles(user_factory, ['user'])
+    return apikey_in_roles(user_factory, ["user"])
 
 
 # auth
@@ -89,7 +84,7 @@ factoryboy_register(WebauthnCredentialFactory)
 
 # scheduler
 factoryboy_register(JobFactory)
-factoryboy_register(JobCompletedFactory, 'job_completed')
+factoryboy_register(JobCompletedFactory, "job_completed")
 factoryboy_register(QueueFactory)
 factoryboy_register(TargetFactory)
 
@@ -97,7 +92,7 @@ factoryboy_register(TargetFactory)
 factoryboy_register(HostFactory)
 factoryboy_register(NoteFactory)
 factoryboy_register(ServiceFactory)
-factoryboy_register(VersioninfoFactory, 'versioninfo_dangling')
+factoryboy_register(VersioninfoFactory, "versioninfo_dangling")
 factoryboy_register(VulnFactory)
 
 
@@ -111,35 +106,35 @@ def versioninfo_notes(host, service_factory, note_factory):
             service=service_factory.create(
                 host=host,
                 port=80,
-                name='http',
-                info='product: Apache httpd version: 2.2.21 extrainfo: (Win32) mod_ssl/2.2.21 OpenSSL/1.0.0e PHP/5.3.8 mod_perl/2.0.4 Perl/v5.10.1',
+                name="http",
+                info="product: Apache httpd version: 2.2.21 extrainfo: (Win32) mod_ssl/2.2.21 OpenSSL/1.0.0e PHP/5.3.8 mod_perl/2.0.4 Perl/v5.10.1",
             ),
-            xtype='nmap.banner_dict',
+            xtype="nmap.banner_dict",
             data='{"product": "Apache httpd", "version": "2.2.21", '
-                 '"extrainfo": "(Win32) mod_ssl/2.2.21 OpenSSL/1.0.0e PHP/5.3.8 mod_perl/2.0.4 Perl/v5.10.1"}'
+            '"extrainfo": "(Win32) mod_ssl/2.2.21 OpenSSL/1.0.0e PHP/5.3.8 mod_perl/2.0.4 Perl/v5.10.1"}',
         ),
         note_factory.create(
             host=host,
             service=service_factory.create(
                 host=host,
                 port=15002,
-                name='pbs-maui',
-                info='product: PBS/Maui Roll extrainfo: Rocks Cluster devicetype: specialized',
+                name="pbs-maui",
+                info="product: PBS/Maui Roll extrainfo: Rocks Cluster devicetype: specialized",
             ),
-            xtype='nmap.banner_dict',
-            data='{"product": "PBS/Maui Roll", "extrainfo": "Rocks Cluster", "devicetype": "specialized"}'
+            xtype="nmap.banner_dict",
+            data='{"product": "PBS/Maui Roll", "extrainfo": "Rocks Cluster", "devicetype": "specialized"}',
         ),
         note_factory.create(
             host=host,
             service=service_factory.create(
                 host=host,
                 port=111,
-                name='rpcbind',
-                info='version: 2-4 extrainfo: RPC #100000',
+                name="rpcbind",
+                info="version: 2-4 extrainfo: RPC #100000",
             ),
-            xtype='nmap.banner_dict',
-            data='{"version": "2-4", "extrainfo": "RPC #100000"}'
-        )
+            xtype="nmap.banner_dict",
+            data='{"version": "2-4", "extrainfo": "RPC #100000"}',
+        ),
     ]
 
 

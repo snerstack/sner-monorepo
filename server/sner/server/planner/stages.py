@@ -85,9 +85,7 @@ class QueueHandler(Stage):
             try:
                 parsed = JobManager.parse(aajob)
             except Exception as exc:  # pylint: disable=broad-except
-                current_app.logger.error(
-                    f"{self.__class__.__name__} failed to drain {aajob.id} ({aajob.queue.name}), {exc}", exc_info=True
-                )
+                current_app.logger.error(f"{self.__class__.__name__} failed to drain {aajob.id} ({aajob.queue.name}), {exc}", exc_info=True)
                 aajob.retval += 1000
                 db.session.commit()
                 continue
@@ -204,9 +202,7 @@ class ServiceDiscoStorageLoader(QueueHandler):
         # remove hosts without any related items
         host_item_count = {
             host.iid: (
-                len(pidb.services.where(host_iid=host.iid))
-                + len(pidb.vulns.where(host_iid=host.iid))
-                + len(pidb.notes.where(host_iid=host.iid))
+                len(pidb.services.where(host_iid=host.iid)) + len(pidb.vulns.where(host_iid=host.iid)) + len(pidb.notes.where(host_iid=host.iid))
             )
             for host in pidb.hosts
         }
@@ -230,7 +226,7 @@ class SixDisco(QueueHandler):
     """cleanup list host ipv6 hosts (drop any outside scope) and pass it to service discovery"""
 
     def __init__(self, name, queue_name, next_stage, filternets):
-        super().__init__(name,  queue_name)
+        super().__init__(name, queue_name)
         self.next_stage = next_stage
         self.filternets = filternets
         self._whitelist = [ip_network(net) for net in self.filternets]
@@ -361,6 +357,7 @@ class HostStorageTargetlist(Schedule):
 
 class PruningStrategyType(Enum):
     """pruning scope enum"""
+
     SERVICE = "service"
     HOST = "host"
 
@@ -386,9 +383,7 @@ class PruningStorageLoader(QueueHandler):
             count_notes = prune_strategy(Note, pidb, self.queue.name)
             count_vulns = prune_strategy(Vuln, pidb, self.queue.name)
 
-            current_app.logger.info(
-                f"{self.name} pruned old items, vulns:{count_vulns} notes:{count_notes}"
-            )
+            current_app.logger.info(f"{self.name} pruned old items, vulns:{count_vulns} notes:{count_notes}")
 
 
 class HostRescanStorageTargetlist(Schedule):

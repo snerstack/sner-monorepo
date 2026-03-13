@@ -9,11 +9,12 @@ from typing import Literal
 from sner.agent.modules import ModuleBase
 from sner.config import ConfigBase
 from sner.lib import uri_ipv6_address
-from sner.targets import ServiceTarget, NamedServiceTarget
+from sner.targets import NamedServiceTarget, ServiceTarget
 
 
 class Config(ConfigBase):
     """nuclei agent plugin config"""
+
     module: str = Literal["nuclei"]
     args: list[str]
 

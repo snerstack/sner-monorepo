@@ -16,6 +16,7 @@ DEFAULT_SPORT = -1
 
 class Config(ConfigBase):
     """nessus agent plugin config"""
+
     module: str = Literal["sportmap"]
     source_ports: list[int] = [DEFAULT_SPORT, 80, 53, 443, 123]
     args: list[str] = ["-sS", "-sU", "-Pn", "-n", "--max-retries", "3", "--top-ports", "20", "--max-rate", "5"]

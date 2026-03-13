@@ -16,8 +16,8 @@ Vuln.tags any "report" AND Vuln.xtype == "manual"
 """
 
 import json
-from lark import Lark, Transformer
 
+from lark import Lark, Transformer
 
 # Boolean expression definition widely recognizes basic building blocks as
 # 'terms' and 'factors', do not confuse them with parser's terminals. Also note
@@ -58,15 +58,15 @@ class TreeToSAFilter(Transformer):
 
     def expression(self, args):
         """transform disjunction"""
-        return {'or': args} if len(args) > 1 else args[0]
+        return {"or": args} if len(args) > 1 else args[0]
 
     def term(self, args):
         """transform conjunction"""
-        return {'and': args} if len(args) > 1 else args[0]
+        return {"and": args} if len(args) > 1 else args[0]
 
     def criteria(self, args):
         """transform criteria"""
-        return dict(zip(['model', 'field', 'op', 'value'], args[0].value.split('.')+[args[1].value, args[2]]))
+        return dict(zip(["model", "field", "op", "value"], args[0].value.split(".") + [args[1].value, args[2]]))
 
     def array(self, args):
         """transform array; return plain list, discarding the object"""
@@ -81,4 +81,4 @@ class TreeToSAFilter(Transformer):
         return float(args[0])
 
 
-FILTER_PARSER = Lark(SEARCH_GRAMMAR, parser='lalr', lexer='basic', transformer=TreeToSAFilter())
+FILTER_PARSER = Lark(SEARCH_GRAMMAR, parser="lalr", lexer="basic", transformer=TreeToSAFilter())

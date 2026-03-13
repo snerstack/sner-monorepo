@@ -11,4 +11,4 @@ from flask import Response
 def xjsonify(obj):
     """app context free jsonify helper"""
 
-    return Response(json.dumps(obj), mimetype='application/json')
+    return Response(json.dumps(obj), mimetype="application/json")

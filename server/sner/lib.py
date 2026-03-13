@@ -20,14 +20,14 @@ def load_yaml(filename):
     """load yaml from file, silence file not found"""
 
     if filename and os.path.exists(filename):
-        config = yaml.safe_load(Path(filename).read_text(encoding='utf-8'))
+        config = yaml.safe_load(Path(filename).read_text(encoding="utf-8"))
         return config or {}
     return {}
 
 
 def is_zip(path):
     """detect if path is zip archive"""
-    return magic.from_file(path, mime=True) == 'application/zip'
+    return magic.from_file(path, mime=True) == "application/zip"
 
 
 def file_from_zip(zippath, filename):

@@ -4,30 +4,30 @@ scheduler module functions
 """
 
 import json
-from csv import DictWriter, QUOTE_ALL
 from collections import namedtuple
+from csv import QUOTE_ALL, DictWriter
 from http import HTTPStatus
 from io import StringIO
 from typing import Union
 
 from flask import current_app
-from sqlalchemy import and_, case, cast, delete, exists, func, or_, not_, select, update, tuple_
+from sqlalchemy import and_, case, cast, delete, exists, func, not_, or_, select, tuple_, update
 from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY
 from sqlalchemy.sql.functions import coalesce
 
 from sner.server.extensions import db
 from sner.server.storage.forms import AnnotateForm
-from sner.server.storage.models import Host, Note, Service, Vuln, SeverityEnum
-from sner.server.utils import filter_query, windowed_query, error_response
+from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
+from sner.server.utils import error_response, filter_query, windowed_query
 
 
 def get_related_models(model_name, model_id):
     """get related host/service to bind vuln/note"""
 
     host, service = None, None
-    if model_name == 'host':
+    if model_name == "host":
         host = db.session.get(Host, model_id)
-    elif model_name == 'service':
+    elif model_name == "service":
         service = db.session.get(Service, model_id)
         host = service.host
     return host, service
@@ -42,9 +42,9 @@ def model_annotate(model, model_id):
     if form.validate_on_submit():
         form.populate_obj(model)
         db.session.commit()
-        return '', HTTPStatus.OK
+        return "", HTTPStatus.OK
 
-    return error_response(message='Form is invalid.', errors=form.errors, code=HTTPStatus.BAD_REQUEST)    # pragma: no cover
+    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)  # pragma: no cover
 
 
 def tag_add(model, tag: Union[str, list]):
@@ -66,9 +66,9 @@ def model_tag_multiid(model_class, action, tag, ids):
 
     for item in model_class.query.filter(model_class.id.in_(ids)).all():
         # full assignment must be used for sqla to realize the change
-        if action == 'set':
+        if action == "set":
             tag_add(item, tag)
-        if action == 'unset':
+        if action == "unset":
             tag_remove(item, tag)
         db.session.commit()
 
@@ -76,11 +76,7 @@ def model_tag_multiid(model_class, action, tag, ids):
 def model_delete_multiid(model_class, ids):
     """delete models by list of ids"""
 
-    db.session.execute(
-        delete(model_class)
-        .filter(model_class.id.in_(ids))
-        .execution_options(synchronize_session=False)
-    )
+    db.session.execute(delete(model_class).filter(model_class.id.in_(ids)).execution_options(synchronize_session=False))
     db.session.commit()
     db.session.expire_all()
 
@@ -89,20 +85,20 @@ def url_for_ref(ref):
     """generate url for ref; reimplemented js function storage pagepart url_for_ref"""
 
     refgen = {
-        'URL': lambda d: d,
-        'CVE': lambda d: 'https://cvedetails.com/cve/CVE-' + d,
-        'NSS': lambda d: 'https://www.tenable.com/plugins/nessus/' + d,
-        'BID': lambda d: 'https://www.securityfocus.com/bid/' + d,
-        'CERT': lambda d: 'https://www.kb.cert.org/vuls/id/' + d,
-        'EDB': lambda d: 'https://www.exploit-db.com/exploits/' + d.replace('ID-', ''),
-        'MSF': lambda d: 'https://www.rapid7.com/db/?q=' + d,
-        'MSFT': lambda d: 'https://technet.microsoft.com/en-us/security/bulletin/' + d,
-        'MSKB': lambda d: 'https://support.microsoft.com/en-us/help/' + d,
-        'SN': lambda d: 'SN-' + d,
-        'SV': lambda d: 'SV-' + d
+        "URL": lambda d: d,
+        "CVE": lambda d: "https://cvedetails.com/cve/CVE-" + d,
+        "NSS": lambda d: "https://www.tenable.com/plugins/nessus/" + d,
+        "BID": lambda d: "https://www.securityfocus.com/bid/" + d,
+        "CERT": lambda d: "https://www.kb.cert.org/vuls/id/" + d,
+        "EDB": lambda d: "https://www.exploit-db.com/exploits/" + d.replace("ID-", ""),
+        "MSF": lambda d: "https://www.rapid7.com/db/?q=" + d,
+        "MSFT": lambda d: "https://technet.microsoft.com/en-us/security/bulletin/" + d,
+        "MSKB": lambda d: "https://support.microsoft.com/en-us/help/" + d,
+        "SN": lambda d: "SN-" + d,
+        "SV": lambda d: "SV-" + d,
     }
     try:
-        matched = ref.split('-', maxsplit=1)
+        matched = ref.split("-", maxsplit=1)
         return refgen[matched[0]](matched[1])
     except (IndexError, KeyError):
         pass
@@ -114,8 +110,8 @@ def trim_rdata(rdata):
 
     content_trimmed = False
     for key, val in rdata.items():
-        if current_app.config['SNER_TRIM_REPORT_CELLS'] and val and (len(val) > current_app.config['SNER_TRIM_REPORT_CELLS']):
-            rdata[key] = 'TRIMMED'
+        if current_app.config["SNER_TRIM_REPORT_CELLS"] and val and (len(val) > current_app.config["SNER_TRIM_REPORT_CELLS"]):
+            rdata[key] = "TRIMMED"
             content_trimmed = True
     return rdata, content_trimmed
 
@@ -123,7 +119,7 @@ def trim_rdata(rdata):
 def list_to_lines(data):
     """cast list to lines or empty string"""
 
-    return '\n'.join(data) if data else ''
+    return "\n".join(data) if data else ""
 
 
 def filtered_vuln_tags_query(prefix_filter):
@@ -142,16 +138,11 @@ def filtered_vuln_tags_query(prefix_filter):
       * use result as outerjoin table/query to actual data query from vuln table
     """
 
-    utags_column = func.unnest(Vuln.tags).label('utags')
-    tags_query = (
-        select(Vuln.id, utags_column)
-        .select_from(Vuln)
-        .order_by(Vuln.id, utags_column)
-        .subquery()
-    )
+    utags_column = func.unnest(Vuln.tags).label("utags")
+    tags_query = select(Vuln.id, utags_column).select_from(Vuln).order_by(Vuln.id, utags_column).subquery()
     filtered_tags_query = (
-        select(tags_query.c.id, func.array_agg(tags_query.c.utags).label('utags'))
-        .filter(not_(tags_query.c.utags.ilike(f'{prefix_filter}%')))
+        select(tags_query.c.id, func.array_agg(tags_query.c.utags).label("utags"))
+        .filter(not_(tags_query.c.utags.ilike(f"{prefix_filter}%")))
         .group_by(tags_query.c.id)
         .subquery()
     )
@@ -166,17 +157,14 @@ def vuln_report(qfilter=None, group_by_host=False):  # pylint: disable=too-many-
     vuln_severity = func.text(Vuln.severity)
     vuln_tags_query, vuln_tags_column = filtered_vuln_tags_query(current_app.config["SNER_VULN_GROUP_IGNORE_TAG_PREFIX"])
 
-    host_address_format = case(
-        (func.family(Host.address) == 6, func.concat('[', func.host(Host.address), ']')),
-        else_=func.host(Host.address)
-    )
+    host_address_format = case((func.family(Host.address) == 6, func.concat("[", func.host(Host.address), "]")), else_=func.host(Host.address))
     host_ident_format = coalesce(Vuln.via_target, Host.hostname, host_address_format)
 
     host_ident = func.array_agg(func.distinct(host_ident_format))
-    endpoint_address = func.array_agg(func.distinct(func.concat_ws(':', host_address_format, Service.port)))
-    endpoint_hostname = func.array_agg(func.distinct(func.concat_ws(':', host_ident_format, Service.port)))
+    endpoint_address = func.array_agg(func.distinct(func.concat_ws(":", host_address_format, Service.port)))
+    endpoint_hostname = func.array_agg(func.distinct(func.concat_ws(":", host_ident_format, Service.port)))
 
-    unnested_refs_query = select(Vuln.id, func.unnest(Vuln.refs).label('ref')).subquery()
+    unnested_refs_query = select(Vuln.id, func.unnest(Vuln.refs).label("ref")).subquery()
     unnested_refs_column = func.array_remove(func.array_agg(func.distinct(unnested_refs_query.c.ref)), None)
 
     vuln_ids = func.array_agg(Vuln.id)
@@ -184,16 +172,16 @@ def vuln_report(qfilter=None, group_by_host=False):  # pylint: disable=too-many-
 
     query = (
         db.session.query(
-            Vuln.name.label('vulnerability'),
-            Vuln.descr.label('description'),
-            vuln_severity.label('severity'),
-            vuln_tags_column.label('tags'),
-            host_ident.label('host_ident'),
-            endpoint_address.label('endpoint_address'),
-            endpoint_hostname.label('endpoint_hostname'),
-            unnested_refs_column.label('references'),
-            vuln_ids.label('vuln_ids'),
-            vuln_xtypes.label('xtype')
+            Vuln.name.label("vulnerability"),
+            Vuln.descr.label("description"),
+            vuln_severity.label("severity"),
+            vuln_tags_column.label("tags"),
+            host_ident.label("host_ident"),
+            endpoint_address.label("endpoint_address"),
+            endpoint_hostname.label("endpoint_hostname"),
+            unnested_refs_column.label("references"),
+            vuln_ids.label("vuln_ids"),
+            vuln_xtypes.label("xtype"),
         )
         .outerjoin(Host, Vuln.host_id == Host.id)
         .outerjoin(Service, Vuln.service_id == Service.id)
@@ -209,11 +197,21 @@ def vuln_report(qfilter=None, group_by_host=False):  # pylint: disable=too-many-
 
     content_trimmed = False
     fieldnames = [
-        'id', 'asset', 'vulnerability', 'severity', 'advisory', 'state',
-        'endpoint_address', 'description', 'endpoint_hostname', 'references', 'tags', 'xtype'
+        "id",
+        "asset",
+        "vulnerability",
+        "severity",
+        "advisory",
+        "state",
+        "endpoint_address",
+        "description",
+        "endpoint_hostname",
+        "references",
+        "tags",
+        "xtype",
     ]
     output_buffer = StringIO()
-    output = DictWriter(output_buffer, fieldnames, restval='', extrasaction='ignore', quoting=QUOTE_ALL)
+    output = DictWriter(output_buffer, fieldnames, restval="", extrasaction="ignore", quoting=QUOTE_ALL)
 
     output.writeheader()
     for row in query.all():
@@ -221,86 +219,92 @@ def vuln_report(qfilter=None, group_by_host=False):  # pylint: disable=too-many-
 
         # must count endpoints, multiple addrs can coline in hostnames
         if group_by_host:
-            rdata['asset'] = rdata['host_ident'][0]
+            rdata["asset"] = rdata["host_ident"][0]
         else:
-            rdata['asset'] = rdata['host_ident'][0] if len(rdata['endpoint_address']) == 1 else 'misc'
+            rdata["asset"] = rdata["host_ident"][0] if len(rdata["endpoint_address"]) == 1 else "misc"
 
-        if 'report:data' in rdata['tags']:
-            if not rdata['description']:  # pragma: nocover  ; wont test
-                rdata['description'] = ''
+        if "report:data" in rdata["tags"]:
+            if not rdata["description"]:  # pragma: nocover  ; wont test
+                rdata["description"] = ""
 
-            query = Vuln.query.filter(Vuln.id.in_(rdata['vuln_ids']))
+            query = Vuln.query.filter(Vuln.id.in_(rdata["vuln_ids"]))
             for vdata in query.all():
                 idents = [
-                    f'IP: {vdata.host.address}',
-                    f'Proto: {vdata.service.proto}, Port: {vdata.service.port}' if vdata.service else None,
-                    f'Hostname: {vdata.host.hostname}' if vdata.host.hostname else None,
-                    f'Via-target: {vdata.via_target}' if vdata.via_target else None
+                    f"IP: {vdata.host.address}",
+                    f"Proto: {vdata.service.proto}, Port: {vdata.service.port}" if vdata.service else None,
+                    f"Hostname: {vdata.host.hostname}" if vdata.host.hostname else None,
+                    f"Via-target: {vdata.via_target}" if vdata.via_target else None,
                 ]
-                data_ident = ', '.join(filter(lambda x: x is not None, idents))
-                rdata['description'] += f"\n\n## Data {data_ident}\n{vdata.data}"
+                data_ident = ", ".join(filter(lambda x: x is not None, idents))
+                rdata["description"] += f"\n\n## Data {data_ident}\n{vdata.data}"
 
-        for col in ['endpoint_address', 'endpoint_hostname', 'tags', 'xtype']:
+        for col in ["endpoint_address", "endpoint_hostname", "tags", "xtype"]:
             rdata[col] = list_to_lines(rdata[col])
-        rdata['references'] = list_to_lines(map(url_for_ref, rdata['references']))
+        rdata["references"] = list_to_lines(map(url_for_ref, rdata["references"]))
 
         rdata, trim_trigger = trim_rdata(rdata)
         content_trimmed |= trim_trigger
         output.writerow(rdata)
 
     if content_trimmed:
-        output.writerow({'asset': 'WARNING: some cells were trimmed'})
+        output.writerow({"asset": "WARNING: some cells were trimmed"})
     return output_buffer.getvalue()
 
 
 def vuln_export(qfilter=None):
     """export all vulns in storage without aggregation"""
 
-    host_address_format = case(
-        (func.family(Host.address) == 6, func.concat('[', func.host(Host.address), ']')),
-        else_=func.host(Host.address)
-    )
+    host_address_format = case((func.family(Host.address) == 6, func.concat("[", func.host(Host.address), "]")), else_=func.host(Host.address))
     host_ident = coalesce(Vuln.via_target, Host.hostname, host_address_format)
-    endpoint_address = func.concat_ws(':', host_address_format, Service.port)
-    endpoint_hostname = func.concat_ws(':', host_ident, Service.port)
+    endpoint_address = func.concat_ws(":", host_address_format, Service.port)
+    endpoint_hostname = func.concat_ws(":", host_ident, Service.port)
 
-    query = db.session \
-        .query(
-            host_ident.label('host_ident'),
-            Vuln.name.label('vulnerability'),
-            Vuln.descr.label('description'),
+    query = (
+        db.session.query(
+            host_ident.label("host_ident"),
+            Vuln.name.label("vulnerability"),
+            Vuln.descr.label("description"),
             Vuln.data,
-            func.text(Vuln.severity).label('severity'),
+            func.text(Vuln.severity).label("severity"),
             Vuln.tags,
-            endpoint_address.label('endpoint_address'),
-            endpoint_hostname.label('endpoint_hostname'),
-            Vuln.refs.label('references')
-        ) \
-        .outerjoin(Host, Vuln.host_id == Host.id) \
+            endpoint_address.label("endpoint_address"),
+            endpoint_hostname.label("endpoint_hostname"),
+            Vuln.refs.label("references"),
+        )
+        .outerjoin(Host, Vuln.host_id == Host.id)
         .outerjoin(Service, Vuln.service_id == Service.id)
+    )
 
     query = filter_query(query, qfilter)
 
     content_trimmed = False
     fieldnames = [
-        'id', 'host_ident', 'vulnerability', 'severity', 'description', 'data',
-        'tags', 'endpoint_address', 'endpoint_hostname', 'references'
+        "id",
+        "host_ident",
+        "vulnerability",
+        "severity",
+        "description",
+        "data",
+        "tags",
+        "endpoint_address",
+        "endpoint_hostname",
+        "references",
     ]
     output_buffer = StringIO()
-    output = DictWriter(output_buffer, fieldnames, restval='', quoting=QUOTE_ALL)
+    output = DictWriter(output_buffer, fieldnames, restval="", quoting=QUOTE_ALL)
 
     output.writeheader()
     for row in query.all():
         rdata = row._asdict()
 
-        rdata['tags'] = list_to_lines(rdata['tags'])
-        rdata['references'] = list_to_lines(map(url_for_ref, rdata['references']))
+        rdata["tags"] = list_to_lines(rdata["tags"])
+        rdata["references"] = list_to_lines(map(url_for_ref, rdata["references"]))
         rdata, trim_trigger = trim_rdata(rdata)
         content_trimmed |= trim_trigger
         output.writerow(rdata)
 
     if content_trimmed:
-        output.writerow({'host_ident': 'WARNING: some cells were trimmed'})
+        output.writerow({"host_ident": "WARNING: some cells were trimmed"})
     return output_buffer.getvalue()
 
 
@@ -315,7 +319,7 @@ class StorageManager:
             return []
 
         query = select(Host.address).filter(func.family(Host.address) == 6)
-        restrict = [Host.address.op('<<=')(net) for net in filternets]
+        restrict = [Host.address.op("<<=")(net) for net in filternets]
         query = query.filter(or_(*restrict))
 
         return db.session.execute(query).scalars().all()
@@ -328,7 +332,7 @@ class StorageManager:
             return
 
         query = Host.query
-        restrict = [Host.address.op('<<=')(net) for net in filternets]
+        restrict = [Host.address.op("<<=")(net) for net in filternets]
         query = query.filter(or_(*restrict))
 
         if rescan_horizon:
@@ -375,20 +379,12 @@ class StorageManager:
         conn = db.session.connection()
 
         # remove any but open:* state services
-        services_to_delete = (
-            conn.execute(
-                select(Service.id, Service.proto, Service.port, Host.address.label("host_address"))
-                .join(Host)
-                .filter(not_(Service.state.ilike("open:%")))
-            )
-            .all()
-        )
+        services_to_delete = conn.execute(
+            select(Service.id, Service.proto, Service.port, Host.address.label("host_address")).join(Host).filter(not_(Service.state.ilike("open:%")))
+        ).all()
         conn.execute(delete(Service).filter(Service.id.in_([srow.id for srow in services_to_delete])))
         for srow in services_to_delete:
-            current_app.logger.info(
-                    "cleanup_storage deleted service "
-                    f"<Service {srow.id}: {srow.host_address} {srow.proto}.{srow.port}>"
-            )
+            current_app.logger.info(f"cleanup_storage deleted service <Service {srow.id}: {srow.host_address} {srow.proto}.{srow.port}>")
 
         # remove hosts without any service, vuln or note
         hosts_to_delete = conn.execute(
@@ -424,11 +420,7 @@ class StorageManager:
     @staticmethod
     def get_service(address, proto, port, addtags=None, create=True):
         """get'n'create storage service"""
-        service = (
-            Service.query.outerjoin(Host)
-            .filter(Host.address == address, Service.proto == proto, Service.port == port)
-            .one_or_none()
-        )
+        service = Service.query.outerjoin(Host).filter(Host.address == address, Service.proto == proto, Service.port == port).one_or_none()
         if create and not service:
             # does not have conflict protection
             host = StorageManager.get_host(address, addtags=addtags)
@@ -597,12 +589,11 @@ class StorageManager:
 
         # select storage items by pidb scanning scope
         target_scopes = pidb.target_scopes()
-        items_to_check = (
-            item_model.query.outerjoin(Host, item_model.host_id == Host.id)
-            .filter(
-                tuple_(Host.address,).in_(target_scopes),
-                item_model.source == source,
-            )
+        items_to_check = item_model.query.outerjoin(Host, item_model.host_id == Host.id).filter(
+            tuple_(
+                Host.address,
+            ).in_(target_scopes),
+            item_model.source == source,
         )
 
         # select items to delete, items from target scope not present in pidb

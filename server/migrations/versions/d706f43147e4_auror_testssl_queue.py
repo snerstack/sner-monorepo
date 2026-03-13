@@ -6,9 +6,9 @@ Create Date: 2025-08-13 20:24:26.999991
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 import yaml
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d706f43147e4"
@@ -45,17 +45,13 @@ def downgrade():
     # won't delete queue with any workload (mainly because readynet and heatmap management)
     try:
         targets_count = conn.execute(
-            sa.text(
-                """SELECT count(*) FROM target AS t JOIN queue AS q ON t.queue_id = q.id WHERE q.name = 'auror.testssl'"""
-            )
+            sa.text("""SELECT count(*) FROM target AS t JOIN queue AS q ON t.queue_id = q.id WHERE q.name = 'auror.testssl'""")
         ).scalar()
         if targets_count > 0:
             raise RuntimeError("cannot delete 'auror_testssl' queue, targets found")
 
         jobs_count = conn.execute(
-            sa.text(
-                """SELECT count(*) FROM job AS j JOIN queue AS q ON j.queue_id = q.id WHERE q.name = 'auror.testssl'"""
-            )
+            sa.text("""SELECT count(*) FROM job AS j JOIN queue AS q ON j.queue_id = q.id WHERE q.name = 'auror.testssl'""")
         ).scalar()
         if jobs_count > 0:
             raise RuntimeError("cannot delete 'auror_testssl' queue, jobs found")

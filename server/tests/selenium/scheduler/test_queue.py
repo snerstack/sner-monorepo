@@ -13,9 +13,9 @@ from tests.selenium import dt_inrow_delete, dt_rendered, dt_wait_processing, fro
 def test_queue_list_route(frontend_server, sl_operator, queue):  # pylint: disable=unused-argument
     """simple test ajaxed datatable rendering"""
 
-    sl_operator.get(frontend_url('/scheduler/queue/list'))
+    sl_operator.get(frontend_url("/scheduler/queue/list"))
     wait_for_js(sl_operator)
-    dt_rendered(sl_operator, 'queue_list_table', queue.name)
+    dt_rendered(sl_operator, "queue_list_table", queue.name)
 
 
 def test_queue_list_route_inrow_delete(frontend_server, sl_operator, queue):  # pylint: disable=unused-argument
@@ -24,9 +24,9 @@ def test_queue_list_route_inrow_delete(frontend_server, sl_operator, queue):  # 
     queue_id = queue.id
     db.session.expunge(queue)
 
-    sl_operator.get(frontend_url('/scheduler/queue/list'))
+    sl_operator.get(frontend_url("/scheduler/queue/list"))
     wait_for_js(sl_operator)
-    dt_inrow_delete(sl_operator, 'queue_list_table')
+    dt_inrow_delete(sl_operator, "queue_list_table")
     assert not db.session.get(Queue, queue_id)
 
 
@@ -35,8 +35,8 @@ def test_queue_list_route_inrow_flush(frontend_server, sl_operator, target):  # 
 
     tqueue_id = target.queue_id
 
-    dt_id = 'queue_list_table'
-    sl_operator.get(frontend_url('/scheduler/queue/list'))
+    dt_id = "queue_list_table"
+    sl_operator.get(frontend_url("/scheduler/queue/list"))
     wait_for_js(sl_operator)
     dt_wait_processing(sl_operator, dt_id)
     sl_operator.find_element(By.ID, dt_id).find_element(By.XPATH, '//a[@data-testid="queue-flush"]').click()

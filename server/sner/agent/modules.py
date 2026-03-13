@@ -19,8 +19,8 @@ service-target = proto "://" host-target ":" port
 import json
 import logging
 import os
-import signal
 import shlex
+import signal
 import subprocess
 from abc import ABC, abstractmethod
 from importlib import import_module
@@ -30,21 +30,21 @@ import sner.plugin
 from sner.config import ConfigBase
 from sner.targets import TargetManager
 
-
 REGISTERED_MODULES = {}
 
 
 def load_agent_plugins():
     """load all agent plugins/modules"""
 
-    for plugin_path in Path(sner.plugin.__file__).parent.glob('*/agent.py'):
+    for plugin_path in Path(sner.plugin.__file__).parent.glob("*/agent.py"):
         plugin_name = plugin_path.parent.name
-        module = import_module(f'sner.plugin.{plugin_name}.agent')
-        REGISTERED_MODULES[plugin_name] = getattr(module, 'AgentModule')
+        module = import_module(f"sner.plugin.{plugin_name}.agent")
+        REGISTERED_MODULES[plugin_name] = getattr(module, "AgentModule")
 
 
 class Config(ConfigBase):
     """auror_hostnames agent plugin config"""
+
     module: str
 
 
@@ -56,7 +56,7 @@ class ModuleBase(ABC):
     CONFIG_SCHEMA = Config
 
     def __init__(self):
-        self.log = logging.getLogger(f'sner.agent.module.{self.__class__.__name__}')
+        self.log = logging.getLogger(f"sner.agent.module.{self.__class__.__name__}")
         self.process = None
 
     def init_job(self, assignment):
@@ -81,11 +81,11 @@ class ModuleBase(ABC):
             except OSError as exc:
                 self.log.error(exc)
 
-    def _execute(self, cmd, output_file='output'):
+    def _execute(self, cmd, output_file="output"):
         """execute command and capture output"""
 
         cmdarg = shlex.split(cmd) if isinstance(cmd, str) else cmd
-        with open(output_file, 'w', encoding='utf-8') as output_fd:
+        with open(output_file, "w", encoding="utf-8") as output_fd:
             self.process = subprocess.Popen(cmdarg, stdin=subprocess.DEVNULL, stdout=output_fd, stderr=subprocess.STDOUT)  # noqa: E501  pylint: disable=consider-using-with
             retval = self.process.wait()
             self.process = None

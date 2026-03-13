@@ -10,9 +10,8 @@ import subprocess
 from pathlib import Path
 from socket import getaddrinfo
 
-import dns.zone
 import dns.rdatatype
-
+import dns.zone
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +77,6 @@ def process_cnames(cnames, a_aaaa, ip_hostnames) -> dict:
     resolved_cnames = 0
     resolve_aliases = 0
     for cname, aliases in cnames_rev.items():
-
         if cname in a_aaaa:
             for alias in aliases:
                 for ip in a_aaaa[cname]:

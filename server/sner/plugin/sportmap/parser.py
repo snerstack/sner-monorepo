@@ -15,14 +15,13 @@ from sner.lib import file_from_zip
 from sner.plugin.nmap.parser import ParserModule as NmapParserModule
 from sner.server.parser import ParsedItemsDb, ParserBase
 
-
 logger = logging.getLogger(__name__)
 
 
 class ParserModule(ParserBase):
     """nmap xml output parser"""
 
-    ARCHIVE_PATHS = r'output.*\.xml|scan\-.*\.xml'
+    ARCHIVE_PATHS = r"output.*\.xml|scan\-.*\.xml"
 
     @classmethod
     def parse_path(cls, path):
@@ -49,7 +48,7 @@ class ParserModule(ParserBase):
                 default_state = list(allparsed["default"].services.where(proto=svc.proto, port=svc.port))
                 default_state = default_state[0].state if default_state else None
 
-                if ('open:' in svc.state) and ((not default_state) or (default_state != svc.state)):
+                if ("open:" in svc.state) and ((not default_state) or (default_state != svc.state)):
                     diffmap[address][svc.proto][svc.port]["default"] = default_state or "closed:nostate"
                     diffmap[address][svc.proto][svc.port][sport] = svc.state
 
@@ -70,10 +69,9 @@ class ParserModule(ParserBase):
         with ZipFile(path) as fzip:
             for fname in filter(lambda x: re.match(cls.ARCHIVE_PATHS, x), fzip.namelist()):
                 # recombine ipv4 and ipv6 scans
-                sport = fname.replace('.xml', '').split('-')[-1]
+                sport = fname.replace(".xml", "").split("-")[-1]
                 allparsed[sport] = NmapParserModule._parse_data(  # pylint: disable=protected-access
-                    file_from_zip(path, fname).decode('utf-8'),
-                    allparsed[sport]
+                    file_from_zip(path, fname).decode("utf-8"), allparsed[sport]
                 )
 
         if "default" not in allparsed:  # pragma: no cover  ; won't test
@@ -81,7 +79,7 @@ class ParserModule(ParserBase):
         return allparsed
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     xpidb = ParserModule.parse_path(sys.argv[1])
     pprint(xpidb.__dict__)
     print(xpidb.hosts.csv_export(None))

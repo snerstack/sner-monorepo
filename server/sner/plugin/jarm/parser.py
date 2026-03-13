@@ -13,7 +13,7 @@ from sner.server.parser import ParsedItemsDb, ParserBase
 class ParserModule(ParserBase):
     """jarm output parser"""
 
-    ARCHIVE_PATHS = r'output-[0-9]+.out'
+    ARCHIVE_PATHS = r"output-[0-9]+.out"
 
     @classmethod
     def parse_path(cls, path):
@@ -36,22 +36,22 @@ class ParserModule(ParserBase):
         jarm = None
 
         for line in data.splitlines():
-            if line.startswith('Domain:'):
-                via_target = line.split(' ')[-1]
+            if line.startswith("Domain:"):
+                via_target = line.split(" ")[-1]
 
-            if line.startswith('Resolved IP:'):
-                address = line.split(' ')[-1]
+            if line.startswith("Resolved IP:"):
+                address = line.split(" ")[-1]
 
-            if address and line.startswith('Port:'):
-                port = line.split(' ')[-1]
+            if address and line.startswith("Port:"):
+                port = line.split(" ")[-1]
 
-            if port and line.startswith('JARM:'):
-                jarm = line.split(' ')[-1]
-                if via_target and address and port and (jarm != '00000000000000000000000000000000000000000000000000000000000000'):
+            if port and line.startswith("JARM:"):
+                jarm = line.split(" ")[-1]
+                if via_target and address and port and (jarm != "00000000000000000000000000000000000000000000000000000000000000"):
                     pidb.upsert_note(address, "tcp", port, via_target, "jarm.fp", data=jarm)
 
         return pidb
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     pprint(ParserModule.parse_path(sys.argv[1]))

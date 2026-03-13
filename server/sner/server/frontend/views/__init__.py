@@ -5,18 +5,17 @@ frontend views
 
 from flask import Blueprint, current_app, jsonify, send_from_directory
 
+blueprint = Blueprint("frontend", __name__)  # pylint: disable=invalid-name
 
-blueprint = Blueprint('frontend', __name__)  # pylint: disable=invalid-name
 
-
-@blueprint.route('/<path:filepath>')
+@blueprint.route("/<path:filepath>")
 def asset_route(filepath):
     """serve frontend asset"""
 
     return send_from_directory("../../../frontend/dist", filepath, as_attachment=False)
 
 
-@blueprint.route('/')
+@blueprint.route("/")
 def index_route():
     """serve frontend app"""
     return asset_route("index.html")
@@ -28,14 +27,14 @@ def pagenotfound_route(err):  # pylint: disable=unused-argument
     return asset_route("index.html")
 
 
-@blueprint.route('/backend/frontend_config')
+@blueprint.route("/backend/frontend_config")
 def frontend_config():
     """server frontend config"""
 
     return jsonify(current_app.config["SNER_FRONTEND_CONFIG"])
 
 
-@blueprint.route('/backend/reset_browser_storage')
+@blueprint.route("/backend/reset_browser_storage")
 def reset_browser_storage():
     """
     reset browser state for selenium tests re-using running browser.

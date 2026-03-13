@@ -5,7 +5,7 @@ version parser, pulled from 713/logs/va2am
 
 import pytest
 
-from sner.server.storage.version_parser import parse, is_in_version_range, InvalidFormatException
+from sner.server.storage.version_parser import InvalidFormatException, is_in_version_range, parse
 
 
 def test_invalid_version():

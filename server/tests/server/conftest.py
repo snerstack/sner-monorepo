@@ -8,8 +8,8 @@ from flask import url_for
 from webtest import TestApp
 
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from tests.server import get_csrf_token
 from tests.conftest import apikey_in_roles
+from tests.server import get_csrf_token
 
 
 @pytest.fixture
@@ -34,15 +34,10 @@ def client_in_roles(ufactory, clnt, roles):
     """create user role and login client to role(s)"""
 
     password = PWS.generate()
-    user = ufactory.create(
-        username='pytest_user',
-        password=PWS.hash(password),
-        email=None,
-        roles=roles
-    )
+    user = ufactory.create(username="pytest_user", password=PWS.hash(password), email=None, roles=roles)
 
-    form_data = [('username', user.username), ('password', password)]
-    clnt.post(url_for('auth.login_route'), params=form_data)
+    form_data = [("username", user.username), ("password", password)]
+    clnt.post(url_for("auth.login_route"), params=form_data)
 
     return clnt
 
@@ -51,21 +46,21 @@ def client_in_roles(ufactory, clnt, roles):
 def cl_user(user_factory, client):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role user"""
 
-    yield client_in_roles(user_factory, client, ['user'])
+    yield client_in_roles(user_factory, client, ["user"])
 
 
 @pytest.fixture
 def cl_operator(user_factory, client):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role operator"""
 
-    yield client_in_roles(user_factory, client, ['user', 'operator'])
+    yield client_in_roles(user_factory, client, ["user", "operator"])
 
 
 @pytest.fixture
 def cl_admin(user_factory, client):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role admin"""
 
-    yield client_in_roles(user_factory, client, ['user', 'operator', 'admin'])
+    yield client_in_roles(user_factory, client, ["user", "operator", "admin"])
 
 
 class CustomTestApp(TestApp):
@@ -84,7 +79,7 @@ class CustomTestApp(TestApp):
     def get(self, *args, **kwargs):
         """token setup before GET request"""
 
-        if args[0] == '/backend/auth/user/me':   # prevent recursion
+        if args[0] == "/backend/auth/user/me":  # prevent recursion
             return super().get(*args, **kwargs)
 
         kwargs = self._inject_csrf(kwargs)
@@ -113,13 +108,13 @@ class TestAppApi(TestApp):
     def get(self, *args, **kwargs):
         """authenticated get"""
 
-        kwargs['headers'] = {'X-API-KEY': self.apikey}
+        kwargs["headers"] = {"X-API-KEY": self.apikey}
         return super().get(*args, **kwargs)
 
     def post_json(self, *args, **kwargs):
         """authenticated post_json"""
 
-        kwargs['headers'] = {'X-API-KEY': self.apikey}
+        kwargs["headers"] = {"X-API-KEY": self.apikey}
         return super().post_json(*args, **kwargs)
 
 
@@ -141,10 +136,7 @@ def api_user(app, apikey_user):  # pylint: disable=redefined-outer-name
 def api_user_auror(app, user_factory):  # pylint: disable=redefined-outer-name
     """create webtest testapp client"""
 
-    return TestAppApi(
-        app,
-        apikey_in_roles(user_factory, ['user', 'auror'])
-    )
+    return TestAppApi(app, apikey_in_roles(user_factory, ["user", "auror"]))
 
 
 @pytest.fixture
@@ -152,5 +144,5 @@ def api_user_nonetworks(app, user_factory):
     """create webtest testappclient without any api networks configures"""
 
     tmp_apikey = PWS.generate_apikey()
-    user_factory.create(username='pytest_user', apikey=PWS.hash_simple(tmp_apikey), roles=['user'], api_networks=[])
+    user_factory.create(username="pytest_user", apikey=PWS.hash_simple(tmp_apikey), roles=["user"], api_networks=[])
     return TestAppApi(app, tmp_apikey)

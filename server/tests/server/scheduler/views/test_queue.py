@@ -16,9 +16,7 @@ from sner.server.scheduler.models import Job, Queue
 def test_queue_list_json_route(cl_operator, queue):
     """queue list_json route test"""
 
-    response = cl_operator.post(
-        url_for("scheduler.queue_list_json_route"), {"draw": 1, "start": 0, "length": 1, "search[value]": queue.name}
-    )
+    response = cl_operator.post(url_for("scheduler.queue_list_json_route"), {"draw": 1, "start": 0, "length": 1, "search[value]": queue.name})
     assert response.status_code == HTTPStatus.OK
     response_data = json.loads(response.body.decode("utf-8"))
     assert response_data["data"][0]["name"] == queue.name

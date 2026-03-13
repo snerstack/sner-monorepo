@@ -26,7 +26,7 @@ class SnerJSONEncoder(json.JSONEncoder):
             return str(o)
 
         if isinstance(o, datetime.date):
-            return o.strftime('%Y-%m-%dT%H:%M:%S')
+            return o.strftime("%Y-%m-%dT%H:%M:%S")
 
         return super().default(o)  # pragma: no cover  ; no such elements
 
@@ -37,7 +37,7 @@ def yaml_dump(data, **kwargs):
 
 
 def windowed_query(query, column, windowsize=5000):
-    """"
+    """ "
     Break a Query into chunks on a given column.
     https://github.com/sqlalchemy/sqlalchemy/wiki/RangeQuery-and-WindowedRangeQuery
     """
@@ -74,8 +74,8 @@ def filter_query(query, qfilter):
     try:
         query = apply_filters(query, FILTER_PARSER.parse(qfilter), do_auto_join=False)
     except LarkError as exc:
-        mesg = str(exc).split('\n', maxsplit=1)[0]
-        current_app.logger.error('failed to parse filter: %s', mesg)
+        mesg = str(exc).split("\n", maxsplit=1)[0]
+        current_app.logger.error("failed to parse filter: %s", mesg)
         raise FilterQueryError(mesg) from None
 
     return query
@@ -87,12 +87,7 @@ def transform_to_sqlalchemy_filter(query):
     # Process RQB RuleType
     if "field" in query:
         model, attr = query["field"].split(".", maxsplit=1)
-        return {
-            "model": model,
-            "field": attr,
-            "op": query["operator"],
-            "value": query["value"]
-        }
+        return {"model": model, "field": attr, "op": query["operator"], "value": query["value"]}
 
     # Process RQB RuleGroupType
     if "combinator" in query:
@@ -100,9 +95,7 @@ def transform_to_sqlalchemy_filter(query):
             return {}
 
         if query.get("not", False) is True:
-            return {"not": [
-                {query["combinator"]: [transform_to_sqlalchemy_filter(item) for item in query["rules"]]}
-            ]}
+            return {"not": [{query["combinator"]: [transform_to_sqlalchemy_filter(item) for item in query["rules"]]}]}
 
         return {query["combinator"]: [transform_to_sqlalchemy_filter(item) for item in query["rules"]]}
 
@@ -126,8 +119,8 @@ def filter_query_jsonfilter(query, jsonfilter):
         query = apply_filters(query, transformed, do_auto_join=False)
 
     except (json.JSONDecodeError, ValueError, BadFilterFormat) as exc:
-        mesg = str(exc).split('\n', maxsplit=1)[0]
-        current_app.logger.error('failed to apply jsonfilter: %s, %s', type(exc).__name__, mesg)
+        mesg = str(exc).split("\n", maxsplit=1)[0]
+        current_app.logger.error("failed to apply jsonfilter: %s, %s", type(exc).__name__, mesg)
         raise FilterQueryError(mesg) from None
 
     return query
@@ -136,19 +129,6 @@ def filter_query_jsonfilter(query, jsonfilter):
 def error_response(message, errors=None, code=HTTPStatus.BAD_REQUEST):
     """Returns a JSON error response following the Google JSON Style Guide."""
     if errors is not None:
-        return jsonify({
-            'apiVersion': "2.0",
-            'error': {
-                'code': code,
-                'message': message,
-                'errors': errors
-            }
-        }), code
+        return jsonify({"apiVersion": "2.0", "error": {"code": code, "message": message, "errors": errors}}), code
 
-    return jsonify({
-        'apiVersion': "2.0",
-        'error': {
-            'code': code,
-            'message': message
-        }
-    }), code
+    return jsonify({"apiVersion": "2.0", "error": {"code": code, "message": message}}), code

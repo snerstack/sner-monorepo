@@ -3,7 +3,6 @@
 auth.command tests
 """
 
-
 from sner.server.auth.commands import command
 from sner.server.auth.models import User
 from sner.server.extensions import db
@@ -15,10 +14,10 @@ def test_resetpassword_command(runner, user):
 
     old_password = user.password
 
-    result = runner.invoke(command, ['reset-password', 'notexists'])
+    result = runner.invoke(command, ["reset-password", "notexists"])
     assert result.exit_code == 1
 
-    result = runner.invoke(command, ['reset-password', user.username])
+    result = runner.invoke(command, ["reset-password", user.username])
     assert result.exit_code == 0
 
     tuser = db.session.get(User, user.id)
@@ -28,15 +27,15 @@ def test_resetpassword_command(runner, user):
 def test_addagent_command(runner):
     """add agent command test"""
 
-    result = runner.invoke(command, ['add-agent'])
+    result = runner.invoke(command, ["add-agent"])
     assert result.exit_code == 0
-    new_apikey = result.output.strip().split(' ')[-1]
+    new_apikey = result.output.strip().split(" ")[-1]
     assert User.query.first().apikey == PWS.hash_simple(new_apikey)
 
 
 def test_adduser_command(runner):
     """add user command test"""
 
-    result = runner.invoke(command, ['add-user', 'userx', 'test@email'])
+    result = runner.invoke(command, ["add-user", "userx", "test@email"])
     assert result.exit_code == 0
-    assert User.query.first().email == 'test@email'
+    assert User.query.first().email == "test@email"

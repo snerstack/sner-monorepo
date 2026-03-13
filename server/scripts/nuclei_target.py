@@ -8,7 +8,7 @@ phase2 - should not report x-frame-options, should report readme-md
 
 import sys
 from argparse import ArgumentParser
-from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 
 class CustomHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -72,7 +72,7 @@ def main():
     parser.add_argument("phase", nargs="?", choices=["phase1", "phase2"], default="phase1")
     args = parser.parse_args()
 
-    server_address = ('127.0.0.7', 80)
+    server_address = ("127.0.0.7", 80)
     handlers = {
         "phase1": HandlerPhase1,
         "phase2": HandlerPhase2,
@@ -82,5 +82,5 @@ def main():
     httpd.serve_forever()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

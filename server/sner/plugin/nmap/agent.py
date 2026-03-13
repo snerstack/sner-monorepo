@@ -13,6 +13,7 @@ from sner.targets import GenericTarget
 
 class Config(ConfigBase):
     """nmap agent plugin config"""
+
     module: str = Literal["nmap"]
     args: list[str]
     timing_perhost: Optional[int] = None
@@ -47,14 +48,7 @@ class AgentModule(ModuleBase):
 
         return targets4, targets6
 
-    def run_scan(
-        self,
-        asg_config,
-        targets,
-        targets_file,
-        output_file,
-        extra_args=None
-    ):
+    def run_scan(self, asg_config, targets, targets_file, output_file, extra_args=None):
         """run scan"""
 
         Path(targets_file).write_text("\n".join(targets), encoding="utf-8")
@@ -63,11 +57,16 @@ class AgentModule(ModuleBase):
         if asg_config.timing_perhost is not None:
             output_rate = asg_config.timing_perhost * len(targets)
             timing_args = [
-                "--max-retries", str(asg_config.max_retries),
-                "--script-timeout", asg_config.script_timeout,
-                "--min-hostgroup", str(len(targets)),
-                "--min-rate", str(output_rate),
-                "--max-rate", str(int(output_rate * 1.05))
+                "--max-retries",
+                str(asg_config.max_retries),
+                "--script-timeout",
+                asg_config.script_timeout,
+                "--min-hostgroup",
+                str(len(targets)),
+                "--min-rate",
+                str(output_rate),
+                "--max-rate",
+                str(int(output_rate * 1.05)),
             ]
 
         output_args = ["-oA", output_file, "--reason"]

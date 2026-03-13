@@ -194,9 +194,7 @@ class ParsedItemsDb:
         pidb_host = self.upsert_host(host_address)
         service = ParsedService(pidb_host.iid, proto, port, **kwargs)
 
-        pidb_service = self._first(
-            self.services.where(host_iid=service.host_iid, proto=service.proto, port=service.port)
-        )
+        pidb_service = self._first(self.services.where(host_iid=service.host_iid, proto=service.proto, port=service.port))
         if pidb_service:
             pidb_service.update(service)
             return pidb_service
@@ -209,9 +207,7 @@ class ParsedItemsDb:
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)
-        pidb_service = (
-            self.upsert_service(host_address, service_proto, service_port) if (service_proto and service_port) else None
-        )
+        pidb_service = self.upsert_service(host_address, service_proto, service_port) if (service_proto and service_port) else None
         vuln = ParsedVuln(
             pidb_host.iid,
             name,
@@ -242,9 +238,7 @@ class ParsedItemsDb:
         """upsert vuln"""
 
         pidb_host = self.upsert_host(host_address)
-        pidb_service = (
-            self.upsert_service(host_address, service_proto, service_port) if (service_proto and service_port) else None
-        )
+        pidb_service = self.upsert_service(host_address, service_proto, service_port) if (service_proto and service_port) else None
         note = ParsedNote(
             pidb_host.iid,
             xtype,
@@ -253,11 +247,7 @@ class ParsedItemsDb:
             **kwargs,
         )
 
-        pidb_note = self._first(
-            self.notes.where(
-                host_iid=note.host_iid, xtype=note.xtype, service_iid=note.service_iid, via_target=note.via_target
-            )
-        )
+        pidb_note = self._first(self.notes.where(host_iid=note.host_iid, xtype=note.xtype, service_iid=note.service_iid, via_target=note.via_target))
         if pidb_note:
             pidb_note.update(note)
             return pidb_note

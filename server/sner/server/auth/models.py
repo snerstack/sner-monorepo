@@ -26,7 +26,7 @@ class User(db.Model, flask_login.UserMixin):
     totp = db.Column(db.String(32))
     api_networks = db.Column(postgresql.ARRAY(db.String, dimensions=1), nullable=False, default=[])
 
-    webauthn_credentials = relationship('WebauthnCredential', back_populates='user', cascade='delete,delete-orphan', passive_deletes=True)
+    webauthn_credentials = relationship("WebauthnCredential", back_populates="user", cascade="delete,delete-orphan", passive_deletes=True)
 
     @property
     def is_active(self):
@@ -42,20 +42,20 @@ class User(db.Model, flask_login.UserMixin):
         return False
 
     def __repr__(self):
-        return f'<User {self.id}: {self.username}>'
+        return f"<User {self.id}: {self.username}>"
 
 
 class WebauthnCredential(db.Model):
     """Webauthn credential model"""
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     user_handle = db.Column(db.String(64), nullable=False)
     credential_data = db.Column(db.LargeBinary, nullable=False)
     name = db.Column(db.String(250))
     registered = db.Column(db.DateTime, default=datetime.utcnow)
 
-    user = relationship('User', back_populates='webauthn_credentials')
+    user = relationship("User", back_populates="webauthn_credentials")
 
     def __repr__(self):
-        return f'<WebauthnCredential {self.id}: {self.user_id}>'
+        return f"<WebauthnCredential {self.id}: {self.user_id}>"

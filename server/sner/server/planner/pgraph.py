@@ -124,9 +124,7 @@ def generate_graph(planner, dot_path="pipeline_graph.dot", svg_path="pipeline_gr
     ]
 
     for stage in stages.values():
-        lines.append(
-            f'  {stage.node_id} [label={stage.dot_label} fillcolor="{stage.fill_color}" fontcolor="{stage.font_color}"]'
-        )
+        lines.append(f'  {stage.node_id} [label={stage.dot_label} fillcolor="{stage.fill_color}" fontcolor="{stage.font_color}"]')
 
     for stage in stages.values():
         for target in stage.connections:

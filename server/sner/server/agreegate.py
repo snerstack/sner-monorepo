@@ -60,7 +60,7 @@ def agreegate_apicall(method, url, **kwargs):
         f"{current_app.config['SNER_AGREEGATE_URL']}{url}",
         headers={"X-API-KEY": current_app.config["SNER_AGREEGATE_APIKEY"]},
         timeout=60,
-        **kwargs
+        **kwargs,
     )
     current_app.logger.debug("apicall, %s", resp)
 
@@ -81,10 +81,7 @@ def fetch_agreegate_netlists():
         return 1
 
     agreegate_netlists_path = Path(f"{current_app.config['SNER_VAR']}/{NETLISTS_FILE}")
-    agreegate_netlists_path.write_text(
-        json.dumps(netlists_json, indent=4),
-        encoding="utf-8"
-    )
+    agreegate_netlists_path.write_text(json.dumps(netlists_json, indent=4), encoding="utf-8")
     return 0
 
 
@@ -102,7 +99,7 @@ def init_agreegate_netlists(app):
     """
 
     netlists_path = Path(f"{app.config['SNER_VAR']}/{NETLISTS_FILE}")
-    if (not app.config['SNER_AGREEGATE_USE_NETLISTS']) or (not netlists_path.exists()):
+    if (not app.config["SNER_AGREEGATE_USE_NETLISTS"]) or (not netlists_path.exists()):
         return
 
     app.logger.debug("merging agreegate netlists")
@@ -139,7 +136,7 @@ def ensure_user(username, email, full_name):
     if not user.full_name:
         user.full_name = full_name
 
-    ensured_roles = ['user']
+    ensured_roles = ["user"]
     if not all(role in user.roles for role in ensured_roles):
         user.roles = list(set(user.roles + ensured_roles))
 

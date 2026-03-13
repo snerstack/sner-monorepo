@@ -12,7 +12,7 @@ from hmac import compare_digest
 from passlib.hash import sha512_crypt
 
 
-class PasswordSupervisorResult():
+class PasswordSupervisorResult:
     """classes wrapping password supervisor checks results"""
 
     def __init__(self, result, message):
@@ -30,7 +30,7 @@ class PasswordSupervisorResult():
         return self._message
 
 
-class PasswordSupervisor():
+class PasswordSupervisor:
     """password supervisor implementation"""
 
     MIN_LENGTH = 10
@@ -42,25 +42,24 @@ class PasswordSupervisor():
 
         # length
         if len(password) < cls.MIN_LENGTH:
-            return PasswordSupervisorResult(False, f'Password too short. At least {cls.MIN_LENGTH} characters required.')
+            return PasswordSupervisorResult(False, f"Password too short. At least {cls.MIN_LENGTH} characters required.")
 
         # complexity
         classes = 0
-        if re.search('[a-z]', password):
+        if re.search("[a-z]", password):
             classes += 1
-        if re.search('[A-Z]', password):
+        if re.search("[A-Z]", password):
             classes += 1
-        if re.search('[0-9]', password):
+        if re.search("[0-9]", password):
             classes += 1
-        if re.search('[^a-zA-Z0-9]', password):
+        if re.search("[^a-zA-Z0-9]", password):
             classes += 1
         if classes < cls.MIN_CLASSES:
             return PasswordSupervisorResult(
-                False,
-                f'Only {classes} character classes found. At least {cls.MIN_CLASSES} classes required (lowercase, uppercase, digits, other).'
+                False, f"Only {classes} character classes found. At least {cls.MIN_CLASSES} classes required (lowercase, uppercase, digits, other)."
             )
 
-        return PasswordSupervisorResult(True, 'Password is according to policy.')
+        return PasswordSupervisorResult(True, "Password is according to policy.")
 
     @classmethod
     def generate(cls, length=40):
@@ -68,7 +67,7 @@ class PasswordSupervisor():
 
         alphabet = string.ascii_letters + string.digits
         while True:
-            ret = ''.join(secrets.choice(alphabet) for i in range(length))
+            ret = "".join(secrets.choice(alphabet) for i in range(length))
             if cls.check_strength(ret).is_strong:
                 break
         return ret
@@ -86,7 +85,7 @@ class PasswordSupervisor():
     @staticmethod
     def get_salt(value):
         """encoder; demerge salt from value"""
-        return value.split('$')[2] if value else None
+        return value.split("$")[2] if value else None
 
     @staticmethod
     def compare(value1, value2):
@@ -96,4 +95,4 @@ class PasswordSupervisor():
     @staticmethod
     def hash_simple(value):
         """encoder; create non salted hash"""
-        return sha512(value.encode('utf-8')).hexdigest()
+        return sha512(value.encode("utf-8")).hexdigest()

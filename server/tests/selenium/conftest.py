@@ -19,14 +19,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from sner.server.auth.models import User
 from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from tests.selenium import FRONTEND_TESTSERVER_DEV, frontend_url, webdriver_waituntil, wait_for_js
+from tests.selenium import FRONTEND_TESTSERVER_DEV, frontend_url, wait_for_js, webdriver_waituntil
 
 
 def selenium_in_roles(sclnt, roles):
     """create user role and login selenium to role(s)"""
 
     tmp_password = PWS.generate()
-    tmp_user = User(username='pytest_user', password=PWS.hash(tmp_password), active=True, roles=roles)
+    tmp_user = User(username="pytest_user", password=PWS.hash(tmp_password), active=True, roles=roles)
     db.session.add(tmp_user)
     db.session.commit()
 
@@ -76,10 +76,7 @@ def browser_instance():
     # # Disable captive portal detection
     options.set_preference("network.captive-portal-service.enabled", False)
 
-    driver = webdriver.Firefox(
-        options=options,
-        service=Service(log_output="/tmp/geckodriver.log")
-    )
+    driver = webdriver.Firefox(options=options, service=Service(log_output="/tmp/geckodriver.log"))
     yield driver
     driver.quit()
 
@@ -99,21 +96,21 @@ def shared_browser(browser_instance):  # pylint: disable=redefined-outer-name
 def sl_user(shared_browser):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role user"""
 
-    yield selenium_in_roles(shared_browser, ['user'])
+    yield selenium_in_roles(shared_browser, ["user"])
 
 
 @pytest.fixture
 def sl_operator(shared_browser):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role operator"""
 
-    yield selenium_in_roles(shared_browser, ['user', 'operator'])
+    yield selenium_in_roles(shared_browser, ["user", "operator"])
 
 
 @pytest.fixture
 def sl_admin(shared_browser):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role admin"""
 
-    yield selenium_in_roles(shared_browser, ['user', 'operator', 'admin'])
+    yield selenium_in_roles(shared_browser, ["user", "operator", "admin"])
 
 
 @pytest.fixture(scope="session")
@@ -121,11 +118,7 @@ def built_frontend():
     """build frontend"""
 
     if os.environ.get("PYTEST_FRONTEND") == "build":
-        subprocess.run(
-            ["npm", "run", "build"],
-            cwd="../frontend",
-            check=True
-        )
+        subprocess.run(["npm", "run", "build"], cwd="../frontend", check=True)
     yield 0
 
 
@@ -159,9 +152,9 @@ def frontend_server(built_frontend, live_server):  # pylint: disable=redefined-o
                 "SNER_BACKEND_URL": f"http://localhost:{live_server.port}",
             },
             cwd="../frontend",
-            start_new_session=True
+            start_new_session=True,
         )
-        wait_for_port('localhost', dev_server_port)
+        wait_for_port("localhost", dev_server_port)
         yield proc
         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
 

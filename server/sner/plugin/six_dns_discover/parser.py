@@ -19,7 +19,7 @@ class ParserModule(ParserBase):
         """parse data from path"""
 
         pidb = ParsedItemsDb()
-        data = json.loads(file_from_zip(path, 'output.json'))
+        data = json.loads(file_from_zip(path, "output.json"))
 
         for addr, via in data.items():
             pidb.upsert_note(addr, None, None, None, "six_dns_discover.via", data=json.dumps(via))
@@ -27,5 +27,5 @@ class ParserModule(ParserBase):
         return pidb
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     pprint(ParserModule.parse_path(sys.argv[1]))

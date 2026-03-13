@@ -10,15 +10,15 @@ def test_password_supervisor():
     """run test_password_supervisor unit tests"""
 
     # supervisor tests
-    pwsr = PWS.check_strength('c')
+    pwsr = PWS.check_strength("c")
     assert not pwsr.is_strong
-    assert 'too short' in pwsr.message
+    assert "too short" in pwsr.message
 
-    pwsr = PWS.check_strength('coverage01')
+    pwsr = PWS.check_strength("coverage01")
     assert not pwsr.is_strong
-    assert 'classes found' in pwsr.message
+    assert "classes found" in pwsr.message
 
-    assert PWS.check_strength('Coverage0?').is_strong
+    assert PWS.check_strength("Coverage0?").is_strong
 
     assert len(PWS.generate()) == 40
     assert len(PWS.generate_apikey()) == 64

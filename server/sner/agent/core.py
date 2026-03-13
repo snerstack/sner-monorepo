@@ -17,76 +17,63 @@ from contextlib import contextmanager
 from pathlib import Path
 from time import sleep
 from uuid import uuid4
-from zipfile import ZipFile, ZIP_DEFLATED
+from zipfile import ZIP_DEFLATED, ZipFile
 
 import marshmallow
 import requests
 import yaml
 
+from sner.agent.modules import REGISTERED_MODULES, load_agent_plugins
+from sner.lib import TerminateContextRunner, load_yaml
 from sner.server.api.schema import JobAssignmentSchema
-from sner.lib import load_yaml, TerminateContextRunner
-from sner.agent.modules import load_agent_plugins, REGISTERED_MODULES
 from sner.version import __version__
 
-
-LOGGER_NAME = 'sner.agent'
+LOGGER_NAME = "sner.agent"
 DEFAULT_CONFIG = {
-    'SERVER': 'http://localhost:18000',
-    'APIKEY': None,
-    'QUEUE': None,
-    'CAPS': None,
-    'BACKOFF_TIME': 5.0,
-    'NET_TIMEOUT': 300,
-    'ONESHOT': False
+    "SERVER": "http://localhost:18000",
+    "APIKEY": None,
+    "QUEUE": None,
+    "CAPS": None,
+    "BACKOFF_TIME": 5.0,
+    "NET_TIMEOUT": 300,
+    "ONESHOT": False,
 }
 
 
 def configure_logging():
     """configure logging"""
 
-    logging.config.dictConfig({
-        'version': 1,
-        'disable_existing_loggers': False,
-        'formatters': {
-            'formatter_agent': {
-                'format': f'{LOGGER_NAME} [%(asctime)s] %(levelname)s %(message)s',
-                'datefmt': '%d/%b/%Y:%H:%M:%S %z'
-            }
-        },
-        'handlers': {
-            'console_agent': {
-                'class': 'logging.StreamHandler',
-                'stream': 'ext://sys.stdout',
-                'formatter': 'formatter_agent'
-            }
-        },
-        'loggers': {
-            LOGGER_NAME: {
-                'level': 'INFO',
-                'handlers': ['console_agent']
-            }
+    logging.config.dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "formatter_agent": {"format": f"{LOGGER_NAME} [%(asctime)s] %(levelname)s %(message)s", "datefmt": "%d/%b/%Y:%H:%M:%S %z"}
+            },
+            "handlers": {"console_agent": {"class": "logging.StreamHandler", "stream": "ext://sys.stdout", "formatter": "formatter_agent"}},
+            "loggers": {LOGGER_NAME: {"level": "INFO", "handlers": ["console_agent"]}},
         }
-    })
+    )
 
 
 def config_from_yaml(filename):
     """pull config variables from config file"""
 
-    return {k.upper(): v for k, v in load_yaml(filename).get('agent', {}).items()}
+    return {k.upper(): v for k, v in load_yaml(filename).get("agent", {}).items()}
 
 
 def config_from_env(var_name):
     """pull config variables from env var"""
 
     var_data = yaml.safe_load(os.environ.get(var_name, "{}"))
-    return {k.upper(): v for k, v in var_data.get('agent', {}).items()}
+    return {k.upper(): v for k, v in var_data.get("agent", {}).items()}
 
 
 def config_from_args(args):
     """pull config variables from parsed args/generic object"""
 
     config = {}
-    for item in ['server', 'apikey', 'queue', 'caps', 'oneshot']:
+    for item in ["server", "apikey", "queue", "caps", "oneshot"]:
         if getattr(args, item) is not None:
             config[item.upper()] = getattr(args, item)
     return config
@@ -95,8 +82,8 @@ def config_from_args(args):
 def zipdir(path, zipto):
     """pack directory to in zipfile"""
 
-    with open(zipto, 'wb', 0o600) as output_file:
-        with ZipFile(output_file, 'w', ZIP_DEFLATED) as output_zip:
+    with open(zipto, "wb", 0o600) as output_file:
+        with ZipFile(output_file, "w", ZIP_DEFLATED) as output_zip:
             for root, _dirs, files in os.walk(path):
                 for fname in files:
                     filepath = os.path.join(root, fname)
@@ -122,7 +109,7 @@ class AgentBase(TerminateContextRunner):
     def terminate(self, _signum=None, _frame=None):  # pragma: no cover  ; running over multiprocessing
         """terminate at once"""
 
-        self.log.info('received terminate')
+        self.log.info("received terminate")
         self.loop = False
         if self.module_instance:
             self.module_instance.terminate()
@@ -130,13 +117,13 @@ class AgentBase(TerminateContextRunner):
     def process_assignment(self, assignment):
         """process assignment"""
 
-        jobdir = assignment['id']
+        jobdir = assignment["id"]
         oldcwd = os.getcwd()
         os.makedirs(jobdir, mode=0o700)
         os.chdir(jobdir)
 
         try:
-            self.module_instance = REGISTERED_MODULES[assignment['config']['module']]()
+            self.module_instance = REGISTERED_MODULES[assignment["config"]["module"]]()
             retval = self.module_instance.run(assignment)
         except Exception as exc:  # pylint: disable=broad-except ; modules can raise variety of exceptions, but agent must continue
             self.log.exception(exc)
@@ -145,10 +132,10 @@ class AgentBase(TerminateContextRunner):
             self.module_instance = None
 
         os.chdir(oldcwd)
-        zipdir(jobdir, f'{jobdir}.zip')
+        zipdir(jobdir, f"{jobdir}.zip")
         shutil.rmtree(jobdir)
 
-        self.log.info('process_assignment %s finished, retval=%d', assignment["id"], retval)
+        self.log.info("process_assignment %s finished, retval=%d", assignment["id"], retval)
         return retval
 
 
@@ -158,28 +145,28 @@ class ServerableAgent(AgentBase):  # pylint: disable=too-many-instance-attribute
     def __init__(self, config):
         super().__init__()
 
-        self.server = config['SERVER']
-        self.apikey = config['APIKEY']
-        self.queue = config['QUEUE']
-        self.caps = config['CAPS']
-        self.backoff_time = config['BACKOFF_TIME']
-        self.net_timeout = config['NET_TIMEOUT']
-        self.oneshot = config['ONESHOT']
+        self.server = config["SERVER"]
+        self.apikey = config["APIKEY"]
+        self.queue = config["QUEUE"]
+        self.caps = config["CAPS"]
+        self.backoff_time = config["BACKOFF_TIME"]
+        self.net_timeout = config["NET_TIMEOUT"]
+        self.oneshot = config["ONESHOT"]
 
         self.loop = True
-        self.get_assignment_url = f'{self.server}/api/v2/scheduler/job/assign'
-        self.upload_output_url = f'{self.server}/api/v2/scheduler/job/output'
+        self.get_assignment_url = f"{self.server}/api/v2/scheduler/job/assign"
+        self.upload_output_url = f"{self.server}/api/v2/scheduler/job/output"
 
         self.get_assignment_params = {}
         if self.queue:
-            self.get_assignment_params['queue'] = self.queue
+            self.get_assignment_params["queue"] = self.queue
         if self.caps:
-            self.get_assignment_params['caps'] = self.caps
+            self.get_assignment_params["caps"] = self.caps
 
     def shutdown(self, signum=None, frame=None):  # pragma: no cover  pylint: disable=unused-argument  ; running over multiprocessing
         """wait for current assignment to finish"""
 
-        self.log.info('received shutdown')
+        self.log.info("received shutdown")
         self.loop = False
 
     @contextmanager
@@ -195,7 +182,7 @@ class ServerableAgent(AgentBase):  # pylint: disable=too-many-instance-attribute
     def call_api(self, url, data):
         """call api"""
 
-        return requests.post(url, json=data, headers={'X-API-KEY': self.apikey}, timeout=self.net_timeout)
+        return requests.post(url, json=data, headers={"X-API-KEY": self.apikey}, timeout=self.net_timeout)
 
     def get_assignment(self):
         """get assignment from server"""
@@ -207,7 +194,7 @@ class ServerableAgent(AgentBase):  # pylint: disable=too-many-instance-attribute
                 response.raise_for_status()
                 assignment = response.json()
                 if not assignment:  # response-nowork
-                    self.log.debug('get_assignment response-nowork')
+                    self.log.debug("get_assignment response-nowork")
                     if self.oneshot:  # pylint: disable=no-else-break  ; improves readability for following pragma
                         break
                     else:  # pragma: no cover ; running over multiprocessing
@@ -216,12 +203,12 @@ class ServerableAgent(AgentBase):  # pylint: disable=too-many-instance-attribute
                 JobAssignmentSchema().load(assignment)
             except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, marshmallow.ValidationError) as exc:
                 assignment = None
-                self.log.error('get_assignment error, %s', exc)
+                self.log.error("get_assignment error, %s", exc)
                 if self.oneshot:
                     return assignment, 1
                 sleep(self.backoff_time)
 
-        self.log.info('get_assignment success, %s', assignment)
+        self.log.info("get_assignment success, %s", assignment)
         return assignment, 0
 
     def upload_output(self, output):
@@ -234,9 +221,9 @@ class ServerableAgent(AgentBase):  # pylint: disable=too-many-instance-attribute
                 response.raise_for_status()
                 uploaded = True
             except requests.exceptions.RequestException as exc:
-                self.log.error('upload_output error, %s', exc)
+                self.log.error("upload_output error, %s", exc)
                 sleep(self.backoff_time)
-        self.log.info('upload_output success, %s', output['id'])
+        self.log.info("upload_output success, %s", output["id"])
 
     def run(self, **kwargs):
         """fetch, process and upload output for assignment given by server"""
@@ -249,11 +236,11 @@ class ServerableAgent(AgentBase):  # pylint: disable=too-many-instance-attribute
                 if assignment:
                     retval = self.process_assignment(assignment)
 
-                    assignment_output_file = f'{assignment["id"]}.zip'
+                    assignment_output_file = f"{assignment['id']}.zip"
                     output = {
-                        'id': assignment['id'],
-                        'retval': retval,
-                        'output': b64encode(Path(assignment_output_file).read_bytes()).decode('utf-8')
+                        "id": assignment["id"],
+                        "retval": retval,
+                        "output": b64encode(Path(assignment_output_file).read_bytes()).decode("utf-8"),
                     }
                     self.upload_output(output)
                     os.remove(assignment_output_file)
@@ -261,7 +248,7 @@ class ServerableAgent(AgentBase):  # pylint: disable=too-many-instance-attribute
                 if self.oneshot:
                     self.loop = False
 
-        self.log.info('exit')
+        self.log.info("exit")
         return retval
 
 
@@ -271,13 +258,13 @@ class AssignableAgent(AgentBase):
     def run(self, **kwargs):
         """process user supplied assignment"""
 
-        assignment = {'id': str(uuid4()), **json.loads(kwargs['assignment'])}
+        assignment = {"id": str(uuid4()), **json.loads(kwargs["assignment"])}
         JobAssignmentSchema().load(assignment)
 
         with self.terminate_context():
             retval = self.process_assignment(assignment)
 
-        self.log.info('exit')
+        self.log.info("exit")
         return retval
 
 
@@ -288,20 +275,20 @@ def main(argv=None):
     logger = logging.getLogger(LOGGER_NAME)
 
     parser = ArgumentParser()
-    parser.add_argument('--debug', action='store_true', help='show debug output')
-    parser.add_argument('--version', action='store_true', help='print version and exit')
+    parser.add_argument("--debug", action="store_true", help="show debug output")
+    parser.add_argument("--version", action="store_true", help="print version and exit")
 
-    parser.add_argument('--shutdown', type=int, help='request gracefull shutdown of the agent specified by PID')
-    parser.add_argument('--terminate', type=int, help='request immediate termination of the agent specified by PID')
+    parser.add_argument("--shutdown", type=int, help="request gracefull shutdown of the agent specified by PID")
+    parser.add_argument("--terminate", type=int, help="request immediate termination of the agent specified by PID")
 
-    parser.add_argument('--assignment', help='manually specified assignment; mostly for debug purposses')
+    parser.add_argument("--assignment", help="manually specified assignment; mostly for debug purposses")
 
-    parser.add_argument('--config', default='/etc/sner.yaml', help='agent config')
-    parser.add_argument('--server', help='server uri')
-    parser.add_argument('--apikey', help='server apikey')
-    parser.add_argument('--queue', help='specific queue selector')
-    parser.add_argument('--caps', nargs='+', help='agent capabilities tags')
-    parser.add_argument('--oneshot', action='store_true', help='process single assignment and exit')
+    parser.add_argument("--config", default="/etc/sner.yaml", help="agent config")
+    parser.add_argument("--server", help="server uri")
+    parser.add_argument("--apikey", help="server apikey")
+    parser.add_argument("--queue", help="specific queue selector")
+    parser.add_argument("--caps", nargs="+", help="agent capabilities tags")
+    parser.add_argument("--oneshot", action="store_true", help="process single assignment and exit")
 
     args = parser.parse_args(argv)
     if args.debug:
@@ -310,7 +297,7 @@ def main(argv=None):
 
     # agent process management helpers
     if args.version:
-        print(f'sner {__version__}')
+        print(f"sner {__version__}")
         return 0
     if args.shutdown:
         return os.kill(args.shutdown, signal.SIGUSR1)

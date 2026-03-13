@@ -20,7 +20,7 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
         "targets": ["127.0.0.1", "::1"],
     }
 
-    result = agent_main(['--assignment', json.dumps(test_a), '--debug'])
+    result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
-    assert '-- 1 IP address (1 host up) scanned' in file_from_zip(f'{test_a["id"]}.zip', 'output-sport-53.gnmap').decode('utf-8')
-    assert '-- 1 IP address (1 host up) scanned' in file_from_zip(f'{test_a["id"]}.zip', 'output6-sport-53.gnmap').decode('utf-8')
+    assert "-- 1 IP address (1 host up) scanned" in file_from_zip(f"{test_a['id']}.zip", "output-sport-53.gnmap").decode("utf-8")
+    assert "-- 1 IP address (1 host up) scanned" in file_from_zip(f"{test_a['id']}.zip", "output6-sport-53.gnmap").decode("utf-8")

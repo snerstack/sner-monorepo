@@ -16,23 +16,21 @@ from tests.server.storage.views import check_annotate, check_delete_multiid, che
 def test_service_list_json_route(cl_operator, service):
     """service list_json route test"""
 
-    response = cl_operator.post(url_for('storage.service_list_json_route'), {'draw': 1, 'start': 0, 'length': 1, 'search[value]': service.info})
+    response = cl_operator.post(url_for("storage.service_list_json_route"), {"draw": 1, "start": 0, "length": 1, "search[value]": service.info})
     assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert response_data['data'][0]['info'] == service.info
+    response_data = json.loads(response.body.decode("utf-8"))
+    assert response_data["data"][0]["info"] == service.info
 
     response = cl_operator.post(
-        url_for('storage.service_list_json_route', filter=f'Service.info=="{service.info}"'),
-        {'draw': 1, 'start': 0, 'length': 1}
+        url_for("storage.service_list_json_route", filter=f'Service.info=="{service.info}"'), {"draw": 1, "start": 0, "length": 1}
     )
     assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert response_data['data'][0]['info'] == service.info
+    response_data = json.loads(response.body.decode("utf-8"))
+    assert response_data["data"][0]["info"] == service.info
 
     # test filtering library for joined models handling
     response = cl_operator.post(
-        url_for('storage.service_list_json_route', filter=f'Host.address=="{service.host.address}"'),
-        {'draw': 1, 'start': 0, 'length': 1}
+        url_for("storage.service_list_json_route", filter=f'Host.address=="{service.host.address}"'), {"draw": 1, "start": 0, "length": 1}
     )
     assert response.status_code == HTTPStatus.OK
 
@@ -42,9 +40,16 @@ def test_service_add_route(cl_operator, host, service_factory):
 
     aservice = service_factory.build(host=None)
 
-    form_data = [('host_id', host.id), ('proto', aservice.proto), ('port', aservice.port), ('state', aservice.state),
-                 ('name', aservice.name), ('info', aservice.info), ('comment', aservice.comment)]
-    response = cl_operator.post(url_for('storage.service_add_route', host_id=host.id), params=form_data)
+    form_data = [
+        ("host_id", host.id),
+        ("proto", aservice.proto),
+        ("port", aservice.port),
+        ("state", aservice.state),
+        ("name", aservice.name),
+        ("info", aservice.info),
+        ("comment", aservice.comment),
+    ]
+    response = cl_operator.post(url_for("storage.service_add_route", host_id=host.id), params=form_data)
     assert response.status_code == HTTPStatus.OK
 
     tservice = Service.query.filter(Service.info == aservice.info).one()
@@ -57,24 +62,29 @@ def test_service_add_route(cl_operator, host, service_factory):
 def test_service_edit_route(cl_operator, service):
     """service edit route test"""
 
-    response = cl_operator.get(url_for('storage.service_view_json_route', service_id=service.id))
-    new_info = f'{response.json["info"]}_edited'
+    response = cl_operator.get(url_for("storage.service_view_json_route", service_id=service.id))
+    new_info = f"{response.json['info']}_edited"
 
-    form_data = [('host_id', response.json['host_id']), ('port', response.json['port']), ('proto', response.json['proto']),
-                 ('state', 'down'), ('info', new_info)]
-    response = cl_operator.post(url_for('storage.service_edit_route', service_id=service.id), params=form_data)
+    form_data = [
+        ("host_id", response.json["host_id"]),
+        ("port", response.json["port"]),
+        ("proto", response.json["proto"]),
+        ("state", "down"),
+        ("info", new_info),
+    ]
+    response = cl_operator.post(url_for("storage.service_edit_route", service_id=service.id), params=form_data)
 
     assert response.status_code == HTTPStatus.OK
 
     tservice = db.session.get(Service, service.id)
-    assert tservice.state == 'down'
+    assert tservice.state == "down"
     assert tservice.info == new_info
 
 
 def test_service_delete_route(cl_operator, service):
     """service delete route test"""
 
-    response = cl_operator.post(url_for('storage.service_delete_route', service_id=service.id))
+    response = cl_operator.post(url_for("storage.service_delete_route", service_id=service.id))
     assert response.status_code == HTTPStatus.OK
 
     assert not db.session.get(Service, service.id)
@@ -83,57 +93,50 @@ def test_service_delete_route(cl_operator, service):
 def test_service_invalid_form_requests(cl_operator, service):
     """service invalid requests test"""
 
-    response = cl_operator.post(url_for('storage.service_add_route', host_id=-1), expect_errors=True)
+    response = cl_operator.post(url_for("storage.service_add_route", host_id=-1), expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
-    response = cl_operator.post(url_for('storage.service_edit_route', service_id=service.id), expect_errors=True)
+    response = cl_operator.post(url_for("storage.service_edit_route", service_id=service.id), expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
-    response = cl_operator.get(url_for('storage.service_view_json_route', service_id=-1), expect_errors=True)
+    response = cl_operator.get(url_for("storage.service_view_json_route", service_id=-1), expect_errors=True)
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_service_annotate_route(cl_operator, service):
     """service annotate route test"""
 
-    check_annotate(cl_operator, 'storage.service_annotate_route', service)
+    check_annotate(cl_operator, "storage.service_annotate_route", service)
 
 
 def test_service_tag_multiid_route(cl_operator, service):
     """service tag_multiid route test"""
 
-    check_tag_multiid(cl_operator, 'storage.service_tag_multiid_route', service)
+    check_tag_multiid(cl_operator, "storage.service_tag_multiid_route", service)
 
 
 def test_service_delete_multiid_route(cl_operator, service):
     """service delete_multiid route test"""
 
-    check_delete_multiid(cl_operator, 'storage.service_delete_multiid_route', service)
+    check_delete_multiid(cl_operator, "storage.service_delete_multiid_route", service)
 
 
 def test_service_grouped_json_route(cl_operator, service):
     """service grouped json route test"""
 
-    response = cl_operator.post(
-        url_for('storage.service_grouped_json_route'),
-        {'draw': 1, 'start': 0, 'length': 1, 'search[value]': service.info}
-    )
+    response = cl_operator.post(url_for("storage.service_grouped_json_route"), {"draw": 1, "start": 0, "length": 1, "search[value]": service.info})
     assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert service.info in response_data['data'][0]['info']
+    response_data = json.loads(response.body.decode("utf-8"))
+    assert service.info in response_data["data"][0]["info"]
 
     response = cl_operator.post(
-        url_for('storage.service_grouped_json_route', filter=f'Service.info=="{service.info}"'),
-        {'draw': 1, 'start': 0, 'length': 1}
+        url_for("storage.service_grouped_json_route", filter=f'Service.info=="{service.info}"'), {"draw": 1, "start": 0, "length": 1}
     )
     assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert service.info in response_data['data'][0]['info']
+    response_data = json.loads(response.body.decode("utf-8"))
+    assert service.info in response_data["data"][0]["info"]
 
-    response = cl_operator.post(
-        url_for('storage.service_grouped_json_route', crop=2),
-        {'draw': 1, 'start': 0, 'length': 1}
-    )
+    response = cl_operator.post(url_for("storage.service_grouped_json_route", crop=2), {"draw": 1, "start": 0, "length": 1})
     assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert response_data['data'][0]['info'] == ' '.join(service.info.split(' ')[:2])
+    response_data = json.loads(response.body.decode("utf-8"))
+    assert response_data["data"][0]["info"] == " ".join(service.info.split(" ")[:2])

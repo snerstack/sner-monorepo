@@ -7,9 +7,10 @@ db commands tests
 from unittest.mock import MagicMock, patch
 
 from flask import current_app
-# from sqlalchemy import inspect
 
+# from sqlalchemy import inspect
 from sner.server.nessus_command import command
+
 # from sner.server.extensions import db
 # from sner.server.scheduler.models import Target
 # from sner.server.storage.models import Vuln

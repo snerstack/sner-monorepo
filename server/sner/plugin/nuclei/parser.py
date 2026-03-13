@@ -14,22 +14,21 @@ from sner.server.parser import ParsedItemsDb, ParserBase
 from sner.server.storage.models import SeverityEnum
 from sner.server.utils import SnerJSONEncoder
 
-
 logger = logging.getLogger(__name__)
 
 
 def dnsptr_to_ip(dnsptr: str) -> str:
     """parse PTR data"""
 
-    if dnsptr.endswith('.in-addr.arpa'):
-        ip_parts = dnsptr.replace('.in-addr.arpa', '').split('.')
-        address = '.'.join(reversed(ip_parts))
+    if dnsptr.endswith(".in-addr.arpa"):
+        ip_parts = dnsptr.replace(".in-addr.arpa", "").split(".")
+        address = ".".join(reversed(ip_parts))
         return str(ip_address(address))
 
-    if dnsptr.endswith('.ip6.arpa'):
-        ip_parts = dnsptr.replace('.ip6.arpa', '').split('.')
-        address = ''.join(reversed(ip_parts))
-        address = ':'.join([address[i:i+4] for i in range(0, len(address), 4)])
+    if dnsptr.endswith(".ip6.arpa"):
+        ip_parts = dnsptr.replace(".ip6.arpa", "").split(".")
+        address = "".join(reversed(ip_parts))
+        address = ":".join([address[i : i + 4] for i in range(0, len(address), 4)])
         return str(ip_address(address))
 
     raise ValueError("Input is not a valid reverse DNS string.")  # pragma: nocover  ; won't test
@@ -47,7 +46,7 @@ class ParserModule(ParserBase):
         if is_zip(path):
             return cls._parse_data(file_from_zip(path, "output.json"), pidb)
 
-        return cls._parse_data(Path(path).read_text(encoding='utf-8'), pidb)
+        return cls._parse_data(Path(path).read_text(encoding="utf-8"), pidb)
 
     @classmethod
     def _parse_data(cls, data, pidb):
@@ -64,8 +63,8 @@ class ParserModule(ParserBase):
                 continue
 
             # skip some templates
-            if 'ip' not in report:
-                logger.warning('IP missing in report, template ident: %s', report_ident)
+            if "ip" not in report:
+                logger.warning("IP missing in report, template ident: %s", report_ident)
                 continue
 
             pidb = cls._parse_normal(report, pidb)
@@ -76,8 +75,8 @@ class ParserModule(ParserBase):
     def _parse_dnsptr(cls, report, pidb):
         """parse dns/ptr-fingerprint"""
 
-        host_address = dnsptr_to_ip(report['host'])
-        hostname = report['extracted-results'][0].rstrip('.')
+        host_address = dnsptr_to_ip(report["host"])
+        hostname = report["extracted-results"][0].rstrip(".")
         pidb.upsert_host(host_address, hostname=hostname)
         return pidb
 
@@ -86,50 +85,49 @@ class ParserModule(ParserBase):
         """parse normal item"""
 
         # parse host
-        host_address = report['ip']
+        host_address = report["ip"]
         host_data = {}
-        hostname = urlsplit(report['host']).hostname
+        hostname = urlsplit(report["host"]).hostname
         if not is_address(hostname):
-            host_data['hostname'] = hostname
+            host_data["hostname"] = hostname
 
         pidb.upsert_host(host_address, **host_data)
 
         # parse service
         service = None
         # url must contain '//' otherwise will be treated as relative and port will be parsed as path
-        target_parsed = urlsplit(report['matched-at'] if '://' in report['matched-at'] else f"//{report['matched-at']}")
+        target_parsed = urlsplit(report["matched-at"] if "://" in report["matched-at"] else f"//{report['matched-at']}")
         port = target_parsed.port
-        if (port is None) and (report['type'] == 'http'):
+        if (port is None) and (report["type"] == "http"):
             # set default ports
-            port = '443' if target_parsed.scheme == 'https' else '80'
+            port = "443" if target_parsed.scheme == "https" else "80"
         via_target = target_parsed.hostname
 
         if port:
             service = pidb.upsert_service(
                 host_address,
-                proto='tcp',
+                proto="tcp",
                 port=int(port),
-                state='open:nuclei',
-                name='www' if report['type'] == 'http' else '',
-                import_time=report['timestamp']
+                state="open:nuclei",
+                name="www" if report["type"] == "http" else "",
+                import_time=report["timestamp"],
             )
 
         # parse vuln
         refs = []
-        if cves := get_nested_key(report, 'info', 'classification', 'cve-id'):
+        if cves := get_nested_key(report, "info", "classification", "cve-id"):
             for cve in cves:
                 refs.append(cve.upper())
-        if references := get_nested_key(report, 'info', 'reference'):
+        if references := get_nested_key(report, "info", "reference"):
             for reference in references:
-                refs.append('URL-' + reference)
+                refs.append("URL-" + reference)
 
         vuln_data = {
-            'severity': str(SeverityEnum(report['info']['severity'])),
-            'descr': f'## Description\n\n{report["info"].get("description")}\n\n'
-                     + f'## Extracted results\n\n{report.get("extracted-results")}',
-            'data': json.dumps(report, cls=SnerJSONEncoder),
-            'refs': refs,
-            'import_time': report['timestamp'],
+            "severity": str(SeverityEnum(report["info"]["severity"])),
+            "descr": f"## Description\n\n{report['info'].get('description')}\n\n" + f"## Extracted results\n\n{report.get('extracted-results')}",
+            "data": json.dumps(report, cls=SnerJSONEncoder),
+            "refs": refs,
+            "import_time": report["timestamp"],
         }
 
         pidb.upsert_vuln(
@@ -138,8 +136,8 @@ class ParserModule(ParserBase):
             service.port if service else None,
             via_target,
             f"nuclei.{report['template-id']}{'.' + report['matcher-name'] if 'matcher-name' in report else ''}",
-            report['info']['name'],
-            **vuln_data
+            report["info"]["name"],
+            **vuln_data,
         )
 
         return pidb

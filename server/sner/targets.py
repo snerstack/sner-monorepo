@@ -236,17 +236,13 @@ class TargetManager:
             return ServiceTarget(match.group("address"), match.group("proto"), int(match.group("port")))
 
         if value.startswith("named,") and (match := NamedServiceTarget.REGEXP.match(value)):
-            return NamedServiceTarget(
-                match.group("address"), match.group("proto"), int(match.group("port")), match.group("hostname")
-            )
+            return NamedServiceTarget(match.group("address"), match.group("proto"), int(match.group("port")), match.group("hostname"))
 
         if value.startswith("sixenum,") and SixenumTarget.REGEXP.match(value):
             return SixenumTarget(value.split(",", maxsplit=1)[1])
 
         if value.startswith("auror,") and (match := AurorTestsslTarget.REGEXP.match(value)):
-            return AurorTestsslTarget(
-                match.group("address"), int(match.group("port")), match.group("hostname"), match.group("enc")
-            )
+            return AurorTestsslTarget(match.group("address"), int(match.group("port")), match.group("hostname"), match.group("enc"))
 
         return GenericTarget(value)
 

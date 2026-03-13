@@ -14,11 +14,11 @@ from sner.server.utils import FilterQueryError
 def test_get_related_models(app, service):  # pylint: disable=unused-argument
     """test function used to link new vuln/note to corresponding models"""
 
-    thost, tservice = get_related_models('host', service.host_id)
+    thost, tservice = get_related_models("host", service.host_id)
     assert thost.id == service.host_id
     assert not tservice
 
-    thost, tservice = get_related_models('service', service.id)
+    thost, tservice = get_related_models("service", service.id)
     assert thost.id == service.host_id
     assert tservice.id == service.id
 
@@ -30,13 +30,13 @@ def test_importparsed(app):  # pylint: disable=unused-argument
     pidb.upsert_vuln("192.0.2.1", "tcp", 80, "target1", "xtype1", "name1", severity=SeverityEnum.INFO, data="data1")
     pidb.upsert_note("192.0.2.1", "tcp", 80, "target1", "xtype1", data="data1")
 
-    StorageManager.import_parsed(pidb, addtags=['testtag'])
+    StorageManager.import_parsed(pidb, addtags=["testtag"])
 
-    host = Host.query.filter(Host.address == '192.0.2.1').one()
-    assert host.tags == ['testtag']
-    assert host.services[0].tags == ['testtag']
-    assert host.vulns[0].tags == ['testtag']
-    assert host.notes[0].tags == ['testtag']
+    host = Host.query.filter(Host.address == "192.0.2.1").one()
+    assert host.tags == ["testtag"]
+    assert host.services[0].tags == ["testtag"]
+    assert host.vulns[0].tags == ["testtag"]
+    assert host.notes[0].tags == ["testtag"]
 
 
 def test_storagecleanup(app, host_factory, service_factory, vuln_factory, note_factory):  # pylint: disable=unused-argument
@@ -70,38 +70,38 @@ def test_vuln_report(app, host_factory, service_factory, vuln_factory):  # pylin
     vuln = vuln_factory.create()
     vuln_name = vuln.name
 
-    host1 = host_factory.create(address='127.3.3.1', hostname='testhost2.testdomain.tests')
-    host2 = host_factory.create(address='::127:3:3:2', hostname='testhost2.testdomain.tests')
-    vuln_factory.create(host=host1, name='vuln on many hosts', xtype='x', severity=SeverityEnum.CRITICAL)
-    vuln_factory.create(host=host2, name='vuln on many hosts', xtype='x', severity=SeverityEnum.CRITICAL)
-    vuln_factory.create(host=host2, name='trim test', xtype='x', severity=SeverityEnum.UNKNOWN, descr='A'*1001)
+    host1 = host_factory.create(address="127.3.3.1", hostname="testhost2.testdomain.tests")
+    host2 = host_factory.create(address="::127:3:3:2", hostname="testhost2.testdomain.tests")
+    vuln_factory.create(host=host1, name="vuln on many hosts", xtype="x", severity=SeverityEnum.CRITICAL)
+    vuln_factory.create(host=host2, name="vuln on many hosts", xtype="x", severity=SeverityEnum.CRITICAL)
+    vuln_factory.create(host=host2, name="trim test", xtype="x", severity=SeverityEnum.UNKNOWN, descr="A" * 1001)
 
     aggregable_vuln_data = {
-        'name': 'agg reportdata vuln',
-        'xtype': 'y',
-        'descr': 'agg reportdata vuln description',
-        'tags': ['report:data', 'i:via_sner']
+        "name": "agg reportdata vuln",
+        "xtype": "y",
+        "descr": "agg reportdata vuln description",
+        "tags": ["report:data", "i:via_sner"],
     }
     vuln_factory.create(host=host1, **aggregable_vuln_data)
     service2 = service_factory.create(host=host2)
     vuln2 = vuln_factory.create(host=host2, service=service2, **aggregable_vuln_data)
 
-    vuln_factory.create(host=host2, service=service2, name='no descr vulns', descr=None, data='data', tags=['report:data'])
+    vuln_factory.create(host=host2, service=service2, name="no descr vulns", descr=None, data="data", tags=["report:data"])
 
     output = vuln_report()
 
     assert f',"{vuln_name}",' in output
     assert ',"misc",' in output
     assert ',"TRIMMED",' in output
-    assert '[::127:3:3:2]' in output
-    assert f'## Data IP: {vuln2.host.address}, Proto: {vuln2.service.proto}, Port: {service2.port}, Hostname: {host2.hostname}' in output
-    assert 'i:via_sner' not in output
+    assert "[::127:3:3:2]" in output
+    assert f"## Data IP: {vuln2.host.address}, Proto: {vuln2.service.proto}, Port: {service2.port}, Hostname: {host2.hostname}" in output
+    assert "i:via_sner" not in output
 
     output = vuln_report(qfilter='Host.address == "127.3.3.1"', group_by_host=True)
     assert output
 
     with pytest.raises(FilterQueryError):
-        output = vuln_report(qfilter='invalid')
+        output = vuln_report(qfilter="invalid")
 
 
 def test_storagemanager_empty_filternets(app, host_factory, service_factory):  # pylint: disable=unused-argument

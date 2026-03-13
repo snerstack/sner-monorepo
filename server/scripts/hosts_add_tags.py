@@ -15,8 +15,8 @@ def main():
     """main"""
 
     parser = ArgumentParser()
-    parser.add_argument('filename')
-    parser.add_argument('tag')
+    parser.add_argument("filename")
+    parser.add_argument("tag")
     args = parser.parse_args()
 
     addrs = Path(args.filename).read_text().splitlines()
@@ -30,5 +30,5 @@ def main():
         db.session.commit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

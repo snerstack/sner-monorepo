@@ -13,6 +13,7 @@ from sner.targets import ServiceTarget
 
 class Config(ConfigBase):
     """manymap agent plugin config"""
+
     module: str = Literal["manymap"]
     args: list[str]
     delay: int = 0

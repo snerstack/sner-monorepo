@@ -11,7 +11,7 @@ from flask.cli import with_appcontext
 from sner.plugin.nessus.manager import NessusManager
 
 
-@click.group(name='nessus', help='sner.server nessus management')
+@click.group(name="nessus", help="sner.server nessus management")
 def command():
     """nessus commands container"""
 
@@ -33,7 +33,7 @@ def _print_scan_list(scans):
         print(fmt.format(**scan))
 
 
-@command.command(name='list', help='list nessus scans')
+@command.command(name="list", help="list nessus scans")
 @with_appcontext
 def list_command():
     """nessus list"""
@@ -42,8 +42,8 @@ def list_command():
     _print_scan_list(nessus.list_scans() or [])
 
 
-@command.command(name='delete', help='delete nessus scan')
-@click.argument('scan_id')
+@command.command(name="delete", help="delete nessus scan")
+@click.argument("scan_id")
 @with_appcontext
 def delete_command(scan_id):
     """nessus delete scan command"""

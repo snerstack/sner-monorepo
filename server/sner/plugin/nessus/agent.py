@@ -22,6 +22,7 @@ OUTPUT_FILENAME = "output.nessus"
 
 class Config(ConfigBase):
     """nessus agent plugin config"""
+
     module: str = Literal["nessus"]
     policy_name: str = "sner-basic"
 
@@ -57,12 +58,9 @@ class AgentModule(ModuleBase):
         asg_config = self.init_job(assignment)
         self.nessus = NessusManager.from_env()
 
-        targets = [
-            target.value if isinstance(target, GenericTarget) else target.address
-            for _, target in self.enumerate_targets(assignment)
-        ]
+        targets = [target.value if isinstance(target, GenericTarget) else target.address for _, target in self.enumerate_targets(assignment)]
 
-        scan_id = self.nessus.scan_create(f'{asg_config.policy_name}.{assignment["id"]}', targets, asg_config.policy_name)
+        scan_id = self.nessus.scan_create(f"{asg_config.policy_name}.{assignment['id']}", targets, asg_config.policy_name)
 
         ret = self._wait_scan(scan_id)
         if not self.loop:

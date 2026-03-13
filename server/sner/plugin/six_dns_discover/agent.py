@@ -16,6 +16,7 @@ from sner.targets import GenericTarget
 
 class Config(ConfigBase):
     """nessus agent plugin config"""
+
     module: str = Literal["six_dns_discover"]
     delay: Union[int, float] = 1
 

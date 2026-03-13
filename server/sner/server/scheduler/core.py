@@ -18,7 +18,8 @@ from uuid import uuid4
 import yaml
 from flask import current_app
 from sqlalchemy import and_, cast, delete, distinct, func, or_, select, text
-from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY, insert as pg_insert
+from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import SQLAlchemyError
 
 from sner.server.extensions import db
@@ -33,7 +34,6 @@ from sner.targets import (
     SixenumTarget,
     TargetManager,
 )
-
 
 SCHEDULER_LOCK_NUMBER = 1
 
@@ -51,7 +51,7 @@ def enumerate_network(arg):
     data = list(map(str, network.hosts()))
 
     # add network/bcast addresses to range if it's not point-to-point link
-    if network.prefixlen < (network.max_prefixlen-1):
+    if network.prefixlen < (network.max_prefixlen - 1):
         data.insert(0, str(network.network_address))
         if network.version == 4:
             data.append(str(network.broadcast_address))
@@ -62,11 +62,11 @@ def enumerate_network(arg):
 class ExclFamily(Enum):
     """exclusion family enum"""
 
-    NETWORK = 'network'
-    REGEX = 'regex'
+    NETWORK = "network"
+    REGEX = "regex"
 
 
-class ExclMatcher():
+class ExclMatcher:
     """object matching value againts set of exclusions/rules"""
 
     MATCHERS = {}
@@ -79,13 +79,11 @@ class ExclMatcher():
             if cls not in ExclMatcher.MATCHERS:
                 ExclMatcher.MATCHERS[family] = cls
             return cls
+
         return register_real
 
     def __init__(self, config):
-        self.excls = [
-            ExclMatcher.MATCHERS[ExclFamily(family)](value)
-            for family, value in config
-        ]
+        self.excls = [ExclMatcher.MATCHERS[ExclFamily(family)](value) for family, value in config]
 
     def match(self, targetstr):
         """match value against all exclusions/matchers"""
@@ -144,9 +142,8 @@ class NetworkExclMatcher(ExclMatcherImplBase):
                 return True
 
             # excluded range could be smaller than enum, check if excluded range does not belong into enum itself
-            if (
-                (first.version == self.match_to.version)
-                and ((first <= self.match_to.network_address <= last) or (first <= self.match_to.broadcast_address <= last))
+            if (first.version == self.match_to.version) and (
+                (first <= self.match_to.network_address <= last) or (first <= self.match_to.broadcast_address <= last)
             ):
                 return True
 
@@ -185,12 +182,8 @@ class QueueManager:
             conn = db.session.connection()
             conn.execute(pg_insert(Target), enqueued)
             hot_hashvals = set(SchedulerService.grep_hot_hashvals(enqueued_hashvals))
-            for thashval in (enqueued_hashvals - hot_hashvals):
-                conn.execute(
-                    pg_insert(Readynet)
-                    .values(queue_id=queue.id, hashval=thashval)
-                    .on_conflict_do_nothing(constraint='readynet_pkey')
-                )
+            for thashval in enqueued_hashvals - hot_hashvals:
+                conn.execute(pg_insert(Readynet).values(queue_id=queue.id, hashval=thashval).on_conflict_do_nothing(constraint="readynet_pkey"))
             db.session.commit()
 
             SchedulerService.release_lock()
@@ -226,7 +219,7 @@ class QueueManager:
             if qpath.exists():
                 qpath.rmdir()
         except OSError as exc:  # pragma: no cover  ; wont test
-            raise RuntimeError(f'failed to remove queue directory: {exc.strerror}') from None
+            raise RuntimeError(f"failed to remove queue directory: {exc.strerror}") from None
 
         SchedulerService.get_lock()
         db.session.delete(queue)
@@ -246,12 +239,8 @@ class JobManager:
         :rtype: dict
         """
 
-        assignment = {
-            'id': str(uuid4()),
-            'config': {} if queue.config is None else yaml.safe_load(queue.config),
-            'targets': assigned_targets
-        }
-        db.session.add(Job(id=assignment['id'], queue=queue, assignment=json.dumps(assignment)))
+        assignment = {"id": str(uuid4()), "config": {} if queue.config is None else yaml.safe_load(queue.config), "targets": assigned_targets}
+        db.session.add(Job(id=assignment["id"], queue=queue, assignment=json.dumps(assignment)))
         db.session.commit()
         return assignment
 
@@ -274,13 +263,13 @@ class JobManager:
         """
 
         if job.retval is not None:
-            current_app.logger.error('cannot reconcile completed job %s', job.id)
-            raise RuntimeError('cannot reconcile completed job')
+            current_app.logger.error("cannot reconcile completed job %s", job.id)
+            raise RuntimeError("cannot reconcile completed job")
 
         SchedulerService.get_lock()
 
         job.retval = -1
-        for target in json.loads(job.assignment)['targets']:
+        for target in json.loads(job.assignment)["targets"]:
             SchedulerService.heatmap_pop(SchedulerService.hashval(target))
 
         SchedulerService.release_lock()
@@ -295,7 +284,7 @@ class JobManager:
     def parse(job):
         """parse job and return data"""
 
-        module = yaml.safe_load(job.queue.config)['module']
+        module = yaml.safe_load(job.queue.config)["module"]
         parser_impl = REGISTERED_PARSERS[module]
         pidb = parser_impl.parse_path(job.output_abspath)
 
@@ -308,8 +297,8 @@ class JobManager:
     def archive(job):
         """job archive"""
 
-        current_app.logger.info(f'archive_job {job.id} ({job.queue.name})')
-        archive_dir = Path(current_app.config['SNER_VAR']) / 'planner_archive'
+        current_app.logger.info(f"archive_job {job.id} ({job.queue.name})")
+        archive_dir = Path(current_app.config["SNER_VAR"]) / "planner_archive"
         archive_dir.mkdir(parents=True, exist_ok=True)
         copy2(job.output_abspath, archive_dir)
 
@@ -319,8 +308,8 @@ class JobManager:
 
         # deleting running job would corrupt heatmap
         if job.retval is None:
-            current_app.logger.error('cannot delete running job %s', job.id)
-            raise RuntimeError('cannot delete running job')
+            current_app.logger.error("cannot delete running job %s", job.id)
+            raise RuntimeError("cannot delete running job")
 
         opath = Path(job.output_abspath)
         if opath.exists():
@@ -329,7 +318,7 @@ class JobManager:
         db.session.commit()
 
 
-RandomTarget = namedtuple('RandomTarget', ['id', 'target', 'hashval'])
+RandomTarget = namedtuple("RandomTarget", ["id", "target", "hashval"])
 
 
 class SchedulerServiceBusyException(Exception):
@@ -361,22 +350,19 @@ class SchedulerService:
 
         try:
             db.session.execute(
-                text('SET LOCAL lock_timeout=:timeout; SELECT pg_advisory_lock(:locknum);'),
-                {'timeout': timeout*100, 'locknum': SCHEDULER_LOCK_NUMBER}
+                text("SET LOCAL lock_timeout=:timeout; SELECT pg_advisory_lock(:locknum);"),
+                {"timeout": timeout * 100, "locknum": SCHEDULER_LOCK_NUMBER},
             )
         except SQLAlchemyError:
             db.session.rollback()
-            current_app.logger.warning('failed to acquire SchedulerService lock')
+            current_app.logger.warning("failed to acquire SchedulerService lock")
             raise SchedulerServiceBusyException() from None
 
     @staticmethod
     def release_lock():
         """release scheduling lock"""
 
-        db.session.execute(
-            text('SELECT pg_advisory_unlock(:locknum);'),
-            {'locknum': SCHEDULER_LOCK_NUMBER}
-        )
+        db.session.execute(text("SELECT pg_advisory_unlock(:locknum);"), {"locknum": SCHEDULER_LOCK_NUMBER})
 
     @staticmethod
     def hashval(value):
@@ -392,11 +378,11 @@ class SchedulerService:
         heat_count = conn.execute(
             pg_insert(Heatmap)
             .values(hashval=hashval, count=1)
-            .on_conflict_do_update(constraint='heatmap_pkey', set_={"count": Heatmap.count + 1})
+            .on_conflict_do_update(constraint="heatmap_pkey", set_={"count": Heatmap.count + 1})
             .returning(Heatmap.count)
         ).scalar()
 
-        if current_app.config['SNER_HEATMAP_HOT_LEVEL'] and (heat_count >= current_app.config['SNER_HEATMAP_HOT_LEVEL']):
+        if current_app.config["SNER_HEATMAP_HOT_LEVEL"] and (heat_count >= current_app.config["SNER_HEATMAP_HOT_LEVEL"]):
             conn.execute(delete(Readynet).filter(Readynet.hashval == hashval))
 
         db.session.commit()
@@ -410,14 +396,14 @@ class SchedulerService:
         heat_count = conn.execute(
             pg_insert(Heatmap)
             .values(hashval=hashval, count=1)
-            .on_conflict_do_update(constraint='heatmap_pkey', set_={"count": Heatmap.count - 1})
+            .on_conflict_do_update(constraint="heatmap_pkey", set_={"count": Heatmap.count - 1})
             .returning(Heatmap.count)
         ).scalar()
 
         if random() < cls.HEATMAP_GC_PROBABILITY:
             conn.execute(delete(Heatmap).filter(Heatmap.count == 0))
 
-        if current_app.config['SNER_HEATMAP_HOT_LEVEL'] and (heat_count+1 == current_app.config['SNER_HEATMAP_HOT_LEVEL']):
+        if current_app.config["SNER_HEATMAP_HOT_LEVEL"] and (heat_count + 1 == current_app.config["SNER_HEATMAP_HOT_LEVEL"]):
             for queue_id in db.session.execute(select(func.distinct(Target.queue_id)).filter(Target.hashval == hashval)).scalars().all():
                 conn.execute(pg_insert(Readynet).values(queue_id=queue_id, hashval=hashval))
 
@@ -428,16 +414,15 @@ class SchedulerService:
     def grep_hot_hashvals(hashvals):
         """get hot hashvals among argument list"""
 
-        if not current_app.config['SNER_HEATMAP_HOT_LEVEL']:
+        if not current_app.config["SNER_HEATMAP_HOT_LEVEL"]:
             return []
 
-        return db.session.connection().execute(
-            select(Heatmap.hashval)
-            .filter(
-                Heatmap.hashval.in_(hashvals),
-                Heatmap.count >= current_app.config['SNER_HEATMAP_HOT_LEVEL']
-            )
-        ).scalars().all()
+        return (
+            db.session.connection()
+            .execute(select(Heatmap.hashval).filter(Heatmap.hashval.in_(hashvals), Heatmap.count >= current_app.config["SNER_HEATMAP_HOT_LEVEL"]))
+            .scalars()
+            .all()
+        )
 
     @staticmethod
     def _get_assignment_queue(queue_name, agent_caps):
@@ -455,10 +440,7 @@ class SchedulerService:
         :rtype: sner.server.scheduler.model.Queue
         """
 
-        query = select(Queue).filter(
-            Queue.active,
-            Queue.id.in_(select(distinct(Readynet.queue_id)))
-        )
+        query = select(Queue).filter(Queue.active, Queue.id.in_(select(distinct(Readynet.queue_id))))
 
         if agent_caps:
             query = query.filter(Queue.reqs.contained_by(cast(agent_caps, pg_ARRAY(db.String))))
@@ -480,27 +462,21 @@ class SchedulerService:
 
         conn = db.session.connection()
 
-        readynet_hashval = conn.execute(
-            select(Readynet.hashval).filter(Readynet.queue_id == queue.id).order_by(func.random()).limit(1)
-        ).scalar()
+        readynet_hashval = conn.execute(select(Readynet.hashval).filter(Readynet.queue_id == queue.id).order_by(func.random()).limit(1)).scalar()
         if not readynet_hashval:
             return None
 
         target_id, target = conn.execute(
-            select(Target.id, Target.target)
-            .filter(Target.queue_id == queue.id, Target.hashval == readynet_hashval)
-            .order_by(func.random())
-            .limit(1)
+            select(Target.id, Target.target).filter(Target.queue_id == queue.id, Target.hashval == readynet_hashval).order_by(func.random()).limit(1)
         ).first()
 
         conn.execute(delete(Target).filter(Target.id == target_id))
         # prune readynet if no targets left for current queue
         conn.execute(
-            delete(Readynet)
-            .filter(
+            delete(Readynet).filter(
                 Readynet.queue_id == queue.id,
                 Readynet.hashval == readynet_hashval,
-                select(func.count(Target.id)).filter(Target.queue_id == queue.id, Target.hashval == readynet_hashval).scalar_subquery() == 0
+                select(func.count(Target.id)).filter(Target.queue_id == queue.id, Target.hashval == readynet_hashval).scalar_subquery() == 0,
             )
         )
 
@@ -525,7 +501,7 @@ class SchedulerService:
 
         assignment = {}  # nowork
         assigned_targets = []
-        exclist = ExclMatcher(current_app.config['SNER_EXCLUSIONS'])
+        exclist = ExclMatcher(current_app.config["SNER_EXCLUSIONS"])
 
         queue = cls._get_assignment_queue(queue_name, agent_caps)
         if not queue:
@@ -546,7 +522,7 @@ class SchedulerService:
 
         cls.release_lock()
         if assignment:
-            current_app.logger.info(f'SchedulerService job_assign {assignment["id"]} ({queue.name})')
+            current_app.logger.info(f"SchedulerService job_assign {assignment['id']} ({queue.name})")
         return assignment
 
     @classmethod
@@ -561,11 +537,11 @@ class SchedulerService:
         cls.get_lock(cls.TIMEOUT_JOB_OUTPUT)
 
         JobManager.finish(job, retval, output)
-        for target in json.loads(job.assignment)['targets']:
+        for target in json.loads(job.assignment)["targets"]:
             cls.heatmap_pop(cls.hashval(target))
 
         cls.release_lock()
-        current_app.logger.info(f'SchedulerService job_output {job.id} ({job.queue.name})')
+        current_app.logger.info(f"SchedulerService job_output {job.id} ({job.queue.name})")
 
     @classmethod
     def readynet_recount(cls):
@@ -576,10 +552,10 @@ class SchedulerService:
         cls.get_lock()
         conn = db.session.connection()
 
-        if current_app.config['SNER_HEATMAP_HOT_LEVEL']:
-            hot_hashvals = set(conn.execute(
-                select(Heatmap.hashval).filter(Heatmap.count >= current_app.config['SNER_HEATMAP_HOT_LEVEL'])
-            ).scalars().all())
+        if current_app.config["SNER_HEATMAP_HOT_LEVEL"]:
+            hot_hashvals = set(
+                conn.execute(select(Heatmap.hashval).filter(Heatmap.count >= current_app.config["SNER_HEATMAP_HOT_LEVEL"])).scalars().all()
+            )
 
             # all heatmap hashvals over limit remove from readynet
             conn.execute(delete(Readynet).filter(Readynet.hashval.in_(hot_hashvals)))
@@ -588,13 +564,9 @@ class SchedulerService:
 
         # for all target hashvals except over limit insert as readynet for all queues
         all_hashvals = set(conn.execute(select(func.distinct(Target.hashval))).scalars().all())
-        for thashval in (all_hashvals - hot_hashvals):
+        for thashval in all_hashvals - hot_hashvals:
             for queue_id in conn.execute(select(func.distinct(Target.queue_id)).filter(Target.hashval == thashval)).scalars().all():
-                conn.execute(
-                    pg_insert(Readynet)
-                    .values(queue_id=queue_id, hashval=thashval)
-                    .on_conflict_do_nothing(constraint='readynet_pkey')
-                )
+                conn.execute(pg_insert(Readynet).values(queue_id=queue_id, hashval=thashval).on_conflict_do_nothing(constraint="readynet_pkey"))
 
         db.session.commit()
         cls.release_lock()
@@ -612,21 +584,15 @@ class SchedulerService:
 
         ref_heatmap = defaultdict(int)
         for job in Job.query.filter(Job.retval == None).all():  # noqa: E711  pylint: disable=singleton-comparison
-            for target in json.loads(job.assignment)['targets']:
+            for target in json.loads(job.assignment)["targets"]:
                 ref_heatmap[SchedulerService.hashval(target)] += 1
 
-        db_heatmap = {
-            item.hashval: item.count
-            for item in Heatmap.query.all()
-            if item.count != 0
-        }
+        db_heatmap = {item.hashval: item.count for item in Heatmap.query.all() if item.count != 0}
 
         keys_only_in_dict1 = set(ref_heatmap.keys()) - set(db_heatmap.keys())
         keys_only_in_dict2 = set(db_heatmap.keys()) - set(ref_heatmap.keys())
         different_values = {
-            key: (ref_heatmap[key], db_heatmap[key])
-            for key in ref_heatmap
-            if (key in db_heatmap) and (ref_heatmap[key] != db_heatmap[key])
+            key: (ref_heatmap[key], db_heatmap[key]) for key in ref_heatmap if (key in db_heatmap) and (ref_heatmap[key] != db_heatmap[key])
         }
 
         heatmaps_equal = not bool(keys_only_in_dict1 or keys_only_in_dict2 or different_values)
@@ -640,9 +606,9 @@ class SchedulerService:
         cls.get_lock()
         count = 0
         for job in Job.query.filter(
-                Job.retval != None,  # noqa: E711  pylint: disable=singleton-comparison  ; not running jobs
-                Job.retval != 0,  # not successful jobs
-                Job.retval < 1000  # do not repeat planner failed jobs
+            Job.retval != None,  # noqa: E711  pylint: disable=singleton-comparison  ; not running jobs
+            Job.retval != 0,  # not successful jobs
+            Job.retval < 1000,  # do not repeat planner failed jobs
         ).all():
             JobManager.repeat(job)
             JobManager.delete(job)
@@ -665,8 +631,8 @@ class SchedulerService:
                 Job.retval == None,  # noqa: E711  pylint: disable=singleton-comparison  ; do repeat "running" jobs
                 and_(
                     Job.retval != 0,  # do not repeat finished jobs
-                    Job.retval < 1000  # do not repeat planner failed jobs
-                )
+                    Job.retval < 1000,  # do not repeat planner failed jobs
+                ),
             )
         ).all():
             if job.retval is None:

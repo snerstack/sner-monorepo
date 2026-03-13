@@ -19,7 +19,7 @@ from sner.server.utils import SnerJSONEncoder
 class ParserModule(ParserBase):
     """nessus .nessus output parser"""
 
-    SEVERITY_MAP = ['info', 'low', 'medium', 'high', 'critical']
+    SEVERITY_MAP = ["info", "low", "medium", "high", "critical"]
 
     @classmethod
     def parse_path(cls, path):
@@ -39,57 +39,57 @@ class ParserModule(ParserBase):
 
         for report_item in report:
             # parse host
-            host_address = report_item['host-ip']
+            host_address = report_item["host-ip"]
             host_data = {}
 
             hostnames = set()
-            if 'host-fqdn' in report_item:
-                hostnames.add(report_item['host-fqdn'])
+            if "host-fqdn" in report_item:
+                hostnames.add(report_item["host-fqdn"])
             # host-rdns might contain address
-            if ('host-rdns' in report_item) and (not is_address(report_item['host-rdns'])):
-                hostnames.add(report_item['host-rdns'])
+            if ("host-rdns" in report_item) and (not is_address(report_item["host-rdns"])):
+                hostnames.add(report_item["host-rdns"])
             if hostnames:
-                host_data['hostname'] = list(hostnames)[0]
+                host_data["hostname"] = list(hostnames)[0]
 
-            if 'operating-system' in report_item:
-                host_data['os'] = report_item['operating-system']
+            if "operating-system" in report_item:
+                host_data["os"] = report_item["operating-system"]
 
             pidb.upsert_host(host_address, **host_data)
 
             # parse service
             service = None
-            if report_item['port'] != 0:
+            if report_item["port"] != 0:
                 service = pidb.upsert_service(
                     host_address,
-                    report_item['protocol'].lower(),
-                    report_item['port'],
-                    state='open:nessus',
-                    name=report_item['svc_name'],
-                    import_time=report_item['HOST_START']
+                    report_item["protocol"].lower(),
+                    report_item["port"],
+                    state="open:nessus",
+                    name=report_item["svc_name"],
+                    import_time=report_item["HOST_START"],
                 )
 
             # parse vuln
             vuln_data = {
-                'severity': str(SeverityEnum(cls.SEVERITY_MAP[report_item['severity']])),
-                'descr': f'## Synopsis\n\n{report_item["synopsis"]}\n\n'
-                         + f'## Description\n\n{report_item["description"]}\n\n'
-                         + f'## Solution\n\n{report_item["solution"]}',
-                'refs': cls._parse_refs(report_item),
-                'import_time': report_item['HOST_START'],
+                "severity": str(SeverityEnum(cls.SEVERITY_MAP[report_item["severity"]])),
+                "descr": f"## Synopsis\n\n{report_item['synopsis']}\n\n"
+                + f"## Description\n\n{report_item['description']}\n\n"
+                + f"## Solution\n\n{report_item['solution']}",
+                "refs": cls._parse_refs(report_item),
+                "import_time": report_item["HOST_START"],
             }
 
-            if 'plugin_output' in report_item:
+            if "plugin_output" in report_item:
                 raw_data = json.dumps(report_item, cls=SnerJSONEncoder)
-                vuln_data['data'] = f'## Plugin output\n\n{report_item["plugin_output"]}\n\n## Raw data\n\n{raw_data}'
+                vuln_data["data"] = f"## Plugin output\n\n{report_item['plugin_output']}\n\n## Raw data\n\n{raw_data}"
 
             pidb.upsert_vuln(
                 host_address,
                 service.proto if service else None,
                 service.port if service else None,
-                report_item['host-report-name'],
-                f'nessus.{report_item["pluginID"]}',
-                report_item['plugin_name'],
-                **vuln_data
+                report_item["host-report-name"],
+                f"nessus.{report_item['pluginID']}",
+                report_item["plugin_name"],
+                **vuln_data,
             )
 
         return pidb
@@ -102,21 +102,21 @@ class ParserModule(ParserBase):
             return [data] if isinstance(data, str) else data
 
         refs = []
-        if 'cve' in report_item:
-            refs += ensure_list(report_item['cve'])
-        if 'bid' in report_item:
-            refs += [f'BID-{ref}' for ref in ensure_list(report_item['bid'])]
-        if 'xref' in report_item:
-            refs += ['%s-%s' % tuple(ref.split(':', maxsplit=1)) for ref in ensure_list(report_item['xref'])]  # noqa: E501  pylint: disable=consider-using-f-string
-        if 'see_also' in report_item:
-            refs += [f'URL-{ref}' for ref in report_item['see_also'].splitlines()]
-        if 'metasploit_name' in report_item:
-            refs.append(f'MSF-{report_item["metasploit_name"]}')
-        if 'pluginID' in report_item:
-            refs.append(f'NSS-{report_item["pluginID"]}')
+        if "cve" in report_item:
+            refs += ensure_list(report_item["cve"])
+        if "bid" in report_item:
+            refs += [f"BID-{ref}" for ref in ensure_list(report_item["bid"])]
+        if "xref" in report_item:
+            refs += ["%s-%s" % tuple(ref.split(":", maxsplit=1)) for ref in ensure_list(report_item["xref"])]  # noqa: E501  pylint: disable=consider-using-f-string
+        if "see_also" in report_item:
+            refs += [f"URL-{ref}" for ref in report_item["see_also"].splitlines()]
+        if "metasploit_name" in report_item:
+            refs.append(f"MSF-{report_item['metasploit_name']}")
+        if "pluginID" in report_item:
+            refs.append(f"NSS-{report_item['pluginID']}")
 
         return refs
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     pprint(ParserModule.parse_path(sys.argv[1]))

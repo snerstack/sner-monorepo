@@ -13,14 +13,14 @@ class TextAreaListField(TextAreaField):
 
     # value to form
     def _value(self):
-        return '\n'.join(self.data) if self.data else ''    # pragma: no cover
+        return "\n".join(self.data) if self.data else ""  # pragma: no cover
 
     # value from form
     def process_formdata(self, valuelist):
         self.data = valuelist[0].splitlines() if valuelist else []  # pylint: disable=attribute-defined-outside-init
 
 
-class EmptyToNoneFieldMixin():
+class EmptyToNoneFieldMixin:
     """empty string to none casting mixin"""
 
     # value from form
@@ -28,7 +28,7 @@ class EmptyToNoneFieldMixin():
         """cast empty string to none"""
 
         if valuelist:
-            self.data = None if valuelist[0] == '' else valuelist[0]  # pylint: disable=attribute-defined-outside-init
+            self.data = None if valuelist[0] == "" else valuelist[0]  # pylint: disable=attribute-defined-outside-init
 
 
 class StringNoneField(EmptyToNoneFieldMixin, StringField):
@@ -44,21 +44,21 @@ class TextAreaNoneField(EmptyToNoneFieldMixin, TextAreaField):
 
         super().process_formdata(valuelist)
         if self.data:
-            self.data = self.data.replace('\r\n', '\n')   # pylint: disable=attribute-defined-outside-init
+            self.data = self.data.replace("\r\n", "\n")  # pylint: disable=attribute-defined-outside-init
 
 
 class JSONField(StringField):
     """json string field"""
 
     def _value(self):
-        return json.dumps(self.data) if self.data else ''    # pragma: no cover
+        return json.dumps(self.data) if self.data else ""  # pragma: no cover
 
     def process_formdata(self, valuelist):
         if valuelist:
             try:
                 self.data = json.loads(valuelist[0])  # pylint: disable=attribute-defined-outside-init
             except ValueError:
-                raise ValueError('This field contains invalid JSON') from None
+                raise ValueError("This field contains invalid JSON") from None
         else:
             self.data = None  # pylint: disable=attribute-defined-outside-init
 
@@ -68,4 +68,4 @@ class JSONField(StringField):
             try:
                 json.dumps(self.data)
             except TypeError:
-                raise ValueError('This field contains invalid JSON') from None
+                raise ValueError("This field contains invalid JSON") from None

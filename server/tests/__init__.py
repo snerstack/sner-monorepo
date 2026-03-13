@@ -11,7 +11,9 @@ from sner.server.extensions import db
 
 class BaseModelFactory(SQLAlchemyModelFactory):
     """test model base factory"""
+
     class Meta:
         """test model base factory"""
+
         sqlalchemy_session = db.session
-        sqlalchemy_session_persistence = 'commit'
+        sqlalchemy_session_persistence = "commit"

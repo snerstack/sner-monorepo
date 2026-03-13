@@ -17,7 +17,7 @@ from sner.server.storage.models import Vuln
 def test_init_command(runner):
     """dbx init test"""
 
-    result = runner.invoke(command, ['init'])
+    result = runner.invoke(command, ["init"])
     assert result.exit_code == 0
 
 
@@ -26,7 +26,7 @@ def test_initdata_command(runner, queue_factory):
 
     queue_factory.create(name="dev.dummy")
 
-    result = runner.invoke(command, ['init-data'])
+    result = runner.invoke(command, ["init-data"])
     assert result.exit_code == 0
 
     assert Target.query.all()
@@ -36,12 +36,12 @@ def test_initdata_command(runner, queue_factory):
 def test_remove_command(runner):
     """dbx remove test"""
 
-    test_dir = Path(f'{current_app.config["SNER_VAR"]}/dbremovetest')
-    test_path = Path(f'{current_app.config["SNER_VAR"]}/dbremovetest.txt')
-    test_path.write_text('db remove test', 'utf-8')
+    test_dir = Path(f"{current_app.config['SNER_VAR']}/dbremovetest")
+    test_path = Path(f"{current_app.config['SNER_VAR']}/dbremovetest.txt")
+    test_path.write_text("db remove test", "utf-8")
     test_dir.mkdir()
 
-    result = runner.invoke(command, ['remove'])
+    result = runner.invoke(command, ["remove"])
     assert result.exit_code == 0
 
     assert not inspect(db.engine).get_table_names()
@@ -52,7 +52,7 @@ def test_remove_command(runner):
 def test_update_prod_queues_command(runner):
     """dbx update-prod-queues test"""
 
-    result = runner.invoke(command, ['update-prod-queues'])
+    result = runner.invoke(command, ["update-prod-queues"])
     assert result.exit_code == 0
 
 
@@ -61,5 +61,5 @@ def test_check_queue_configs_command(runner, queue_factory):
 
     queue_factory.create(name="sner.nmap.servicedisco")
 
-    result = runner.invoke(command, ['check-queue-configs'])
+    result = runner.invoke(command, ["check-queue-configs"])
     assert result.exit_code == 0

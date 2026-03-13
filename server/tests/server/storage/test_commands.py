@@ -24,34 +24,34 @@ def test_import_command_errorhandling(runner):
     """test invalid parser"""
 
     # invalid parser
-    result = runner.invoke(command, ['import', 'invalid', 'dummy'])
+    result = runner.invoke(command, ["import", "invalid", "dummy"])
     assert result.exit_code == 1
 
     # parse exception handling
-    result = runner.invoke(command, ['import', 'nmap', 'sner.yaml.example', 'notexist'])
+    result = runner.invoke(command, ["import", "nmap", "sner.yaml.example", "notexist"])
     assert result.exit_code == 0
 
 
 def test_import_command_dryrun(runner):
     """test import dry run"""
 
-    result = runner.invoke(command, ['import', '--dry', 'nmap', 'tests/server/data/parser-nmap-output.xml'])
+    result = runner.invoke(command, ["import", "--dry", "nmap", "tests/server/data/parser-nmap-output.xml"])
     assert result.exit_code == 0
-    assert 'new host:' in result.output
-    assert 'new service:' in result.output
-    assert 'new note:' in result.output
+    assert "new host:" in result.output
+    assert "new service:" in result.output
+    assert "new note:" in result.output
 
-    result = runner.invoke(command, ['import', '--dry', 'nessus', 'tests/server/data/parser-nessus-simple.xml'])
+    result = runner.invoke(command, ["import", "--dry", "nessus", "tests/server/data/parser-nessus-simple.xml"])
     assert result.exit_code == 0
-    assert 'new host:' in result.output
-    assert 'new service:' in result.output
-    assert 'new vuln:' in result.output
+    assert "new host:" in result.output
+    assert "new service:" in result.output
+    assert "new vuln:" in result.output
 
 
 def test_flush_command(runner, service, vuln, note):  # pylint: disable=unused-argument
     """flush storage database"""
 
-    result = runner.invoke(command, ['flush'])
+    result = runner.invoke(command, ["flush"])
     assert result.exit_code == 0
 
     assert not Host.query.all()
@@ -63,7 +63,7 @@ def test_flush_command(runner, service, vuln, note):  # pylint: disable=unused-a
 def test_vuln_report_command(runner, vuln):  # pylint: disable=unused-argument
     """test vuln-report command"""
 
-    result = runner.invoke(command, ['vuln-report'])
+    result = runner.invoke(command, ["vuln-report"])
     assert result.exit_code == 0
     assert len(result.output.splitlines()) > 1
 
@@ -71,22 +71,22 @@ def test_vuln_report_command(runner, vuln):  # pylint: disable=unused-argument
 def test_vuln_export_command(runner, host_factory, vuln_factory):
     """test vuln-export command"""
 
-    host1 = host_factory.create(address='127.3.3.1', hostname='testhost2.testdomain.tests')
-    host2 = host_factory.create(address='::127:3:3:2', hostname='testhost2.testdomain.tests')
-    vuln_factory.create(host=host1, name='vuln on many hosts', xtype='x', severity=SeverityEnum.CRITICAL)
-    vuln_factory.create(host=host2, name='vuln on many hosts', xtype='x', severity=SeverityEnum.CRITICAL)
-    vuln_factory.create(host=host2, name='trim test', xtype='x', severity=SeverityEnum.UNKNOWN, descr='A'*1001)
+    host1 = host_factory.create(address="127.3.3.1", hostname="testhost2.testdomain.tests")
+    host2 = host_factory.create(address="::127:3:3:2", hostname="testhost2.testdomain.tests")
+    vuln_factory.create(host=host1, name="vuln on many hosts", xtype="x", severity=SeverityEnum.CRITICAL)
+    vuln_factory.create(host=host2, name="vuln on many hosts", xtype="x", severity=SeverityEnum.CRITICAL)
+    vuln_factory.create(host=host2, name="trim test", xtype="x", severity=SeverityEnum.UNKNOWN, descr="A" * 1001)
 
-    result = runner.invoke(command, ['vuln-export'])
+    result = runner.invoke(command, ["vuln-export"])
     assert result.exit_code == 0
     assert ',"TRIMMED",' in result.output
-    assert '[::127:3:3:2]' in result.output
-    assert len(list(csv.reader(StringIO(result.stdout), delimiter=','))) == 6
+    assert "[::127:3:3:2]" in result.output
+    assert len(list(csv.reader(StringIO(result.stdout), delimiter=","))) == 6
 
-    result = runner.invoke(command, ['vuln-export', '--filter', 'Host.address == "127.3.3.1"'])
+    result = runner.invoke(command, ["vuln-export", "--filter", 'Host.address == "127.3.3.1"'])
     assert result.exit_code == 0
 
-    result = runner.invoke(command, ['vuln-export', '--filter', 'invalid'])
+    result = runner.invoke(command, ["vuln-export", "--filter", "invalid"])
     assert result.exit_code == 1
 
 
@@ -95,15 +95,15 @@ def test_service_list_command(runner, service):
 
     host = service.host
 
-    result = runner.invoke(command, ['service-list'])
+    result = runner.invoke(command, ["service-list"])
     assert result.exit_code == 0
     assert result.output.strip() == f"svc,{host.address},proto={service.proto},port={service.port}"
 
-    result = runner.invoke(command, ['service-list', '--filter', f'Service.port=="{service.port}"'])
+    result = runner.invoke(command, ["service-list", "--filter", f'Service.port=="{service.port}"'])
     assert result.exit_code == 0
     assert result.output.strip() == f"svc,{host.address},proto={service.proto},port={service.port}"
 
-    result = runner.invoke(command, ['service-list', '--filter', 'invalid'])
+    result = runner.invoke(command, ["service-list", "--filter", "invalid"])
     assert result.exit_code == 1
 
 
@@ -111,12 +111,12 @@ def test_service_list_command_formats(runner, service):  # pylint: disable=unuse
     """test services listing formats"""
 
     for format_name in FORMAT_FUNCTIONS:
-        result = runner.invoke(command, ['service-list', "--format", format_name])
+        result = runner.invoke(command, ["service-list", "--format", format_name])
         assert result.exit_code == 0
 
 
 def test_rebuild_versioninfo_command(runner):
     """tests rebuild versioninfo command"""
 
-    result = runner.invoke(command, ['rebuild-versioninfo'])
+    result = runner.invoke(command, ["rebuild-versioninfo"])
     assert result.exit_code == 0

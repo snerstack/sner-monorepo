@@ -15,17 +15,16 @@ from sner.server.auth.models import User
 from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
 
-
 logger = logging.getLogger("sner_command")
 
 
-@click.group(name='auth', help='sner.server auth management')
+@click.group(name="auth", help="sner.server auth management")
 def command():
     """auth commands container"""
 
 
-@command.command(name='reset-password', help='reset password')
-@click.argument('username')
+@command.command(name="reset-password", help="reset password")
+@click.argument("username")
 @with_appcontext
 def reset_password(username):
     """reset password for username"""
@@ -41,29 +40,24 @@ def reset_password(username):
     print(f'new password "{user.username}:{new_password}"')
 
 
-@command.command(name='add-agent', help='add agent')
-@click.option('--apikey', help='set agent apikey')
+@command.command(name="add-agent", help="add agent")
+@click.option("--apikey", help="set agent apikey")
 @with_appcontext
 def add_agent(**kwargs):
     """add new agent"""
 
     apikey = kwargs["apikey"] or PWS.generate_apikey()
-    agent = User(
-        username=f'agent_{uuid4()}',
-        apikey=PWS.hash_simple(apikey),
-        active=True,
-        roles=['agent']
-    )
+    agent = User(username=f"agent_{uuid4()}", apikey=PWS.hash_simple(apikey), active=True, roles=["agent"])
     db.session.add(agent)
     db.session.commit()
-    print(f'new agent {agent.username} apikey {apikey}')
+    print(f"new agent {agent.username} apikey {apikey}")
 
 
-@command.command(name='add-user', help='add user')
-@click.argument('username')
-@click.argument('email')
-@click.option('--roles', help='roles separated by coma')
-@click.option('--password')
+@command.command(name="add-user", help="add user")
+@click.argument("username")
+@click.argument("email")
+@click.option("--roles", help="roles separated by coma")
+@click.option("--password")
 @with_appcontext
 def add_user(username, email, **kwargs):
     """add new user"""
@@ -72,16 +66,16 @@ def add_user(username, email, **kwargs):
         username=username,
         email=email,
         active=True,
-        roles=kwargs['roles'].split(',') if kwargs['roles'] else [],
-        password=PWS.hash(kwargs['password']) if kwargs['password'] else None
+        roles=kwargs["roles"].split(",") if kwargs["roles"] else [],
+        password=PWS.hash(kwargs["password"]) if kwargs["password"] else None,
     )
 
     db.session.add(user)
     db.session.commit()
-    print(f'new user {user.username}')
+    print(f"new user {user.username}")
 
 
-@command.command(name='sync-agreegate-allowed-networks', help='sync agreegate allowed networks to sner users')
+@command.command(name="sync-agreegate-allowed-networks", help="sync agreegate allowed networks to sner users")
 @with_appcontext
 def sync_agreegate_allowed_networks_command():  # pragma nocover  ; won't test
     """sync allowed_networks for users from agreegate"""

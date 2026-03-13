@@ -5,8 +5,7 @@ auth views
 
 from flask import Blueprint
 
-
-blueprint = Blueprint('auth', __name__)  # pylint: disable=invalid-name
+blueprint = Blueprint("auth", __name__)  # pylint: disable=invalid-name
 
 
 import sner.server.auth.views.login  # noqa: E402  pylint: disable=wrong-import-position

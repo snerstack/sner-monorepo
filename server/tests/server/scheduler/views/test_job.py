@@ -16,16 +16,12 @@ from sner.server.scheduler.models import Heatmap, Job, Target
 def test_job_list_json_route(cl_operator, job):
     """job list_json route test"""
 
-    response = cl_operator.post(
-        url_for("scheduler.job_list_json_route"), {"draw": 1, "start": 0, "length": 1, "search[value]": job.id}
-    )
+    response = cl_operator.post(url_for("scheduler.job_list_json_route"), {"draw": 1, "start": 0, "length": 1, "search[value]": job.id})
     assert response.status_code == HTTPStatus.OK
     response_data = json.loads(response.body.decode("utf-8"))
     assert response_data["data"][0]["id"] == job.id
 
-    response = cl_operator.post(
-        url_for("scheduler.job_list_json_route", filter=f'Job.id=="{job.id}"'), {"draw": 1, "start": 0, "length": 1}
-    )
+    response = cl_operator.post(url_for("scheduler.job_list_json_route", filter=f'Job.id=="{job.id}"'), {"draw": 1, "start": 0, "length": 1})
     assert response.status_code == HTTPStatus.OK
     response_data = json.loads(response.body.decode("utf-8"))
     assert response_data["data"][0]["id"] == job.id
