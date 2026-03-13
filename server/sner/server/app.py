@@ -22,10 +22,9 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from sner.agent.modules import load_agent_plugins
 from sner.lib import load_yaml
 from sner.server.agreegate import init_agreegate_netlists
-from sner.server.extensions import api, db, migrate, login_manager, oauth, webauthn
+from sner.server.extensions import api, db, migrate, login_manager, oauth, sess, webauthn
 from sner.server.parser import load_parser_plugins
 from sner.server.scheduler.core import ExclMatcher
-from sner.server.sessions import FilesystemSessionInterface
 from sner.server.utils import error_response, FilterQueryError
 from sner.version import __version__
 
@@ -62,10 +61,17 @@ DEFAULT_CONFIG = {
     'SQLALCHEMY_TRACK_MODIFICATIONS': False,
     'SQLALCHEMY_ECHO': False,
 
+    'SESSION_TYPE': 'sqlalchemy',
+    'SESSION_SQLALCHEMY': db,
+    'SESSION_SQLALCHEMY_TABLE': 'sessions',
+    'SESSION_CLEANUP_N_REQUESTS': 500,
+    'SESSION_PERMANENT': True,
+    'SESSION_REFRESH_EACH_REQUEST': False,
+    'PERMANENT_SESSION_LIFETIME': 31*86400,
+
     # sner web server
     'SNER_VAR': '/var/lib/sner',
     'SNER_AUTH_ROLES': ['admin', 'agent', 'operator', 'user', 'auror'],
-    'SNER_SESSION_IDLETIME': 36000,
     'SNER_TRIM_REPORT_CELLS': 65000,
     'SNER_TRIM_NOTE_LIST_DATA': 4096,
     'SNER_VULN_GROUP_IGNORE_TAG_PREFIX': "i:",
@@ -225,13 +231,19 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
 
     if app.config['XFLASK_PROXYFIX']:
         app.wsgi_app = ProxyFix(app.wsgi_app)
-    app.session_interface = FilesystemSessionInterface(os.path.join(app.config['SNER_VAR'], 'sessions'), app.config['SNER_SESSION_IDLETIME'])
 
     CORS(app, supports_credentials=True)
     csrf = CSRFProtect(app)
     csrf.exempt(api_blueprint)
 
     db.init_app(app)
+
+    # flask-session uses side-effect which does not allow multiple calls to create_app during tests
+    # https://github.com/pallets-eco/flask-session/issues/245
+    if (table_model := db.metadata.tables.get(app.config["SESSION_SQLALCHEMY_TABLE"])) is not None:
+        db.metadata.remove(table_model)
+    sess.init_app(app)
+
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login_route'
     login_manager.login_message = 'Not logged in'
