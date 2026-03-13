@@ -15,12 +15,12 @@ from flask_wtf.csrf import CSRFProtect
 
 from sner.server.wrapped_fido2_server import WrappedFido2Server
 
-api = Api()  # pylint: disable=invalid-name
-db = SQLAlchemy()  # pylint: disable=invalid-name
+api = Api()
+db = SQLAlchemy()
 cors = CORS()
 csrf = CSRFProtect()
 sess = Session()
-login_manager = LoginManager()  # pylint: disable=invalid-name
-migrate = Migrate()  # pylint: disable=invalid-name
-oauth = OAuth()  # pylint: disable=invalid-name
-webauthn = WrappedFido2Server()  # pylint: disable=invalid-name
+login_manager = LoginManager()
+migrate = Migrate()
+oauth = OAuth()
+webauthn = WrappedFido2Server()
