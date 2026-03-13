@@ -16,7 +16,6 @@ from flask import current_app, Flask, has_request_context, request
 from flask_login import current_user
 from flask_wtf.csrf import generate_csrf, CSRFProtect, CSRFError
 from flask_cors import CORS
-from sqlalchemy import func
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from sner.agent.modules import load_agent_plugins
@@ -44,11 +43,6 @@ from sner.server.planner.commands import command as planner_command
 from sner.server.psql_command import command as psql_command
 from sner.server.scheduler.commands import command as scheduler_command
 from sner.server.storage.commands import command as storage_command
-
-# shell context helpers
-import sner.server.auth.models as auth_models
-import sner.server.scheduler.models as scheduler_models
-import sner.server.storage.models as storage_models
 
 
 DEFAULT_CONFIG = {
@@ -317,29 +311,6 @@ def create_app(config_file='/etc/sner.yaml', config_env='SNER_CONFIG'):  # pylin
         return json.loads(data)
 
     app.add_template_global(name='sner_version', f=__version__)
-
-    @app.shell_context_processor
-    def make_shell_context():
-        return {
-            'app': app,
-            'db': db,
-            'func': func,
-
-            'Heatmap': scheduler_models.Heatmap,
-            'Job': scheduler_models.Job,
-            'Queue': scheduler_models.Queue,
-            'Readynet': scheduler_models.Readynet,
-            'Target': scheduler_models.Target,
-
-            'Host': storage_models.Host,
-            'Note': storage_models.Note,
-            'Service': storage_models.Service,
-            'Versioninfo': storage_models.Versioninfo,
-            'Vuln': storage_models.Vuln,
-
-            'User': auth_models.User,
-            'WebauthnCredential': auth_models.WebauthnCredential,
-        }
 
     @app.after_request
     def inject_csrf_token(response):

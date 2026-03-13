@@ -7,7 +7,6 @@ import os
 import re
 import sys
 from datetime import datetime
-from io import StringIO
 from unittest.mock import patch
 
 import pytest
@@ -36,25 +35,6 @@ def test_from_json__filter(app):
     assert app.jinja_env.filters['from_json']('"xxx"') == 'xxx'
 
 
-def test_shell():
-    """test shell context imports"""
-
-    buf_stdin = StringIO('print(db.session)\n')
-    buf_stdout = StringIO()
-
-    patch_argv = patch.object(sys, 'argv', ['bin/server', 'shell'])
-    patch_environ = patch.object(os, 'environ', {})
-    path_app_factory = patch.object(create_app, "__defaults__", ("dummy.yml", ""))
-    patch_stdin = patch.object(sys, 'stdin', buf_stdin)
-    patch_stdout = patch.object(sys, 'stdout', buf_stdout)
-    with pytest.raises(SystemExit) as pytest_wrapped_e:
-        with patch_argv, path_app_factory, patch_environ, patch_stdin, patch_stdout:
-            cli()
-
-    assert pytest_wrapped_e.value.code == 0
-    assert 'sqlalchemy.orm.scoping.scoped_session' in buf_stdout.getvalue()
-
-
 def test_cli():
     """test sner server cli/main flask wrapper"""
 
@@ -64,7 +44,7 @@ def test_cli():
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         with patch_argv, path_app_factory, patch_environ:
             cli()
-    assert pytest_wrapped_e.type == SystemExit
+    assert pytest_wrapped_e.type is SystemExit
     assert pytest_wrapped_e.value.code == 0
 
 
