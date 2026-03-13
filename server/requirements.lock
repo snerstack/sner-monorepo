@@ -9,6 +9,7 @@ Authlib==1.5.1
 backoff==2.2.1
 beautifulsoup4==4.13.3
 blinker==1.9.0
+cachelib==0.13.0
 certifi==2025.1.31
 cffi==1.17.1
 charset-normalizer==3.4.1
@@ -30,6 +31,7 @@ Flask==3.1.0
 flask-cors==5.0.1
 Flask-Login==0.6.3
 Flask-Migrate==4.1.0
+Flask-Session==0.8.0
 flask-smorest==0.45.0
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
@@ -51,6 +53,7 @@ Mako==1.3.9
 MarkupSafe==3.0.2
 marshmallow==3.26.1
 mccabe==0.7.0
+msgspec==0.20.0
 multidict==6.1.0
 outcome==1.3.0.post0
 packaging==24.2

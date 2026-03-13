@@ -10,6 +10,7 @@ flake8
 flask
 flask-login
 flask-migrate
+flask-session
 flask-smorest
 flask-sqlalchemy
 flask-wtf
