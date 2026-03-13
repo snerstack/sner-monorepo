@@ -13,10 +13,10 @@ from flask import current_app
 from sner.server.dbx_command import QueuePrio
 from sner.server.extensions import db
 from sner.server.scheduler.core import (
-    enumerate_network,
     ExclMatcher,
     QueueManager,
     SchedulerService,
+    enumerate_network,
 )
 from sner.server.scheduler.models import Heatmap, Job, Readynet
 
@@ -73,7 +73,7 @@ def test_excl_matcher(app):  # pylint: disable=unused-argument
     assert not matcher.match("sixenum,2001:db8:aa:300::0-ffff")
 
     # test auror_testssl
-    assert matcher.match('auror,127.66.66.2,port=11,hostname=hostname,enc=I')
+    assert matcher.match("auror,127.66.66.2,port=11,hostname=hostname,enc=I")
 
     for item in matcher.excls:
         repr(item)
@@ -155,9 +155,7 @@ def test_schedulerservice_hashvalprocessing(app, queue, target_factory):  # pyli
 
     service_target = "svc,127.0.0.1,proto=tcp,port=23"
     service_target_hashval = "127.0.0.0/24"
-    target_factory.create(
-        queue=queue, target=service_target, hashval=SchedulerService.hashval(service_target)
-    )
+    target_factory.create(queue=queue, target=service_target, hashval=SchedulerService.hashval(service_target))
     db.session.commit()
 
     assignment = SchedulerService.job_assign(None, [])

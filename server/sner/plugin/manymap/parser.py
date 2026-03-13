@@ -15,5 +15,5 @@ class ParserModule(NmapParserModule):
     ARCHIVE_PATHS = r"output\-[0-9]+\.xml"
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     pprint(ParserModule.parse_path(sys.argv[1]))

@@ -14,16 +14,12 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     """manymap module execution test"""
 
     test_a = {
-        'id': str(uuid4()),
-        'config': {
-            'module': 'manymap',
-            'args': ['-sV'],
-            'delay': 1
-        },
-        'targets': ['invalid', 'svc,127.0.0.1,proto=tcp,port=1', 'svc,::1,proto=udp,port=2']
+        "id": str(uuid4()),
+        "config": {"module": "manymap", "args": ["-sV"], "delay": 1},
+        "targets": ["invalid", "svc,127.0.0.1,proto=tcp,port=1", "svc,::1,proto=udp,port=2"],
     }
 
-    result = agent_main(['--assignment', json.dumps(test_a), '--debug'])
+    result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
-    assert 'Host: 127.0.0.1 (localhost)' in file_from_zip('%s.zip' % test_a['id'], 'output-1.gnmap').decode('utf-8')
-    assert '# Nmap done at' in file_from_zip('%s.zip' % test_a['id'], 'output-2.gnmap').decode('utf-8')
+    assert "Host: 127.0.0.1 (localhost)" in file_from_zip("%s.zip" % test_a["id"], "output-1.gnmap").decode("utf-8")
+    assert "# Nmap done at" in file_from_zip("%s.zip" % test_a["id"], "output-2.gnmap").decode("utf-8")

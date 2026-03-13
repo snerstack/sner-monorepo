@@ -10,7 +10,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from http import HTTPStatus
 
-from flask import current_app, jsonify, Response
+from flask import Response, current_app, jsonify
 from flask_login import current_user
 from flask_smorest import Blueprint, Page
 from sqlalchemy import and_, or_, select
@@ -21,12 +21,12 @@ from sner.server.auth.core import apikey_required
 from sner.server.extensions import db
 from sner.server.scheduler.core import SchedulerService, SchedulerServiceBusyException
 from sner.server.scheduler.models import Job
-from sner.server.storage.models import Host, Note, Service, Vuln, Versioninfo
-from sner.server.storage.version_parser import is_in_version_range, parse as versionspec_parse
+from sner.server.storage.models import Host, Note, Service, Versioninfo, Vuln
+from sner.server.storage.version_parser import is_in_version_range
+from sner.server.storage.version_parser import parse as versionspec_parse
 from sner.server.utils import filter_query
 
-
-blueprint = Blueprint('api', __name__)  # pylint: disable=invalid-name
+blueprint = Blueprint("api", __name__)  # pylint: disable=invalid-name
 
 
 class QueryPage(Page):
@@ -39,58 +39,58 @@ class QueryPage(Page):
         return self.collection.count()
 
 
-@blueprint.route('/v2/scheduler/job/assign', methods=['POST'])
-@apikey_required('agent')
+@blueprint.route("/v2/scheduler/job/assign", methods=["POST"])
+@apikey_required("agent")
 @blueprint.arguments(api_schema.JobAssignArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.JobAssignmentSchema)
 def v2_scheduler_job_assign_route(args):
     """assign job for agent"""
 
-    if current_app.config['SNER_MAINTENANCE']:
+    if current_app.config["SNER_MAINTENANCE"]:
         return {}  # nowork
 
     try:
-        resp = SchedulerService.job_assign(args.get('queue'), args.get('caps', []))
+        resp = SchedulerService.job_assign(args.get("queue"), args.get("caps", []))
     except SchedulerServiceBusyException:
         resp = {}  # nowork
     return resp
 
 
-@blueprint.route('/v2/scheduler/job/output', methods=['POST'])
-@apikey_required('agent')
+@blueprint.route("/v2/scheduler/job/output", methods=["POST"])
+@apikey_required("agent")
 @blueprint.arguments(api_schema.JobOutputSchema)
 def v2_scheduler_job_output_route(args):
     """receive output from assigned job"""
 
     try:
-        output = b64decode(args['output'])
+        output = b64decode(args["output"])
     except binascii.Error:
-        return jsonify({'message': 'invalid request'}), HTTPStatus.BAD_REQUEST
+        return jsonify({"message": "invalid request"}), HTTPStatus.BAD_REQUEST
 
-    job = Job.query.filter(Job.id == args['id'], Job.retval == None).one_or_none()  # noqa: E711  pylint: disable=singleton-comparison
+    job = Job.query.filter(Job.id == args["id"], Job.retval == None).one_or_none()  # noqa: E711  pylint: disable=singleton-comparison
     if not job:
         # invalid/repeated requests are silently discarded, agent would delete working data
         # on it's side as well
-        return jsonify({'message': 'discard job'})
+        return jsonify({"message": "discard job"})
 
     try:
-        SchedulerService.job_output(job, args['retval'], output)
+        SchedulerService.job_output(job, args["retval"], output)
     except SchedulerServiceBusyException:
-        return jsonify({'message': 'server busy'}), HTTPStatus.TOO_MANY_REQUESTS
+        return jsonify({"message": "server busy"}), HTTPStatus.TOO_MANY_REQUESTS
 
-    return jsonify({'message': 'success'})
+    return jsonify({"message": "success"})
 
 
-@blueprint.route('/v2/metrics')
-@blueprint.response(HTTPStatus.OK, {'type': 'string'}, content_type='text/plain')
+@blueprint.route("/v2/metrics")
+@blueprint.response(HTTPStatus.OK, {"type": "string"}, content_type="text/plain")
 def v2_stats_prometheus_route():
     """internal stats"""
 
-    return Response(get_metrics(), mimetype='text/plain')
+    return Response(get_metrics(), mimetype="text/plain")
 
 
-@blueprint.route('/v2/public/storage/host', methods=['POST'])
-@apikey_required('user')
+@blueprint.route("/v2/public/storage/host", methods=["POST"])
+@apikey_required("user")
 @blueprint.arguments(api_schema.PublicHostArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.PublicHostSchema)
 def v2_public_storage_host_route(args):
@@ -99,8 +99,8 @@ def v2_public_storage_host_route(args):
     if not current_user.api_networks:
         return None
 
-    restrict = [Host.address.op('<<=')(net) for net in current_user.api_networks]
-    query = Host.query.filter(Host.address == str(args['address'])).filter(or_(*restrict))
+    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
+    query = Host.query.filter(Host.address == str(args["address"])).filter(or_(*restrict))
 
     host = query.one_or_none()
     if not host:
@@ -110,17 +110,13 @@ def v2_public_storage_host_route(args):
     # the desing breaks the normalzation, but allows to do simple queries for notes/vulns for with all parents attributes
     # notes.filter(Service.port=="443" OR Host.address=="78.128.214.40")
     # also https://hashrocket.com/blog/posts/modeling-polymorphic-associations-in-a-relational-database
-    host_data = {
-        **host.__dict__,
-        'services': host.services,
-        'notes': [note for note in host.notes if note.service_id is None]
-    }
-    current_app.logger.info(f'api.public storage host {args}')
+    host_data = {**host.__dict__, "services": host.services, "notes": [note for note in host.notes if note.service_id is None]}
+    current_app.logger.info(f"api.public storage host {args}")
     return host_data
 
 
-@blueprint.route('/v2/public/storage/range', methods=['POST'])
-@apikey_required('user')
+@blueprint.route("/v2/public/storage/range", methods=["POST"])
+@apikey_required("user")
 @blueprint.arguments(api_schema.PublicRangeArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.PublicRangeSchema(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
@@ -130,14 +126,14 @@ def v2_public_storage_range_route(args):
     if not current_user.api_networks:
         return []
 
-    restrict = [Host.address.op('<<=')(net) for net in current_user.api_networks]
-    query = Host.query.filter(Host.address.op('<<=')(str(args['cidr']))).filter(or_(*restrict))
-    current_app.logger.info(f'api.public storage range {args}')
+    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
+    query = Host.query.filter(Host.address.op("<<=")(str(args["cidr"]))).filter(or_(*restrict))
+    current_app.logger.info(f"api.public storage range {args}")
     return query
 
 
-@blueprint.route('/v2/public/storage/servicelist', methods=['POST'])
-@apikey_required('user')
+@blueprint.route("/v2/public/storage/servicelist", methods=["POST"])
+@apikey_required("user")
 @blueprint.arguments(api_schema.PublicListArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.PublicServicelistSchema(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
@@ -147,22 +143,21 @@ def v2_public_storage_servicelist_route(args):
     if not current_user.api_networks:
         return []
 
-    restrict = [Host.address.op('<<=')(net) for net in current_user.api_networks]
-    query = db.session.query().select_from(Service).outerjoin(Host).add_columns(
-        Host.address,
-        Host.hostname,
-        Service.proto,
-        Service.port,
-        Service.state,
-        Service.info
-    ).filter(or_(*restrict))
+    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
+    query = (
+        db.session.query()
+        .select_from(Service)
+        .outerjoin(Host)
+        .add_columns(Host.address, Host.hostname, Service.proto, Service.port, Service.state, Service.info)
+        .filter(or_(*restrict))
+    )
 
-    query = filter_query(query, args.get('filter'))
-    current_app.logger.info(f'api.public storage servicelist {args}')
+    query = filter_query(query, args.get("filter"))
+    current_app.logger.info(f"api.public storage servicelist {args}")
     return query
 
 
-@blueprint.route("/v2/public/storage/vulnlist", methods=['POST'])
+@blueprint.route("/v2/public/storage/vulnlist", methods=["POST"])
 @apikey_required("user")
 @blueprint.arguments(api_schema.PublicListArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.PublicVulnlistSchema(many=True))
@@ -206,7 +201,7 @@ def v2_public_storage_vulnlist_route(args):
     return query
 
 
-@blueprint.route("/v2/public/storage/notelist", methods=['POST'])
+@blueprint.route("/v2/public/storage/notelist", methods=["POST"])
 @apikey_required("user")
 @blueprint.arguments(api_schema.PublicListArgsSchema)
 @blueprint.response(HTTPStatus.OK, api_schema.PublicNotelistSchema(many=True))
@@ -261,16 +256,13 @@ def v2_public_storage_versioninfo_route(args):
     query = filter_query(query, args.get("filter"))
 
     if "product" in args:
-        query = query.filter(Versioninfo.product.ilike(f'%{args["product"]}%'))
+        query = query.filter(Versioninfo.product.ilike(f"%{args['product']}%"))
 
     data = query.all()
 
     if "versionspec" in args:
         parsed_version_specifier = versionspec_parse(args["versionspec"])
-        data = list(filter(
-            lambda item: is_in_version_range(item.version, parsed_version_specifier),
-            data
-        ))
+        data = list(filter(lambda item: is_in_version_range(item.version, parsed_version_specifier), data))
 
     current_app.logger.info(f"api.public storage versioninfo {args}")
     return data
@@ -314,9 +306,7 @@ def _prefetch_notesmap():
     """prefetch auror_testssl scan notes to map"""
 
     all_tls_notes = db.session.execute(
-        select(Note.host_id, Note.service_id, Note.via_target, Note.xtype, Note.data).where(
-            Note.xtype.like("auror.testssl%")
-        )
+        select(Note.host_id, Note.service_id, Note.via_target, Note.xtype, Note.data).where(Note.xtype.like("auror.testssl%"))
     ).all()
 
     notes_map = defaultdict(list)

@@ -46,10 +46,7 @@ def test_aggregate_apicall_failure(app):  # pylint: disable=unused-argument
     mock_response.return_value.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
     mock_response.return_value.text = "error message text"
 
-    with (
-        pytest.raises(AgreegateApiError, match="agreegate apicall failed"),
-        patch.object(requests, "request", mock_response)
-    ):
+    with pytest.raises(AgreegateApiError, match="agreegate apicall failed"), patch.object(requests, "request", mock_response):
         agreegate_apicall("POST", "/fail")
 
 
@@ -57,7 +54,7 @@ def test_fetch_agreegate_netlists(app):  # pylint: disable=unused-argument
     """test fetch agreegate netlists"""
 
     mock_response = Mock(return_value={"sner/basic": ["127.6.6.0/24"]})
-    with patch.object(sner.server.agreegate, 'agreegate_apicall', mock_response):
+    with patch.object(sner.server.agreegate, "agreegate_apicall", mock_response):
         assert fetch_agreegate_netlists() == 0
 
 
@@ -65,12 +62,14 @@ def test_init_agreegate_netlists(app):  # pylint: disable=unused-argument
     """test load and merge agreegate configs"""
 
     Path(f"{current_app.config['SNER_VAR']}/{NETLISTS_FILE}").write_text(
-        json.dumps({
-            "sner/basic": ["127.6.6.0/24", "2001:db8::11/128", "invalid"],
-            "sner/nuclei": ["127.6.6.0/24"],
-            "sner/nessus": ["127.6.7.0/24"],
-            "auror": ["2001:db8::11/128"],
-        }),
+        json.dumps(
+            {
+                "sner/basic": ["127.6.6.0/24", "2001:db8::11/128", "invalid"],
+                "sner/nuclei": ["127.6.6.0/24"],
+                "sner/nessus": ["127.6.7.0/24"],
+                "auror": ["2001:db8::11/128"],
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -120,7 +119,7 @@ def test_sync_agreegate_allowed_networks(app, user_factory):  # pylint: disable=
     # test adding "user" role if user account gets autocreated directly in sner with oidc (eg. no roles)
     user_factory.create(username="testuser@einfra.cesnet.cz", roles=[])
 
-    with patch.object(sner.server.agreegate, 'agreegate_apicall', agreegate_apicall_mock):
+    with patch.object(sner.server.agreegate, "agreegate_apicall", agreegate_apicall_mock):
         assert sync_agreegate_allowed_networks() == 0
 
     testuser = User.query.filter_by(username="testuser@einfra.cesnet.cz").one()

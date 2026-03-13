@@ -37,9 +37,7 @@ def _format_full(svc):
 
 
 def _format_fullhostname(svc):
-    return (
-        f"{svc.host.hostname or svc.host.address} {svc.proto} {svc.port} {svc.name} {svc.state} {json.dumps(svc.info)}"
-    )
+    return f"{svc.host.hostname or svc.host.address} {svc.proto} {svc.port} {svc.name} {svc.state} {json.dumps(svc.info)}"
 
 
 FORMAT_FUNCTIONS = {

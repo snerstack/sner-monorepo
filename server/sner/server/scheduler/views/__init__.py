@@ -5,8 +5,7 @@ scheduler views
 
 from flask import Blueprint
 
-
-blueprint = Blueprint('scheduler', __name__)  # pylint: disable=invalid-name
+blueprint = Blueprint("scheduler", __name__)  # pylint: disable=invalid-name
 
 
 import sner.server.scheduler.views.job  # noqa: E402  pylint: disable=wrong-import-position

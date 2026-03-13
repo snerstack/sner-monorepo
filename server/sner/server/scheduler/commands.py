@@ -10,10 +10,9 @@ from ipaddress import ip_address, summarize_address_range
 import click
 from flask.cli import with_appcontext
 
-from sner.server.scheduler.core import enumerate_network, QueueManager, SchedulerService
+from sner.server.scheduler.core import QueueManager, SchedulerService, enumerate_network
 from sner.server.scheduler.models import Queue
 from sner.targets import TargetManager
-
 
 logger = logging.getLogger("sner_command")
 
@@ -26,29 +25,29 @@ def _queue_by_name(name):
     return queue
 
 
-@click.group(name='scheduler', help='sner.server scheduler management')
+@click.group(name="scheduler", help="sner.server scheduler management")
 def command():
     """scheduler commands container"""
 
 
-@command.command(name='enumips', help='enumerate ip address range; uses stdin by default')
-@click.argument('targets', nargs=-1)
-@click.option('--file', type=click.File('r'))
+@command.command(name="enumips", help="enumerate ip address range; uses stdin by default")
+@click.argument("targets", nargs=-1)
+@click.option("--file", type=click.File("r"))
 def enumips_command(targets, **kwargs):
     """enumerate ip address range"""
 
     targets = list(targets)
-    if kwargs['file']:
-        targets += kwargs['file'].read().splitlines()
+    if kwargs["file"]:
+        targets += kwargs["file"].read().splitlines()
     if not targets:
         targets.extend(sys.stdin.readlines())
     for target in targets:
-        print('\n'.join(enumerate_network(target)))
+        print("\n".join(enumerate_network(target)))
 
 
-@command.command(name='rangetocidr', help='convert range specified addr space to series of cidr')
-@click.argument('start')
-@click.argument('end')
+@command.command(name="rangetocidr", help="convert range specified addr space to series of cidr")
+@click.argument("start")
+@click.argument("end")
 def rangetocidr_command(start, end):
     """summarize net rage into cidrs"""
 
@@ -56,10 +55,10 @@ def rangetocidr_command(start, end):
         print(tmp)
 
 
-@command.command(name='queue-enqueue', help='add targets to queue; uses stdin by default')
-@click.argument('queue_name')
-@click.argument('targets', nargs=-1)
-@click.option('--file', type=click.File('r'))
+@command.command(name="queue-enqueue", help="add targets to queue; uses stdin by default")
+@click.argument("queue_name")
+@click.argument("targets", nargs=-1)
+@click.option("--file", type=click.File("r"))
 @with_appcontext
 def queue_enqueue_command(queue_name, targets, **kwargs):
     """enqueue targets to queue"""
@@ -68,8 +67,8 @@ def queue_enqueue_command(queue_name, targets, **kwargs):
         sys.exit(1)
 
     targets = list(targets)
-    if kwargs['file']:
-        targets.extend(kwargs['file'].read().splitlines())
+    if kwargs["file"]:
+        targets.extend(kwargs["file"].read().splitlines())
     if not targets:
         targets.extend(sys.stdin.readlines())
     targets = list(filter(None, map(str.strip, targets)))
@@ -77,8 +76,8 @@ def queue_enqueue_command(queue_name, targets, **kwargs):
     QueueManager.enqueue(queue, TargetManager.from_list(targets))
 
 
-@command.command(name='queue-flush', help='flush all targets from queue')
-@click.argument('queue_name')
+@command.command(name="queue-flush", help="flush all targets from queue")
+@click.argument("queue_name")
 @with_appcontext
 def queue_flush_command(queue_name):
     """flush targets from queue"""
@@ -88,8 +87,8 @@ def queue_flush_command(queue_name):
     QueueManager.flush(queue)
 
 
-@command.command(name='queue-prune', help='delete all associated jobs')
-@click.argument('queue_name')
+@command.command(name="queue-prune", help="delete all associated jobs")
+@click.argument("queue_name")
 @with_appcontext
 def queue_prune_command(queue_name):
     """delete all jobs associated with queue"""
@@ -99,7 +98,7 @@ def queue_prune_command(queue_name):
     QueueManager.prune(queue)
 
 
-@command.command(name='readynet-recount', help='refresh readynets for current heatmap_hot_level')
+@command.command(name="readynet-recount", help="refresh readynets for current heatmap_hot_level")
 @with_appcontext
 def readynet_recount_command():
     """refresh readynets for current heatmap_hot_level"""
@@ -107,7 +106,7 @@ def readynet_recount_command():
     SchedulerService.readynet_recount()
 
 
-@command.command(name='heatmap-check', help='check heatmap if corresponds with running jobs')
+@command.command(name="heatmap-check", help="check heatmap if corresponds with running jobs")
 @with_appcontext
 def heatmap_check_command():
     """check heatmap if corresponds with running jobs"""
@@ -117,7 +116,7 @@ def heatmap_check_command():
         sys.exit(1)
 
 
-@command.command(name='repeat-failed-jobs', help='repeat and prune failed jobs (deployment helper)')
+@command.command(name="repeat-failed-jobs", help="repeat and prune failed jobs (deployment helper)")
 @with_appcontext
 def repeat_failed_jobs_command():
     """repeat and prune failed jobs"""
@@ -125,7 +124,7 @@ def repeat_failed_jobs_command():
     SchedulerService.repeat_failed_jobs()
 
 
-@command.command(name='recover-heatmap', help='recover inconsistent heatmap state (deployment helper)')
+@command.command(name="recover-heatmap", help="recover inconsistent heatmap state (deployment helper)")
 @with_appcontext
 def recover_heatmap_command():
     """recover heatmap"""

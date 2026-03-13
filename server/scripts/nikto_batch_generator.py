@@ -20,17 +20,17 @@ def main():
     """main"""
 
     parser = ArgumentParser()
-    parser.add_argument('inputfile')
+    parser.add_argument("inputfile")
     args = parser.parse_args()
 
     targets = Path(args.inputfile).read_text().splitlines()
     for target in targets:
-        match = re.match('(?P<proto>.*)://(?P<host>.*):(?P<port>.*)', target)
+        match = re.match("(?P<proto>.*)://(?P<host>.*):(?P<port>.*)", target)
         if match:
-            ssl = ' -ssl' if match['port'] == '443' else ''
-            output = f'output_{match["host"]}_{match["port"]}.txt'
-            print(f'nikto -host {match["host"]} -port {match["port"]}{ssl} -output {output}')
+            ssl = " -ssl" if match["port"] == "443" else ""
+            output = f"output_{match['host']}_{match['port']}.txt"
+            print(f"nikto -host {match['host']} -port {match['port']}{ssl} -output {output}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

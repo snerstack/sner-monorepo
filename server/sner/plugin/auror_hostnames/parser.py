@@ -6,9 +6,9 @@ parsers to import from agent outputs to storage
 import json
 import sys
 from datetime import datetime
+from pathlib import Path
 from pprint import pprint
 
-from pathlib import Path
 from sner.lib import file_from_zip, is_zip
 from sner.server.parser import ParsedItemsDb, ParserBase
 

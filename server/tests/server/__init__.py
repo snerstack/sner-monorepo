@@ -9,9 +9,9 @@ from flask import url_for
 def get_csrf_token(clnt):
     """fetch user/me route and parse csrf token"""
 
-    response = clnt.get(url_for('auth.user_me_route'), expect_errors=True)
-    cookie_list = response.headers.getall('Set-Cookie')
-    csrf_token = [item.split('=')[1].split(';')[0] for item in cookie_list if item.startswith('tokencsrf=')][0]
+    response = clnt.get(url_for("auth.user_me_route"), expect_errors=True)
+    cookie_list = response.headers.getall("Set-Cookie")
+    csrf_token = [item.split("=")[1].split(";")[0] for item in cookie_list if item.startswith("tokencsrf=")][0]
     return csrf_token
 
 

@@ -46,7 +46,7 @@ class StorageModelBase(db.Model):
     def update(self, obj):
         """Update model from data object. Existing values are not overwriten with empty values."""
 
-        iterator = obj.__dict__ if hasattr(obj, '__dict__') else obj
+        iterator = obj.__dict__ if hasattr(obj, "__dict__") else obj
         for key, value in iterator.items():
             if value and hasattr(self, key):
                 setattr(self, key, value)
@@ -65,19 +65,19 @@ class Host(StorageModelBase):
     modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     rescan_time = db.Column(db.DateTime, default=datetime.utcnow)
 
-    services = relationship('Service', back_populates='host', cascade='delete,delete-orphan', passive_deletes=True)
-    vulns = relationship('Vuln', back_populates='host', cascade='delete,delete-orphan', passive_deletes=True)
-    notes = relationship('Note', back_populates='host', cascade='delete,delete-orphan', passive_deletes=True)
+    services = relationship("Service", back_populates="host", cascade="delete,delete-orphan", passive_deletes=True)
+    vulns = relationship("Vuln", back_populates="host", cascade="delete,delete-orphan", passive_deletes=True)
+    notes = relationship("Note", back_populates="host", cascade="delete,delete-orphan", passive_deletes=True)
 
     def __repr__(self):
-        return f'<Host {self.id}: {self.address} {self.hostname}>'
+        return f"<Host {self.id}: {self.address} {self.hostname}>"
 
 
 class Service(StorageModelBase):
     """discovered host service"""
 
     id = db.Column(db.Integer, primary_key=True)
-    host_id = db.Column(db.Integer, db.ForeignKey('host.id', ondelete='CASCADE'), nullable=False)
+    host_id = db.Column(db.Integer, db.ForeignKey("host.id", ondelete="CASCADE"), nullable=False)
     proto = db.Column(db.String(250), nullable=False)
     port = db.Column(db.Integer, nullable=False)
     state = db.Column(db.String(250))
@@ -90,32 +90,32 @@ class Service(StorageModelBase):
     rescan_time = db.Column(db.DateTime, default=datetime.utcnow)
     import_time = db.Column(db.DateTime)
 
-    host = relationship('Host', back_populates='services')
-    vulns = relationship('Vuln', back_populates='service', cascade='delete,delete-orphan', passive_deletes=True)
-    notes = relationship('Note', back_populates='service', cascade='delete,delete-orphan', passive_deletes=True)
+    host = relationship("Host", back_populates="services")
+    vulns = relationship("Vuln", back_populates="service", cascade="delete,delete-orphan", passive_deletes=True)
+    notes = relationship("Note", back_populates="service", cascade="delete,delete-orphan", passive_deletes=True)
 
     def __repr__(self):
         host = self.host.address if self.host else None
-        return f'<Service {self.id}: {host} {self.proto}.{self.port}>'
+        return f"<Service {self.id}: {host} {self.proto}.{self.port}>"
 
 
 class SeverityEnum(SelectableEnum):
     """severity enum"""
 
-    UNKNOWN = 'unknown'
-    INFO = 'info'
-    LOW = 'low'
-    MEDIUM = 'medium'
-    HIGH = 'high'
-    CRITICAL = 'critical'
+    UNKNOWN = "unknown"
+    INFO = "info"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
 
 
 class Vuln(StorageModelBase):
     """vulnerability model; heavily inspired by metasploit; hdm rulez"""
 
     id = db.Column(db.Integer, primary_key=True)
-    host_id = db.Column(db.Integer, db.ForeignKey('host.id', ondelete='CASCADE'), nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey('service.id', ondelete='CASCADE'))
+    host_id = db.Column(db.Integer, db.ForeignKey("host.id", ondelete="CASCADE"), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey("service.id", ondelete="CASCADE"))
     via_target = db.Column(db.String(250))
     name = db.Column(db.String(1000), nullable=False)
     xtype = db.Column(db.String(250))
@@ -131,8 +131,8 @@ class Vuln(StorageModelBase):
     import_time = db.Column(db.DateTime)
     source = db.Column(db.String(250), nullable=True)
 
-    host = relationship('Host', back_populates='vulns')
-    service = relationship('Service', back_populates='vulns')
+    host = relationship("Host", back_populates="vulns")
+    service = relationship("Service", back_populates="vulns")
 
     def __repr__(self):
         host = self.host.address if self.host else None
@@ -149,8 +149,8 @@ class Note(StorageModelBase):
     """host assigned note, generic data container"""
 
     id = db.Column(db.Integer, primary_key=True)
-    host_id = db.Column(db.Integer, db.ForeignKey('host.id', ondelete='CASCADE'), nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey('service.id', ondelete='CASCADE'))
+    host_id = db.Column(db.Integer, db.ForeignKey("host.id", ondelete="CASCADE"), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey("service.id", ondelete="CASCADE"))
     via_target = db.Column(db.String(250))
     xtype = db.Column(db.String(250))
     data = db.Column(db.Text)
@@ -161,8 +161,8 @@ class Note(StorageModelBase):
     import_time = db.Column(db.DateTime)
     source = db.Column(db.String(250), nullable=True)
 
-    host = relationship('Host', back_populates='notes')
-    service = relationship('Service', back_populates='notes')
+    host = relationship("Host", back_populates="notes")
+    service = relationship("Service", back_populates="notes")
 
     def __repr__(self):
         host = self.host.address if self.host else None

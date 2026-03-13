@@ -66,9 +66,7 @@ class AgentModule(ModuleBase):
             # detect if scan has to be performed with --dst-addr or --local-scan
             first, _last = target.boundaries()
             is_localnet, iface = self._is_localnet(first)
-            args = (
-                ["--local-scan", "--print-type", "global", "-i", iface] if is_localnet else ["--dst-addr", target.value]
-            )
+            args = ["--local-scan", "--print-type", "global", "-i", iface] if is_localnet else ["--dst-addr", target.value]
 
             ret |= self._execute(["scan6", "--rate-limit", f"{asg_config.rate}pps"] + args, f"output-{idx}.txt")
             if not self.loop:  # pragma: no cover  ; not tested

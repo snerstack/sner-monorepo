@@ -12,13 +12,12 @@ from flask import current_app
 from flask.cli import with_appcontext
 
 from sner.server.extensions import db
-from sner.server.utils import FilterQueryError
 from sner.server.parser import REGISTERED_PARSERS
 from sner.server.storage.core import StorageManager, vuln_export, vuln_report
 from sner.server.storage.models import Host, Versioninfo
 from sner.server.storage.service_list import service_list
 from sner.server.storage.versioninfo import VersioninfoManager
-
+from sner.server.utils import FilterQueryError
 
 logger = logging.getLogger("sner_command")
 

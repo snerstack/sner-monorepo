@@ -9,13 +9,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-
 WEBDRIVER_WAIT = 10
 FRONTEND_TESTSERVER_DEFAULT = "http://localhost:18002"
 FRONTEND_TESTSERVER_DEV = "http://localhost:18082"
 
 
-class JsNoAjaxPending():
+class JsNoAjaxPending:
     """custom expected_condition, wait for all ajax calls to finish"""
 
     def __call__(self, driver):
@@ -31,7 +30,7 @@ def dt_wait_processing(sclnt, dt_id):
     """wait until all ajax finished and dt_id processing (hopefully) ended"""
 
     webdriver_waituntil(sclnt, JsNoAjaxPending())
-    webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.ID, f'{dt_id}_processing')))
+    webdriver_waituntil(sclnt, EC.invisibility_of_element_located((By.ID, f"{dt_id}_processing")))
     return sclnt.find_element(By.ID, dt_id)
 
 
@@ -91,9 +90,5 @@ def toggle_dt_toolboxes(sclnt):
 def frontend_url(route_path):
     """create url for frontend"""
 
-    base = (
-        FRONTEND_TESTSERVER_DEV
-        if os.environ.get("PYTEST_FRONTEND", "dev") == "dev"
-        else FRONTEND_TESTSERVER_DEFAULT
-    )
+    base = FRONTEND_TESTSERVER_DEV if os.environ.get("PYTEST_FRONTEND", "dev") == "dev" else FRONTEND_TESTSERVER_DEFAULT
     return base + route_path

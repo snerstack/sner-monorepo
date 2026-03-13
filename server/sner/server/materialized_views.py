@@ -79,9 +79,9 @@ class CreateView(DDLElement):
 
 @compiler.compiles(CreateView)
 def compile_create_materialized_view(element, compiler, **kw):
-    return 'CREATE {}{}VIEW IF NOT EXISTS {} AS {}'.format(
-        'OR REPLACE ' if element.replace else '',
-        'MATERIALIZED ' if element.materialized else '',
+    return "CREATE {}{}VIEW IF NOT EXISTS {} AS {}".format(
+        "OR REPLACE " if element.replace else "",
+        "MATERIALIZED " if element.materialized else "",
         compiler.dialect.identifier_preparer.quote(element.name),
         compiler.sql_compiler.process(element.selectable, literal_binds=True),
     )
@@ -96,53 +96,30 @@ class DropView(DDLElement):
 
 @compiler.compiles(DropView)
 def compile_drop_materialized_view(element, compiler, **kw):
-    return 'DROP {}VIEW IF EXISTS {} {}'.format(
-        'MATERIALIZED ' if element.materialized else '',
+    return "DROP {}VIEW IF EXISTS {} {}".format(
+        "MATERIALIZED " if element.materialized else "",
         compiler.dialect.identifier_preparer.quote(element.name),
-        'CASCADE' if element.cascade else ''
+        "CASCADE" if element.cascade else "",
     )
 
 
-def create_table_from_selectable(
-    name,
-    selectable,
-    indexes=None,
-    metadata=None,
-    aliases=None,
-    **kwargs
-):
+def create_table_from_selectable(name, selectable, indexes=None, metadata=None, aliases=None, **kwargs):
     if indexes is None:
         indexes = []
     if metadata is None:
         metadata = sa.MetaData()
     if aliases is None:
         aliases = {}
-    args = [
-        sa.Column(
-            c.name,
-            c.type,
-            key=aliases.get(c.name, c.name),
-            primary_key=c.primary_key
-        )
-        for c in get_columns(selectable)
-    ] + indexes
+    args = [sa.Column(c.name, c.type, key=aliases.get(c.name, c.name), primary_key=c.primary_key) for c in get_columns(selectable)] + indexes
     table = sa.Table(name, metadata, *args, **kwargs)
 
     if not any([c.primary_key for c in get_columns(selectable)]):
-        table.append_constraint(
-            PrimaryKeyConstraint(*[c.name for c in get_columns(selectable)])
-        )
+        table.append_constraint(PrimaryKeyConstraint(*[c.name for c in get_columns(selectable)]))
     return table
 
 
-def create_materialized_view(
-    name,
-    selectable,
-    metadata,
-    indexes=None,
-    aliases=None
-):
-    """ Create a view on a given metadata
+def create_materialized_view(name, selectable, metadata, indexes=None, aliases=None):
+    """Create a view on a given metadata
 
     :param name: The name of the view to create.
     :param selectable: An SQLAlchemy selectable e.g. a select() statement.
@@ -158,30 +135,16 @@ def create_materialized_view(
     statement is emitted instead of a ``CREATE VIEW``.
 
     """
-    table = create_table_from_selectable(
-        name=name,
-        selectable=selectable,
-        indexes=indexes,
-        metadata=None,
-        aliases=aliases
-    )
+    table = create_table_from_selectable(name=name, selectable=selectable, indexes=indexes, metadata=None, aliases=aliases)
 
-    sa.event.listen(
-        metadata,
-        'after_create',
-        CreateView(name, selectable, materialized=True)
-    )
+    sa.event.listen(metadata, "after_create", CreateView(name, selectable, materialized=True))
 
-    @sa.event.listens_for(metadata, 'after_create')
+    @sa.event.listens_for(metadata, "after_create")
     def create_indexes(target, connection, **kw):
         for idx in table.indexes:
             idx.create(connection)
 
-    sa.event.listen(
-        metadata,
-        'before_drop',
-        DropView(name, materialized=True)
-    )
+    sa.event.listen(metadata, "before_drop", DropView(name, materialized=True))
     return table
 
 
@@ -195,14 +158,14 @@ class RefreshMaterializedView(Executable, ClauseElement):
 
 @compiler.compiles(RefreshMaterializedView)
 def compile_refresh_materialized_view(element, compiler):
-    return 'REFRESH MATERIALIZED VIEW {concurrently}{name}'.format(
-        concurrently='CONCURRENTLY ' if element.concurrently else '',
+    return "REFRESH MATERIALIZED VIEW {concurrently}{name}".format(
+        concurrently="CONCURRENTLY " if element.concurrently else "",
         name=compiler.dialect.identifier_preparer.quote(element.name),
     )
 
 
 def refresh_materialized_view(session, name, concurrently=False):
-    """ Refreshes an already existing materialized view
+    """Refreshes an already existing materialized view
 
     :param session: An SQLAlchemy Session instance.
     :param name: The name of the materialized view to refresh.

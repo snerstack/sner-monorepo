@@ -4,7 +4,6 @@ misc server components tests
 """
 
 import pytest
-
 from flask_wtf import FlaskForm
 
 from sner.server.forms import JSONField, TextAreaListField
@@ -16,9 +15,10 @@ def test_textarealistfield(app):  # pylint: disable=unused-argument
 
     class Xform(FlaskForm):
         """form test instance"""
+
         a = TextAreaListField()
 
-    form = Xform(DummyPostData({'a': 'a\nb'}))
+    form = Xform(DummyPostData({"a": "a\nb"}))
     assert isinstance(form.a.data, list)
     assert len(form.a.data) == 2
 
@@ -32,17 +32,18 @@ def test_jsonfield(app):  # pylint: disable=unused-argument
 
     class Xform(FlaskForm):
         """form test instance"""
+
         a = JSONField()
 
-    form = Xform(DummyPostData({'a': []}))
+    form = Xform(DummyPostData({"a": []}))
     assert form.a.data is None
 
-    form = Xform(DummyPostData({'a': ['["a"]']}))
+    form = Xform(DummyPostData({"a": ['["a"]']}))
     assert form.a.data == ["a"]
 
-    form = Xform(DummyPostData({'a': ['[invalidjson']}))
+    form = Xform(DummyPostData({"a": ["[invalidjson"]}))
     assert not form.validate()
-    assert 'This field contains invalid JSON' in form.a.errors
+    assert "This field contains invalid JSON" in form.a.errors
 
     # triggers pre_validate exception handler, when form field is assigned by unserializable value
     form.a.data = Xform()

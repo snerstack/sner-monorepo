@@ -141,14 +141,7 @@ def outofscope_check(prune=False):
     outscope_note_ids = set()
 
     # find hosts which are not in any scan scope
-    scope = list(
-        set(
-            planner_config.basic_nets
-            + planner_config.nuclei_nets
-            + planner_config.sportmap_nets
-            + planner_config.nessus_nets
-        )
-    )
+    scope = list(set(planner_config.basic_nets + planner_config.nuclei_nets + planner_config.sportmap_nets + planner_config.nessus_nets))
 
     current_app.logger.debug("full scope: %s", scope)
     scope_query = [Host.address.op("<<=")(net) for net in scope]
@@ -206,15 +199,9 @@ def outofscope_check(prune=False):
         )
 
     if prune:
-        db.session.execute(
-            delete(Note).filter(Note.id.in_(outscope_note_ids)), execution_options={"synchronize_session": False}
-        )
-        db.session.execute(
-            delete(Vuln).filter(Vuln.id.in_(outscope_vuln_ids)), execution_options={"synchronize_session": False}
-        )
-        db.session.execute(
-            delete(Host).filter(Host.id.in_(outscope_host_ids)), execution_options={"synchronize_session": False}
-        )
+        db.session.execute(delete(Note).filter(Note.id.in_(outscope_note_ids)), execution_options={"synchronize_session": False})
+        db.session.execute(delete(Vuln).filter(Vuln.id.in_(outscope_vuln_ids)), execution_options={"synchronize_session": False})
+        db.session.execute(delete(Host).filter(Host.id.in_(outscope_host_ids)), execution_options={"synchronize_session": False})
         db.session.commit()
         db.session.expire_all()
 
@@ -342,10 +329,7 @@ class Planner(TerminateContextRunner):
         if not self._cp.service_scan:
             return
 
-        loaders = [
-            self._add_stage(PruningStorageLoader(f"basic_scan:{qname}", qname))
-            for qname in self._cp.service_scan.queues
-        ]
+        loaders = [self._add_stage(PruningStorageLoader(f"basic_scan:{qname}", qname)) for qname in self._cp.service_scan.queues]
         self._add_stage(
             ServiceScanStorageTargetlist(
                 "basic_scan:service_scan_targetlist",
@@ -374,9 +358,7 @@ class Planner(TerminateContextRunner):
         if not self._cp.nuclei_scan:
             return
 
-        loader = self._add_stage(
-            PruningStorageLoader(f"nuclei_scan:{self._cp.nuclei_scan.queue}", self._cp.nuclei_scan.queue)
-        )
+        loader = self._add_stage(PruningStorageLoader(f"nuclei_scan:{self._cp.nuclei_scan.queue}", self._cp.nuclei_scan.queue))
         self._add_stage(
             ServiceStorageTargetlist(
                 "nuclei_scan:storage_targetlist",
@@ -437,9 +419,7 @@ class Planner(TerminateContextRunner):
         if not self._cp.auror_testssl:
             return
 
-        loader = self._add_stage(
-            PruningStorageLoader(f"auror_testssl:{self._cp.auror_testssl.queue}", self._cp.auror_testssl.queue)
-        )
+        loader = self._add_stage(PruningStorageLoader(f"auror_testssl:{self._cp.auror_testssl.queue}", self._cp.auror_testssl.queue))
         self._add_stage(
             AurorTestsslStorageTargetlist(
                 "auror_testssl:targetlist",
@@ -464,7 +444,7 @@ class Planner(TerminateContextRunner):
         if not self._cp.rebuild_versioninfo:
             return
         self._add_stage(
-           RebuildVersioninfo(
+            RebuildVersioninfo(
                 "rebuild_versioninfo",
                 schedule=self._cp.rebuild_versioninfo.schedule,
             )

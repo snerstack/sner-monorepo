@@ -11,7 +11,7 @@ from pathlib import Path
 from uuid import uuid4
 from zipfile import ZipFile
 
-from factory import LazyAttribute, post_generation, SubFactory
+from factory import LazyAttribute, SubFactory, post_generation
 
 from sner.lib import file_from_zip
 from sner.server.extensions import db

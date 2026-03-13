@@ -20,16 +20,16 @@ def main():
     """main"""
 
     parser = ArgumentParser()
-    parser.add_argument('inputfile')
+    parser.add_argument("inputfile")
     args = parser.parse_args()
 
     targets = Path(args.inputfile).read_text().splitlines()
     for target in targets:
-        match = re.match('(?P<proto>.*)://(?P<host>.*):(?P<port>.*)', target)
+        match = re.match("(?P<proto>.*)://(?P<host>.*):(?P<port>.*)", target)
         if match:
-            proto = 'https' if '443' in match['port'] else 'http'
-            print(f'{proto}://{match["host"]}:{match["port"]}')
+            proto = "https" if "443" in match["port"] else "http"
+            print(f"{proto}://{match['host']}:{match['port']}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

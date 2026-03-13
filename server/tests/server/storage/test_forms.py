@@ -11,14 +11,14 @@ def test_forms_models_relations(app, service):  # pylint: disable=unused-argumen
     """validate VulnForm invalid inputs"""
 
     for formcls in VulnForm, NoteForm:
-        form = formcls(DummyPostData({'host_id': 666}))
+        form = formcls(DummyPostData({"host_id": 666}))
         assert not form.validate()
-        assert 'No such host' in form.errors['host_id']
+        assert "No such host" in form.errors["host_id"]
 
-        form = formcls(DummyPostData({'service_id': 666}))
+        form = formcls(DummyPostData({"service_id": 666}))
         assert not form.validate()
-        assert 'No such service' in form.errors['service_id']
+        assert "No such service" in form.errors["service_id"]
 
-        form = formcls(DummyPostData({'service_id': service.id}))
+        form = formcls(DummyPostData({"service_id": service.id}))
         assert not form.validate()
-        assert 'Service does not belong to the host' in form.errors['service_id']
+        assert "Service does not belong to the host" in form.errors["service_id"]

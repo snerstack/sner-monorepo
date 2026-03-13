@@ -17,25 +17,21 @@ def test_versioninfo_list_json_route(cl_operator, versioninfo):
     expected_product = versioninfo.product
 
     response = cl_operator.post(
-        url_for('storage.versioninfo_list_json_route'),
-        {'draw': 1, 'start': 0, 'length': 1, 'search[value]': expected_product}
+        url_for("storage.versioninfo_list_json_route"), {"draw": 1, "start": 0, "length": 1, "search[value]": expected_product}
     )
     assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert response_data['data'][0]['product'] == expected_product
+    response_data = json.loads(response.body.decode("utf-8"))
+    assert response_data["data"][0]["product"] == expected_product
 
     response = cl_operator.post(
         url_for(
-            'storage.versioninfo_list_json_route',
-            filter=f'Versioninfo.product=="{expected_product}"',
-            product=expected_product,
-            versionspec='>0'
+            "storage.versioninfo_list_json_route", filter=f'Versioninfo.product=="{expected_product}"', product=expected_product, versionspec=">0"
         ),
-        {'draw': 1, 'start': 0, 'length': 1}
+        {"draw": 1, "start": 0, "length": 1},
     )
     assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert response_data['data'][0]['product'] == expected_product
+    response_data = json.loads(response.body.decode("utf-8"))
+    assert response_data["data"][0]["product"] == expected_product
 
 
 def test_versioninfo_list_json_route_query_form(cl_operator, service_factory, versioninfo_factory):
@@ -48,8 +44,8 @@ def test_versioninfo_list_json_route_query_form(cl_operator, service_factory, ve
         host_hostname=service1.host.hostname,
         service_proto=service1.proto,
         service_port=service1.port,
-        product='apache httpd',
-        version='1.0'
+        product="apache httpd",
+        version="1.0",
     )
     service2 = service_factory.create(port=2)
     versioninfo_factory.create(
@@ -58,8 +54,8 @@ def test_versioninfo_list_json_route_query_form(cl_operator, service_factory, ve
         host_hostname=service2.host.hostname,
         service_proto=service2.proto,
         service_port=service2.port,
-        product='apache httpd',
-        version='1.1'
+        product="apache httpd",
+        version="1.1",
     )
     service3 = service_factory.create(port=3)
     versioninfo_factory.create(
@@ -68,35 +64,24 @@ def test_versioninfo_list_json_route_query_form(cl_operator, service_factory, ve
         host_hostname=service3.host.hostname,
         service_proto=service3.proto,
         service_port=service3.port,
-        product='apache httpd',
-        version='1.2'
+        product="apache httpd",
+        version="1.2",
     )
 
     response = cl_operator.post(
-        url_for(
-            'storage.versioninfo_list_json_route',
-            product='ApAcHe',
-            versionspec=">=1.1"
-        ),
-        {'draw': 1, 'start': 1, 'length': 100}
+        url_for("storage.versioninfo_list_json_route", product="ApAcHe", versionspec=">=1.1"), {"draw": 1, "start": 1, "length": 100}
     )
     assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert len(response_data['data']) == 1
-    assert response_data['data'][0]['version'] == '1.2'
+    response_data = json.loads(response.body.decode("utf-8"))
+    assert len(response_data["data"]) == 1
+    assert response_data["data"][0]["version"] == "1.2"
 
 
 def test_versioninfo_list_json_route_errorhandling(cl_operator):
     """versioninfo list_json error handling route test"""
 
     response = cl_operator.post(
-        url_for(
-            'storage.versioninfo_list_json_route',
-            product='dummy',
-            versionspec='invalid'
-        ),
-        {'draw': 1, 'start': 1, 'length': 100},
-        status='*'
+        url_for("storage.versioninfo_list_json_route", product="dummy", versionspec="invalid"), {"draw": 1, "start": 1, "length": 100}, status="*"
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
@@ -104,10 +89,10 @@ def test_versioninfo_list_json_route_errorhandling(cl_operator):
 def test_versioninfo_tag_multiid_route(cl_operator, versioninfo):
     """versioninfo multi tag route for ajaxed toolbars test"""
 
-    check_tag_multiid(cl_operator, 'storage.versioninfo_tag_multiid_route', versioninfo)
+    check_tag_multiid(cl_operator, "storage.versioninfo_tag_multiid_route", versioninfo)
 
 
 def test_versioninfo_annotate_route(cl_operator, versioninfo):
     """versioninfo annotate route test"""
 
-    check_annotate(cl_operator, 'storage.versioninfo_annotate_route', versioninfo)
+    check_annotate(cl_operator, "storage.versioninfo_annotate_route", versioninfo)

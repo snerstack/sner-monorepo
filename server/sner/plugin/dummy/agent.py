@@ -11,6 +11,7 @@ from sner.config import ConfigBase
 
 class Config(ConfigBase):
     """dummy agent plugin config"""
+
     module: str = Literal["dummy"]
     args: list[str]
 

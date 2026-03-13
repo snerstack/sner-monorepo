@@ -10,7 +10,6 @@ from sner.server.extensions import db
 from sner.server.sqlafilter import FILTER_PARSER
 from sner.server.storage.models import Service
 
-
 logger = logging.getLogger()  # pylint: disable=invalid-name
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.INFO)
@@ -20,15 +19,15 @@ def main():
     """main"""
 
     parser = ArgumentParser()
-    parser.add_argument('--debug', action='store_true')
-    parser.add_argument('--dry', action='store_true')
-    parser.add_argument('action', choices=['add', 'remove'])
-    parser.add_argument('tag')
-    parser.add_argument('filter', nargs='?')
+    parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--dry", action="store_true")
+    parser.add_argument("action", choices=["add", "remove"])
+    parser.add_argument("tag")
+    parser.add_argument("filter", nargs="?")
     args = parser.parse_args()
     if args.debug:
         logger.setLevel(logging.DEBUG)
-    logger.debug('args: %s', args)
+    logger.debug("args: %s", args)
 
     with create_app().app_context():
         query = Service.query
@@ -37,15 +36,14 @@ def main():
 
         for service in query.all():
             logging.info(service)
-            if args.action == 'add':
+            if args.action == "add":
                 service.tags = service.tags + [args.tag]
-            elif args.action == 'remove':
+            elif args.action == "remove":
                 service.tags = service.tags - [args.tag]
 
         if not args.dry:
             db.session.commit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

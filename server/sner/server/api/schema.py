@@ -31,7 +31,9 @@ class JobAssignmentConfigSchema(BaseSchema):
 
     class Meta:  # pylint: disable=too-few-public-methods
         """meta"""
+
         unknown = INCLUDE
+
     module = fields.String(required=True)
 
     # allow uknown fields to be dumped
@@ -49,7 +51,7 @@ class JobAssignmentConfigSchema(BaseSchema):
 class JobAssignmentSchema(BaseSchema):
     """assignment schema"""
 
-    id = fields.String(required=True, validate=validate.Regexp(r'^[a-f0-9\-]{36}$'))
+    id = fields.String(required=True, validate=validate.Regexp(r"^[a-f0-9\-]{36}$"))
     config = fields.Nested(JobAssignmentConfigSchema, required=True)
     targets = fields.List(fields.String, required=True)
 
@@ -57,7 +59,7 @@ class JobAssignmentSchema(BaseSchema):
 class JobOutputSchema(BaseSchema):
     """job output schema"""
 
-    id = fields.String(required=True, validate=validate.Regexp(r'^[a-f0-9\-]{36}$'))
+    id = fields.String(required=True, validate=validate.Regexp(r"^[a-f0-9\-]{36}$"))
     retval = fields.Integer()
     output = fields.String()
 

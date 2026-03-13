@@ -37,34 +37,34 @@ def terminate_after(time):
         signal.signal(signal.SIGALRM, signal.SIG_IGN)
 
 
-class FailServer():
+class FailServer:
     """error injecting server used to test edge-cases in agent's codebase"""
 
     def __init__(self, server):
         self.server = server
-        self.url = self.server.url_for('/')[:-1]
+        self.url = self.server.url_for("/")[:-1]
         self.cnt_assign = 0
         self.cnt_output = 0
-        self.server.expect_request('/api/v2/scheduler/job/assign').respond_with_handler(self.handler_assign)
-        self.server.expect_request('/api/v2/scheduler/job/output').respond_with_handler(self.handler_output)
+        self.server.expect_request("/api/v2/scheduler/job/assign").respond_with_handler(self.handler_assign)
+        self.server.expect_request("/api/v2/scheduler/job/output").respond_with_handler(self.handler_output)
 
     def handler_assign(self, request):
         """handle assign request"""
-        if request.headers.get('X-API-KEY') != 'dummy':
-            return xjsonify({'message': 'unauthorized'})
+        if request.headers.get("X-API-KEY") != "dummy":
+            return xjsonify({"message": "unauthorized"})
         if self.cnt_assign < 2:
             self.cnt_assign += 1
-            return xjsonify({'invalid': 'assignment'})
-        return xjsonify({'id': str(uuid4()), 'config': {'module': 'dummy'}, 'targets': []})
+            return xjsonify({"invalid": "assignment"})
+        return xjsonify({"id": str(uuid4()), "config": {"module": "dummy"}, "targets": []})
 
     def handler_output(self, request):
         """handle output request"""
-        if request.headers.get('X-API-KEY') != 'dummy':
-            return xjsonify({'message': 'unauthorized'})
+        if request.headers.get("X-API-KEY") != "dummy":
+            return xjsonify({"message": "unauthorized"})
         if self.cnt_output < 2:
             self.cnt_output += 1
-            return xjsonify({'message': 'invalid request'}), HTTPStatus.BAD_REQUEST
-        return xjsonify({'message': 'success'})
+            return xjsonify({"message": "invalid request"}), HTTPStatus.BAD_REQUEST
+        return xjsonify({"message": "success"})
 
 
 def test_fail_server_communication(tmpworkdir, httpserver):  # pylint: disable=unused-argument,redefined-outer-name
@@ -79,9 +79,9 @@ def test_fail_server_communication(tmpworkdir, httpserver):  # pylint: disable=u
 
     # backoff_time is configurable via config, but since test is running in
     # tempdir is easier to patch the module instead of mocking config
-    with patch.dict(sner.agent.core.DEFAULT_CONFIG, {'BACKOFF_TIME': 0.1}):
+    with patch.dict(sner.agent.core.DEFAULT_CONFIG, {"BACKOFF_TIME": 0.1}):
         with terminate_after(1):
-            agent_main(['--server', sserver.url, '--apikey', 'dummy', '--debug'])
+            agent_main(["--server", sserver.url, "--apikey", "dummy", "--debug"])
 
     assert sserver.cnt_assign > 1
     assert sserver.cnt_output > 1
@@ -90,18 +90,17 @@ def test_fail_server_communication(tmpworkdir, httpserver):  # pylint: disable=u
 def test_empty_server_communication(tmpworkdir, live_server, apikey_agent):  # pylint: disable=unused-argument,redefined-outer-name
     """tests oneshot vs wait on assignment on empty server"""
 
-    result = agent_main(['--server', url_for('frontend.index_route', _external=True), '--apikey', apikey_agent, '--debug', '--oneshot'])
+    result = agent_main(["--server", url_for("frontend.index_route", _external=True), "--apikey", apikey_agent, "--debug", "--oneshot"])
     assert result == 0
 
     proc_agent = multiprocessing.Process(
-        target=agent_main,
-        args=(['--server', url_for('frontend.index_route', _external=True), '--apikey', apikey_agent, '--debug'],)
+        target=agent_main, args=(["--server", url_for("frontend.index_route", _external=True), "--apikey", apikey_agent, "--debug"],)
     )
     proc_agent.start()
     sleep(2)
     assert proc_agent.pid
     assert proc_agent.is_alive()
-    agent_main(['--terminate', str(proc_agent.pid)])
+    agent_main(["--terminate", str(proc_agent.pid)])
     proc_agent.join(4)
     assert not proc_agent.is_alive()
 
@@ -109,5 +108,5 @@ def test_empty_server_communication(tmpworkdir, live_server, apikey_agent):  # p
 def test_invalid_server_oneshot(tmpworkdir):  # pylint: disable=unused-argument,redefined-outer-name
     """test to raise exception in oneshot"""
 
-    result = agent_main(['--server', 'http://localhost:0', '--debug', '--oneshot'])
+    result = agent_main(["--server", "http://localhost:0", "--debug", "--oneshot"])
     assert result == 1

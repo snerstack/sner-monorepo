@@ -32,7 +32,7 @@ class ParserModule(ParserBase):
                 pidb = cls._parse_data(filedata.decode("utf-8"), pidb)
             return pidb
 
-        return cls._parse_data(Path(path).read_text(encoding='utf-8'), pidb)
+        return cls._parse_data(Path(path).read_text(encoding="utf-8"), pidb)
 
     @classmethod
     def _parse_data(cls, data, pidb):
@@ -48,10 +48,10 @@ class ParserModule(ParserBase):
             # parse host
             host_data = {}
             if ihost.hostnames:
-                host_data['hostname'] = ihost.hostnames[0]
+                host_data["hostname"] = ihost.hostnames[0]
 
             for osmatch in [item for item in ihost.os_match_probabilities() if item.accuracy == 100]:
-                host_data['os'] = osmatch.name
+                host_data["os"] = osmatch.name
                 pidb.upsert_note(ihost.address, None, None, None, "cpe", data=json.dumps(osmatch.get_cpe()), import_time=import_time)
 
             pidb.upsert_host(ihost.address, **host_data)
@@ -62,14 +62,11 @@ class ParserModule(ParserBase):
 
             # parse services
             for iservice in ihost.services:
-                service_data = {
-                    'state': f'{iservice.state}:{iservice.reason}',
-                    'import_time': import_time
-                }
+                service_data = {"state": f"{iservice.state}:{iservice.reason}", "import_time": import_time}
                 if iservice.service:
-                    service_data['name'] = iservice.service
+                    service_data["name"] = iservice.service
                 if iservice.banner:
-                    service_data['info'] = iservice.banner
+                    service_data["info"] = iservice.banner
                 pidb.upsert_service(ihost.address, iservice.protocol, iservice.port, **service_data)
 
                 if iservice.cpelist:
@@ -80,7 +77,7 @@ class ParserModule(ParserBase):
                         via_target,
                         "cpe",
                         data=json.dumps([x.cpestring for x in iservice.cpelist]),
-                        import_time=import_time
+                        import_time=import_time,
                     )
 
                 if iservice.banner_dict:
@@ -91,7 +88,7 @@ class ParserModule(ParserBase):
                         via_target,
                         "nmap.banner_dict",
                         data=json.dumps(iservice.banner_dict),
-                        import_time=import_time
+                        import_time=import_time,
                     )
 
                 # parse service scripts
@@ -109,5 +106,5 @@ class ParserModule(ParserBase):
         return pidb
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     pprint(ParserModule.parse_path(sys.argv[1]).__dict__)

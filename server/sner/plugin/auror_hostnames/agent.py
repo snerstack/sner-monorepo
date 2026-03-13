@@ -12,6 +12,7 @@ from sner.plugin.auror_hostnames import core
 
 class Config(ConfigBase):
     """auror_hostnames agent plugin config"""
+
     module: str = Literal["auror_hostnames"]
     git_key_path: str = "/etc/sner.auror_hostnames.pubkey"
     git_server: str = "server.hostname"

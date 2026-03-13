@@ -5,7 +5,7 @@ sner.targets tests
 
 from ipaddress import ip_address
 
-from sner.targets import TargetManager, SixenumTarget
+from sner.targets import SixenumTarget, TargetManager
 
 
 def test_manager():

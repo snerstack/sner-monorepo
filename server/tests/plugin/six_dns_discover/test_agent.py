@@ -13,15 +13,8 @@ from sner.lib import file_from_zip
 def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     """dix_dns_discover test"""
 
-    test_a = {
-        'id': str(uuid4()),
-        'config': {
-            'module': 'six_dns_discover',
-            'delay': 1
-        },
-        'targets': ['host,127.0.0.1', 'host,0.0.0.0']
-    }
+    test_a = {"id": str(uuid4()), "config": {"module": "six_dns_discover", "delay": 1}, "targets": ["host,127.0.0.1", "host,0.0.0.0"]}
 
-    result = agent_main(['--assignment', json.dumps(test_a), '--debug'])
+    result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
-    assert '::1' in json.loads(file_from_zip(f'{test_a["id"]}.zip', 'output.json').decode('utf-8'))
+    assert "::1" in json.loads(file_from_zip(f"{test_a['id']}.zip", "output.json").decode("utf-8"))

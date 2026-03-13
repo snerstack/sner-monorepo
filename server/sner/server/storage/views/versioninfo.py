@@ -3,11 +3,11 @@
 storage versioninfo view
 """
 
+import json
 from http import HTTPStatus
 
-import json
 from datatables import ColumnDT, DataTables
-from flask import jsonify, request, Response
+from flask import Response, jsonify, request
 from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
@@ -15,60 +15,58 @@ from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_tag_multiid
 from sner.server.storage.forms import TagMultiidStringyForm
 from sner.server.storage.models import Versioninfo
-from sner.server.storage.version_parser import InvalidFormatException, is_in_version_range, parse as versionspec_parse
+from sner.server.storage.version_parser import InvalidFormatException, is_in_version_range
+from sner.server.storage.version_parser import parse as versionspec_parse
 from sner.server.storage.views import blueprint
-from sner.server.utils import error_response, filter_query, SnerJSONEncoder
+from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 
 
-@blueprint.route('/versioninfo/list.json', methods=['GET', 'POST'])
-@session_required('operator')
+@blueprint.route("/versioninfo/list.json", methods=["GET", "POST"])
+@session_required("operator")
 def versioninfo_list_json_route():
     """list versioninfo, data endpoint"""
 
-    service_column = func.concat_ws('/', Versioninfo.service_port, Versioninfo.service_proto)
+    service_column = func.concat_ws("/", Versioninfo.service_port, Versioninfo.service_proto)
 
     columns = [
-        ColumnDT(literal_column('1'), mData='_select', search_method='none', global_search=False),
-        ColumnDT(Versioninfo.id, mData='id'),
-        ColumnDT(Versioninfo.host_id, mData='host_id'),
-        ColumnDT(Versioninfo.host_address, mData='host_address'),
-        ColumnDT(Versioninfo.host_hostname, mData='host_hostname'),
-        ColumnDT(Versioninfo.service_proto, mData='service_proto'),
-        ColumnDT(Versioninfo.service_port, mData='service_port'),
-        ColumnDT(service_column, mData='service'),
-        ColumnDT(Versioninfo.via_target, mData='via_target'),
-        ColumnDT(Versioninfo.product, mData='product'),
-        ColumnDT(Versioninfo.version, mData='version'),
-        ColumnDT(func.text(Versioninfo.extra), mData='extra'),
-        ColumnDT(Versioninfo.tags, mData='tags'),
-        ColumnDT(Versioninfo.comment, mData='comment'),
-        ColumnDT(Versioninfo.timestamp, mData='timestamp'),
-        ColumnDT(literal_column('1'), mData='_buttons', search_method='none', global_search=False)
+        ColumnDT(literal_column("1"), mData="_select", search_method="none", global_search=False),
+        ColumnDT(Versioninfo.id, mData="id"),
+        ColumnDT(Versioninfo.host_id, mData="host_id"),
+        ColumnDT(Versioninfo.host_address, mData="host_address"),
+        ColumnDT(Versioninfo.host_hostname, mData="host_hostname"),
+        ColumnDT(Versioninfo.service_proto, mData="service_proto"),
+        ColumnDT(Versioninfo.service_port, mData="service_port"),
+        ColumnDT(service_column, mData="service"),
+        ColumnDT(Versioninfo.via_target, mData="via_target"),
+        ColumnDT(Versioninfo.product, mData="product"),
+        ColumnDT(Versioninfo.version, mData="version"),
+        ColumnDT(func.text(Versioninfo.extra), mData="extra"),
+        ColumnDT(Versioninfo.tags, mData="tags"),
+        ColumnDT(Versioninfo.comment, mData="comment"),
+        ColumnDT(Versioninfo.timestamp, mData="timestamp"),
+        ColumnDT(literal_column("1"), mData="_buttons", search_method="none", global_search=False),
     ]
     query = db.session.query().select_from(Versioninfo)
-    query = filter_query(query, request.values.get('filter'))
+    query = filter_query(query, request.values.get("filter"))
 
-    if request.values.get('product'):
+    if request.values.get("product"):
         query = query.filter(Versioninfo.product.ilike(f"%{request.values.get('product')}%"))
 
     # pre-query, fake server side paging
     request_values = request.values.to_dict()
-    orig_start = int(request_values.get('start', '0'))
-    orig_length = int(request_values.get('length', '-1'))
-    request_values.update({'start': '0', 'length': '-1'})
+    orig_start = int(request_values.get("start", "0"))
+    orig_length = int(request_values.get("length", "-1"))
+    request_values.update({"start": "0", "length": "-1"})
 
     versioninfos = DataTables(request_values, query, columns).output_result()
 
-    if request_values.get('versionspec'):
+    if request_values.get("versionspec"):
         try:
-            parsed_version_specifier = versionspec_parse(request_values.get('versionspec'))
+            parsed_version_specifier = versionspec_parse(request_values.get("versionspec"))
         except InvalidFormatException as exc:
             return error_response(message=str(exc), code=HTTPStatus.BAD_REQUEST)
 
-        versioninfos["data"] = list(filter(
-            lambda item: is_in_version_range(item["version"], parsed_version_specifier),
-            versioninfos["data"]
-        ))
+        versioninfos["data"] = list(filter(lambda item: is_in_version_range(item["version"], parsed_version_specifier), versioninfos["data"]))
         versioninfos["recordsFiltered"] = len(versioninfos["data"])
 
     # post-query, fake server side paging
@@ -77,23 +75,23 @@ def versioninfo_list_json_route():
     if orig_length >= 0:
         versioninfos["data"] = versioninfos["data"][:orig_length]
 
-    return Response(json.dumps(versioninfos, cls=SnerJSONEncoder), mimetype='application/json')
+    return Response(json.dumps(versioninfos, cls=SnerJSONEncoder), mimetype="application/json")
 
 
-@blueprint.route('/versioninfo/tag_multiid', methods=['POST'])
-@session_required('operator')
+@blueprint.route("/versioninfo/tag_multiid", methods=["POST"])
+@session_required("operator")
 def versioninfo_tag_multiid_route():
     """tag multiple route"""
 
     form = TagMultiidStringyForm()
     if form.validate_on_submit():
         model_tag_multiid(Versioninfo, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
-        return '', HTTPStatus.OK
-    return jsonify({'message': 'Invalid form submitted.'}), HTTPStatus.BAD_REQUEST
+        return "", HTTPStatus.OK
+    return jsonify({"message": "Invalid form submitted."}), HTTPStatus.BAD_REQUEST
 
 
-@blueprint.route('/versioninfo/annotate/<model_id>', methods=['GET', 'POST'])
-@session_required('operator')
+@blueprint.route("/versioninfo/annotate/<model_id>", methods=["GET", "POST"])
+@session_required("operator")
 def versioninfo_annotate_route(model_id):
     """annotate note"""
 

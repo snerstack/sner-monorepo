@@ -8,8 +8,8 @@ import difflib
 import json
 import os
 import shutil
-from enum import IntEnum
 from dataclasses import dataclass, field, fields
+from enum import IntEnum
 
 import click
 import yaml
@@ -21,8 +21,8 @@ from sner.server.auth.models import User
 from sner.server.extensions import db
 from sner.server.scheduler.core import QueueManager
 from sner.server.scheduler.models import Queue
-from sner.server.storage.versioninfo import VersioninfoManager
 from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
+from sner.server.storage.versioninfo import VersioninfoManager
 from sner.server.utils import yaml_dump
 from sner.targets import TargetManager
 

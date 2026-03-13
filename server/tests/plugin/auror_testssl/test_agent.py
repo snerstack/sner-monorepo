@@ -13,7 +13,6 @@ from werkzeug.serving import make_ssl_devcert
 
 from sner.agent.core import main as agent_main
 from sner.lib import file_from_zip
-
 from sner.plugin.auror_testssl.agent import AgentModule
 
 
@@ -52,10 +51,7 @@ def test_basic(tmpworkdir, https_server):  # pylint: disable=unused-argument
     test_a = {
         "id": str(uuid4()),
         "config": {"module": "auror_testssl", "args": ["--protocols"]},
-        "targets": [
-            f"auror,127.0.0.1,port={port},hostname=localhost,enc=I",
-            f"auror,::1,port={port},hostname=localhost,enc=I"
-        ],
+        "targets": [f"auror,127.0.0.1,port={port},hostname=localhost,enc=I", f"auror,::1,port={port},hostname=localhost,enc=I"],
     }
 
     result = agent_main(["--assignment", json.dumps(test_a), "--debug"])

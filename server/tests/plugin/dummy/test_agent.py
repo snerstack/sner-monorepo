@@ -13,11 +13,7 @@ from sner.lib import file_from_zip
 def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     """dummy module execution test"""
 
-    test_a = {
-        "id": str(uuid4()),
-        "config": {"module": "dummy", "args": ["--arg1"]},
-        "targets": ["target1"]
-    }
+    test_a = {"id": str(uuid4()), "config": {"module": "dummy", "args": ["--arg1"]}, "targets": ["target1"]}
 
     result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0

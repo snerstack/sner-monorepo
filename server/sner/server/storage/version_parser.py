@@ -3,10 +3,10 @@
 version parser, pulled from 713/logs/va2am
 """
 
-
 import re
 from typing import List
-from packaging.specifiers import SpecifierSet, InvalidSpecifier
+
+from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.version import InvalidVersion
 
 
@@ -47,10 +47,7 @@ def parse(versions_input: str) -> List[SpecifierSet]:
         try:
             version_specifiers.append(SpecifierSet(spec))
         except InvalidSpecifier:
-            raise InvalidFormatException(
-                'Invalid format: version specifier "' + spec +
-                '" does not meet the format criteria.'
-            ) from None
+            raise InvalidFormatException('Invalid format: version specifier "' + spec + '" does not meet the format criteria.') from None
 
     return version_specifiers
 

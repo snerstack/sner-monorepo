@@ -18,28 +18,28 @@ from sner.server.app import cli, create_app
 def test_datetime_filter(app):
     """test datetime jinja filter"""
 
-    assert app.jinja_env.filters['datetime'](datetime.strptime('2000-01-01T00:00:00', '%Y-%m-%dT%H:%M:%S')) == '2000-01-01T00:00:00'
-    assert app.jinja_env.filters['datetime'](None) == ''
+    assert app.jinja_env.filters["datetime"](datetime.strptime("2000-01-01T00:00:00", "%Y-%m-%dT%H:%M:%S")) == "2000-01-01T00:00:00"
+    assert app.jinja_env.filters["datetime"](None) == ""
 
 
 def test_json_indent_filter(app):
     """test indenting filter"""
 
-    assert app.jinja_env.filters['json_indent']('"xxx"') == '"xxx"'
-    assert app.jinja_env.filters['json_indent']('xxx') == 'xxx'
+    assert app.jinja_env.filters["json_indent"]('"xxx"') == '"xxx"'
+    assert app.jinja_env.filters["json_indent"]("xxx") == "xxx"
 
 
 def test_from_json__filter(app):
     """test indenting filter"""
 
-    assert app.jinja_env.filters['from_json']('"xxx"') == 'xxx'
+    assert app.jinja_env.filters["from_json"]('"xxx"') == "xxx"
 
 
 def test_cli():
     """test sner server cli/main flask wrapper"""
 
-    patch_argv = patch.object(sys, 'argv', ['dummy'])
-    patch_environ = patch.object(os, 'environ', {})
+    patch_argv = patch.object(sys, "argv", ["dummy"])
+    patch_environ = patch.object(os, "environ", {})
     path_app_factory = patch.object(create_app, "__defaults__", ("dummy.yml", ""))
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         with patch_argv, path_app_factory, patch_environ:
@@ -51,15 +51,15 @@ def test_cli():
 def test_logformatter(caplog):
     """test log formatter"""
 
-    app = create_app(config_file='tests/sner.yaml')
+    app = create_app(config_file="tests/sner.yaml")
     caplog.handler.setFormatter(app.logger.handlers[0].formatter)  # pylint: disable=no-member
 
     with app.app_context():
-        current_app.logger.info('test1')
-        assert re.match(r'^sner.server - - - \[.*\] INFO test1', caplog.text)
+        current_app.logger.info("test1")
+        assert re.match(r"^sner.server - - - \[.*\] INFO test1", caplog.text)
     caplog.clear()
 
-    with app.test_request_context(environ_base={'REMOTE_ADDR': '127.0.0.2'}):
-        current_app.logger.info('test2')
-        assert re.match(r'^sner.server 127.0.0.2 - - \[.*\] INFO test2', caplog.text)
+    with app.test_request_context(environ_base={"REMOTE_ADDR": "127.0.0.2"}):
+        current_app.logger.info("test2")
+        assert re.match(r"^sner.server 127.0.0.2 - - \[.*\] INFO test2", caplog.text)
     caplog.clear()

@@ -11,8 +11,8 @@ from sner.server.utils import filter_query
 from sner.server.visuals.views import blueprint
 
 
-@blueprint.route('/dnstree.json')
-@session_required('operator')
+@blueprint.route("/dnstree.json")
+@session_required("operator")
 def dnstree_json_route():
     """dns hierarchy tree visualization data generator"""
 
@@ -29,24 +29,24 @@ def dnstree_json_route():
     def to_graph_data(parentid, treedata, nodes, links):
         for node in treedata:
             nodeid = len(nodes)
-            nodes.append({'name': node, 'id': nodeid})
+            nodes.append({"name": node, "id": nodeid})
             if parentid is not None:
-                links.append({'source': parentid, 'target': nodeid})
+                links.append({"source": parentid, "target": nodeid})
             (nodes, links) = to_graph_data(nodeid, treedata[node], nodes, links)
         return (nodes, links)
 
     query = Host.query
-    query = filter_query(query, request.values.get('filter'))
-    crop = request.values.get('crop', 0, type=int)
+    query = filter_query(query, request.values.get("filter"))
+    crop = request.values.get("crop", 0, type=int)
 
     hostnames_tree = {}
     for ihost in query.all():
         if ihost.hostname:
-            tmp = list(reversed(ihost.hostname.split('.')[crop:]))
+            tmp = list(reversed(ihost.hostname.split(".")[crop:]))
             if tmp:
-                hostnames_tree = to_tree(hostnames_tree, ['DOTROOT']+tmp)
+                hostnames_tree = to_tree(hostnames_tree, ["DOTROOT"] + tmp)
 
     (nodes, links) = to_graph_data(None, hostnames_tree, [], [])
-    nodes[0].update({'size': 10})
+    nodes[0].update({"size": 10})
 
-    return jsonify({'nodes': nodes, 'links': links})
+    return jsonify({"nodes": nodes, "links": links})

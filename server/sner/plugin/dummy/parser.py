@@ -20,12 +20,12 @@ class ParserModule(ParserBase):
 
         pidb = ParsedItemsDb()
 
-        assignment = json.loads(file_from_zip(path, 'assignment.json'))
-        for target in assignment['targets']:
+        assignment = json.loads(file_from_zip(path, "assignment.json"))
+        for target in assignment["targets"]:
             pidb.upsert_host(target)
 
         return pidb
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     pprint(ParserModule.parse_path(sys.argv[1]))

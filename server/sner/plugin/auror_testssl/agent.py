@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class Config(ConfigBase):
     """auror_testssl agent plugin config"""
+
     module: str = Literal["auror_testssl"]
     args: list[str] = ["--full"]
     connect_timeout: int = 5

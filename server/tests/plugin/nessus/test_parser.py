@@ -13,17 +13,17 @@ def test_xxe(app):  # pylint: disable=unused-argument
     """check if parser resolves external entities"""
 
     with pytest.raises(EntitiesForbidden):
-        ParserModule.parse_path('tests/server/data/parser-nessus-xxe.xml')
+        ParserModule.parse_path("tests/server/data/parser-nessus-xxe.xml")
 
 
 def test_parse_path():
     """check basic parse_path impl"""
 
-    expected_hosts = ['127.128.129.130']
-    expected_vulns = ['nessus.104631', 'nessus.19506']
+    expected_hosts = ["127.128.129.130"]
+    expected_vulns = ["nessus.104631", "nessus.19506"]
 
-    pidb = ParserModule.parse_path('tests/server/data/parser-nessus-simple.xml')
+    pidb = ParserModule.parse_path("tests/server/data/parser-nessus-simple.xml")
 
     assert [x.address for x in pidb.hosts] == expected_hosts
     assert [x.xtype for x in pidb.vulns] == expected_vulns
-    assert 'Upgrade to PHP version 5.6.32 or later.' in pidb.vulns.where(xtype='nessus.104631')[0].descr
+    assert "Upgrade to PHP version 5.6.32 or later." in pidb.vulns.where(xtype="nessus.104631")[0].descr

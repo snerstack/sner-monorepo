@@ -2,22 +2,23 @@
 """
 auror_hostnames plugin core tests
 """
-import pytest
+
 from pathlib import Path
-from unittest.mock import patch, call
+from unittest.mock import call, patch
 
 import dns.zone
+import pytest
 
 from sner.plugin.auror_hostnames.core import (
+    check_git_key_path,
+    check_if_hostname,
     clone_dns_repos,
+    create_fqdn,
+    get_records,
+    get_repos,
     get_zone_file_paths,
     process_cnames,
     process_ptrs,
-    get_records,
-    get_repos,
-    check_if_hostname,
-    create_fqdn,
-    check_git_key_path,
     resolve_hostname,
 )
 
