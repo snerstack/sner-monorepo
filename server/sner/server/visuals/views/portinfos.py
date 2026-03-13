@@ -24,11 +24,10 @@ def portinfos_json_route():
     query = (
         db.session.query(info_column.label("info"), func.count(Service.id).label("info_count"))
         .join(Host)
-        .filter(Service.info != "", Service.info != None)
+        .filter(Service.info != "", Service.info.is_not(None))
         .group_by(info_column)
         .order_by(desc("info_count"))
-    )  # noqa: E711  pylint: disable=singleton-comparison
-
+    )
     query = filter_query(query, request.values.get("filter"))
     if request.values.get("limit"):
         query = query.limit(request.values.get("limit"))
