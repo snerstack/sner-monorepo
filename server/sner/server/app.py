@@ -68,6 +68,7 @@ DEFAULT_CONFIG = {
     'SESSION_PERMANENT': True,
     'SESSION_REFRESH_EACH_REQUEST': False,
     'PERMANENT_SESSION_LIFETIME': 31*86400,
+    'SESSION_COOKIE_SAMESITE': 'Lax',
 
     # sner web server
     'SNER_VAR': '/var/lib/sner',
