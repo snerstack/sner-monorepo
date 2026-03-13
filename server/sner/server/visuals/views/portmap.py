@@ -60,10 +60,10 @@ def portmap_portstat_json_route(port):
     infos = (
         db.session.query(Service.info, func.count(Service.id).label("info_count"))
         .join(Host)
-        .filter(Service.port == port, Service.info != "", Service.info != None)
+        .filter(Service.port == port, Service.info != "", Service.info.is_not(None))
         .group_by(Service.info)
         .order_by(desc("info_count"))
-    )  # noqa: E501,E711  pylint: disable=singleton-comparison
+    )
 
     comments = (
         db.session.query(func.distinct(Service.comment)).join(Host).filter(Service.port == port, Service.comment != "").order_by(Service.comment)

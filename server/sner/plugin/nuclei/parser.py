@@ -28,7 +28,7 @@ def dnsptr_to_ip(dnsptr: str) -> str:
     if dnsptr.endswith(".ip6.arpa"):
         ip_parts = dnsptr.replace(".ip6.arpa", "").split(".")
         address = "".join(reversed(ip_parts))
-        address = ":".join([address[i : i + 4] for i in range(0, len(address), 4)])
+        address = ":".join([address[i:i+4] for i in range(0, len(address), 4)])
         return str(ip_address(address))
 
     raise ValueError("Input is not a valid reverse DNS string.")  # pragma: nocover  ; won't test

@@ -24,7 +24,7 @@ def service_info_column(crop):
     """return optionally cropped service.info column"""
 
     if crop:
-        return func.array_to_string(func.string_to_array(Service.info, " ", type_=postgresql.ARRAY(db.String))[1 : int(crop)], " ")
+        return func.array_to_string(func.string_to_array(Service.info, " ", type_=postgresql.ARRAY(db.String))[1:int(crop)], " ")
     return Service.info
 
 
