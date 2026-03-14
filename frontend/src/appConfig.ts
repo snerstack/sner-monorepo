@@ -22,7 +22,7 @@ export const defaultAppConfig: AppConfig = {
     tags: {
         host: ['reviewed', 'todo'],
         service: ['reviewed', 'todo'],
-        vuln: ['info', 'report', 'report:data', 'todo', 'falsepositive'],
+        vuln: ['info', 'report', 'report:data', 'todo', 'falsepositive', 'gone'],
         note: ['reviewed', 'todo'],
         annotate: ['sslhell'],
         versioninfo: ['reviewed', 'todo'],
