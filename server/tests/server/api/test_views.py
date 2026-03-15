@@ -4,6 +4,7 @@ api.views tests
 """
 
 import base64
+import json
 from datetime import datetime
 from http import HTTPStatus
 from ipaddress import ip_network
@@ -348,29 +349,35 @@ def test_v2_public_storage_versioninfo_route(api_user, versioninfo):  # pylint: 
 def test_v2_public_storage_auror_route(api_user_auror, host_factory, service_factory, note_factory):  # pylint: disable=unused-argument
     """test public auror api"""
 
+    def _result_for_hostname(results, hostname):
+        return next(filter(lambda item: item["input"]["hostname"] == hostname, results))
+
     host1 = host_factory.create(address="127.8.1.11")
     service1 = service_factory.create(host=host1, proto="tcp", port=1111, state="open:testing")
     note_factory.create(host=host1, xtype="auror.hostnames", data='["phony.hostname"]')
     note_factory.create(
-        host=host1, service=service1, xtype="auror.testssl_implicit", data='{"auror_data": "dummy data"}', via_target="phony.hostname"
-    )
-    note_factory.create(
-        host=host1, service=service1, xtype="auror.testssl_explicit", data='{"auror_data": "dumb data"}', via_target="phony.hostname"
+        host=host1,
+        service=service1,
+        xtype="auror.testssl.explicit",
+        data=json.dumps({"auror_data": {"data": "dummy"}}),
+        via_target="phony.hostname",
     )
 
     host2 = host_factory.create(address="127.8.1.12", hostname=None)
     service_factory.create(host=host2, proto="tcp", port=2222, state="closed:testing")
 
-    response = api_user_auror.post_json(url_for('api.v2_public_storage_auror_route'))
-    assert len(response.json) == 4
+    response = api_user_auror.post_json(url_for("api.v2_public_storage_auror_route"))
+    assert len(response.json) == 3
 
-    hostnames = list(x["input"]["hostname"] for x in response.json)
+    hostnames = list(item["input"]["hostname"] for item in response.json)
     assert "localhost.localdomain" in hostnames
     assert "phony.hostname" in hostnames
     assert "127.8.1.12" in hostnames
 
-    tls_results = [result.get("tls_scan", None) for result in response.json]
+    all_results = response.json
+    assert "tls_scan" not in _result_for_hostname(all_results, "localhost.localdomain")
+    assert "tls_scan" not in _result_for_hostname(all_results, "127.8.1.12")
 
-    assert "dummy data" in tls_results
-    assert "dumb data" in tls_results
-    assert None in tls_results
+    result = _result_for_hostname(all_results, "phony.hostname")
+    assert isinstance(result["tls_scan"], dict)
+    assert result["tls_scan"]["data"] == "dummy"

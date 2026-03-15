@@ -3,7 +3,7 @@
 apiv2 schema
 """
 
-from marshmallow import fields, INCLUDE, Schema, post_dump, validate
+from marshmallow import INCLUDE, Schema, fields, post_dump, validate
 
 
 class BaseSchema(Schema):
@@ -253,4 +253,4 @@ class PublicAurorSchema(BaseSchema):
 
     input = fields.Nested(PublicAurorInputSchema, required=True)
     port_scan = fields.Nested(PublicAurorPortScanSchema, required=True)
-    tls_scan = fields.String(required=True, allow_none=True)
+    tls_scan = fields.Dict(required=True, allow_none=True)
