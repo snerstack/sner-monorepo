@@ -4,6 +4,7 @@ Sner agent auror_testssl module
 """
 
 import logging
+import os
 import socket
 from typing import Literal
 
@@ -59,6 +60,21 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
 
         return value
 
+    def _wait_children(self):
+        """Wait for zombie grandchildren left behind by testssl.sh."""
+
+        # Since https://github.com/testssl/testssl.sh/commit/d1531cdf60f0ce0d55c4d4a1b2fa5de114cbc682
+        # testssl.sh leaks zombie processes likely due to process substitutions <(...) used inside
+        # command substitutions $(...). When run from an interactive shell, the shell's job control
+        # reaps them silently. When run from a long-running Python process, we must reap them explicitly.
+        while True:
+            try:
+                pid, _ = os.waitpid(-1, os.WNOHANG)
+                if pid == 0:
+                    break  # children exist but none have exited yet
+            except ChildProcessError:
+                break  # no children left at all
+
     def run(self, assignment):
         """Run the agent.
 
@@ -99,8 +115,10 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
                 f"{target.hostname}:{target.port}",
             ]
             cmd = params + asg_config.args + target_args
+
             logger.debug("Running command: %s", " ".join(cmd))
             ret |= self._filter_exit_codes(self._execute(cmd, f"output-{idx}"))
+            self._wait_children()
 
             if not self.loop:  # pragma: no cover  ; not tested
                 ret = -16
