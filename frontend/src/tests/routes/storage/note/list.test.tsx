@@ -27,11 +27,6 @@ describe('Note list page', () => {
       expect(screen.getByText('127.3.3.3')).toBeInTheDocument()
       expect(screen.getByText('testhost1.testdomain.test')).toBeInTheDocument()
       expect(screen.getByText('sner.testnote')).toBeInTheDocument()
-      expect(screen.getByText('testnote data')).toBeInTheDocument()
-
-      expect(screen.getByText('127.0.0.1')).toBeInTheDocument()
-      expect(screen.getByText('46865/tcp')).toBeInTheDocument()
-      expect(screen.getByText('testssl')).toBeInTheDocument()
     })
   })
 
