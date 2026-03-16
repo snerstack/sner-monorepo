@@ -11,6 +11,15 @@ from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
 from sner.server.storage.service_list import FORMAT_FUNCTIONS
 
 
+def test_import_command(runner):
+    """test basic import"""
+
+    result = runner.invoke(command, ["import", "nmap", "tests/server/data/parser-nmap-output.xml", "--addtag", "dummytag1"])
+    assert result.exit_code == 0
+
+    assert "dummytag1" in Host.query.first().tags
+
+
 def test_import_command_errorhandling(runner):
     """test invalid parser"""
 

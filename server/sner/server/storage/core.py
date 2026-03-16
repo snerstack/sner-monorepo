@@ -412,10 +412,13 @@ class StorageManager:
         if create and not host:
             # does not have conflict protection
             host = Host(address=address)
-            if addtags:
-                tag_add(host, addtags)
             db.session.add(host)
             db.session.commit()
+
+        if host and addtags:
+            tag_add(host, addtags)
+            db.session.commit()
+
         return host
 
     @staticmethod
@@ -430,9 +433,11 @@ class StorageManager:
             # does not have conflict protection
             host = StorageManager.get_host(address, addtags=addtags)
             service = Service(host=host, proto=proto, port=port)
-            if addtags:
-                tag_add(service, addtags)
             db.session.add(service)
+            db.session.commit()
+
+        if service and addtags:
+            tag_add(service, addtags)
             db.session.commit()
 
         return service
@@ -472,9 +477,11 @@ class StorageManager:
                 source=source,
                 severity=SeverityEnum.UNKNOWN,
             )
-            if addtags:
-                tag_add(vuln, addtags)
             db.session.add(vuln)
+            db.session.commit()
+
+        if vuln and addtags:
+            tag_add(vuln, addtags)
             db.session.commit()
 
         return vuln
@@ -505,9 +512,11 @@ class StorageManager:
                 else None
             )
             note = Note(host=host, service=service, xtype=xtype, via_target=via_target, source=source)
-            if addtags:
-                tag_add(note, addtags)
             db.session.add(note)
+            db.session.commit()
+
+        if note and addtags:
+            tag_add(note, addtags)
             db.session.commit()
 
         return note

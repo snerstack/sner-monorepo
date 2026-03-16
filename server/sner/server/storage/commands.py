@@ -51,9 +51,10 @@ def storage_import(path, parser, **kwargs):
             if kwargs.get("dry"):
                 StorageManager.import_parsed_dryrun(parser_impl.parse_path(item))
             else:
-                StorageManager.import_parsed(parser_impl.parse_path(item), list(kwargs["addtag"]))
+                StorageManager.import_parsed(parser_impl.parse_path(item), addtags=list(kwargs["addtag"]))
         except Exception as exc:  # pylint: disable=broad-except
             current_app.logger.warning(f"failed to parse {item}, {repr(exc)}")
+            db.session.rollback()
 
 
 @command.command(name="flush", help="flush all objects from storage")
