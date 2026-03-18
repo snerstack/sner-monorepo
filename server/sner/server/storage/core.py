@@ -450,14 +450,14 @@ class StorageManager:
             .outerjoin(Service, Vuln.service_id == Service.id)
             .filter(
                 Host.address == address,
+                Service.proto == proto,
+                Service.port == port,
                 Vuln.xtype == xtype,
                 Vuln.name == name,
                 Vuln.via_target == via_target,
                 Vuln.source == source,
             )
         )
-        if (proto is not None) and (port is not None):
-            query = query.filter(Service.proto == proto, Service.port == port)
 
         vuln = query.one_or_none()
         if create and not vuln:
@@ -494,13 +494,13 @@ class StorageManager:
             .outerjoin(Service, Note.service_id == Service.id)
             .filter(
                 Host.address == address,
+                Service.proto == proto,
+                Service.port == port,
                 Note.xtype == xtype,
                 Note.via_target == via_target,
                 Note.source == source,
             )
         )
-        if (proto is not None) and (port is not None):
-            query = query.filter(Service.proto == proto, Service.port == port)
 
         note = query.one_or_none()
         if create and not note:
