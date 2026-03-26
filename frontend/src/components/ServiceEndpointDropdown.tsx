@@ -1,4 +1,3 @@
-import { escapeHtml } from '@/utils'
 import { toast } from 'react-toastify'
 
 import { getLinksForService, linkForService } from '@/lib/sner/storage'
@@ -46,7 +45,7 @@ const ServiceEndpointDropdown = ({
       <div className="dropdown-menu">
         <h6 className="dropdown-header">Service endpoint URIs</h6>
         <div className="dropdown-item">
-          <span>{escapeHtml(address)}</span>
+          <span>{address}</span>
           <span>
             {getLinksForService(address, proto, port).map((link) => clipboardCopyLink(link))}
           </span>
@@ -54,7 +53,7 @@ const ServiceEndpointDropdown = ({
 
         {hostname &&
           <div className="dropdown-item">
-            <span>{escapeHtml(hostname)}</span>
+            <span>{hostname}</span>
             <span>
               {getLinksForService(hostname, proto, port).map((link) => clipboardCopyLink(link))}
             </span>
