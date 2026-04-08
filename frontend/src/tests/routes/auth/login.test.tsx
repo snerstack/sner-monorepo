@@ -3,14 +3,34 @@ import TOTPLoginPage from '@/routes/auth/login_totp'
 import WebAuthnLoginPage from '@/routes/auth/login_webauthn'
 import RootPage from '@/routes/root'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { toast } from 'react-toastify'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { httpClient } from '@/lib/httpClient'
 
-import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 import { errorResponse } from '@/tests/utils/errorResponse'
+import { renderWithProviders } from '@/tests/utils/renderWithProviders'
+
+const mockedSetSearchParams = vi.fn<(params: URLSearchParams) => void>()
+let mockSearchParams = new URLSearchParams()
+
+vi.mock('react-router-dom', async () => {
+  const mod = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return {
+    ...mod,
+    useSearchParams: (): [URLSearchParams, (p: URLSearchParams) => void] => [mockSearchParams, mockedSetSearchParams],
+  }
+})
 
 describe('Login page', () => {
+  const toastErrorMock = vi.fn()
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.spyOn(toast, 'error').mockImplementation(toastErrorMock)
+    mockSearchParams = new URLSearchParams()
+  })
+
   it('shows form', () => {
     renderWithProviders({
       element: <LoginPage />,
@@ -38,7 +58,7 @@ describe('Login page', () => {
     fireEvent.click(loginButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
+      expect(toast.error).toHaveBeenCalledWith('Invalid credentials')
     })
   })
 
@@ -116,6 +136,43 @@ describe('Login page', () => {
 
     await waitFor(() => {
       expect(screen.getByText('To login with registered Webauthn authenticator')).toBeInTheDocument()
+    })
+  })
+
+  it('handles OIDC error from query parameter', async () => {
+    const errorCode = 'USER_DISABLED'
+    const expectedMessage = 'Your account is disabled.'
+    mockSearchParams = new URLSearchParams(`?oidc_error=${errorCode}`)
+
+    renderWithProviders({
+      element: <LoginPage />,
+      path: '/auth/login',
+    })
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(expectedMessage)
+    })
+
+    expect(mockedSetSearchParams).toHaveBeenCalled()
+
+    const lastCall = mockedSetSearchParams.mock.lastCall
+
+    if (lastCall) {
+      const params = lastCall[0]
+      expect(params.has('oidc_error')).toBe(false)
+    }
+  })
+
+  it('shows generic error for unknown OIDC error code', async () => {
+    mockSearchParams = new URLSearchParams('?oidc_error=UNKNOWN_CODE')
+
+    renderWithProviders({
+      element: <LoginPage />,
+      path: '/auth/login',
+    })
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('An unexpected error occurred during login.')
     })
   })
 })
