@@ -5,6 +5,7 @@ auth login/authentication views
 
 from base64 import b64decode, b64encode
 from http import HTTPStatus
+from urllib.parse import urlencode
 
 from authlib.common.errors import AuthlibBaseError
 from fido2 import cbor
@@ -32,6 +33,13 @@ def user_auth_dict(user):
         "full_name": user.full_name,
         "roles": user.roles,
     }
+
+
+def oidc_error_redirect(error_code):
+    """helper function to generate OIDC error redirect with error code as query parameter"""
+    params = urlencode({'oidc_error': error_code})
+
+    return redirect(f"/auth/login?{params}")
 
 
 @blueprint.route('/login', methods=['POST'])
@@ -152,7 +160,7 @@ def login_oidc_route():
     """login oidc"""
 
     if not current_app.config['OIDC_NAME']:  # pragma: no cover  ; won't test
-        return error_response(message='OIDC is not enabled.', code=HTTPStatus.BAD_REQUEST)
+        return oidc_error_redirect('OIDC_NOT_ENABLED')
 
     redirect_uri = current_app.config.get(
         f'{current_app.config["OIDC_NAME"]}_REDIRECT_URI',
@@ -163,7 +171,7 @@ def login_oidc_route():
     except (HTTPError, AuthlibBaseError) as exc:
         current_app.logger.exception(exc)
 
-    return error_response(message='OIDC authentication error.', code=HTTPStatus.INTERNAL_SERVER_ERROR)
+    return oidc_error_redirect('OIDC_AUTH_ERROR')
 
 
 @blueprint.route('/login_oidc_callback')
@@ -171,18 +179,17 @@ def login_oidc_callback_route():
     """login oidc callback"""
 
     if not current_app.config['OIDC_NAME']:  # pragma: no cover  ; won't test
-        return error_response(message='OIDC is not enabled.', code=HTTPStatus.BAD_REQUEST)
+        return oidc_error_redirect('OIDC_NOT_ENABLED')
 
     try:
         token = getattr(oauth, current_app.config['OIDC_NAME']).authorize_access_token()
     except (HTTPError, AuthlibBaseError) as exc:
         current_app.logger.exception(exc)
-        return error_response(message='OIDC authentication error.', code=HTTPStatus.INTERNAL_SERVER_ERROR)
+        return oidc_error_redirect('OIDC_AUTH_ERROR')
 
     userinfo = token.get('userinfo')
     if userinfo and userinfo.get('sub') and userinfo.get('email'):
         user = User.query.filter(
-            User.active,
             or_(
                 func.lower(User.username) == userinfo.get('sub'),
                 func.lower(User.email) == userinfo.get('email').lower()  # DEPRECATED: remove in future
@@ -196,6 +203,10 @@ def login_oidc_callback_route():
             db.session.commit()
 
         if user:
+            if not user.active:
+                current_app.logger.info('auth.login oidc failed, user is disabled, username=%s, email=%s', user.username, user.email)
+                return oidc_error_redirect('USER_DISABLED')
+
             regenerate_session()
             login_user(user)
             g.auth_method = 'session'
@@ -208,4 +219,5 @@ def login_oidc_callback_route():
     if 'userinfo' in token:
         token['userinfo']['nonce'] = "redacted"
     current_app.logger.info('auth.login oidc failed, token=%s', token)
-    return error_response(message='OIDC authentication error, user lookup error', code=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    return oidc_error_redirect('OIDC_DATA_ERROR')

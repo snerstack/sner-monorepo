@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { userState } from '@/atoms/userAtom'
-import { handleHttpClientError, httpClient } from '@/lib/httpClient'
+
+import { OIDC_ERRORS, handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
@@ -14,12 +16,28 @@ import SubmitField from '@/components/fields/SubmitField'
 import TextField from '@/components/fields/TextField'
 
 const LoginPage = () => {
-  const [appConfig,] = useRecoilState(appConfigState)
+  const [appConfig] = useRecoilState(appConfigState)
   const navigate = useNavigate()
   const [, setUser] = useRecoilState(userState)
 
   const [username, setUsername] = useState<string>('')
   const [password, setPassword] = useState<string>('')
+
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const errorCode = searchParams.get('oidc_error')
+
+    if (errorCode) {
+      const message = OIDC_ERRORS[errorCode] || OIDC_ERRORS.GENERIC_ERROR
+
+      toast.error(message)
+
+      const newParams = new URLSearchParams(searchParams)
+      newParams.delete('oidc_error')
+      setSearchParams(newParams, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   const loginHandler = async () => {
     const formData = new FormData()
@@ -122,7 +140,7 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
-    </div >
+    </div>
   )
 }
 export default LoginPage

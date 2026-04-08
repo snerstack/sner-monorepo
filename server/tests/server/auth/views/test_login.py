@@ -6,6 +6,7 @@ auth.views.login tests
 from base64 import b64decode, b64encode
 from http import HTTPStatus
 from unittest.mock import Mock, patch
+from urllib.parse import urlparse, parse_qs
 
 from authlib.common.errors import AuthlibBaseError
 from fido2 import cbor
@@ -201,9 +202,13 @@ def test_login_oidc_route_failed_userinfo(client):
 
     patch_oauth_token = patch.object(oauth.OIDC_DEFAULT, 'authorize_access_token', authorize_access_token_mock)
     with patch_oauth_token:
-        response = client.get(url_for('auth.login_oidc_callback_route'), expect_errors=True)
-        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-        assert response.json['error']['message'] == 'OIDC authentication error, user lookup error'
+        response = client.get(url_for('auth.login_oidc_callback_route'))
+        redirect_url = response.location
+        params = parse_qs(urlparse(redirect_url).query)
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert 'oidc_error' in params
+        assert params['oidc_error'][0] == 'OIDC_DATA_ERROR'
 
     authorize_access_token_mock.assert_called_once()
 
@@ -218,13 +223,35 @@ def test_login_oidc_route_handle_oidc_errors(client):
     patch_oauth_token = patch.object(oauth.OIDC_DEFAULT, 'authorize_access_token', authorize_access_token_mock)
 
     with patch_oauth_redirect, patch_oauth_token:
-        response = client.get(url_for('auth.login_oidc_route'), expect_errors=True)
-        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-        assert response.json['error']['message'] == 'OIDC authentication error.'
+        response = client.get(url_for('auth.login_oidc_route'))
+        redirect_url = response.location
+        params = parse_qs(urlparse(redirect_url).query)
 
-        response = client.get(url_for('auth.login_oidc_callback_route'), expect_errors=True)
-        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-        assert response.json['error']['message'] == 'OIDC authentication error.'
+        assert params['oidc_error'][0] == 'OIDC_AUTH_ERROR'
+
+        response = client.get(url_for('auth.login_oidc_callback_route'))
+        redirect_url = response.location
+        params = parse_qs(urlparse(redirect_url).query)
+
+        assert params['oidc_error'][0] == 'OIDC_AUTH_ERROR'
 
     authorize_redirect_mock.assert_called_once()
+    authorize_access_token_mock.assert_called_once()
+
+
+def test_login_oidc_route_disabled_user(client, user_factory):
+    """test_login_oidc_route"""
+    user = user_factory(active=False)
+
+    authorize_access_token_mock = Mock(return_value={'userinfo': {'sub': user.username, 'email': user.email}})
+
+    patch_oauth_token = patch.object(oauth.OIDC_DEFAULT, 'authorize_access_token', authorize_access_token_mock)
+    with patch_oauth_token:
+        response = client.get(url_for('auth.login_oidc_callback_route'))
+        redirect_url = response.location
+        params = parse_qs(urlparse(redirect_url).query)
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert params['oidc_error'][0] == 'USER_DISABLED'
+
     authorize_access_token_mock.assert_called_once()
