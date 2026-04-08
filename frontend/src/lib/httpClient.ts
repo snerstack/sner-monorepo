@@ -34,3 +34,11 @@ const httpClient = axios.create({
 })
 
 export { httpClient, handleHttpClientError, csrfTokenHeaderName }
+
+export const OIDC_ERRORS: Record<string, string> = {
+  OIDC_NOT_ENABLED: 'OIDC authentication is not enabled.',
+  OIDC_AUTH_ERROR: 'Error communicating with the authentication server.',
+  USER_DISABLED: 'Your account is disabled.',
+  OIDC_DATA_ERROR: 'The authentication provider did not return required profile information.',
+  GENERIC_ERROR: 'An unexpected error occurred during login.',
+}
