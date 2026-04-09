@@ -32,7 +32,7 @@ const AnnotateModal = ({
   const annotateHandler = async (): Promise<void> => {
     const formData = new FormData()
     formData.append('tags', tags.join('\n'))
-    formData.append('comment', comment)
+    formData.append('comment', comment ?? '')
 
     try {
       await httpClient.post(annotate.url, formData)
