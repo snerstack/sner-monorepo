@@ -35,6 +35,7 @@ const Nav = () => {
         { title: 'Hosts', link: '/lens/host/list' },
         { title: 'Services', link: '/lens/service/list' },
         { title: 'Vulnerabilities', link: '/lens/vuln/list' },
+        { title: 'Versioninfo', link: '/lens/versioninfo/list' },
       ],
     },
     swagger: {

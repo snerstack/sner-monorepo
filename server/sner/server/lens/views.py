@@ -13,7 +13,8 @@ from sqlalchemy import func, or_
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
-from sner.server.storage.models import Host, Service, Vuln
+from sner.server.storage.models import Host, Service, Vuln, Versioninfo
+from sner.server.storage.version_parser import InvalidFormatException
 from sner.server.utils import error_response, filter_query_jsonfilter, FilterQueryError, SnerJSONEncoder
 
 
@@ -216,3 +217,46 @@ def vuln_list_json_route():
     check_dt_errors(vulns)
 
     return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype='application/json')
+
+
+@blueprint.route('/versioninfo/list.json', methods=['GET', 'POST'])
+@session_required('user')
+def versioninfo_list_json_route():
+    """lens list versioninfo, data endpoint"""
+
+    service_column = func.concat_ws('/', Versioninfo.service_port, Versioninfo.service_proto)
+    columns = [
+        ColumnDT(Versioninfo.id, mData='id'),
+        ColumnDT(Versioninfo.host_id, mData='host_id'),
+        ColumnDT(Versioninfo.host_address, mData='host_address'),
+        ColumnDT(Versioninfo.host_hostname, mData='host_hostname'),
+        ColumnDT(Versioninfo.service_proto, mData='service_proto'),
+        ColumnDT(Versioninfo.service_port, mData='service_port'),
+        # break pylint duplicate-code detection
+        ColumnDT(service_column, mData='service'),
+        ColumnDT(Versioninfo.via_target, mData='via_target'),
+        ColumnDT(Versioninfo.product, mData='product'),
+        ColumnDT(Versioninfo.version, mData='version'),
+        ColumnDT(func.text(Versioninfo.extra), mData='extra'),
+        ColumnDT(Versioninfo.tags, mData='tags'),
+    ]
+
+    restrict = [Versioninfo.host_address.op('<<=')(net) for net in current_user.api_networks]
+    query = db.session.query().select_from(Versioninfo).filter(or_(*restrict))
+
+    jsonfilter = request.values.get('jsonfilter')
+
+    if jsonfilter:
+        try:
+            filter_dict = json.loads(jsonfilter)
+            Versioninfo.remap_jsonfilter_rules(filter_dict)
+            jsonfilter = json.dumps(filter_dict)
+        except InvalidFormatException as exc:
+            return error_response(message=str(exc), code=HTTPStatus.BAD_REQUEST)
+
+    query = filter_query_jsonfilter(query, jsonfilter)
+
+    versioninfos = DataTables(request.values.to_dict(), query, columns).output_result()
+    check_dt_errors(versioninfos)
+
+    return Response(json.dumps(versioninfos, cls=SnerJSONEncoder), mimetype='application/json')
