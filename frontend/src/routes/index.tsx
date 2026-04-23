@@ -17,6 +17,7 @@ import LensHostListPage from '@/routes/lens/host/list'
 import LensHostViewPage from '@/routes/lens/host/view'
 import LensServiceListPage from '@/routes/lens/service/list'
 import LensVulnListPage from '@/routes/lens/vuln/list'
+import LensVersioninfoListPage from '@/routes/lens/versioninfo/list'
 import NotFoundPage from '@/routes/notfound'
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import RootPage from '@/routes/root'
@@ -82,6 +83,7 @@ export const routes = createRoutesFromElements(
       />
       <Route path="lens/service/list" element={<LensServiceListPage />} />
       <Route path="lens/vuln/list" element={<LensVulnListPage />} />
+      <Route path="lens/versioninfo/list" element={<LensVersioninfoListPage />} />
     </Route>
 
     <Route path="swagger" element={<SwaggerPage />} />

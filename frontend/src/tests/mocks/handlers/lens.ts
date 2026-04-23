@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw'
+import type { RuleGroupType, RuleType } from 'react-querybuilder'
 
 const hosts_data = {
     draw: "1",
@@ -90,6 +91,42 @@ const overview_data = {
     },
 }
 
+const versioninfos_data = {
+    draw: "1",
+    recordsTotal: "1",
+    recordsFiltered: "1",
+    data: [
+        {
+            "id": 55,
+            "host_id": hosts_data.data[0].id,
+            "host_address": hosts_data.data[0].address,
+            "host_hostname": hosts_data.data[0].hostname,
+            "service_proto": services_data.data[0].proto,
+            "service_port": services_data.data[0].port,
+            "service": `${services_data.data[0].proto}/${services_data.data[0].port}`,
+            "via_target": hosts_data.data[0].address,
+            "product": "dummy product",
+            "version": "1.2.3",
+            "extra": '{}',
+            "tags": [],
+        },
+        {
+            "id": 56,
+            "host_id": hosts_data.data[0].id,
+            "host_address": hosts_data.data[0].address,
+            "host_hostname": hosts_data.data[0].hostname,
+            "service_proto": services_data.data[0].proto,
+            "service_port": services_data.data[0].port,
+            "service": `${services_data.data[0].proto}/${services_data.data[0].port}`,
+            "via_target": hosts_data.data[0].address,
+            "product": "dummy product 2",
+            "version": "4.5.6",
+            "extra": '{}',
+            "tags": [],
+        }
+    ]
+}
+
 export const lensHandlers = [
     http.get("/backend/lens/overview.json", () => {
         return HttpResponse.json(overview_data)
@@ -105,5 +142,26 @@ export const lensHandlers = [
 
     http.post('/backend/lens/vuln/list.json', () => {
         return HttpResponse.json(vulns_data)
+    }),
+
+    http.post('/backend/lens/versioninfo/list.json', ({ request }) => {
+        const url = new URL(request.url)
+        const jsonfilter = url.searchParams.get('jsonfilter')
+        const filter = JSON.parse(jsonfilter || '{}') as RuleGroupType
+        const combinator = filter.combinator
+        const rules = filter.rules || []
+        const productRule = rules.find(r => 'field' in r && r.field === 'Versioninfo.product') as RuleType;
+        const versionRule = rules.find(r => 'field' in r && r.field === 'Versioninfo.version') as RuleType;
+
+        if (combinator === 'and' && productRule?.value === 'product dummy 2' && versionRule?.operator === '>=' && versionRule?.value === '2.0.0') {
+            return HttpResponse.json({
+                draw: '1',
+                recordsTotal: '1',
+                recordsFiltered: '1',
+                data: [versioninfos_data.data[1]],
+            })
+        }
+
+        return HttpResponse.json(versioninfos_data)
     }),
 ]

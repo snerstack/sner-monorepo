@@ -29,13 +29,15 @@ overwrite and support upsert/update mechanism used during continuous network
 monitoring.
 """
 
+import re
 from datetime import datetime
 
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 
 from sner.server.extensions import db
 from sner.server.models import SelectableEnum
+from sner.server.storage.version_parser import InvalidFormatException
 
 
 class StorageModelBase(db.Model):
@@ -188,8 +190,48 @@ class Versioninfo(StorageModelBase):
 
     product = db.Column(db.String(250))
     version = db.Column(db.String(250))
+    version_array = db.Column(postgresql.ARRAY(db.Integer), index=True)
     extra = db.Column(db.JSON)
     timestamp = db.Column(db.DateTime)
 
     tags = db.Column(postgresql.ARRAY(db.String, dimensions=1), nullable=False, default=[])
     comment = db.Column(db.Text)
+
+    @validates('version')
+    def update_version_array(self, _, value):
+        """Auto-generate int array from version string for correct DB sorting and numeric filtering."""
+        self.version_array = self.parse_to_int_array(value)
+
+        return value
+
+    @staticmethod
+    def parse_to_int_array(version, strict=False):
+        """Parse version string into an array of integers."""
+        clean = re.sub("(?<=[0-9])p(?=[0-9])", ".", version)
+        clean = clean.split(" ")[0]
+        nums = re.findall(r'\d+', clean)
+
+        if strict and not nums:
+            raise InvalidFormatException(f'Invalid version format: "{version}"')
+
+        parts = []
+        for i in range(4):
+            if i < len(nums):
+                parts.append(int(nums[i]))
+            else:
+                parts.append(0)
+
+        return parts
+
+    @classmethod
+    def remap_jsonfilter_rules(cls, node):
+        """Remap JSON filter queries from the text 'version' field to the 'version_array' field."""
+        if 'rules' in node:
+            for rule in node['rules']:
+                if rule.get('field') == 'Versioninfo.version':
+                    rule['field'] = 'Versioninfo.version_array'
+
+                    if rule.get('operator') in ['==', '!=', '>', '<', '>=', '<=']:
+                        rule['value'] = cls.parse_to_int_array(rule.get('value', ''), strict=True)
+                else:
+                    cls.remap_jsonfilter_rules(rule)

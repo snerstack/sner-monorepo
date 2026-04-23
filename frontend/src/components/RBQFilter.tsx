@@ -30,8 +30,8 @@ const getOperators = (_fieldName: string, { fieldData: _fieldData }: { fieldData
         'is_not_null',
 
         //'not_ilike', // only for note filter, perhaps not really necessary
-        //'astext_ilike', // used to naive search in JSON columns (vulnsearch.data)
-        //'astext_not_ilike', // used to naive search in JSON columns (vulnsearch.data)
+        'astext_ilike', // naive search in JSON columns (versioninfo.extra)
+        //'astext_not_ilike', // naive search in JSON columns (vulnsearch.data)
 
         //'in', not implemented yet, will require custom field
         //'not_in', not implemented yet, will require custom field
