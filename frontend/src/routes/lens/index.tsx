@@ -39,6 +39,7 @@ const LensPage = () => (
                 <Tile to={"/lens/host/list"} icon="fas fa-server" caption="Hosts" />
                 <Tile to={"/lens/service/list"} icon="fas fa-cogs" caption="Services" />
                 <Tile to={"/lens/vuln/list"} icon="fas fa-question-circle" caption="Vulnerabilities" />
+                <Tile to={'/lens/versioninfo/list'} icon="fas fa-info-circle" caption="Versioninfo" />
             </div>
         </div>
 
