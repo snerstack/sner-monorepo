@@ -1,17 +1,17 @@
-import { arrayBufferToBase64, base64ToArrayBuffer } from '@/utils';
-import { decode as cborDecode, encode as cborEncode } from 'cbor-x';
-import clsx from 'clsx';
-import { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { arrayBufferToBase64, base64ToArrayBuffer } from '@/utils'
+import { decode as cborDecode, encode as cborEncode } from 'cbor-x'
+import clsx from 'clsx'
+import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
-import { handleHttpClientError, httpClient } from '@/lib/httpClient';
-import { urlFor } from '@/lib/urlHelper';
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
+import { urlFor } from '@/lib/urlHelper'
 
-import Heading from '@/components/Heading';
-import SubmitField from '@/components/fields/SubmitField';
-import TextField from '@/components/fields/TextField';
+import Heading from '@/components/Heading'
+import SubmitField from '@/components/fields/SubmitField'
+import TextField from '@/components/fields/TextField'
 
 interface AttestationCredential extends PublicKeyCredential {
   response: AuthenticatorAttestationResponse
@@ -28,13 +28,13 @@ const WebAuthnRegisterPage = () => {
       toast.warn('WebAuthn is not supported')
       return
     }
-    
+
     const prepareAttestation = async (): Promise<void> => {
       try {
         const pkcco = await getPublicKeyCredentialRequestOptions()
         const attResponse = (await navigator.credentials.create(pkcco)) as AttestationCredential
         setAttestation(attResponse)
-      /* c8 ignore next 4 */
+        /* c8 ignore next 4 */
       } catch (err) {
         console.error(err)
         toast.error('Webauthn prepare attestation failed')
@@ -53,7 +53,7 @@ const WebAuthnRegisterPage = () => {
   const registerHandler = async () => {
     /* c8 ignore next 4 */
     if (!attestation) {
-      toast.error("Attestation not prepared")
+      toast.error('Attestation not prepared')
       return
     }
 
@@ -61,18 +61,20 @@ const WebAuthnRegisterPage = () => {
       clientDataJSON: new Uint8Array(attestation.response.clientDataJSON),
       attestationObject: new Uint8Array(attestation.response.attestationObject),
     }
-    const formData = new FormData()
-    formData.append('name', name)
-    formData.append('attestation', arrayBufferToBase64(cborEncode(attestationData)))
+
+    const payload = {
+      name,
+      attestation: arrayBufferToBase64(cborEncode(attestationData)),
+    }
 
     try {
       const resp = await httpClient.post<{ message: string }>(
         urlFor('/backend/auth/profile/webauthn/register'),
-        formData
+        payload,
       )
       toast.success(resp.data.message)
       navigate('/auth/profile')
-    /* c8 ignore next 3 */
+      /* c8 ignore next 3 */
     } catch (err) {
       handleHttpClientError(err)
     }

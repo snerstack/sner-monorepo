@@ -3,8 +3,8 @@ import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
-import { httpClient, handleHttpClientError } from '@/lib/httpClient'
 
 import Heading from '@/components/Heading'
 import BooleanField from '@/components/fields/BooleanField'
@@ -37,24 +37,21 @@ const UserEditPage = () => {
   const editUserHandler = async () => {
     if (username === '') return setUsernameErrors(['Username is required.'])
 
-    const formData = new FormData()
-    formData.append('username', username)
-    formData.append('email', email)
-    formData.append('full_name', fullName)
-    formData.append('new_password', password)
-    roles.forEach((role) => {
-      if (role.checked) {
-        formData.append('roles', role.name)
-      }
-    })
-    formData.append('active', active.toString())
-    formData.append('api_networks', apiNetworks)
+    const payload = {
+      username,
+      email,
+      full_name: fullName,
+      new_password: password,
+      roles: roles.filter((role) => role.checked).map((role) => role.name),
+      active,
+      api_networks: apiNetworks
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line !== ''),
+    }
 
     try {
-      const resp = await httpClient.post<{ message: string }>(
-        urlFor(`/backend/auth/user/edit/${user.id}`),
-        formData,
-      )
+      const resp = await httpClient.post<{ message: string }>(urlFor(`/backend/auth/user/edit/${user.id}`), payload)
 
       toast.success(resp.data.message)
       navigate('/auth/user/list')
@@ -84,7 +81,13 @@ const UserEditPage = () => {
           errors={usernameErrors}
         />
         <TextField name="email" label="Email" placeholder="Email" _state={email} _setState={setEmail} />
-        <TextField name="full_name" label="Full name" placeholder="Full name" _state={fullName} _setState={setFullName} />
+        <TextField
+          name="full_name"
+          label="Full name"
+          placeholder="Full name"
+          _state={fullName}
+          _setState={setFullName}
+        />
         <MultiCheckboxField name="roles" label="Roles" _state={roles} _setState={setRoles} />
         <BooleanField name="active" label="Active" _state={active} _setState={setActive} />
         <PasswordField

@@ -18,11 +18,12 @@ const TOTPLoginPage = () => {
   const navigate = useNavigate()
 
   const totpHandler = async () => {
-    const formData = new FormData()
-    formData.append('code', code)
+    const payload = {
+      code,
+    }
 
     try {
-      const resp = await httpClient.post<User>(urlFor('/backend/auth/login_totp'), formData)
+      const resp = await httpClient.post<User>(urlFor('/backend/auth/login_totp'), payload)
 
       setUser({ ...resp.data, isAuthenticated: true })
 

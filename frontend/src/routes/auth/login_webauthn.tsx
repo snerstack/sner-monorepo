@@ -38,9 +38,10 @@ const WebAuthnLoginPage = () => {
       userHandle: new Uint8Array(assertion.response.userHandle!),
     }
 
-    const formData = new FormData()
-    formData.append('assertion', arrayBufferToBase64(cborEncode(assertionData)))
-    const resp = await httpClient.post<User>(urlFor('/backend/auth/login_webauthn'), formData)
+    const payload = {
+      assertion: arrayBufferToBase64(cborEncode(assertionData)),
+    }
+    const resp = await httpClient.post<User>(urlFor('/backend/auth/login_webauthn'), payload)
     setUser({ ...resp.data, isAuthenticated: true })
     navigate('/')
   }, [setUser, navigate])

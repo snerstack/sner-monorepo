@@ -6,7 +6,7 @@ auth.views.login tests
 from base64 import b64decode, b64encode
 from http import HTTPStatus
 from unittest.mock import Mock, patch
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from authlib.common.errors import AuthlibBaseError
 from fido2 import cbor
@@ -25,15 +25,18 @@ def test_session_login(client, user_factory):
     password = PWS.generate()
     user = user_factory.create(password=PWS.hash(password))
 
-    form_data = [("username", user.username), ("password", "invalid"), ("csrf_token", get_csrf_token(client))]
-    response = client.post(url_for("auth.login_route"), params=form_data, expect_errors=True)
+    csrf_token = get_csrf_token(client)
+    headers = {"X-CSRFToken": csrf_token}
+
+    invalid_data = {"username": user.username, "password": "invalid"}
+    response = client.post_json(url_for("auth.login_route"), invalid_data, headers=headers, expect_errors=True)
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.json["error"]["message"] == "Invalid credentials."
 
     before_login_session_id = client.cookies["session"]
-    form_data = [("username", user.username), ("password", password), ("csrf_token", get_csrf_token(client))]
-    response = client.post(url_for("auth.login_route"), params=form_data)
+    data = {"username": user.username, "password": password}
+    response = client.post_json(url_for("auth.login_route"), data, headers=headers)
     after_login_session_id = client.cookies["session"]
 
     assert response.status_code == HTTPStatus.OK
@@ -62,28 +65,28 @@ def test_login_totp(client, user_factory):
     secret = TOTPImpl.random_base32()
     user = user_factory(password=PWS.hash(password), totp=secret)
 
-    form_data = [("username", user.username), ("password", password)]
-    response = client.post(url_for("auth.login_route"), params=form_data)
+    data = {"username": user.username, "password": password}
+    response = client.post_json(url_for("auth.login_route"), data)
     assert response.status_code == HTTPStatus.OK
 
-    form_data = [("code", "invalid")]
-    response = client.post(url_for("auth.login_totp_route"), params=form_data, expect_errors=True)
+    data = {"code": "invalid"}
+    response = client.post_json(url_for("auth.login_totp_route"), data, expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json["error"]["message"] == "Invalid code."
 
-    response = client.post(url_for("auth.login_totp_route"), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = client.post_json(url_for("auth.login_totp_route"), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
-    form_data = [("code", TOTPImpl(secret).current_code())]
-    response = client.post(url_for("auth.login_totp_route"), params=form_data)
+    data = {"code": TOTPImpl(secret).current_code().decode()}
+    response = client.post_json(url_for("auth.login_totp_route"), data)
     assert response.status_code == HTTPStatus.OK
 
 
 def test_login_totp_unauthorized(client):
     """test unauthorized login totp"""
 
-    form_data = [("code", "invalid")]
-    response = client.post(url_for("auth.login_totp_route"), params=form_data, expect_errors=True)
+    data = {"code": "invalid"}
+    response = client.post_json(url_for("auth.login_totp_route"), data, expect_errors=True)
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
@@ -94,8 +97,8 @@ def test_login_webauthn(client, webauthn_credential_factory):
     device.cred_init(webauthn.rp.id, b"randomhandle")
     wncred = webauthn_credential_factory.create(initialized_device=device)
 
-    form_data = [("username", wncred.user.username)]
-    response = client.post(url_for("auth.login_route"), params=form_data)
+    data = {"username": wncred.user.username}
+    response = client.post_json(url_for("auth.login_route"), data)
     assert response.status_code == HTTPStatus.OK
     assert response.json["webauthn_login"]
 
@@ -110,8 +113,8 @@ def test_login_webauthn(client, webauthn_credential_factory):
         "userHandle": assertion["response"]["userHandle"],
     }
 
-    form_data = [("assertion", b64encode(cbor.encode(assertion_data)))]
-    response = client.post(url_for("auth.login_webauthn_route"), params=form_data)
+    data = {"assertion": b64encode(cbor.encode(assertion_data)).decode()}
+    response = client.post_json(url_for("auth.login_webauthn_route"), data)
 
     # and back to standard test codeflow
     assert response.status_code == HTTPStatus.OK
@@ -120,7 +123,7 @@ def test_login_webauthn(client, webauthn_credential_factory):
 def test_login_webauthn_unauthorized(client):
     """test unauthorized login webauthn"""
 
-    response = client.post(url_for("auth.login_webauthn_route"), expect_errors=True)
+    response = client.post_json(url_for("auth.login_webauthn_route"), {"assertion": "something"}, expect_errors=True)
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
@@ -131,13 +134,13 @@ def test_login_webauthn_invalid_request(client, webauthn_credential_factory):
     device.cred_init(webauthn.rp.id, b"randomhandle")
     wncred = webauthn_credential_factory.create(initialized_device=device)
 
-    form_data = [("username", wncred.user.username)]
-    response = client.post(url_for("auth.login_route"), params=form_data)
+    data = {"username": wncred.user.username}
+    response = client.post_json(url_for("auth.login_route"), data)
     assert response.status_code == HTTPStatus.OK
     assert response.json["webauthn_login"]
 
-    response = client.post(url_for("auth.login_webauthn_route"), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = client.post_json(url_for("auth.login_webauthn_route"), {}, expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_profile_webauthn_pkcro_route_invalid_request(client):
@@ -150,13 +153,13 @@ def test_profile_webauthn_pkcro_route_invalid_request(client):
 def test_login_webauthn_invalid_assertion(client, webauthn_credential):
     """test login by webauthn; error hanling"""
 
-    form_data = [("username", webauthn_credential.user.username), ("csrf_token", get_csrf_token(client))]
-    response = client.post(url_for("auth.login_route"), params=form_data)
+    data = {"username": webauthn_credential.user.username}
+    response = client.post_json(url_for("auth.login_route"), data)
     assert response.status_code == HTTPStatus.OK
     assert response.json["webauthn_login"]
 
-    form_data = [("assertion", "invalid"), ("csrf_token", get_csrf_token(client))]
-    response = client.post(url_for("auth.login_webauthn_route"), params=form_data, expect_errors=True)
+    data = {"assertion": "invalid"}
+    response = client.post_json(url_for("auth.login_webauthn_route"), data, expect_errors=True)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json["error"]["message"] == "Error during Webauthn authentication."
