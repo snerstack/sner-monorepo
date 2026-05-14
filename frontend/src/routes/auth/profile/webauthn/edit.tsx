@@ -16,13 +16,14 @@ const WebAuthnEditPage = () => {
   const [name, setName] = useState<string>(cred.name)
 
   const editHandler = async () => {
-    const formData = new FormData()
-    formData.append('name', name)
+    const payload = {
+      name,
+    }
 
     try {
       const resp = await httpClient.post<{ message: string }>(
         urlFor(`/backend/auth/profile/webauthn/edit/${cred.id}`),
-        formData,
+        payload,
       )
       toast.success(resp.data.message)
       navigate('/auth/profile')

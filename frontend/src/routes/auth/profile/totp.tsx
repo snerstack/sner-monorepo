@@ -32,14 +32,12 @@ const TOTPPage = () => {
   }, [])
 
   const totpHandler = async () => {
-    const formData = new FormData()
-    formData.append('code', code)
+    const payload = {
+      code,
+    }
 
     try {
-      const resp = await httpClient.post<{ message: string }>(
-        urlFor('/backend/auth/profile/totp'),
-        formData,
-      )
+      const resp = await httpClient.post<{ message: string }>(urlFor('/backend/auth/profile/totp'), payload)
 
       toast.success(resp.data.message)
       navigate('/auth/profile')

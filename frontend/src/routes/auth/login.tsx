@@ -22,14 +22,15 @@ const LoginPage = () => {
   const [password, setPassword] = useState<string>('')
 
   const loginHandler = async () => {
-    const formData = new FormData()
-    formData.append('username', username)
-    formData.append('password', password)
+    const payload = {
+      username,
+      password,
+    }
 
     try {
       const resp = await httpClient.post<User | { totp_login_required: boolean } | { webauthn_login: boolean }>(
         urlFor('/backend/auth/login'),
-        formData,
+        payload,
       )
 
       if ('totp_login_required' in resp.data) {
@@ -66,16 +67,17 @@ const LoginPage = () => {
                 <div className="card shadow-sm mb-4">
                   <div className="card-body d-flex flex-column justify-content-between h-100">
                     <h5 className="card-title">{appConfig.oidc_display_name}</h5>
-                    <p className="card-text text-muted">
-                      This method is preferred for all users.
-                    </p>
-                    <a className="btn btn-primary mb-4" href={urlFor('/backend/auth/login_oidc')}>Login</a>
+                    <p className="card-text text-muted">This method is preferred for all users.</p>
+                    <a className="btn btn-primary mb-4" href={urlFor('/backend/auth/login_oidc')}>
+                      Login
+                    </a>
 
                     <div className="card shadow-sm small disclaimer-card">
                       <div className="card-body d-flex flex-column justify-content-between h-100">
                         <div>
                           By logging in or registering, you confirm that you have read and agree to{' '}
-                          <a href={appConfig.tos_link}>Terms of Service</a> and the <a href={appConfig.pdp_link}>Personal Data Processing Policy</a>.
+                          <a href={appConfig.tos_link}>Terms of Service</a> and the{' '}
+                          <a href={appConfig.pdp_link}>Personal Data Processing Policy</a>.
                         </div>
                       </div>
                     </div>
@@ -110,12 +112,7 @@ const LoginPage = () => {
                     _state={password}
                     _setState={setPassword}
                   />
-                  <SubmitField
-                    name="Login"
-                    className="w-100"
-                    horizontal={false}
-                    handler={loginHandler}
-                  />
+                  <SubmitField name="Login" className="w-100" horizontal={false} handler={loginHandler} />
                 </form>
               </div>
             </div>

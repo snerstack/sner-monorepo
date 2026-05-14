@@ -45,8 +45,11 @@ def test_user_loader(app, user_factory):
     user = user_factory.create(password=PWS.hash(password))
 
     with app.app_context():
-        form_data = [("username", user.username), ("password", password), ("csrf_token", get_csrf_token(client))]
-        response = client.post(url_for("auth.login_route"), params=form_data)
+        data = {"username": user.username, "password": password}
+        headers = {
+            "X-CSRFToken": get_csrf_token(client)
+        }
+        response = client.post_json(url_for("auth.login_route"), data, headers=headers)
         assert response.status_code == HTTPStatus.OK
 
     with app.app_context():
