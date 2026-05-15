@@ -4,7 +4,7 @@ shared schema objects
 """
 
 from marshmallow import Schema
-from marshmallow.fields import String, Email
+from marshmallow.fields import Email, String
 
 
 class EmptyToNoneMixin:

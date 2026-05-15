@@ -31,12 +31,12 @@ monitoring.
 
 import re
 from datetime import datetime
+from enum import Enum
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship, validates
 
 from sner.server.extensions import db
-from sner.server.models import SelectableEnum
 from sner.server.storage.version_parser import InvalidFormatException
 
 
@@ -101,7 +101,7 @@ class Service(StorageModelBase):
         return f"<Service {self.id}: {host} {self.proto}.{self.port}>"
 
 
-class SeverityEnum(SelectableEnum):
+class SeverityEnum(Enum):
     """severity enum"""
 
     UNKNOWN = "unknown"

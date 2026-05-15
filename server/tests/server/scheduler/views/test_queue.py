@@ -35,13 +35,13 @@ def test_queue_add_route(cl_operator, queue_factory):
 
     aqueue = queue_factory.build()
 
-    form_data = [
-        ("name", aqueue.name),
-        ("config", aqueue.config),
-        ("group_size", aqueue.group_size),
-        ("priority", aqueue.priority),
-    ]
-    response = cl_operator.post(url_for("scheduler.queue_add_route"), params=form_data, expect_errors=True)
+    data = {
+        "name": aqueue.name,
+        "config": aqueue.config,
+        "group_size": aqueue.group_size,
+        "priority": aqueue.priority,
+    }
+    response = cl_operator.post_json(url_for("scheduler.queue_add_route"), data)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -54,38 +54,39 @@ def test_queue_add_route_config_validation(cl_operator, queue_factory):
 
     aqueue = queue_factory.build()
 
-    form_data = [
-        ("name", aqueue.name),
-        ("config", ""),
-        ("group_size", aqueue.group_size),
-        ("priority", aqueue.priority),
-    ]
-    response = cl_operator.post(url_for("scheduler.queue_add_route"), params=form_data, expect_errors=True)
+    data = {
+        "name": aqueue.name,
+        "config": "invalid yaml - : -",
+        "group_size": aqueue.group_size,
+        "priority": aqueue.priority,
+    }
+    response = cl_operator.post_json(url_for("scheduler.queue_add_route"), data, expect_errors=True)
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert "Invalid YAML: 'NoneType' object has no attribute 'read'" in response.json["error"]["errors"]["config"]
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert "Invalid YAML: " in response.json["errors"]["json"]["config"][0]
 
-    form_data = [
-        ("name", aqueue.name),
-        ("config", "queue_form"),
-        ("group_size", aqueue.group_size),
-        ("priority", aqueue.priority),
-    ]
-    response = cl_operator.post(url_for("scheduler.queue_add_route"), params=form_data, expect_errors=True)
+    data = {
+        "name": aqueue.name,
+        "config": "queue_form",
+        "group_size": aqueue.group_size,
+        "priority": aqueue.priority,
+    }
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert "Invalid module specified" in response.json["error"]["errors"]["config"]
+    response = cl_operator.post_json(url_for("scheduler.queue_add_route"), data, expect_errors=True)
 
-    form_data = [
-        ("name", aqueue.name),
-        ("config", "module: 'dummy'\n"),
-        ("group_size", aqueue.group_size),
-        ("priority", aqueue.priority),
-    ]
-    response = cl_operator.post(url_for("scheduler.queue_add_route"), params=form_data, expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert "Invalid module specified" in response.json["errors"]["json"]["config"]
 
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert "Field required" in response.json["error"]["errors"]["config"][0]
+    data = {
+        "name": aqueue.name,
+        "config": "module: 'dummy'\n",
+        "group_size": aqueue.group_size,
+        "priority": aqueue.priority,
+    }
+    response = cl_operator.post_json(url_for("scheduler.queue_add_route"), data, expect_errors=True)
+
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert "Field required" in response.json["errors"]["json"]["config"][0]
 
 
 def test_queue_edit_route(cl_operator, queue):
@@ -94,17 +95,31 @@ def test_queue_edit_route(cl_operator, queue):
     response = cl_operator.get(url_for("scheduler.queue_json_route", queue_id=queue.id))
     new_name = f"{response.json['name']}_edited"
 
-    form_data = [
-        ("name", new_name),
-        ("config", response.json["config"]),
-        ("group_size", response.json["group_size"]),
-        ("priority", response.json["priority"]),
-    ]
-    response = cl_operator.post(url_for("scheduler.queue_edit_route", queue_id=queue.id), params=form_data)
+    data = {
+        "name": new_name,
+        "config": response.json["config"],
+        "group_size": response.json["group_size"],
+        "priority": response.json["priority"],
+    }
+    response = cl_operator.post_json(url_for("scheduler.queue_edit_route", queue_id=queue.id), data)
 
     assert response.status_code == HTTPStatus.OK
 
     assert db.session.get(Queue, queue.id).name == new_name
+
+
+def test_queue_edit_not_found(cl_operator, queue):
+    """queue edit not found test"""
+
+    data = {
+        "name": queue.name,
+        "config": queue.config,
+        "group_size": queue.group_size,
+        "priority": queue.priority + 1,
+    }
+
+    response = cl_operator.post_json(url_for("scheduler.queue_edit_route", queue_id=9999), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_queue_enqueue_route(cl_operator, queue, target_factory):
@@ -112,14 +127,27 @@ def test_queue_enqueue_route(cl_operator, queue, target_factory):
 
     atarget = target_factory.build(queue=None)
 
-    form_data = [("targets", f"{atarget.target}\n \n ")]
-    response = cl_operator.post(url_for("scheduler.queue_enqueue_route", queue_id=queue.id), params=form_data)
+    data = {
+        "targets": [atarget.target]
+    }
+    response = cl_operator.post_json(url_for("scheduler.queue_enqueue_route", queue_id=queue.id), data)
 
     assert response.status_code == HTTPStatus.OK
 
     tqueue = db.session.get(Queue, queue.id)
     assert len(tqueue.targets) == 1
     assert tqueue.targets[0].target == atarget.target
+
+
+def test_queue_enqueue_not_found_route(cl_operator):
+    """queue enqueue not found test"""
+
+    data = {
+        "targets": ["non_existent_target"]
+    }
+    response = cl_operator.post_json(url_for("scheduler.queue_enqueue_route", queue_id=9999), data, expect_errors=True)
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_queue_flush_route(cl_operator, target):
@@ -176,8 +204,8 @@ def test_queue_delete_route_runningjob(cl_operator, job):
 
 def test_queue_invalid_form_requests(cl_operator, queue):
     """queue invalid requests test"""
-    response = cl_operator.post(url_for("scheduler.queue_edit_route", queue_id=queue.id), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("scheduler.queue_edit_route", queue_id=queue.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
-    response = cl_operator.post(url_for("scheduler.queue_enqueue_route", queue_id=queue.id), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("scheduler.queue_enqueue_route", queue_id=queue.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY

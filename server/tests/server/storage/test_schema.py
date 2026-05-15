@@ -4,7 +4,8 @@ storage.schema tests
 """
 import pytest
 from marshmallow import ValidationError
-from sner.server.storage.schema import HostSchema, VulnSchema, NoteSchema
+
+from sner.server.storage.schema import HostSchema, NoteSchema, VulnSchema
 
 
 def test_host_schema_ip_validation():

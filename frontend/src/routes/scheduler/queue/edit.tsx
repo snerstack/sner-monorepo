@@ -26,18 +26,19 @@ const QueueEditPage = () => {
   const [requirements, setRequirements] = useState<string[]>(queue.reqs)
 
   const editQueueHandler = async () => {
-    const formData = new FormData()
-    formData.append('name', name)
-    formData.append('config', config)
-    formData.append('group_size', groupSize.toString())
-    formData.append('priority', priority.toString())
-    formData.append('active', active ? 'true' /* c8 ignore next */: 'false')
-    formData.append('reqs', requirements.join('\n'))
+    const payload = {
+      name,
+      config,
+      group_size: groupSize,
+      priority,
+      active,
+      reqs: requirements,
+    }
 
     try {
       const resp = await httpClient.post<{ message: string }>(
         urlFor(`/backend/scheduler/queue/edit/${queue.id}`),
-        formData,
+        payload,
       )
 
       toast.success(resp.data.message)
@@ -54,14 +55,7 @@ const QueueEditPage = () => {
       </Helmet>
       <Heading headings={['Queues', 'Edit']} />
       <form id="queue_form" method="post">
-        <TextField
-          name="name"
-          label="Name"
-          placeholder="Name"
-          required={true}
-          _state={name}
-          _setState={setName}
-        />
+        <TextField name="name" label="Name" placeholder="Name" required={true} _state={name} _setState={setName} />
         <TextAreaField
           name="config"
           label="Config"

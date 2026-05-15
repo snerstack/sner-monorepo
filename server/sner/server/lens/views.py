@@ -7,7 +7,8 @@ import json
 from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
-from flask import Blueprint, Response, current_app, jsonify, request
+from flask import Response, current_app, jsonify, request
+from flask_smorest import Blueprint
 from flask_login import current_user
 from sqlalchemy import func, or_
 

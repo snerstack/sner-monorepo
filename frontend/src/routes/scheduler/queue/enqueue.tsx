@@ -16,11 +16,15 @@ const QueueEnqueuePage = () => {
   const [targets, setTargets] = useState<string>('')
 
   const enqueueHandler = () => {
-    const formData = new FormData()
-    formData.append('targets', targets)
+    const payload = {
+      targets: targets
+        .split('\n')
+        .map((r) => r.trim())
+        .filter((r) => r !== ''),
+    }
 
     httpClient
-      .post(urlFor(`/backend/scheduler/queue/enqueue/${id}`), formData)
+      .post(urlFor(`/backend/scheduler/queue/enqueue/${id}`), payload)
       .then(() => navigate('/scheduler/queue/list'))
       .catch(() => toast.error('Error while enqueuing'))
   }
