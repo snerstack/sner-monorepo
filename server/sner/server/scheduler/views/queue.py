@@ -12,8 +12,8 @@ from sqlalchemy import func, literal_column
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.scheduler.core import QueueManager
-from sner.server.scheduler.forms import QueueEnqueueForm, QueueForm
 from sner.server.scheduler.models import Job, Queue, Target
+from sner.server.scheduler.schema import QueueEnqueueSchema, QueueSchema
 from sner.server.scheduler.views import blueprint
 from sner.server.utils import error_response, filter_query
 from sner.targets import TargetManager
@@ -71,51 +71,55 @@ def queue_json_route(queue_id):
 
 
 @blueprint.route("/queue/add", methods=["POST"])
+@blueprint.arguments(QueueSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def queue_add_route():
+def queue_add_route(args):
     """queue add"""
 
-    form = QueueForm()
+    queue = Queue(**args)
 
-    if form.validate_on_submit():
-        queue = Queue()
-        form.populate_obj(queue)
-        db.session.add(queue)
-        db.session.commit()
-        return jsonify({"message": "Queue has been successfully added."})
+    db.session.add(queue)
+    db.session.commit()
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return jsonify({"message": "Queue has been successfully added."})
 
 
 @blueprint.route("/queue/edit/<queue_id>", methods=["POST"])
+@blueprint.arguments(QueueSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def queue_edit_route(queue_id):
+def queue_edit_route(args, queue_id):
     """queue edit"""
 
     queue = db.session.get(Queue, queue_id)
-    form = QueueForm(obj=queue)
 
-    if form.validate_on_submit():
-        form.populate_obj(queue)
-        db.session.commit()
-        return jsonify({"message": "Queue has been successfully edited."})
+    if not queue:
+        return error_response(message="Queue not found.", code=HTTPStatus.NOT_FOUND)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    for key, value in args.items():
+        setattr(queue, key, value)
+
+    db.session.commit()
+
+    return jsonify({"message": "Queue has been successfully edited."})
 
 
-@blueprint.route("/queue/enqueue/<queue_id>", methods=["GET", "POST"])
+@blueprint.route("/queue/enqueue/<queue_id>", methods=["POST"])
+@blueprint.arguments(QueueEnqueueSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def queue_enqueue_route(queue_id):
+def queue_enqueue_route(args, queue_id):
     """queue enqueue; put targets into queue"""
 
-    form = QueueEnqueueForm()
+    queue = db.session.get(Queue, queue_id)
 
-    if form.validate_on_submit():
-        targets = list(filter(None, map(str.strip, form.data["targets"])))
-        QueueManager.enqueue(db.session.get(Queue, queue_id), TargetManager.from_list(targets))
-        return jsonify({"message": "success"})
+    if not queue:
+        return error_response(message="Queue not found.", code=HTTPStatus.NOT_FOUND)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    QueueManager.enqueue(queue, TargetManager.from_list(args["targets"]))
+
+    return jsonify({"message": "success"})
 
 
 @blueprint.route("/queue/flush/<queue_id>", methods=["POST"])
