@@ -76,16 +76,16 @@ describe('Vuln multicopy page', () => {
       ],
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValue({ data: { new_vulns: '[1, 50]' } })
+    const postSpy = vi.spyOn(httpClient, 'post').mockResolvedValue({ data: { new_vulns: '[1, 50]' } })
 
-    await waitFor(() => {
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[0])
+    const cells = await screen.findAllByRole('cell')
+    fireEvent.click(cells[0])
 
-      const saveButton = screen.getByRole('button', { name: 'Save' })
-      fireEvent.click(saveButton)
-    })
+    await waitFor(() => expect(screen.getByLabelText('Endpoints')).not.toHaveValue(''))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => expect(postSpy).toHaveBeenCalled())
   })
 
   it('multicopies (no optional values)', async () => {
@@ -123,15 +123,37 @@ describe('Vuln multicopy page', () => {
       ],
     })
 
-    vi.spyOn(httpClient, 'post').mockResolvedValue({ data: { new_vulns: '[1, 50]' } })
+    const postSpy = vi.spyOn(httpClient, 'post').mockResolvedValue({ data: { new_vulns: '[1, 50]' } })
+
+    const cells = await screen.findAllByRole('cell')
+    fireEvent.click(cells[0])
+
+    await waitFor(() => expect(screen.getByLabelText('Endpoints')).not.toHaveValue(''))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await waitFor(() => expect(postSpy).toHaveBeenCalled())
+  })
+
+  it('multicopies with no selection', async () => {
+    const postSpy = vi.spyOn(httpClient, 'post').mockResolvedValue({ data: { new_vulns: '[]' } })
+
+    renderWithProviders({
+      element: <VulnMulticopyPage />,
+      path: '/storage/vuln/multicopy/1',
+      loader: loader,
+      routes: [{ path: '/storage/vuln/list', element: <VulnListPage /> }],
+    })
+
+    const saveButton = await screen.findByRole('button', { name: 'Save' })
+    fireEvent.click(saveButton)
 
     await waitFor(() => {
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[0])
-
-      const saveButton = screen.getByRole('button', { name: 'Save' })
-      fireEvent.click(saveButton)
+      expect(postSpy).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          endpoints: [],
+        }),
+      )
     })
   })
 
@@ -150,14 +172,11 @@ describe('Vuln multicopy page', () => {
 
     vi.spyOn(httpClient, 'post').mockRejectedValue(errorResponse({ code: 500, message: 'error message' }))
 
-    await waitFor(() => {
-      // selects first row
-      const cells = screen.getAllByRole('cell')
-      fireEvent.click(cells[0])
+    const cells = await screen.findAllByRole('cell')
+    fireEvent.click(cells[0])
+    await waitFor(() => expect(screen.getByLabelText('Endpoints')).not.toHaveValue(''))
 
-      const saveButton = screen.getByRole('button', { name: 'Save' })
-      fireEvent.click(saveButton)
-    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() => {
       expect(screen.getByText('error message')).toBeInTheDocument()

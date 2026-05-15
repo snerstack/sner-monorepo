@@ -14,8 +14,8 @@ from sqlalchemy.dialects import postgresql
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_delete_multiid, model_tag_multiid
-from sner.server.storage.forms import MultiidForm, ServiceForm, TagMultiidForm
 from sner.server.storage.models import Host, Service
+from sner.server.storage.schema import AnnotateSchema, MultiidSchema, ServiceSchema, TagMultiidSchema
 from sner.server.storage.views import blueprint
 from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 
@@ -87,36 +87,40 @@ def service_view_json_route(service_id):
 
 
 @blueprint.route("/service/add/<host_id>", methods=["POST"])
+@blueprint.arguments(ServiceSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def service_add_route(host_id):
+def service_add_route(args, host_id):
     """add service to host"""
 
-    form = ServiceForm(host_id=host_id)
+    args["host_id"] = host_id
 
-    if form.validate_on_submit():
-        service = Service()
-        form.populate_obj(service)
-        db.session.add(service)
-        db.session.commit()
-        return jsonify({"host_id": service.host_id})
+    service = Service(**args)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    db.session.add(service)
+    db.session.commit()
+
+    return jsonify({"host_id": service.host_id})
 
 
 @blueprint.route("/service/edit/<service_id>", methods=["POST"])
+@blueprint.arguments(ServiceSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def service_edit_route(service_id):
+def service_edit_route(args, service_id):
     """edit service"""
 
     service = db.session.get(Service, service_id)
-    form = ServiceForm(obj=service)
 
-    if form.validate_on_submit():
-        form.populate_obj(service)
-        db.session.commit()
-        return jsonify({"message": "Service has been successfully edited."})
+    if not service:
+        return error_response(message="Service not found.", code=HTTPStatus.NOT_FOUND)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    for key, value in args.items():
+        setattr(service, key, value)
+
+    db.session.commit()
+
+    return jsonify({"message": "Service has been successfully edited."})
 
 
 @blueprint.route("/service/delete/<service_id>", methods=["POST"])
@@ -125,42 +129,51 @@ def service_delete_route(service_id):
     """delete service"""
 
     service = db.session.get(Service, service_id)
+
+    if not service:
+        return error_response(message="Service not found.", code=HTTPStatus.NOT_FOUND)
+
     db.session.delete(service)
     db.session.commit()
     return jsonify({"message": "Service has been successfully deleted."})
 
 
 @blueprint.route("/service/annotate/<model_id>", methods=["POST"])
+@blueprint.arguments(AnnotateSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def service_annotate_route(model_id):
+def service_annotate_route(args, model_id):
     """annotate service"""
-    return model_annotate(Service, model_id)
+    return model_annotate(Service, model_id, args)
 
 
 @blueprint.route("/service/delete_multiid", methods=["POST"])
+@blueprint.arguments(MultiidSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def service_delete_multiid_route():
+def service_delete_multiid_route(args):
     """delete multiple service route"""
 
-    form = MultiidForm()
-    if form.validate_on_submit():
-        model_delete_multiid(Service, [tmp.data for tmp in form.ids.entries])
-        return "", HTTPStatus.OK
+    model_delete_multiid(Service, args["ids"])
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return {}
 
 
 @blueprint.route("/service/tag_multiid", methods=["POST"])
+@blueprint.arguments(TagMultiidSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def service_tag_multiid_route():
+def service_tag_multiid_route(args):
     """tag multiple route"""
 
-    form = TagMultiidForm()
-    if form.validate_on_submit():
-        model_tag_multiid(Service, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
-        return "", HTTPStatus.OK
+    model_tag_multiid(
+        model_class=Service,
+        action=args["action"],
+        tags=args["tags"],
+        ids=args["ids"]
+    )
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return {}
 
 
 @blueprint.route("/service/grouped.json", methods=["GET", "POST"])

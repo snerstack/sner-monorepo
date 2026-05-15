@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
+
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -16,7 +17,7 @@ import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
 const HostAddPage = () => {
-  const [appConfig,] = useRecoilState(appConfigState)
+  const [appConfig] = useRecoilState(appConfigState)
 
   const [address, setAddress] = useState<string>('')
   const [hostname, setHostname] = useState<string>('')
@@ -27,18 +28,16 @@ const HostAddPage = () => {
   const navigate = useNavigate()
 
   const addHostHandler = async () => {
-    const formData = new FormData()
-    formData.append('address', address)
-    formData.append('hostname', hostname)
-    formData.append('os', os)
-    formData.append('tags', tags.join('\n'))
-    formData.append('comment', comment)
+    const payload = {
+      address,
+      hostname,
+      os,
+      tags,
+      comment,
+    }
 
     try {
-      const resp = await httpClient.post<{ host_id: number }>(
-        urlFor(`/backend/storage/host/add`),
-        formData,
-      )
+      const resp = await httpClient.post<{ host_id: number }>(urlFor(`/backend/storage/host/add`), payload)
 
       navigate(`/storage/host/view/${resp.data.host_id}`)
 

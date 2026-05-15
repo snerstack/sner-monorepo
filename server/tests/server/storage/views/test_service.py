@@ -40,16 +40,16 @@ def test_service_add_route(cl_operator, host, service_factory):
 
     aservice = service_factory.build(host=None)
 
-    form_data = [
-        ("host_id", host.id),
-        ("proto", aservice.proto),
-        ("port", aservice.port),
-        ("state", aservice.state),
-        ("name", aservice.name),
-        ("info", aservice.info),
-        ("comment", aservice.comment),
-    ]
-    response = cl_operator.post(url_for("storage.service_add_route", host_id=host.id), params=form_data)
+    data = {
+        "host_id": host.id,
+        "proto": aservice.proto,
+        "port": aservice.port,
+        "state": aservice.state,
+        "name": aservice.name,
+        "info": aservice.info,
+        "comment": aservice.comment,
+    }
+    response = cl_operator.post_json(url_for("storage.service_add_route", host_id=host.id), data)
     assert response.status_code == HTTPStatus.OK
 
     tservice = Service.query.filter(Service.info == aservice.info).one()
@@ -65,20 +65,34 @@ def test_service_edit_route(cl_operator, service):
     response = cl_operator.get(url_for("storage.service_view_json_route", service_id=service.id))
     new_info = f"{response.json['info']}_edited"
 
-    form_data = [
-        ("host_id", response.json["host_id"]),
-        ("port", response.json["port"]),
-        ("proto", response.json["proto"]),
-        ("state", "down"),
-        ("info", new_info),
-    ]
-    response = cl_operator.post(url_for("storage.service_edit_route", service_id=service.id), params=form_data)
+    data = {
+        "host_id": response.json["host_id"],
+        "port": response.json["port"],
+        "proto": response.json["proto"],
+        "state": "down",
+        "info": new_info,
+    }
+    response = cl_operator.post_json(url_for("storage.service_edit_route", service_id=service.id), data)
 
     assert response.status_code == HTTPStatus.OK
 
     tservice = db.session.get(Service, service.id)
     assert tservice.state == "down"
     assert tservice.info == new_info
+
+
+def test_service_edit_not_found_route(cl_operator, service):
+    """service edit not found route test"""
+
+    data = {
+        "host_id": service.host.id,
+        "port": service.port,
+        "proto": service.proto,
+        "state": "down",
+        "info": f"{service.info}_edited",
+    }
+    response = cl_operator.post_json(url_for("storage.service_edit_route", service_id=-1), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_service_delete_route(cl_operator, service):
@@ -90,14 +104,21 @@ def test_service_delete_route(cl_operator, service):
     assert not db.session.get(Service, service.id)
 
 
+def test_service_delete_not_found_route(cl_operator):
+    """service delete not found route test"""
+
+    response = cl_operator.post_json(url_for("storage.service_delete_route", service_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_service_invalid_form_requests(cl_operator, service):
     """service invalid requests test"""
 
-    response = cl_operator.post(url_for("storage.service_add_route", host_id=-1), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("storage.service_add_route", host_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
-    response = cl_operator.post(url_for("storage.service_edit_route", service_id=service.id), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("storage.service_edit_route", service_id=service.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
     response = cl_operator.get(url_for("storage.service_view_json_route", service_id=-1), expect_errors=True)
     assert response.status_code == HTTPStatus.NOT_FOUND

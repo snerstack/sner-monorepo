@@ -68,8 +68,8 @@ export const getTextForRef = (ref: string): string => {
 }
 
 export interface linkForService {
-  name: string;
-  value: string;
+  name: string
+  value: string
 }
 
 export const getLinksForService = (
@@ -85,20 +85,18 @@ export const getLinksForService = (
   const isIpv6 = hostIdent.includes(':')
   const formattedHostAddress = isIpv6 ? '[' + hostIdent + ']' : hostIdent
 
-  links.push({"name": "svcTgt", "value": `${serviceProto}://${formattedHostAddress}:${servicePort}`})
+  links.push({ name: 'svcTgt', value: `${serviceProto}://${formattedHostAddress}:${servicePort}` })
 
-  if (serviceProto === "tcp")
-    links.push({"name": "telnet", "value": `telnet ${hostIdent} ${servicePort}`})
-  if (serviceProto === "udp")
-    links.push({"name": "nc udp", "value": `nc -vu ${hostIdent} ${servicePort}`})
+  if (serviceProto === 'tcp') links.push({ name: 'telnet', value: `telnet ${hostIdent} ${servicePort}` })
+  if (serviceProto === 'udp') links.push({ name: 'nc udp', value: `nc -vu ${hostIdent} ${servicePort}` })
 
-  links.push({"name": "nmap", "value": `nmap -sV -sC -p${serviceProto[0].toUpperCase()}:${servicePort} ${hostIdent}`})
+  links.push({ name: 'nmap', value: `nmap -sV -sC -p${serviceProto[0].toUpperCase()}:${servicePort} ${hostIdent}` })
 
-  links.push({"name": "http", "value": `http://${formattedHostAddress}:${servicePort}`})
-  links.push({"name": "https", "value": `https://${formattedHostAddress}:${servicePort}`})
+  links.push({ name: 'http', value: `http://${formattedHostAddress}:${servicePort}` })
+  links.push({ name: 'https', value: `https://${formattedHostAddress}:${servicePort}` })
 
-  links.push({"name": "curl", "value": `curl -ik http://${formattedHostAddress}:${servicePort}`})
-  links.push({"name": "dirb", "value": `dirb http://${formattedHostAddress}:${servicePort}`})
+  links.push({ name: 'curl', value: `curl -ik http://${formattedHostAddress}:${servicePort}` })
+  links.push({ name: 'dirb', value: `dirb http://${formattedHostAddress}:${servicePort}` })
 
   return links
 }
@@ -124,17 +122,15 @@ export const getNoteFilterXtype = (xtype: string): string => {
   return 'Note.xtype==' + encodeRFC3986URIComponent(JSON.stringify(xtype))
 }
 
-export const getSelectedIdsFormData = (dt: Api<unknown>): { [key: string]: number } => {
-  const data: { [key: string]: number } = {}
-  let i = 0
+export const getSelectedIds = (dt: Api<unknown>): number[] => {
+  const ids: number[] = []
   dt.rows({ selected: true })
     .data()
     .each((item: { id: number }) => {
-      data['ids-' + i] = item['id']
-      i++
+      ids.push(item['id'])
     })
 
-  return data
+  return ids
 }
 
 export const tagAction = async ({
@@ -143,28 +139,23 @@ export const tagAction = async ({
   url,
   action,
 }: {
-  ids: { [key: string]: number }
+  ids: number[]
   tag: string
   url: string
   action: string
 }) => {
-  if (!Object.values(ids).length) {
+  if (ids.length === 0) {
     toast.warn('No items selected')
     return
   }
 
-  const formData = new FormData()
-
-  formData.append('tag', tag)
-  formData.append('action', action)
-
-  for (const key in ids) {
-    formData.append(key, ids[key].toString())
+  const payload = {
+    ids,
+    tags: [tag],
+    action,
   }
 
-  await httpClient
-    .post(url, formData)
-    .catch(() => toast.error('Error while adding a tag'))
+  await httpClient.post(url, payload).catch(() => toast.error('Error while adding a tag'))
 }
 
 export const deleteRow = (tableId: string, url: string) => {
@@ -172,21 +163,15 @@ export const deleteRow = (tableId: string, url: string) => {
 
   const api = getTableApi(tableId)
 
-  const ids = getSelectedIdsFormData(api)
+  const ids = getSelectedIds(api)
 
-  if (!Object.values(ids).length) {
+  if (!ids.length) {
     toast.warn('No items selected')
     return
   }
 
-  const formData = new FormData()
-
-  for (const key in ids) {
-    formData.append(key, ids[key].toString())
-  }
-
   httpClient
-    .post(url, formData)
+    .post(url, { ids })
     .then(() => api.draw())
     .catch(() => toast.error('Error while deleting a row'))
 }
@@ -206,5 +191,5 @@ export const DEFAULT_MULTIPLE_TAG_STATE: MultipleTag = {
   show: false,
   action: 'set',
   url: '',
-  tableId: ''
+  tableId: '',
 }

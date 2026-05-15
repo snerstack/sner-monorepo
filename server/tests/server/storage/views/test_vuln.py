@@ -32,17 +32,18 @@ def test_vuln_add_route(cl_operator, host, service, vuln_factory):
 
     avuln = vuln_factory.build(host=None, service=None)
 
-    form_data = [
-        ("host_id", host.id),
-        ("name", avuln.name),
-        ("xtype", avuln.xtype),
-        ("severity", avuln.severity),
-        ("descr", avuln.descr),
-        ("data", avuln.data),
-        ("refs", "\n".join(avuln.refs)),
-        ("tags", "\n".join(avuln.tags)),
-    ]
-    response = cl_operator.post(url_for("storage.vuln_add_route", model_name="service", model_id=service.id), params=form_data)
+    data = {
+        "host_id": host.id,
+        "name": avuln.name,
+        "xtype": avuln.xtype,
+        "severity": avuln.severity.value,
+        "descr": avuln.descr,
+        "data": avuln.data,
+        "refs": avuln.refs,
+        "tags": avuln.tags,
+    }
+
+    response = cl_operator.post_json(url_for("storage.vuln_add_route", model_name="service", model_id=service.id), data)
     assert response.status_code == HTTPStatus.OK
 
     tvuln = Vuln.query.filter(Vuln.name == avuln.name).one()
@@ -57,15 +58,34 @@ def test_vuln_edit_route(cl_operator, vuln):
 
     response = cl_operator.get(url_for("storage.vuln_view_json_route", vuln_id=vuln.id))
     new_name = f"{vuln.name}_edited"
-    new_tags = "\n".join(vuln.tags) + "\nedited"
+    new_tags = vuln.tags + ["edited"]
 
-    form_data = [("host_id", vuln.host.id), ("name", new_name), ("severity", vuln.severity), ("tags", new_tags)]
-    response = cl_operator.post(url_for("storage.vuln_edit_route", vuln_id=vuln.id), params=form_data)
+    data = {
+        "host_id": vuln.host.id,
+        "name": new_name,
+        "severity": vuln.severity.value,
+        "tags": new_tags,
+    }
+
+    response = cl_operator.post_json(url_for("storage.vuln_edit_route", vuln_id=vuln.id), data)
     assert response.status_code == HTTPStatus.OK
 
     tvuln = db.session.get(Vuln, vuln.id)
     assert tvuln.name == new_name
     assert len(tvuln.tags) == 4
+
+
+def test_vuln_edit_not_found_route(cl_operator, vuln):
+    """vuln edit not found route test"""
+
+    data = {
+        "host_id": vuln.host.id,
+        "name": f"{vuln.name}_edited",
+        "severity": vuln.severity.value,
+        "tags": vuln.tags + ["edited"],
+    }
+    response = cl_operator.post_json(url_for("storage.vuln_edit_route", vuln_id=-1), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_vuln_delete_route(cl_operator, vuln):
@@ -76,18 +96,25 @@ def test_vuln_delete_route(cl_operator, vuln):
     assert not db.session.get(Vuln, vuln.id)
 
 
+def test_vuln_delete_not_found_route(cl_operator):
+    """vuln delete not found route test"""
+
+    response = cl_operator.post_json(url_for("storage.vuln_delete_route", vuln_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_vuln_invalid_add_request(cl_operator, service):
     """vuln invalid add request"""
 
-    response = cl_operator.post(url_for("storage.vuln_add_route", model_name="service", model_id=service.id), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("storage.vuln_add_route", model_name="service", model_id=service.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_vuln_invalid_edit_request(cl_operator, vuln):
     """vuln invalid edit request"""
 
-    response = cl_operator.post(url_for("storage.vuln_edit_route", vuln_id=vuln.id), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("storage.vuln_edit_route", vuln_id=vuln.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_vuln_invalid_view_request(cl_operator):
@@ -100,8 +127,8 @@ def test_vuln_invalid_view_request(cl_operator):
 def test_vuln_invalid_multicopy_json_request(cl_operator, vuln):
     """vuln invalid multicopy json request"""
 
-    response = cl_operator.post(url_for("storage.vuln_multicopy_json_route", vuln_id=vuln.id), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("storage.vuln_multicopy_json_route", vuln_id=vuln.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_vuln_annotate_route(cl_operator, vuln):
@@ -172,8 +199,13 @@ def test_vuln_multicopy_json_route(cl_operator, vuln, host_factory):
 
     host = host_factory.create()
 
-    form_data = [("name", vuln.name), ("severity", vuln.severity), ("endpoints", json.dumps([{"host_id": host.id}]))]
-    response = cl_operator.post(url_for("storage.vuln_multicopy_json_route", vuln_id=vuln.id), params=form_data)
+    data = {
+        "name": vuln.name,
+        "severity": vuln.severity.value,
+        "endpoints": [{"host_id": host.id}]
+    }
+
+    response = cl_operator.post_json(url_for("storage.vuln_multicopy_json_route", vuln_id=vuln.id), data)
 
     assert response.status_code == HTTPStatus.OK
     assert Vuln.query.filter(Vuln.name == vuln.name).count() == 2

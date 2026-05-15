@@ -1,7 +1,7 @@
 import { capitalize } from '@/utils'
 
 import { getTableApi } from '@/lib/DataTables'
-import { getSelectedIdsFormData, tagAction } from '@/lib/sner/storage'
+import { getSelectedIds, tagAction } from '@/lib/sner/storage'
 
 const TagsDropdownButton = ({ tags, url, tableId }: { tags: string[]; url: string; tableId: string }) => {
   return (
@@ -16,7 +16,7 @@ const TagsDropdownButton = ({ tags, url, tableId }: { tags: string[]; url: strin
           // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onClick={async (e) => {
             e.preventDefault()
-            const ids = getSelectedIdsFormData(getTableApi(tableId))
+            const ids = getSelectedIds(getTableApi(tableId))
 
             await tagAction({ ids, tag, url, action: 'unset' })
             getTableApi(tableId).draw()

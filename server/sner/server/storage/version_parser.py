@@ -4,7 +4,6 @@ version parser, pulled from 713/logs/va2am
 """
 
 import re
-from typing import List
 
 from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.version import InvalidVersion
@@ -16,7 +15,7 @@ class InvalidFormatException(Exception):
     """
 
 
-def parse(versions_input: str) -> List[SpecifierSet]:
+def parse(versions_input: str) -> list[SpecifierSet]:
     """
     Parses the input, which should have the following format:
     "versions_specifier1; versions_specifier2; ..."
@@ -52,7 +51,7 @@ def parse(versions_input: str) -> List[SpecifierSet]:
     return version_specifiers
 
 
-def is_in_version_range(version: str, specifiers: List[SpecifierSet]) -> bool:
+def is_in_version_range(version: str, specifiers: list[SpecifierSet]) -> bool:
     """
     Checks if the version is in the range specified by a list of SpecifierSets.
     If at least one of the specifiers matches the version, then the result
