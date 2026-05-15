@@ -111,6 +111,9 @@ class SeverityEnum(Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
+    def __str__(self):
+        return self.value
+
 
 class Vuln(StorageModelBase):
     """vulnerability model; heavily inspired by metasploit; hdm rulez"""
