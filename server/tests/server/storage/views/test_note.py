@@ -32,8 +32,14 @@ def test_note_add_route(cl_operator, host, service, note_factory):
 
     anote = note_factory.build(host=None, service=None)
 
-    form_data = [("host_id", host.id), ("service_id", service.id), ("xtype", anote.xtype), ("data", anote.data), ("comment", anote.comment)]
-    response = cl_operator.post(url_for("storage.note_add_route", model_name="service", model_id=service.id), params=form_data)
+    data = {
+        "host_id": host.id,
+        "service_id": service.id,
+        "xtype": anote.xtype,
+        "data": anote.data,
+        "comment": anote.comment
+    }
+    response = cl_operator.post_json(url_for("storage.note_add_route", model_name="service", model_id=service.id), data)
     assert response.status_code == HTTPStatus.OK
 
     tnote = Note.query.filter(Note.data == anote.data).one()
@@ -47,13 +53,27 @@ def test_note_edit_route(cl_operator, note):
 
     new_data = f"{note.data}_edited"
 
-    form_data = [("host_id", note.host.id), ("data", new_data)]
-    response = cl_operator.post(url_for("storage.note_edit_route", note_id=note.id), params=form_data)
+    data = {
+        "host_id": note.host.id,
+        "data": new_data
+    }
+    response = cl_operator.post_json(url_for("storage.note_edit_route", note_id=note.id), data)
 
     assert response.status_code == HTTPStatus.OK
 
     tnote = db.session.get(Note, note.id)
     assert tnote.data == new_data
+
+
+def test_note_edit_not_found_route(cl_operator, note):
+    """note edit not found route test"""
+
+    data = {
+        "host_id": note.host.id,
+        "data": note.data
+    }
+    response = cl_operator.post_json(url_for("storage.note_edit_route", note_id=-1), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_note_delete_route(cl_operator, note):
@@ -63,6 +83,13 @@ def test_note_delete_route(cl_operator, note):
     assert response.status_code == HTTPStatus.OK
 
     assert not db.session.get(Note, note.id)
+
+
+def test_note_delete_not_found_route(cl_operator):
+    """note delete not found route test"""
+
+    response = cl_operator.post_json(url_for("storage.note_delete_route", note_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_note_view_json_route(cl_operator, note):
@@ -77,15 +104,15 @@ def test_note_view_json_route(cl_operator, note):
 def test_note_invalid_add_request(cl_operator, service):
     """note invalid add request"""
 
-    response = cl_operator.post(url_for("storage.note_add_route", model_name="service", model_id=service.id), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("storage.note_add_route", model_name="service", model_id=service.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_note_invalid_edit_request(cl_operator, note):
     """note invalid edit request"""
 
-    response = cl_operator.post(url_for("storage.note_edit_route", note_id=note.id), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("storage.note_edit_route", note_id=note.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_note_invalid_view_request(cl_operator):

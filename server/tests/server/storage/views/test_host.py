@@ -34,8 +34,13 @@ def test_host_add_route(cl_operator, host_factory):
 
     ahost = host_factory.build()
 
-    form_data = [("address", ahost.address), ("hostname", ahost.hostname), ("os", ahost.os), ("comment", ahost.comment)]
-    response = cl_operator.post(url_for("storage.host_add_route"), params=form_data)
+    data = {
+        "address": ahost.address,
+        "hostname": ahost.hostname,
+        "os": ahost.os,
+        "comment": ahost.comment
+    }
+    response = cl_operator.post_json(url_for("storage.host_add_route"), data)
 
     assert response.status_code == HTTPStatus.OK
 
@@ -45,20 +50,52 @@ def test_host_add_route(cl_operator, host_factory):
     assert thost.comment == ahost.comment
 
 
+def test_host_add_invalid_route(cl_operator):
+    """host add invalid route test"""
+
+    data = {
+        "address": "invalid_address",
+        "hostname": "invalid_hostname",
+        "os": "invalid_os",
+        "comment": "invalid_comment"
+    }
+
+    response = cl_operator.post_json(url_for("storage.host_add_route"), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
 def test_host_edit_route(cl_operator, host):
     """host edit route test"""
 
     response = cl_operator.get(url_for("storage.host_view_json_route", host_id=host.id))
     new_hostname = f"{response.json['hostname']}_edited"
 
-    form_data = [("address", host.address), ("hostname", new_hostname), ("comment", "")]
-    response = cl_operator.post(url_for("storage.host_edit_route", host_id=host.id), params=form_data)
+    data = {
+        "address": host.address,
+        "hostname": new_hostname,
+        "comment": ""
+    }
+    response = cl_operator.post_json(url_for("storage.host_edit_route", host_id=host.id), data)
 
     assert response.status_code == HTTPStatus.OK
 
     thost = db.session.get(Host, host.id)
     assert thost.hostname == new_hostname
     assert thost.comment is None
+
+
+def test_host_edit_not_found_route(cl_operator, host):
+    """host edit not found route test"""
+
+    data = {
+        "address": host.address,
+        "hostname": host.hostname,
+        "os": host.os,
+        "comment": ""
+    }
+
+    response = cl_operator.post_json(url_for("storage.host_edit_route", host_id=-1), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_host_delete_route(cl_operator, host):
@@ -70,14 +107,21 @@ def test_host_delete_route(cl_operator, host):
     assert not db.session.get(Host, host.id)
 
 
+def test_host_delete_not_found_route(cl_operator):
+    """host delete not found route test"""
+
+    response = cl_operator.post_json(url_for("storage.host_delete_route", host_id=-1), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_host_invalid_form_requests(cl_operator, host):
     """host invalid requests test"""
 
-    response = cl_operator.post(url_for("storage.host_add_route"), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("storage.host_add_route"), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
-    response = cl_operator.post(url_for("storage.host_edit_route", host_id=host.id), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_operator.post_json(url_for("storage.host_edit_route", host_id=host.id), expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
     response = cl_operator.get(url_for("storage.host_view_json_route", host_id=-1), expect_errors=True)
     assert response.status_code == HTTPStatus.NOT_FOUND

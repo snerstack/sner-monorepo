@@ -4,10 +4,11 @@ import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
+
 import { getTableApi } from '@/lib/DataTables'
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
-
 import { DEFAULT_ANNOTATE_STATE } from '@/lib/sner/storage.ts'
+
 import SubmitField from '@/components/fields/SubmitField'
 import TagsField from '@/components/fields/TagsField'
 import TextAreaField from '@/components/fields/TextAreaField'
@@ -19,7 +20,7 @@ const AnnotateModal = ({
   annotate: Annotate
   setAnnotate: Dispatch<SetStateAction<Annotate>>
 }) => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig] = useRecoilState(appConfigState)
 
   const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState<string>('')
@@ -30,12 +31,13 @@ const AnnotateModal = ({
   }, [annotate.tags, annotate.comment])
 
   const annotateHandler = async (): Promise<void> => {
-    const formData = new FormData()
-    formData.append('tags', tags.join('\n'))
-    formData.append('comment', comment)
+    const payload = {
+      tags,
+      comment,
+    }
 
     try {
-      await httpClient.post(annotate.url, formData)
+      await httpClient.post(annotate.url, payload)
       setAnnotate({ ...annotate, show: false })
       annotate.tableId && getTableApi(annotate.tableId).draw()
       annotate.refresh && annotate.refresh(tags, comment)

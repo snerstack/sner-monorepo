@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
+
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -19,7 +20,7 @@ import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
 const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig] = useRecoilState(appConfigState)
   const loaderData = useLoaderData() as Host & Service
 
   const [address, setAddress] = useState<string>('')
@@ -60,23 +61,27 @@ const VulnAddPage = ({ type }: { type: 'host' | 'service' }) => {
   const navigate = useNavigate()
 
   const addVulnHandler = async () => {
-    const formData = new FormData()
-    formData.append('host_id', hostId.toString())
-    formData.append('service_id', serviceId === 0 ? '' : serviceId.toString())
-    formData.append('via_target', viaTarget)
-    formData.append('name', name)
-    formData.append('xtype', xtype)
-    formData.append('severity', severity.selected)
-    formData.append('descr', descr)
-    formData.append('data', data)
-    formData.append('refs', refs)
-    formData.append('tags', tags.join('\n'))
-    formData.append('comment', comment)
+    const payload = {
+      host_id: hostId,
+      service_id: serviceId === 0 ? null : serviceId,
+      via_target: viaTarget,
+      name,
+      xtype,
+      severity: severity.selected,
+      descr,
+      data,
+      refs: refs
+        .split('\n')
+        .map((r) => r.trim())
+        .filter((r) => r !== ''),
+      tags,
+      comment,
+    }
 
     try {
       const resp = await httpClient.post<{ vuln_id: number }>(
-        urlFor(`/backend/storage/vuln/add/${type}/${type === "host" ? hostId : serviceId}`),
-        formData,
+        urlFor(`/backend/storage/vuln/add/${type}/${type === 'host' ? hostId : serviceId}`),
+        payload,
       )
 
       navigate(`/storage/vuln/view/${resp.data.vuln_id}`)

@@ -23,8 +23,8 @@ from sner.server.storage.core import (
     vuln_export,
     vuln_report,
 )
-from sner.server.storage.forms import MultiidForm, TagMultiidForm, VulnForm, VulnMulticopyForm
 from sner.server.storage.models import Host, Note, Service, Vuln
+from sner.server.storage.schema import AnnotateSchema, MultiidSchema, TagMultiidSchema, VulnMulticopySchema, VulnSchema
 from sner.server.storage.views import blueprint
 from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 
@@ -100,37 +100,43 @@ def vuln_view_json_route(vuln_id):
 
 
 @blueprint.route("/vuln/add/<model_name>/<model_id>", methods=["POST"])
+@blueprint.arguments(VulnSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def vuln_add_route(model_name, model_id):
+def vuln_add_route(args, model_name, model_id):
     """add vuln to host or service"""
 
     host, service = get_related_models(model_name, model_id)
-    form = VulnForm(host_id=host.id, service_id=(service.id if service else None))
 
-    if form.validate_on_submit():
-        vuln = Vuln()
-        form.populate_obj(vuln)
-        db.session.add(vuln)
-        db.session.commit()
-        return jsonify({"vuln_id": vuln.id})
+    args["host_id"] = host.id
+    args["service_id"] = service.id if service else None
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    vuln = Vuln(**args)
+
+    db.session.add(vuln)
+    db.session.commit()
+
+    return jsonify({"vuln_id": vuln.id})
 
 
 @blueprint.route("/vuln/edit/<vuln_id>", methods=["POST"])
+@blueprint.arguments(VulnSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def vuln_edit_route(vuln_id):
+def vuln_edit_route(args, vuln_id):
     """edit vuln"""
 
     vuln = db.session.get(Vuln, vuln_id)
-    form = VulnForm(obj=vuln)
 
-    if form.validate_on_submit():
-        form.populate_obj(vuln)
-        db.session.commit()
-        return jsonify({"message": "Vuln has been successfully edited."})
+    if vuln is None:
+        return error_response(message="Vuln not found.", code=HTTPStatus.NOT_FOUND)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    for key, value in args.items():
+        setattr(vuln, key, value)
+
+    db.session.commit()
+
+    return jsonify({"message": "Vuln has been successfully edited."})
 
 
 @blueprint.route("/vuln/delete/<vuln_id>", methods=["POST"])
@@ -138,42 +144,52 @@ def vuln_delete_route(vuln_id):
     """delete vuln"""
 
     vuln = db.session.get(Vuln, vuln_id)
+
+    if vuln is None:
+        return error_response(message="Vuln not found.", code=HTTPStatus.NOT_FOUND)
+
     db.session.delete(vuln)
     db.session.commit()
+
     return jsonify({"message": "Vuln has been successfully deleted."})
 
 
 @blueprint.route("/vuln/annotate/<model_id>", methods=["POST"])
+@blueprint.arguments(AnnotateSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def vuln_annotate_route(model_id):
+def vuln_annotate_route(args, model_id):
     """annotate vuln"""
-    return model_annotate(Vuln, model_id)
+    return model_annotate(Vuln, model_id, args)
 
 
 @blueprint.route("/vuln/delete_multiid", methods=["POST"])
+@blueprint.arguments(MultiidSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def vuln_delete_multiid_route():
+def vuln_delete_multiid_route(args):
     """delete multiple vulns route"""
 
-    form = MultiidForm()
-    if form.validate_on_submit():
-        model_delete_multiid(Vuln, [tmp.data for tmp in form.ids.entries])
-        return "", HTTPStatus.OK
+    model_delete_multiid(Vuln, args["ids"])
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return {}
 
 
 @blueprint.route("/vuln/tag_multiid", methods=["POST"])
+@blueprint.arguments(TagMultiidSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def vuln_tag_multiid_route():
+def vuln_tag_multiid_route(args):
     """tag multiple route"""
 
-    form = TagMultiidForm()
-    if form.validate_on_submit():
-        model_tag_multiid(Vuln, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
-        return "", HTTPStatus.OK
+    model_tag_multiid(
+        model_class=Vuln,
+        action=args["action"],
+        tags=args["tags"],
+        ids=args["ids"]
+    )
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return {}
 
 
 @blueprint.route("/vuln/grouped.json", methods=["GET", "POST"])
@@ -227,26 +243,32 @@ def vuln_export_route():
 
 
 @blueprint.route("/vuln/multicopy/<int:vuln_id>.json", methods=["POST"])
+@blueprint.arguments(VulnMulticopySchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def vuln_multicopy_json_route(vuln_id):
-    """copu vuln"""
+def vuln_multicopy_json_route(args, vuln_id):
+    """copy vuln"""
 
-    vuln = db.session.get(Vuln, vuln_id)
-    form = VulnMulticopyForm(obj=vuln)
+    endpoints = args.get("endpoints", [])
 
-    if form.validate_on_submit():
-        new_vulns = []
-        for endpoint in form.endpoints.data:
-            vuln = Vuln()
-            form.populate_obj(vuln)
-            vuln.update(endpoint)
-            db.session.add(vuln)
-            new_vulns.append(vuln)
-        db.session.commit()
+    args.pop("return_url", None)
 
-        return jsonify({"new_vulns": json.dumps([vuln_id] + [x.id for x in new_vulns])})
+    new_vulns = []
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    for endpoint in endpoints:
+        new_vuln = Vuln()
+
+        for key, value in args.items():
+            setattr(new_vuln, key, value)
+
+        new_vuln.update(endpoint)
+
+        db.session.add(new_vuln)
+        new_vulns.append(new_vuln)
+
+    db.session.commit()
+
+    return jsonify({"new_vulns": json.dumps([vuln_id] + [x.id for x in new_vulns])})
 
 
 @blueprint.route("/vuln/multicopy_endpoints.json", methods=["GET", "POST"])

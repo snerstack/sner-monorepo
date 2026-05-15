@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
+
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -17,7 +18,7 @@ import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
 const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig] = useRecoilState(appConfigState)
   const loaderData = useLoaderData() as Host & Service
 
   const [address, setAddress] = useState<string>('')
@@ -51,19 +52,20 @@ const NoteAddPage = ({ type }: { type: 'host' | 'service' }) => {
   const navigate = useNavigate()
 
   const addNoteHandler = async () => {
-    const formData = new FormData()
-    formData.append('host_id', hostId.toString())
-    formData.append('service_id', serviceId === 0 ? '' : serviceId.toString())
-    formData.append('via_target', viaTarget)
-    formData.append('xtype', xtype)
-    formData.append('data', data)
-    formData.append('tags', tags.join('\n'))
-    formData.append('comment', comment)
+    const payload = {
+      host_id: hostId,
+      service_id: serviceId === 0 ? null : serviceId,
+      via_target: viaTarget,
+      xtype: xtype,
+      data: data,
+      tags: tags,
+      comment: comment,
+    }
 
     try {
       const resp = await httpClient.post<{ host_id: number }>(
-        urlFor(`/backend/storage/note/add/${type}/${type === "host" ? hostId : serviceId}`),
-        formData,
+        urlFor(`/backend/storage/note/add/${type}/${type === 'host' ? hostId : serviceId}`),
+        payload,
       )
 
       navigate(`/storage/host/view/${resp.data.host_id}`)
