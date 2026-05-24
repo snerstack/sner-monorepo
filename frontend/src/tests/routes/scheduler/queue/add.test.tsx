@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { httpClient } from '@/lib/httpClient'
 
-import { errorResponse } from '@/tests/utils/errorResponse'
+import { smorestErrorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Queue add page', () => {
@@ -62,13 +62,15 @@ describe('Queue add page', () => {
     })
 
     vi.spyOn(httpClient, 'post').mockRejectedValueOnce(
-      errorResponse({
-        code: 400,
-        message: "Invalid form",
+      smorestErrorResponse({
+        code: 422,
         errors: {
-          config: ["Invalid YAML: 'NoneType' object has no attribute 'read'"],
-          group_size: ['Number must be at least 1.'],
+          json: {
+            config: ["Invalid YAML: 'NoneType' object has no attribute 'read'"],
+            group_size: ['Must be greater than or equal to 1'],
+          },
         },
+        status: 'Unprocessable Entity',
       }),
     )
 
@@ -83,9 +85,8 @@ describe('Queue add page', () => {
     fireEvent.click(addButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid form')).toBeInTheDocument()
       expect(screen.getByText(/Invalid YAML: 'NoneType' object has no attribute 'read'/)).toBeInTheDocument()
-      expect(screen.getByText(/Number must be at least 1./)).toBeInTheDocument()
+      expect(screen.getByText(/Must be greater than or equal to 1/)).toBeInTheDocument()
     })
   })
 })

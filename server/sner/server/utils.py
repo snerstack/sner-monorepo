@@ -126,9 +126,7 @@ def filter_query_jsonfilter(query, jsonfilter):
     return query
 
 
-def error_response(message, errors=None, code=HTTPStatus.BAD_REQUEST):
+def error_response(message, code=HTTPStatus.BAD_REQUEST):
     """Returns a JSON error response following the Google JSON Style Guide."""
-    if errors is not None:
-        return jsonify({"apiVersion": "2.0", "error": {"code": code, "message": message, "errors": errors}}), code
 
     return jsonify({"apiVersion": "2.0", "error": {"code": code, "message": message}}), code

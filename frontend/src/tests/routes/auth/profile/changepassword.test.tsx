@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { httpClient } from '@/lib/httpClient'
 
-import { errorResponse } from '@/tests/utils/errorResponse'
+import { errorResponse, smorestErrorResponse } from '@/tests/utils/errorResponse'
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 
 describe('Change password page', () => {
@@ -53,7 +53,11 @@ describe('Change password page', () => {
     })
 
     vi.spyOn(httpClient, 'post').mockRejectedValueOnce(
-      errorResponse({ code: 400, errors: { password1: ['Password too short. At least 10 characters required.'] } }),
+      smorestErrorResponse({
+        code: 422,
+        errors: { json: { password1: ['Password too short. At least 10 characters required.'] } },
+        status: 'Unprocessable Entity',
+      }),
     )
 
     const currentPasswordInput = screen.getByLabelText('Current password')
