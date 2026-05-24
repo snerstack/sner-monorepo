@@ -9,3 +9,15 @@ export const errorResponse = (data: any) => {
 
   return error
 }
+
+export const smorestErrorResponse = (data: SmorestErrorResponse): AxiosError<SmorestErrorResponse> => {
+  const error = new AxiosError<SmorestErrorResponse>()
+  
+  error.response = { 
+    data: data,
+    status: data.code,
+    statusText: data.status,
+  } as AxiosResponse<SmorestErrorResponse>
+
+  return error
+}

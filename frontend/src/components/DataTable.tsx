@@ -120,7 +120,7 @@ const DataTable = ({ id, ...props }: TableConfig) => {
         error: (err: JQuery.jqXHR) => {
           console.log(ajax_url)
           console.error("DT ajax error", err)
-          toast.error(`DT ajax error, ${(err.responseJSON as BackendErrorResponse)?.error?.message ?? err.statusText}`)
+          toast.error(`DT ajax error, ${(err.responseJSON as CustomErrorResponse)?.error?.message ?? err.statusText}`)
         }
       }
     }

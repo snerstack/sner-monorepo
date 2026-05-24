@@ -38,13 +38,14 @@ describe('handleHttpClientError', () => {
       isAxiosError: true,
       response: {
         data: {
-          error: {
-            message: null,
-            errors: {
+          code: 422,
+          errors: {
+            json: {
               field1: ['Error message 1'],
               field2: 'Error message 2',
             },
           },
+          status: 'Unprocessable Entity',
         },
       },
     }
