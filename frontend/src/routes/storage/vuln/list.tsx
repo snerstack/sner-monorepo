@@ -32,6 +32,17 @@ const VulnListPage = () => {
   const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
   const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
+  const getActionUrl = (basePath: string, additionalParams?: Record<string, string>) => {
+    const filter = searchParams.get('filter')
+
+    const params = new URLSearchParams({
+      ...additionalParams,
+      ...(filter && { filter })
+    }).toString()
+
+    return urlFor(`${basePath}${params ? `?${params}` : ''}`)
+  }
+
   const columns = [
     ColumnSelect({ visible: true }),
     Column('id', { visible: false }),
@@ -191,7 +202,7 @@ const VulnListPage = () => {
         <div className="breadcrumb-buttons pl-2">
           <a
             className="btn btn-outline-primary"
-            href={urlFor('/backend/storage/vuln/report')}
+            href={getActionUrl('/backend/storage/vuln/report')}
             title="Generate standard report with vulnerabilities groupped by name and tags."
           >
             Report
@@ -199,7 +210,7 @@ const VulnListPage = () => {
           {' '}
           <a
             className="btn btn-outline-primary"
-            href={urlFor('/backend/storage/vuln/report?group_by_host=True')}
+            href={getActionUrl('/backend/storage/vuln/report', { group_by_host: 'True' })}
             title={
               "Generate standard report AND also aggregate vulnerabilities by host identifier " +
               "to eliminate duplicates caused by scans from multiple perspectives or DNS views."
@@ -210,7 +221,7 @@ const VulnListPage = () => {
           {' '}
           <a
             className="btn btn-outline-primary"
-            href={urlFor('/backend/storage/vuln/export')}
+            href={getActionUrl('/backend/storage/vuln/export')}
             title="Export all vulnerabilities without any aggregation."
           >
             Export
