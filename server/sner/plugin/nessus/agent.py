@@ -25,6 +25,7 @@ class Config(ConfigBase):
 
     module: str = Literal["nessus"]
     policy_name: str = "sner-basic"
+    scan_name_suffix: str = ""
 
 
 class AgentModule(ModuleBase):
@@ -60,7 +61,9 @@ class AgentModule(ModuleBase):
 
         targets = [target.value if isinstance(target, GenericTarget) else target.address for _, target in self.enumerate_targets(assignment)]
 
-        scan_id = self.nessus.scan_create(f"{asg_config.policy_name}.{assignment['id']}", targets, asg_config.policy_name)
+        scan_id = self.nessus.scan_create(
+            f"{asg_config.policy_name}.{assignment['id']}{asg_config.scan_name_suffix}", targets, asg_config.policy_name
+        )
 
         ret = self._wait_scan(scan_id)
         if not self.loop:
