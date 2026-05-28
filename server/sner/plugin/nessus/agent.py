@@ -39,8 +39,9 @@ class AgentModule(ModuleBase):
 
     def __init__(self):
         super().__init__()
+        self.nessus = NessusManager.from_env()
         self.loop = True
-        self.nessus = None
+        self.scan_id = None
 
     def _wait_scan(self, scan_id):
         """wait until scan finishes, interruptable"""
@@ -57,25 +58,26 @@ class AgentModule(ModuleBase):
 
     def run(self, assignment):
         asg_config = self.init_job(assignment)
-        self.nessus = NessusManager.from_env()
 
         targets = [target.value if isinstance(target, GenericTarget) else target.address for _, target in self.enumerate_targets(assignment)]
 
-        scan_id = self.nessus.scan_create(
+        self.scan_id = self.nessus.scan_create(
             f"{asg_config.policy_name}.{assignment['id']}{asg_config.scan_name_suffix}", targets, asg_config.policy_name
         )
 
-        ret = self._wait_scan(scan_id)
+        ret = self._wait_scan(self.scan_id)
         if not self.loop:
             return ret  # pragma: nocover  ; won't test
 
-        Path(OUTPUT_FILENAME).write_text(self.nessus.scan_report(scan_id), encoding="utf-8")
-        self.nessus.scan_delete(scan_id)
+        Path(OUTPUT_FILENAME).write_text(self.nessus.scan_report(self.scan_id), encoding="utf-8")
+        self.nessus.scan_delete(self.scan_id)
 
-        self.nessus = None
+        self.scan_id = None
         return ret
 
     def terminate(self):  # pragma: no cover  ; not tested / running over multiprocessing
         """terminate scanner if running"""
 
         self.loop = False
+        if self.scan_id:
+            self.nessus.scan_kill(self.scan_id)

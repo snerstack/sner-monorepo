@@ -96,3 +96,7 @@ class NessusManager:
     def scan_delete(self, scan_id):
         """delete scan"""
         return self.retry_on_exception(self.nessus.scans.delete, scan_id)
+
+    def scan_kill(self, scan_id):
+        """kill scan"""
+        return self.retry_on_exception(self.nessus.scans.kill, scan_id)

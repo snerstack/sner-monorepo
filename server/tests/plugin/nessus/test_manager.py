@@ -67,6 +67,15 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
         manager = _get_manager()
         assert manager.scan_delete(1) == 0
 
+    # scan_kill
+    mock_nessus = MagicMock()
+    mock_nessus.return_value.scans.kill.return_value = 0
+    patch_api = patch("sner.plugin.nessus.manager.Nessus", mock_nessus)
+
+    with patch_api:
+        manager = _get_manager()
+        assert manager.scan_kill(1) == 0
+
 
 def test_retries(tmpworkdir):  # pylint: disable=unused-argument
     """test manager basics"""
