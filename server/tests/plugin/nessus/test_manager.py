@@ -7,13 +7,15 @@ import os
 from io import BytesIO
 from unittest.mock import MagicMock, patch
 
+import pytest
+import restfly.errors
 import yaml
 from flask import current_app
 
 from sner.plugin.nessus.manager import NessusManager
 
 
-def test_basic(app, tmpworkdir):  # pylint: disable=unused-argument
+def test_basic(tmpworkdir):  # pylint: disable=unused-argument
     """test manager basics"""
 
     def _get_manager():
@@ -64,6 +66,23 @@ def test_basic(app, tmpworkdir):  # pylint: disable=unused-argument
     with patch_api:
         manager = _get_manager()
         assert manager.scan_delete(1) == 0
+
+
+def test_retries(tmpworkdir):  # pylint: disable=unused-argument
+    """test manager basics"""
+
+    def _get_manager():
+        return NessusManager("http://dummy", "dummy", "dummy", restfly_retries=1, restfly_retry_delay=0)
+
+    mock_response = MagicMock()
+    mock_response.status_code = 401
+    mock_nessus = MagicMock()
+    mock_nessus.return_value.scans.delete.side_effect = restfly.errors.UnauthorizedError(mock_response)
+    patch_api = patch("sner.plugin.nessus.manager.Nessus", mock_nessus)
+
+    with (patch_api, pytest.raises(restfly.errors.UnauthorizedError)):
+        manager = _get_manager()
+        assert manager.scan_delete(1)
 
 
 def test_factories(app, tmpworkdir):  # pylint: disable=unused-argument
