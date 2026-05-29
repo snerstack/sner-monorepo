@@ -1,14 +1,12 @@
+image: docker:git
+
 stages:
   - build-server
   - build-agent
 
 build-server:
-  image: nestybox/ubuntu-jammy-docker
   stage: build-server
-  tags:
-    - sysbox-dind
-  before_script:
-    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y docker-compose-plugin
+  tags: [sner-build-docker]
 
   script:
     - cd docker
@@ -18,12 +16,8 @@ build-server:
     - docker logout $CI_REGISTRY
 
 build-agent:
-  image: nestybox/ubuntu-jammy-docker
   stage: build-agent
-  tags:
-    - sysbox-dind
-  before_script:
-    - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y docker-compose-plugin
+  tags: [sner-build-docker]
 
   script:
     - cd docker
