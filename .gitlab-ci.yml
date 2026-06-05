@@ -4,6 +4,15 @@ stages:
   - build-server
   - build-agent
 
+# sysbox build notes for cesnet gitlab runner instance
+# currently not used because sysbox deployment lacks docker build cache
+# pipeline-name:
+#   image: nestybox/ubuntu-jammy-docker
+#   stage: stage-name
+#   tags: [sysbox-dind]
+#   before_script:
+#     - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y docker-compose-plugin
+
 build-server:
   stage: build-server
   tags: [sner-build-docker]
