@@ -28,7 +28,7 @@ class CredsConfig(ConfigBase):
 class NessusManager:
     """remote nessus scanner manager"""
 
-    def __init__(self, url, access_key, secret_key, restfly_retries=3, restfly_retry_delay=10):
+    def __init__(self, url, access_key, secret_key, restfly_retries=5, restfly_retry_delay=20):
         self.nessus = Nessus(url=url, access_key=access_key, secret_key=secret_key)
         self.restfly_retries = restfly_retries
         self.restfly_retry_delay = restfly_retry_delay
