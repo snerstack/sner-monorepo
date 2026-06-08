@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { defaultAppConfig } from '@/appConfig'
 import { LSKEY_TAG_COLORS, tagsConfigInitialize } from '@/lib/sner/tags'
 
-describe('storage lib helpers', () => {
+describe('localstorage lib helpers', () => {
     it('initializes local storage config tag colors', () => {
         // cleanup existing state from beforeEach
         localStorage.removeItem(LSKEY_TAG_COLORS)
