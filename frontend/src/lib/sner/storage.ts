@@ -31,7 +31,7 @@ export const getUrlForRef = (ref: string): string => {
 
   switch (type) {
     case 'URL':
-      return id
+      return (id.startsWith('http://') || id.startsWith('https://') ? id : `#invalidurl#${id}`)
     case 'CVE':
       return 'https://cvedetails.com/cve/CVE-' + id
     case 'NSS':
