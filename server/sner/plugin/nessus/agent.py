@@ -26,6 +26,8 @@ class Config(ConfigBase):
     module: str = Literal["nessus"]
     policy_name: str = "sner-basic"
     scan_name_suffix: str = ""
+    manager_restfly_retries: int | None = None
+    manager_restfly_retry_delay: int | None = None
 
 
 class AgentModule(ModuleBase):
@@ -39,8 +41,8 @@ class AgentModule(ModuleBase):
 
     def __init__(self):
         super().__init__()
-        self.nessus = NessusManager.from_env()
         self.loop = True
+        self.nessus = None
         self.scan_id = None
 
     def _wait_scan(self, scan_id):
@@ -58,6 +60,14 @@ class AgentModule(ModuleBase):
 
     def run(self, assignment):
         asg_config = self.init_job(assignment)
+        manager_opts = {
+            key: val for key, val in {
+                "restfly_retries": asg_config.manager_restfly_retries,
+                "restfly_retry_delay": asg_config.manager_restfly_retry_delay,
+            }.items()
+            if val is not None
+        }
+        self.nessus = NessusManager.from_env(**manager_opts)
 
         targets = [target.value if isinstance(target, GenericTarget) else target.address for _, target in self.enumerate_targets(assignment)]
 

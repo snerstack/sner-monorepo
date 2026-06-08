@@ -34,12 +34,12 @@ class NessusManager:
         self.restfly_retry_delay = restfly_retry_delay
 
     @classmethod
-    def from_env(cls, envname="SNER_NESSUS_CREDS"):
+    def from_env(cls, envname="SNER_NESSUS_CREDS", **kwargs):
         """factory, initialize from creds environment variable"""
 
         data = yaml.safe_load(os.environ[envname])
         creds_config = CredsConfig.model_validate(data)
-        return cls(**creds_config.model_dump())
+        return cls(**creds_config.model_dump(), **kwargs)
 
     @classmethod
     def from_app_config(cls):
