@@ -45,6 +45,7 @@ DEFAULT_CONFIG = {
     # flask
     "SECRET_KEY": os.urandom(32),
     "XFLASK_PROXYFIX": False,
+    "CORS_ORIGINS": "*",
     # sqlalchemy
     "SQLALCHEMY_DATABASE_URI": "postgresql:///sner",
     "SQLALCHEMY_TRACK_MODIFICATIONS": False,
