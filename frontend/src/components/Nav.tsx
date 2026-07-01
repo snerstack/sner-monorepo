@@ -32,6 +32,7 @@ const Nav = () => {
       link: '/lens',
       acl: 'user',
       subnav: [
+        { title: 'Overview', link: '/lens/overview' },
         { title: 'Hosts', link: '/lens/host/list' },
         { title: 'Services', link: '/lens/service/list' },
         { title: 'Vulnerabilities', link: '/lens/vuln/list' },

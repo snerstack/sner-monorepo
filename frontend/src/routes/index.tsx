@@ -12,6 +12,7 @@ import UserEditPage from '@/routes/auth/user/edit'
 import UserListPage from '@/routes/auth/user/list'
 import ForbiddenPage from '@/routes/forbidden'
 import LensPage from '@/routes/lens'
+import LensOverviewPage from '@/routes/lens/overview'
 import LensHostListPage from '@/routes/lens/host/list'
 import LensHostViewPage from '@/routes/lens/host/view'
 import LensServiceListPage from '@/routes/lens/service/list'
@@ -72,6 +73,7 @@ export const routes = createRoutesFromElements(
 
     <Route element={<ProtectedRoute requiredRole="user" />}>
       <Route path="lens" element={<LensPage />} />
+      <Route path="lens/overview" element={<LensOverviewPage />} />
       <Route path="lens/host/list" element={<LensHostListPage />} />
       <Route
         path="lens/host/view/:id"

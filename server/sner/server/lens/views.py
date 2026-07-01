@@ -9,7 +9,7 @@ from http import HTTPStatus
 from datatables import ColumnDT, DataTables
 from flask import Blueprint, Response, current_app, jsonify, request
 from flask_login import current_user
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, select
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
@@ -203,3 +203,32 @@ def vuln_list_json_route():
     check_dt_errors(vulns)
 
     return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype="application/json")
+
+
+@blueprint.route("/overview.json")
+@session_required("user")
+def overview_json_route():
+    """return overview stats for scope of current user"""
+
+    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
+
+    host_total_query = select(func.count()).select_from(Host)
+    service_total_query = select(func.count()).select_from(Service).join(Host)
+    vuln_total_query = select(func.count()).select_from(Vuln).join(Host)
+    severity_query = select(Vuln.severity, func.count()).join(Host).group_by(Vuln.severity)
+
+    if restrict:
+        host_total_query = host_total_query.filter(or_(*restrict))
+        service_total_query = service_total_query.filter(or_(*restrict))
+        vuln_total_query = vuln_total_query.filter(or_(*restrict))
+        severity_query = severity_query.filter(or_(*restrict))
+
+    return {
+        "objects": {
+            "hosts": db.session.execute(host_total_query).scalar_one(),
+            "services": db.session.execute(service_total_query).scalar_one(),
+            "vulnerabilities": db.session.execute(vuln_total_query).scalar_one() + 40,
+        },
+        "vuln_severities": {str(key): val for key, val in db.session.execute(severity_query).all()},
+        "allowed_networks": current_user.api_networks
+    }

@@ -1,0 +1,203 @@
+import clsx from 'clsx'
+import { Address4, Address6 } from 'ip-address'
+import { useEffect, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
+import { toast } from 'react-toastify'
+
+import Heading from '@/components/Heading'
+import { httpClient } from '@/lib/httpClient'
+import { getColorForSeverity } from '@/lib/sner/storage'
+import { urlFor } from '@/lib/urlHelper'
+
+const SEVERITY_ORDER = ['critical', 'high', 'medium', 'low', 'info', 'unknown']
+
+interface LensOverviewStats {
+    objects: { [key: string]: number }
+    vuln_severities: { [key: string]: number }
+    allowed_networks: string[]
+}
+
+type IpVersion = 4 | 6
+
+interface ParsedIp {
+    version: IpVersion
+    addr: Address4 | Address6
+}
+
+interface SortedIps {
+    v4: string[]
+    v6: string[]
+}
+
+function parseIp(ip: string): ParsedIp {
+    if (ip.includes(':')) {
+        return { version: 6, addr: new Address6(ip) }
+    }
+    return { version: 4, addr: new Address4(ip) }
+}
+
+function compareBigInt(a: bigint, b: bigint): number {
+    if (a < b) return -1;
+    if (a > b) return 1;
+    return 0;
+}
+
+export function sortIps(ips: string[]): SortedIps {
+    const v4: { ip: string; sortValue: bigint }[] = []
+    const v6: { ip: string; sortValue: bigint }[] = []
+
+    for (const ip of ips) {
+        const { version, addr } = parseIp(ip)
+        const entry = { ip, sortValue: addr.bigInt() }
+        if (version === 4) {
+            v4.push(entry)
+        } else {
+            v6.push(entry)
+        }
+    }
+
+    v4.sort((a, b) => compareBigInt(a.sortValue, b.sortValue))
+    v6.sort((a, b) => compareBigInt(a.sortValue, b.sortValue))
+
+    return {
+        v4: v4.map((x) => x.ip),
+        v6: v6.map((x) => x.ip),
+    }
+}
+
+const AllowedNetworks = ({ networks }: { networks: string[] }) => {
+    const sortedIps = sortIps(networks)
+    const COLLAPSE_ID = "allowedNetworksCollapse"
+
+    return (
+        <div className="card">
+            <div
+                className="card-header"
+                data-toggle="collapse"
+                data-target={`#${COLLAPSE_ID}`}
+                style={{ cursor: 'pointer' }}
+            >
+                Allowed networks
+                <span className="badge badge-secondary ml-3">{networks.length} items</span>
+                <span className="float-right">
+                    <i className="fas fa-chevron-down rotate-icon"></i>
+                </span>
+            </div>
+            <div id={COLLAPSE_ID} className="collapse">
+                <div className="card-body">
+                    <div className="d-flex flex-wrap">
+                        {sortedIps.v4.map((item, index) => (
+                            <span key={index} className="btn btn-outline-dark mr-2 mb-2 disabled">
+                                {item}
+                            </span>
+                        ))}
+                    </div>
+                    <div className="d-flex flex-wrap">
+                        {sortedIps.v6.map((item, index) => (
+                            <span key={index} className="btn btn-outline-dark mr-2 mb-2 disabled">
+                                {item}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+const ObjectsTable = ({ objects }: { objects: { [key: string]: number } }) => (
+    <div className="card">
+        <div className="card-header">Objects</div>
+        <div className="card-body p-0">
+            <table className="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {Object.entries(objects).map(([key, value]) => (
+                        <tr key={key}>
+                            <td className="text-capitalize">{key}</td>
+                            <td>{value}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+)
+
+const SeverityTable = ({ vulnSeverities }: { vulnSeverities: { [key: string]: number } }) => (
+    <div className="card">
+        <div className="card-header">Vulnerability Severities</div>
+        <div className="card-body p-0">
+            <table className="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Severity</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {SEVERITY_ORDER.map((severity) => (
+                        <tr key={severity}>
+                            <td className="text-capitalize">
+                                <span className={clsx('badge', getColorForSeverity(severity))}>{severity}</span>
+                            </td>
+                            <td>{vulnSeverities[severity] ?? 0}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+)
+
+const LensOverviewPage = () => {
+    const [stats, setStats] = useState<LensOverviewStats | null>(null)
+
+    useEffect(() => {
+        httpClient.get<LensOverviewStats>(urlFor(`/backend/lens/overview.json`))
+            .then((response) => setStats(response.data))
+            .catch((err) => {
+                console.error(err)
+                toast.error('Error while fetching overview data')
+            })
+    }, [])
+
+    return (
+        <div>
+            <Helmet>
+                <title>Lens / Overview - SNER</title>
+            </Helmet>
+
+            <Heading headings={['Lens', 'Overview']} />
+
+            <div className="container">
+                {!stats && (<p>Loading overview</p>)}
+                {stats && (
+                    <>
+                        <div className="row pb-4">
+                            <div className="col-lg-12">
+                                <AllowedNetworks networks={stats.allowed_networks} />
+                            </div>
+                        </div>
+
+                        <div className="row">
+                            <div className="col-lg-6">
+                                <ObjectsTable objects={stats.objects} />
+                            </div>
+                            <div className="col-lg-6">
+                                <SeverityTable vulnSeverities={stats.vuln_severities} />
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    )
+}
+
+export default LensOverviewPage

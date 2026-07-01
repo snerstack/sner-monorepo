@@ -79,3 +79,13 @@ pre.preformatted {
 .lens-host-service.card-header {
     font-weight: bold;
 }
+
+/* rotated icon on collapsible card */
+.rotate-icon {
+    color: rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease-in-out;
+}
+
+.card-header:not(.collapsed) .rotate-icon {
+    transform: rotate(-180deg);
+}
