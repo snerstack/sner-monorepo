@@ -121,3 +121,26 @@ def test_vuln_list_json_route(cl_user, host_permitted, host_denied, service_fact
 
     assert len(response.json["data"]) == 1
     assert response.json["data"][0]["name"] == vuln_permitted.name
+
+
+def test_overview_json_route(cl_user, host_permitted, host_denied, service_factory, vuln_factory):
+    """overview json route test"""
+
+    service_permitted = service_factory.create(host=host_permitted, port=111)
+    service_denied = service_factory.create(host=host_denied, port=222)
+
+    vuln_factory.create(host=host_permitted, service=service_permitted, name="vuln_critical", severity="critical")
+    vuln_factory.create(host=host_permitted, service=service_permitted, name="vuln_high", severity="high")
+    vuln_factory.create(host=host_denied, service=service_denied, name="vuln_denied", severity="critical")
+
+    response = cl_user.get(url_for("lens.overview_json_route"))
+    assert response.status_code == HTTPStatus.OK
+
+    assert response.json["objects"]["hosts"] == 1
+    assert response.json["objects"]["services"] == 1
+    assert response.json["objects"]["vulns"] == 2
+
+    assert response.json["vuln_severities"]["critical"] == 1
+    assert response.json["vuln_severities"].get("unknown") is None
+
+    assert response.json["allowed_networks"] == ["127.0.0.0/8", "2001:db8::/32"]

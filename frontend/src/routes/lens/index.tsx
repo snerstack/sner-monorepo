@@ -11,7 +11,7 @@ const Tile = ({ to, icon, caption, }: { to: string, icon: string, caption: strin
             color: "inherit",
         }}
     >
-        <div className="card d-flex flex-column justify-content-center align-items-center m-2 p-4" style={{ width: "17rem" }}>
+        <div className="card d-flex flex-column justify-content-center align-items-center m-2 p-4 hover-card" style={{ width: "17rem" }}>
             <i className={`${icon} fa-5x`}></i>
             <h4 className="mt-4">{caption}</h4>
         </div>

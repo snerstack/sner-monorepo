@@ -59,7 +59,29 @@ const vulns_data = {
     ]
 }
 
+const overview_data = {
+    objects: {
+        hosts: 11,
+        services: 22,
+        vulnerabilities: 33,
+    },
+    vuln_severities: {
+        critical: 1,
+        high: 2,
+        medium: 3,
+        low: 4,
+        info: 5,
+        // intentionaly omitted for test edge-case
+        //unknown: 6,
+    },
+    allowed_networks: ["127.0.0.1/32", "127.0.0.2/32", "127.0.0.2/32", "::2/128", "::1/128"],
+}
+
 export const lensHandlers = [
+    http.get("/backend/lens/overview.json", () => {
+        return HttpResponse.json(overview_data)
+    }),
+
     http.post("/backend/lens/host/list.json", () => {
         return HttpResponse.json(hosts_data)
     }),

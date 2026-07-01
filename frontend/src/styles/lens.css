@@ -89,3 +89,7 @@ pre.preformatted {
 .card-header:not(.collapsed) .rotate-icon {
     transform: rotate(-180deg);
 }
+
+.hover-card:hover {
+  background-color: #e9ecef;
+}

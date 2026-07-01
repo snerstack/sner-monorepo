@@ -227,7 +227,7 @@ def overview_json_route():
         "objects": {
             "hosts": db.session.execute(host_total_query).scalar_one(),
             "services": db.session.execute(service_total_query).scalar_one(),
-            "vulnerabilities": db.session.execute(vuln_total_query).scalar_one() + 40,
+            "vulns": db.session.execute(vuln_total_query).scalar_one(),
         },
         "vuln_severities": {str(key): val for key, val in db.session.execute(severity_query).all()},
         "allowed_networks": current_user.api_networks

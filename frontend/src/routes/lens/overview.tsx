@@ -12,6 +12,18 @@ import { urlFor } from '@/lib/urlHelper'
 
 const SEVERITY_ORDER = ['critical', 'high', 'medium', 'low', 'info', 'unknown']
 
+const LABELS : { [key: string]: string } = {
+  hosts: 'Hosts',
+  services: 'Services',
+  vulns: 'Vulnerabilities',
+  critical: 'Critical',
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+  info: 'Info',
+  unknown: 'Unknown'
+}
+
 interface LensOverviewStats {
     objects: { [key: string]: number }
     vuln_severities: { [key: string]: number }
@@ -127,7 +139,7 @@ const ObjectsTable = ({ objects }: { objects: { [key: string]: number } }) => (
                 <tbody>
                     {Object.entries(objects).map(([key, value]) => (
                         <tr key={key}>
-                            <td className="text-capitalize">{key}</td>
+                            <td className="text-capitalize">{LABELS[key]}</td>
                             <td>{value}</td>
                         </tr>
                     ))}
@@ -153,7 +165,7 @@ const SeverityTable = ({ vulnSeverities }: { vulnSeverities: { [key: string]: nu
                         <tr key={severity}>
                             <td className="text-capitalize">
                                 <Link to={severityFilterUrl(severity)} style={{ textDecoration: 'none' }}>
-                                    <span className={clsx('badge', getColorForSeverity(severity), 'p-2')}>{severity}</span>
+                                    <span className={clsx('badge', getColorForSeverity(severity), 'p-2')}>{LABELS[severity]}</span>
                                 </Link>
                             </td>
                             <td>{vulnSeverities[severity] ?? 0}</td>
@@ -171,6 +183,7 @@ const LensOverviewPage = () => {
     useEffect(() => {
         httpClient.get<LensOverviewStats>(urlFor(`/backend/lens/overview.json`))
             .then((response) => setStats(response.data))
+            /* c8 ignore next 4 */
             .catch((err) => {
                 console.error(err)
                 toast.error('Error while fetching overview data')
