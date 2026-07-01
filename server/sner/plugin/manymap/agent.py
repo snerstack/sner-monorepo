@@ -47,10 +47,11 @@ class AgentModule(ModuleBase):
             output_args = ["-oA", f"output-{idx}", "--reason"]
 
             target_args = ["-p", f"{target.proto[0].upper()}:{target.port}"]
+            if target.proto == "udp":
+                target_args.append("-sU")
             if target.is_ipv6_address():
-                target_args += ["-6", target.address]
-            else:
-                target_args += [target.address]
+                target_args.append("-6")
+            target_args.append(target.address)
 
             cmd = ["nmap"] + asg_config.args + output_args + target_args
             ret |= self._execute(cmd, f"output-{idx}")
