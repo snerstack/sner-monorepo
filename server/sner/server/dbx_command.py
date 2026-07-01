@@ -68,7 +68,7 @@ DEFAULT_PROD_QUEUES = [
     # basic scan
     QueueDef(
         "sner.nmap.servicedisco",
-        {"module": "nmap", "args": ["-sS", "--top-ports", "10000", "-Pn"], "timing_perhost": 2},
+        {"module": "nmap", "args": ["-sS", "--top-ports", "10000", "-Pn", "--disable-arp-ping"], "timing_perhost": 2},
         1000,
         QueuePrio.NORMAL,
         ["default"],
@@ -77,7 +77,7 @@ DEFAULT_PROD_QUEUES = [
     QueueDef("sner.six_enum_discover", {"module": "six_enum_discover"}, 5, QueuePrio.NORMAL, ["default"]),
     QueueDef(
         "sner.nmap.serviceversion",
-        {"module": "manymap", "args": ["-sV", "--version-intensity", "4", "-O", "-Pn"]},
+        {"module": "manymap", "args": ["-sV", "--version-intensity", "4", "-O", "-Pn", "--disable-arp-ping"]},
         10,
         QueuePrio.HIGH,
         ["default"],
@@ -94,6 +94,7 @@ DEFAULT_PROD_QUEUES = [
                 "--script-timeout",
                 "10m",
                 "-Pn",
+                "--disable-arp-ping",
             ],
         },
         1,
@@ -134,7 +135,7 @@ DEFAULT_PROD_QUEUES = [
         "sner.nmap.udpscan",
         {
             "module": "nmap",
-            "args": ["-sU", "-F", "-sV", "--version-intensity", "0", "-Pn", "--open", "--max-retries", "1"],
+            "args": ["-sU", "-F", "-sV", "--version-intensity", "0", "-Pn", "--disable-arp-ping", "--open", "--max-retries", "1"],
         },
         50,
         QueuePrio.HIGH,
