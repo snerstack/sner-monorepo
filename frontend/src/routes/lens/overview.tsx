@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import { Address4, Address6 } from 'ip-address'
 import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import Heading from '@/components/Heading'
@@ -42,7 +43,7 @@ function compareBigInt(a: bigint, b: bigint): number {
     return 0;
 }
 
-export function sortIps(ips: string[]): SortedIps {
+function sortIps(ips: string[]): SortedIps {
     const v4: { ip: string; sortValue: bigint }[] = []
     const v6: { ip: string; sortValue: bigint }[] = []
 
@@ -63,6 +64,13 @@ export function sortIps(ips: string[]): SortedIps {
         v4: v4.map((x) => x.ip),
         v6: v6.map((x) => x.ip),
     }
+}
+
+function severityFilterUrl(severity: string): string {
+    return `/lens/vuln/list?jsonfilter=${JSON.stringify({
+        combinator: 'and',
+        rules: [{ field: 'Vuln.severity', operator: '==', value: severity }],
+    })}`
 }
 
 const AllowedNetworks = ({ networks }: { networks: string[] }) => {
@@ -144,7 +152,9 @@ const SeverityTable = ({ vulnSeverities }: { vulnSeverities: { [key: string]: nu
                     {SEVERITY_ORDER.map((severity) => (
                         <tr key={severity}>
                             <td className="text-capitalize">
-                                <span className={clsx('badge', getColorForSeverity(severity))}>{severity}</span>
+                                <Link to={severityFilterUrl(severity)} style={{ textDecoration: 'none' }}>
+                                    <span className={clsx('badge', getColorForSeverity(severity), 'p-2')}>{severity}</span>
+                                </Link>
                             </td>
                             <td>{vulnSeverities[severity] ?? 0}</td>
                         </tr>
