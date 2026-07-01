@@ -73,32 +73,28 @@ export interface linkForService {
 }
 
 export const getLinksForService = (
-  hostIdent: string,
+  address: string,
   serviceProto: string | null,
   servicePort: string | number | null,
+  hostname: string | null = null,
 ): linkForService[] => {
   if (serviceProto === null || servicePort === null) {
     return []
   }
 
   const links = []
-  const isIpv6 = hostIdent.includes(':')
+  const hostIdent = hostname ?? address
+  const isIpv6 = address.includes(':')
   const formattedHostAddress = isIpv6 ? '[' + hostIdent + ']' : hostIdent
 
-  links.push({"name": "svcTgt", "value": `${serviceProto}://${formattedHostAddress}:${servicePort}`})
-
-  if (serviceProto === "tcp")
-    links.push({"name": "telnet", "value": `telnet ${hostIdent} ${servicePort}`})
-  if (serviceProto === "udp")
-    links.push({"name": "nc udp", "value": `nc -vu ${hostIdent} ${servicePort}`})
-
-  links.push({"name": "nmap", "value": `nmap -sV -sC -p${serviceProto[0].toUpperCase()}:${servicePort} ${hostIdent}`})
-
+  if (hostname) {
+    links.push({"name": "svcTgt", "value": `named,${address},proto=${serviceProto},port=${servicePort},hostname=${hostname}`})
+  } else {
+    links.push({"name": "svcTgt", "value": `svc,${address},proto=${serviceProto},port=${servicePort}`})
+  }
+  links.push({"name": "ident", "value": `${hostIdent} ${servicePort}`})
   links.push({"name": "http", "value": `http://${formattedHostAddress}:${servicePort}`})
   links.push({"name": "https", "value": `https://${formattedHostAddress}:${servicePort}`})
-
-  links.push({"name": "curl", "value": `curl -ik http://${formattedHostAddress}:${servicePort}`})
-  links.push({"name": "dirb", "value": `dirb http://${formattedHostAddress}:${servicePort}`})
 
   return links
 }

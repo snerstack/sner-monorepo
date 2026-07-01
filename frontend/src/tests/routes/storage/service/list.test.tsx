@@ -109,11 +109,8 @@ describe('Service list page', () => {
       const copyHttpBtn = screen.getAllByTestId('copy-http-to-clipboard-btn')[0]
       fireEvent.click(copyHttpBtn)
 
-      const copyTelnetBtn = screen.getAllByTestId('copy-telnet-to-clipboard-btn')[0]
-      fireEvent.click(copyTelnetBtn)
-
-      const copyCurlBtn = screen.getAllByTestId('copy-curl-to-clipboard-btn')[0]
-      fireEvent.click(copyCurlBtn)
+      const copyIdentBtn = screen.getAllByTestId('copy-ident-to-clipboard-btn')[0]
+      fireEvent.click(copyIdentBtn)
     })
   })
 

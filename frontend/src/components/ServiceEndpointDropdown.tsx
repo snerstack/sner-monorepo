@@ -12,8 +12,8 @@ const clipboardCopyLink = (link: linkForService) => {
       className="mx-1"
       role="button"
       data-testid={`copy-${link.name}-to-clipboard-btn`}
-      title={`Copy ${link.name}`}
-      href={firstToken.includes("://") ? link.value : `command://${link.value}`}
+      title={`Copy to clipboard "${link.value}"`}
+      href={firstToken.includes("://") ? link.value : `#`}
       onClick={(e) => {
         e.preventDefault()
         void navigator.clipboard.writeText(link.value)
@@ -56,7 +56,7 @@ const ServiceEndpointDropdown = ({
           <div className="dropdown-item">
             <span>{escapeHtml(hostname)}</span>
             <span>
-              {getLinksForService(hostname, proto, port).map((link) => clipboardCopyLink(link))}
+              {getLinksForService(address, proto, port, hostname).map((link) => clipboardCopyLink(link))}
             </span>
           </div>
         }
