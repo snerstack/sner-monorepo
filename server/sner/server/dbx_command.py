@@ -90,7 +90,7 @@ DEFAULT_PROD_QUEUES = [
             "args": [
                 "-sS",
                 "--script",
-                "default,http-headers,ldap-rootdse,ssl-enum-ciphers,ssh-auth-methods",
+                "default,http-headers,ldap-rootdse,ssl-enum-ciphers,ssh-auth-methods,ssh2-enum-algos",
                 "--script-timeout",
                 "10m",
                 "-Pn",
