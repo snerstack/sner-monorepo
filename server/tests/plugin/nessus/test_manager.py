@@ -89,7 +89,7 @@ def test_retries(tmpworkdir):  # pylint: disable=unused-argument
     mock_nessus.return_value.scans.delete.side_effect = restfly.errors.UnauthorizedError(mock_response)
     patch_api = patch("sner.plugin.nessus.manager.Nessus", mock_nessus)
 
-    with (patch_api, pytest.raises(restfly.errors.UnauthorizedError)):
+    with patch_api, pytest.raises(restfly.errors.UnauthorizedError):
         manager = _get_manager()
         assert manager.scan_delete(1)
 

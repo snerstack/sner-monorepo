@@ -61,7 +61,8 @@ class AgentModule(ModuleBase):
     def run(self, assignment):
         asg_config = self.init_job(assignment)
         manager_opts = {
-            key: val for key, val in {
+            key: val
+            for key, val in {
                 "restfly_retries": asg_config.manager_restfly_retries,
                 "restfly_retry_delay": asg_config.manager_restfly_retry_delay,
             }.items()
