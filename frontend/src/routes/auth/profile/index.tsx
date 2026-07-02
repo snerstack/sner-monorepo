@@ -153,11 +153,9 @@ const ProfilePage = () => {
             <tr>
               <th>DT Columns</th>
               <td>
-                <div>
-                  <ToggleDTConfig storageKey="dt_viatarget_visible" caption="DT via_target columns visible"/>
-                  <ToggleDTConfig storageKey="dt_toolboxes_visible" caption="DT toolboxes visible"/>
-                  <ToggleDTConfig storageKey="dt_queueconfig_visible" caption="Queue config column visible"/>
-                </div>
+                <div className="m-2">DT via_target columns: <ToggleDTConfig storageKey="dt_viatarget_visible" /></div>
+                <div className="m-2">DT toolboxes: <ToggleDTConfig storageKey="dt_toolboxes_visible" /></div>
+                <div className="m-2">Queue config column: <ToggleDTConfig storageKey="dt_queueconfig_visible" /></div>
               </td>
             </tr>
           </tbody>

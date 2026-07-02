@@ -3,7 +3,7 @@ import { MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 
-const ToggleDTConfig = ({ storageKey, caption }: { storageKey: string; caption: string; }) => {
+const ToggleDTConfig = ({ storageKey, caption = '', title }: { storageKey: string; caption?: string; title?: string; }) => {
     const navigate = useNavigate()
 
     const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
@@ -16,14 +16,12 @@ const ToggleDTConfig = ({ storageKey, caption }: { storageKey: string; caption: 
     }
 
     return (
-        <div>
-            {caption}:
-            <a 
-                className="btn btn-outline-secondary btn-sm m-1"
-                onClick={handleClick}
-                data-testid="toggle-dtconfig-button"
-            >{`${getDTConfigValue(storageKey)}`}</a>
-        </div>
+        <a
+            className="btn btn-outline-secondary"
+            onClick={handleClick}
+            data-testid="toggle-dtconfig-button"
+            title={title}
+        >{`${caption}${getDTConfigValue(storageKey) ? 'shown' : 'hidden'}`}</a>
     )
 }
 

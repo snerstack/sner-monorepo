@@ -13,6 +13,7 @@ import { Button, EditButton } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
 import { getDTConfigValue } from '@/lib/sner/storage'
+import ToggleDTConfig from '@/components/ToggleDTConfig'
 
 const QueueListPage = () => {
   const navigate = useNavigate()
@@ -91,6 +92,7 @@ const QueueListPage = () => {
 
       <Heading headings={['Queues']}>
         <div className="breadcrumb-buttons pl-2">
+          <span className="mr-2"><ToggleDTConfig storageKey="dt_queueconfig_visible" caption="Queue config: " title="Toggle visibility of queue configuration column" /></span>
           <Link className="btn btn-outline-primary" to="/scheduler/queue/add" title="Add queue">Add</Link>
         </div>
       </Heading>
