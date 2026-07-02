@@ -9,6 +9,7 @@ import json
 import os
 import shutil
 from dataclasses import dataclass, field, fields
+from datetime import datetime
 from enum import IntEnum
 
 import click
@@ -188,6 +189,7 @@ class ServiceDef(DefBase):
     name: str = None
     info: str = None
     comment: str = None
+    import_time: datetime = None
     _notes: list = field(default_factory=list)
     _vulns: list = field(default_factory=list)
 
@@ -236,6 +238,7 @@ DEFAULT_DEV_STORAGE_DATA = [
                 name="svcx",
                 info="testservice banner",
                 comment="manual testservice comment",
+                import_time=datetime(1900, 1, 1, 0, 0),
                 _notes=[
                     NoteDef(xtype="cpe", data=json.dumps(["cpe:/o:microsoft:windows_nt:3.5.1"])),
                     NoteDef(xtype="manual", data="some other note data", via_target="dummy.via_target"),
@@ -255,6 +258,7 @@ DEFAULT_DEV_STORAGE_DATA = [
                 port=12345,
                 state="closed:testreason",
                 name="svcx",
+                import_time=datetime(1900, 1, 1, 0, 2),
                 _vulns=[
                     VulnDef(name="vulnerability3", xtype="testxtype.124", severity=SeverityEnum.UNKNOWN, tags=["report"]),
                     _AGGREGABLE_VULN,
@@ -293,6 +297,7 @@ DEFAULT_DEV_STORAGE_DATA = [
                 state="open:syn-ack",
                 name="http",
                 info="product: Apache httpd version: 2.2.21 extrainfo: (Win32) mod_ssl/2.2.21 OpenSSL/1.0.0e PHP/5.3.8 mod_perl/2.0.4 Perl/v5.10.1",
+                import_time=datetime(1900, 1, 1, 0, 4),
                 _notes=[
                     NoteDef(xtype="cpe", data=json.dumps(["cpe:/a:apache:http_server:2.2.21"])),
                     NoteDef(

@@ -75,6 +75,19 @@ const overview_data = {
         //unknown: 6,
     },
     allowed_networks: ["127.0.0.1/32", "127.0.0.2/32", "127.0.0.2/32", "::2/128", "::1/128"],
+    oldest_scanned: {
+        longest_ago: 365,
+        services: [
+            {
+                id: 1,
+                host_id: hosts_data.data[0].id,
+                host_address: hosts_data.data[0].address,
+                proto: services_data.data[0].proto,
+                port: services_data.data[0].port,
+                import_time: "2024-01-01T00:00:00",
+            }
+        ]
+    },
 }
 
 export const lensHandlers = [

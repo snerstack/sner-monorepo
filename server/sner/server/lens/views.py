@@ -4,6 +4,7 @@ lens views
 """
 
 import json
+from datetime import datetime
 from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
@@ -217,11 +218,16 @@ def overview_json_route():
     vuln_total_query = select(func.count()).select_from(Vuln).join(Host)
     severity_query = select(Vuln.severity, func.count()).join(Host).group_by(Vuln.severity)
 
+    oldest_scanned_service = select(Service).join(Host).filter(Service.import_time.isnot(None)).order_by(Service.import_time.asc()).limit(5)
+
     if restrict:
         host_total_query = host_total_query.filter(or_(*restrict))
         service_total_query = service_total_query.filter(or_(*restrict))
         vuln_total_query = vuln_total_query.filter(or_(*restrict))
         severity_query = severity_query.filter(or_(*restrict))
+        oldest_scanned_service = oldest_scanned_service.filter(or_(*restrict))
+
+    oldest_scanned = db.session.execute(oldest_scanned_service).scalars().all()
 
     return {
         "objects": {
@@ -230,5 +236,19 @@ def overview_json_route():
             "vulns": db.session.execute(vuln_total_query).scalar_one(),
         },
         "vuln_severities": {str(key): val for key, val in db.session.execute(severity_query).all()},
-        "allowed_networks": current_user.api_networks
+        "allowed_networks": current_user.api_networks,
+        "oldest_scanned": {
+            "longest_ago": (datetime.utcnow() - oldest_scanned[0].import_time).days if oldest_scanned else None,
+            "services": [
+                {
+                    "id": item.id,
+                    "host_id": item.host_id,
+                    "host_address": item.host.address,
+                    "proto": item.proto,
+                    "port": item.port,
+                    "import_time": item.import_time,
+                }
+                for item in oldest_scanned
+            ]
+        },
     }

@@ -3,6 +3,7 @@ import { Address4, Address6 } from 'ip-address'
 import { useEffect, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
+import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 
 import Heading from '@/components/Heading'
@@ -12,22 +13,35 @@ import { urlFor } from '@/lib/urlHelper'
 
 const SEVERITY_ORDER = ['critical', 'high', 'medium', 'low', 'info', 'unknown']
 
-const LABELS : { [key: string]: string } = {
-  hosts: 'Hosts',
-  services: 'Services',
-  vulns: 'Vulnerabilities',
-  critical: 'Critical',
-  high: 'High',
-  medium: 'Medium',
-  low: 'Low',
-  info: 'Info',
-  unknown: 'Unknown'
+const LABELS: { [key: string]: string } = {
+    hosts: 'Hosts',
+    services: 'Services',
+    vulns: 'Vulnerabilities',
+    critical: 'Critical',
+    high: 'High',
+    medium: 'Medium',
+    low: 'Low',
+    info: 'Info',
+    unknown: 'Unknown'
+}
+
+interface OldestScannedStats {
+    longest_ago: number | null
+    services: [{
+        id: number
+        host_id: number
+        host_address: string
+        proto: string
+        port: number
+        import_time: string
+    }]
 }
 
 interface LensOverviewStats {
     objects: { [key: string]: number }
     vuln_severities: { [key: string]: number }
-    allowed_networks: string[]
+    allowed_networks: string[],
+    oldest_scanned: OldestScannedStats
 }
 
 type IpVersion = 4 | 6
@@ -86,8 +100,10 @@ function severityFilterUrl(severity: string): string {
 }
 
 const AllowedNetworks = ({ networks }: { networks: string[] }) => {
-    const sortedIps = sortIps(networks)
     const COLLAPSE_ID = "allowedNetworksCollapse"
+    const sortedIps = sortIps(networks)
+    /* c8 ignore next 1 */
+    const networksBadge = networks.length === 0 ? 'all networks' : `${networks.length} items`;
 
     return (
         <div className="card">
@@ -98,7 +114,7 @@ const AllowedNetworks = ({ networks }: { networks: string[] }) => {
                 style={{ cursor: 'pointer' }}
             >
                 Allowed networks
-                <span className="badge badge-secondary ml-3">{networks.length} items</span>
+                <span className="badge badge-secondary ml-3">{networksBadge}</span>
                 <span className="float-right">
                     <i className="fas fa-chevron-down rotate-icon"></i>
                 </span>
@@ -177,6 +193,50 @@ const SeverityTable = ({ vulnSeverities }: { vulnSeverities: { [key: string]: nu
     </div>
 )
 
+const OldestScanned = ({ scanned }: { scanned: OldestScannedStats }) => {
+    const helpTooltip = (
+        <Tooltip id="oldest-scanned-help">
+            Services with the oldest scan timestamp.
+            <p></p>
+            As there is no single scan time for a whole network because scanning is continuous, the services listed here
+            have the oldest &quot;last-seen timestamps&quot; and indicate how long ago the scanning cycle last reached services in the
+            allowed networks for current user.
+        </Tooltip>
+    )
+
+    return (
+        <div className="card">
+            <div className="card-header">
+                Oldest service scans {scanned.longest_ago !== null && `(${scanned.longest_ago} days ago)`}
+                <span className="float-right">
+                    <OverlayTrigger placement="top" overlay={helpTooltip}>
+                        <i className="fas fa-question-circle text-muted" style={{ cursor: 'help' }}></i>
+                    </OverlayTrigger>
+                </span>
+            </div>
+            <div className="card-body p-0">
+                <table className="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Last scanned</th>
+                            <th>Service</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {scanned.services.map((item) => (
+                            <tr key={item.id}>
+                                <td>{item.import_time}</td>
+                                <td><Link to={`/lens/host/view/${item.host_id}`}>{item.host_address} {item.proto}/{item.port}</Link></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
+
+
 const LensOverviewPage = () => {
     const [stats, setStats] = useState<LensOverviewStats | null>(null)
 
@@ -214,6 +274,12 @@ const LensOverviewPage = () => {
                             </div>
                             <div className="col-lg-6">
                                 <SeverityTable vulnSeverities={stats.vuln_severities} />
+                            </div>
+                        </div>
+
+                        <div className="row pb-4">
+                            <div className="col-lg-6">
+                                <OldestScanned scanned={stats.oldest_scanned} />
                             </div>
                         </div>
                     </>
