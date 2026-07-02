@@ -26,7 +26,7 @@ class ParserModule(ParserBase):
         """parse path"""
 
         if is_zip(path):
-            filedata = file_from_zip(path, "output.nessus")
+            filedata = file_from_zip(path, "output.nessus", text=False)
             return cls._parse_report(NessusReportv2(BytesIO(filedata)))
 
         return cls._parse_report(NessusReportv2(path))

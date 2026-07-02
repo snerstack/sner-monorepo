@@ -63,4 +63,4 @@ def test_run_with_liveserver(tmpworkdir, live_server, apikey_agent, dummy_target
     assert result == 0
 
     job = Job.query.filter(Job.queue_id == dummy_target.queue_id).one()
-    assert dummy_target.target in file_from_zip(job.output_abspath, "assignment.json").decode("utf-8")
+    assert dummy_target.target in file_from_zip(job.output_abspath, "assignment.json")

@@ -33,7 +33,7 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
         return
 
     assert result == 0
-    assert "::1" in file_from_zip(f"{test_a['id']}.zip", "output-0.txt").decode("utf-8")
+    assert "::1" in file_from_zip(f"{test_a['id']}.zip", "output-0.txt")
 
 
 @pytest.mark.skipif("PYTEST_IPV6" not in os.environ, reason="ipv6 requires global connectivity")
@@ -60,5 +60,5 @@ def test_enum_simple(tmpworkdir):  # pylint: disable=unused-argument
     result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
 
-    data = file_from_zip(f"{test_a['id']}.zip", "output-0.txt").decode("utf-8")
+    data = file_from_zip(f"{test_a['id']}.zip", "output-0.txt")
     assert len(data.splitlines()) >= 1

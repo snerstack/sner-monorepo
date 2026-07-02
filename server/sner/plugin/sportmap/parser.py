@@ -71,7 +71,7 @@ class ParserModule(ParserBase):
                 # recombine ipv4 and ipv6 scans
                 sport = fname.replace(".xml", "").split("-")[-1]
                 allparsed[sport] = NmapParserModule._parse_data(  # pylint: disable=protected-access
-                    file_from_zip(path, fname).decode("utf-8"), allparsed[sport]
+                    file_from_zip(path, fname), allparsed[sport]
                 )
 
         if "default" not in allparsed:  # pragma: no cover  ; won't test

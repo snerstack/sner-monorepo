@@ -29,4 +29,4 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
         result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
 
     assert result == 0
-    assert "dummy_report_content" in file_from_zip(f"{test_a['id']}.zip", "output.nessus").decode("utf-8")
+    assert "dummy_report_content" in file_from_zip(f"{test_a['id']}.zip", "output.nessus")

@@ -43,7 +43,7 @@ def test_basic(tmpworkdir, httpserver):
     result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
 
-    [report] = json.loads(file_from_zip(f"{test_a['id']}.zip", "output.json").decode("utf-8"))
+    [report] = json.loads(file_from_zip(f"{test_a['id']}.zip", "output.json"))
     assert report["template-id"] == "flir-path-traversal"
     assert report["info"]["severity"] == "high"
 

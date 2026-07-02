@@ -10,10 +10,10 @@ from factory.alchemy import SQLAlchemyModelFactory
 from sner.server.extensions import db
 
 
-class BaseModelFactory(SQLAlchemyModelFactory):  # pylint: disable=too-few-public-methods
+class BaseModelFactory(SQLAlchemyModelFactory):
     """test model base factory"""
 
-    class Meta:
+    class Meta:  # pylint: disable=too-few-public-methods
         """test model base factory"""
 
         sqlalchemy_session = db.session

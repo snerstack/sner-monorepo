@@ -30,22 +30,22 @@ def is_zip(path):
     return magic.from_file(path, mime=True) == "application/zip"
 
 
-def file_from_zip(zippath, filename):
+def file_from_zip(zippath, filename, text=True):
     """extract file data from zipfile"""
 
     with ZipFile(zippath) as ftmp_zip:
         with ftmp_zip.open(filename) as ftmp:
-            return ftmp.read()
+            return ftmp.read().decode("utf-8") if text else ftmp.read()
 
 
-def files_from_zip(zippath, regexp):
+def files_from_zip(zippath, regexp, text=True):
     """extract files data from zipfile by filename regexp"""
 
     matcher = re.compile(regexp)
     with ZipFile(zippath) as ftmp_zip:
         for filename in ftmp_zip.namelist():
             if matcher.match(filename):
-                yield file_from_zip(zippath, filename)
+                yield file_from_zip(zippath, filename, text=text)
 
 
 def uri_ipv6_address(value):

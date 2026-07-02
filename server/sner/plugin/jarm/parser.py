@@ -22,7 +22,7 @@ class ParserModule(ParserBase):
         pidb = ParsedItemsDb()
 
         for filedata in files_from_zip(path, cls.ARCHIVE_PATHS):
-            pidb = cls._parse_data(filedata.decode("utf-8"), pidb)
+            pidb = cls._parse_data(filedata, pidb)
 
         return pidb
 

@@ -17,5 +17,5 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
 
     result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
-    assert "Host: 127.0.0.1 (localhost)" in file_from_zip(f"{test_a['id']}.zip", "output.gnmap").decode("utf-8")
-    assert "Host: ::1 (localhost)" in file_from_zip(f"{test_a['id']}.zip", "output6.gnmap").decode("utf-8")
+    assert "Host: 127.0.0.1 (localhost)" in file_from_zip(f"{test_a['id']}.zip", "output.gnmap")
+    assert "Host: ::1 (localhost)" in file_from_zip(f"{test_a['id']}.zip", "output6.gnmap")

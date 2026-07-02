@@ -107,7 +107,7 @@ class JobCompletedFactory(JobFactory):
 
         if extracted:
             shutil.copy(extracted, output_abspath)
-            self.assignment = file_from_zip(output_abspath, "assignment.json").decode()
+            self.assignment = file_from_zip(output_abspath, "assignment.json")
         else:
             with ZipFile(output_abspath, "w") as zip_file:
                 zip_file.writestr("assignment.json", self.assignment)

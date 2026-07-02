@@ -21,6 +21,4 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
 
     result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
-    assert "JARM: 00000000000000000000000000000000000000000000000000000000000000" in file_from_zip(f"{test_a['id']}.zip", "output-0.out").decode(
-        "utf-8"
-    )
+    assert "JARM: 00000000000000000000000000000000000000000000000000000000000000" in file_from_zip(f"{test_a['id']}.zip", "output-0.out")
