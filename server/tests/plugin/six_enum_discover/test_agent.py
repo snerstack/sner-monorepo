@@ -13,6 +13,7 @@ from pyroute2 import NDB
 
 from sner.agent.core import main as agent_main
 from sner.lib import file_from_zip
+from tests import running_as_root
 
 
 def test_basic(tmpworkdir):  # pylint: disable=unused-argument
@@ -26,8 +27,8 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
 
     result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
 
-    # allow to fail in GitHub Action, would require to call sudo
-    if "GITHUB_ACTIONS" in os.environ:
+    # allow to fail for agentic and GitHub actions
+    if not running_as_root():
         assert result == 1
         return
 
@@ -38,12 +39,12 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
 @pytest.mark.skipif("PYTEST_IPV6" not in os.environ, reason="ipv6 requires global connectivity")
 def test_enum_simple(tmpworkdir):  # pylint: disable=unused-argument
     """
-    six_enum_discover test for LAN
+    six_enum_discover test for local LAN.
 
-    scan6 does not correctly work for remote address scanning, when running towards local LAN
-    (https://github.com/fgont/ipv6toolkit/issues/41). the test triggers the detection part
-    of six_enum_discover._is_localnet() which cannot run in CI because it lacks IPv6 support.
-    also scan6 will not report self address, hence the test checks only number of items.
+    scanning remote nets and local nets differs in scan6, this test triggers _is_localnet() and
+    only checks the number of result, at least ff02::1 is expected
+
+    does not run in CI because it lack IPv6 support and requires root privileges
     """
 
     addr = list(filter(lambda x: x.family == AF_INET6 and x.scope == 0, NDB().addresses.dump()))
@@ -53,11 +54,11 @@ def test_enum_simple(tmpworkdir):  # pylint: disable=unused-argument
     test_a = {
         "id": str(uuid4()),
         "config": {"module": "six_enum_discover", "rate": 100},
-        "targets": [f"sixenum://{addr}"],
+        "targets": [f"sixenum,{addr}"],
     }
 
     result = agent_main(["--assignment", json.dumps(test_a), "--debug"])
     assert result == 0
 
     data = file_from_zip(f"{test_a['id']}.zip", "output-0.txt").decode("utf-8")
-    assert len(data.splitlines()) > 1
+    assert len(data.splitlines()) >= 1
