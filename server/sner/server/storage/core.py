@@ -8,7 +8,6 @@ from collections import namedtuple
 from csv import QUOTE_ALL, DictWriter
 from http import HTTPStatus
 from io import StringIO
-from typing import Union
 
 from flask import current_app
 from sqlalchemy import and_, case, cast, delete, exists, func, not_, or_, select, tuple_, update
@@ -47,14 +46,14 @@ def model_annotate(model, model_id):
     return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)  # pragma: no cover
 
 
-def tag_add(model, tag: Union[str, list]):
+def tag_add(model, tag: str | list):
     """add tag to model in sqla trackable way"""
 
     val = [tag] if isinstance(tag, str) else tag
     model.tags = list(set((model.tags or []) + val))
 
 
-def tag_remove(model, tag: Union[str, list]):
+def tag_remove(model, tag: str | list):
     """remove tag from model in sqla trackable way"""
 
     val = [tag] if isinstance(tag, str) else tag

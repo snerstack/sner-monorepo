@@ -175,7 +175,7 @@ def get_records(zone_file_path) -> list:  # pylint: disable=too-many-locals
     """
     Gets A and AAAA records and stores them in the format {IP1: [hostname1, hostname2], IP2: [hostname1, hostname3]}
     """
-    with open(zone_file_path, "r", encoding="utf-8") as zone_file:
+    with open(zone_file_path, encoding="utf-8") as zone_file:
         try:
             zone = dns.zone.from_file(zone_file)
             origin = zone.origin.to_text()[:-1]

@@ -39,7 +39,7 @@ def load_agent_plugins():
     for plugin_path in Path(sner.plugin.__file__).parent.glob("*/agent.py"):
         plugin_name = plugin_path.parent.name
         module = import_module(f"sner.plugin.{plugin_name}.agent")
-        REGISTERED_MODULES[plugin_name] = getattr(module, "AgentModule")
+        REGISTERED_MODULES[plugin_name] = module.AgentModule
 
 
 class Config(ConfigBase):

@@ -4,7 +4,7 @@ sner agent nmap module
 """
 
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from sner.agent.modules import ModuleBase
 from sner.config import ConfigBase
@@ -16,7 +16,7 @@ class Config(ConfigBase):
 
     module: str = Literal["nmap"]
     args: list[str]
-    timing_perhost: Optional[int] = None
+    timing_perhost: int | None = None
     max_retries: int = 3
     script_timeout: str = "10m"
 

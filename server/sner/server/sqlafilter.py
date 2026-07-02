@@ -66,7 +66,7 @@ class TreeToSAFilter(Transformer):
 
     def criteria(self, args):
         """transform criteria"""
-        return dict(zip(["model", "field", "op", "value"], args[0].value.split(".") + [args[1].value, args[2]]))
+        return dict(zip(["model", "field", "op", "value"], args[0].value.split(".") + [args[1].value, args[2]], strict=True))
 
     def array(self, args):
         """transform array; return plain list, discarding the object"""

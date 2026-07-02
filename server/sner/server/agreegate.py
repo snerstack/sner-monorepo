@@ -8,7 +8,6 @@ import json
 import re
 from http import HTTPStatus
 from pathlib import Path
-from typing import Optional
 
 import requests
 from flask import current_app
@@ -27,8 +26,8 @@ class Group(BaseModel):
     """Group model for adding/editing groups"""
 
     name: str
-    description: Optional[str] = None
-    external_id: Optional[str] = None
+    description: str | None = None
+    external_id: str | None = None
     allowed_networks: list[str]
 
 
@@ -39,7 +38,7 @@ class UserGroupsResponse(BaseModel):
     username: str
     email: str
     full_name: str
-    role: Optional[str] = Field(None, description="User role")
+    role: str | None = Field(None, description="User role")
     groups: list[str] = Field([], description="User groups")
     enabled: bool = Field(False, description="User enabled flag")
 

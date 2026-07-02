@@ -107,7 +107,9 @@ class ParserModule(ParserBase):
         if "bid" in report_item:
             refs += [f"BID-{ref}" for ref in ensure_list(report_item["bid"])]
         if "xref" in report_item:
-            refs += ["%s-%s" % tuple(ref.split(":", maxsplit=1)) for ref in ensure_list(report_item["xref"])]  # noqa: E501  pylint: disable=consider-using-f-string
+            for ref in ensure_list(report_item["xref"]):
+                prefix, value = ref.split(":", maxsplit=1)
+                refs.append(f"{prefix}-{value}")
         if "see_also" in report_item:
             refs += [f"URL-{ref}" for ref in report_item["see_also"].splitlines()]
         if "metasploit_name" in report_item:

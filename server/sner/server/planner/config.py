@@ -4,8 +4,6 @@ planner config schema
 """
 # pylint: disable=missing-class-docstring
 
-from typing import Optional
-
 from sner.config import ConfigBase
 
 
@@ -91,18 +89,18 @@ class RebuildVersioninfo(ConfigBase):
 
 
 class Pipelines(ConfigBase):
-    standalone_queues: Optional[StandaloneQueues] = None
-    service_disco: Optional[ServiceDisco] = None
-    six_disco: Optional[SixDisco] = None
-    service_scan: Optional[ServiceScan] = None
-    host_rescan: Optional[HostRescan] = None
-    nuclei_scan: Optional[NucleiScan] = None
-    nessus_scan: Optional[NessusScan] = None
-    sportmap_scan: Optional[SportmapScan] = None
-    auror_hostnames: Optional[AurorHostnames] = None
-    auror_testssl: Optional[AurorTestsslScan] = None
-    storage_cleanup: Optional[StorageCleanup] = None
-    rebuild_versioninfo: Optional[RebuildVersioninfo] = None
+    standalone_queues: StandaloneQueues | None = None
+    service_disco: ServiceDisco | None = None
+    six_disco: SixDisco | None = None
+    service_scan: ServiceScan | None = None
+    host_rescan: HostRescan | None = None
+    nuclei_scan: NucleiScan | None = None
+    nessus_scan: NessusScan | None = None
+    sportmap_scan: SportmapScan | None = None
+    auror_hostnames: AurorHostnames | None = None
+    auror_testssl: AurorTestsslScan | None = None
+    storage_cleanup: StorageCleanup | None = None
+    rebuild_versioninfo: RebuildVersioninfo | None = None
 
 
 class PlannerConfig(ConfigBase):
@@ -112,4 +110,4 @@ class PlannerConfig(ConfigBase):
     nessus_nets: list[str] = []
     auror_testssl_nets: list[str] = []
 
-    pipelines: Optional[Pipelines] = None
+    pipelines: Pipelines | None = None

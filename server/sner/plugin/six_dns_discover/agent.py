@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from socket import AF_INET6, getaddrinfo, gethostbyaddr
 from time import sleep
-from typing import Literal, Union
+from typing import Literal
 
 from sner.agent.modules import ModuleBase
 from sner.config import ConfigBase
@@ -18,7 +18,7 @@ class Config(ConfigBase):
     """nessus agent plugin config"""
 
     module: str = Literal["six_dns_discover"]
-    delay: Union[int, float] = 1
+    delay: int | float = 1
 
 
 class AgentModule(ModuleBase):
