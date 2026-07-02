@@ -6,7 +6,6 @@ defusedxml
 dnspython
 elasticsearch
 fido2
-flake8
 flask
 flask-login
 flask-migrate

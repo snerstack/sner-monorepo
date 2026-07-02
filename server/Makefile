@@ -25,7 +25,7 @@ db:
 	bin/server dbx init-data
 
 lint:
-	flake8 bin/agent bin/server sner tests
+	ruff check bin/agent bin/server sner tests
 	pylint bin/agent bin/server sner tests
 
 test:

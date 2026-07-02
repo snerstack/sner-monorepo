@@ -26,7 +26,6 @@ elasticsearch==8.17.2
 factory_boy==3.3.3
 Faker==37.0.0
 fido2==1.2.0
-flake8==7.1.2
 Flask==3.1.0
 flask-cors==5.0.1
 Flask-Login==0.6.3
@@ -62,12 +61,10 @@ platformdirs==4.3.6
 pluggy==1.5.0
 propcache==0.3.0
 psycopg2==2.9.10
-pycodestyle==2.12.1
 pycparser==2.22
 pydantic==2.10.6
 pydantic-extra-types==2.10.3
 pydantic_core==2.27.2
-pyflakes==3.2.0
 pylint==3.3.5
 pyroute2==0.8.1
 PySocks==1.7.1

@@ -34,7 +34,7 @@ zone_file_path2 = f"{test_files_path}/{dns_zones_folder}/dummy_repo2/zones/1.168
 def test_get_repos():
     """Test getting DNS repositories"""
     output_file_path = "tests/server/data/auror_hostnames-gitolite_output"
-    with open(output_file_path, "r", encoding="utf-8") as file:
+    with open(output_file_path, encoding="utf-8") as file:
         mock_output = file.read()
     with patch("subprocess.check_output", return_value=mock_output):
         result = get_repos(server, key)

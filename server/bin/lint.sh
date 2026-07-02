@@ -1,5 +1,5 @@
 #!/bin/sh
 # development helper
 
-flake8 $@
+ruff check $@
 pylint $@
