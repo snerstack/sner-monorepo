@@ -102,8 +102,6 @@ function severityFilterUrl(severity: string): string {
 const AllowedNetworks = ({ networks }: { networks: string[] }) => {
     const COLLAPSE_ID = "allowedNetworksCollapse"
     const sortedIps = sortIps(networks)
-    /* c8 ignore next 1 */
-    const networksBadge = networks.length === 0 ? 'all networks' : `${networks.length} items`;
 
     return (
         <div className="card">
@@ -114,7 +112,7 @@ const AllowedNetworks = ({ networks }: { networks: string[] }) => {
                 style={{ cursor: 'pointer' }}
             >
                 Allowed networks
-                <span className="badge badge-secondary ml-3">{networksBadge}</span>
+                <span className="badge badge-secondary ml-3">{networks.length} items</span>
                 <span className="float-right">
                     <i className="fas fa-chevron-down rotate-icon"></i>
                 </span>
