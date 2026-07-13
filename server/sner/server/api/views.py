@@ -24,7 +24,7 @@ from sner.server.scheduler.models import Job
 from sner.server.storage.models import Host, Note, Service, Versioninfo, Vuln
 from sner.server.storage.version_parser import is_in_version_range
 from sner.server.storage.version_parser import parse as versionspec_parse
-from sner.server.utils import filter_query
+from sner.server.utils import error_response, filter_query
 
 blueprint = Blueprint("api", __name__)  # pylint: disable=invalid-name
 
@@ -97,7 +97,7 @@ def v2_public_storage_host_route(args):
     """host data by address"""
 
     if not current_user.api_networks:
-        return None
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
     restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = Host.query.filter(Host.address == str(args["address"])).filter(or_(*restrict))
@@ -124,7 +124,7 @@ def v2_public_storage_range_route(args):
     """list of hosts by cidr with simplified data"""
 
     if not current_user.api_networks:
-        return []
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
     restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = Host.query.filter(Host.address.op("<<=")(str(args["cidr"]))).filter(or_(*restrict))
@@ -141,7 +141,7 @@ def v2_public_storage_servicelist_route(args):
     """filtered servicelist (see sner.server.sqlafilter for syntax)"""
 
     if not current_user.api_networks:
-        return []
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
     restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = (
@@ -166,7 +166,7 @@ def v2_public_storage_vulnlist_route(args):
     """filtered vulnlist (see sner.server.sqlafilter for syntax)"""
 
     if not current_user.api_networks:
-        return []
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
     restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = (
@@ -210,7 +210,7 @@ def v2_public_storage_notelist_route(args):
     """filtered notelist (see sner.server.sqlafilter for syntax)"""
 
     if not current_user.api_networks:
-        return []
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
     restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = (
@@ -249,7 +249,7 @@ def v2_public_storage_versioninfo_route(args):
     """simple version search"""
 
     if not current_user.api_networks:
-        return []
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
     restrict = [Versioninfo.host_address.op("<<=")(net) for net in current_user.api_networks]
     query = Versioninfo.query.filter(or_(*restrict))

@@ -7,7 +7,7 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 import { toast } from 'react-toastify'
 
 import Heading from '@/components/Heading'
-import { httpClient } from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { getColorForSeverity } from '@/lib/sner/storage'
 import { urlFor } from '@/lib/urlHelper'
 
@@ -244,7 +244,7 @@ const LensOverviewPage = () => {
             /* c8 ignore next 4 */
             .catch((err) => {
                 console.error(err)
-                toast.error('Error while fetching overview data')
+                handleHttpClientError(err)
             })
     }, [])
 

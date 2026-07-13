@@ -33,6 +33,9 @@ def check_dt_errors(resultset):
 def host_view_json_route(host_id):
     """lens host json data provider"""
 
+    if not current_user.api_networks:
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+
     restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     host = Host.query.filter(Host.id == host_id).filter(or_(*restrict)).one_or_none()
     if host is None:
@@ -112,6 +115,9 @@ def host_view_json_route(host_id):
 def host_list_json_route():
     """list hosts, data endpoint"""
 
+    if not current_user.api_networks:
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+
     count_services = db.session.query(Service.host_id, func.count(Service.id).label("count")).group_by(Service.host_id).subquery()
     count_vulns = db.session.query(Vuln.host_id, func.count(Vuln.id).label("count")).group_by(Vuln.host_id).subquery()
     columns = [
@@ -144,6 +150,9 @@ def host_list_json_route():
 def service_list_json_route():
     """list services, data endpoint"""
 
+    if not current_user.api_networks:
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+
     columns = [
         ColumnDT(Service.id, mData="id"),
         ColumnDT(Host.id, mData="host_id"),
@@ -172,6 +181,9 @@ def service_list_json_route():
 @session_required("user")
 def vuln_list_json_route():
     """lens list vulns, data endpoint"""
+
+    if not current_user.api_networks:
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
     columns = [
         ColumnDT(Vuln.id, mData="id"),
@@ -210,6 +222,9 @@ def vuln_list_json_route():
 @session_required("user")
 def overview_json_route():
     """return overview stats for scope of current user"""
+
+    if not current_user.api_networks:
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
     restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
 
