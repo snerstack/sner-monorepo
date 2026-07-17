@@ -8,8 +8,9 @@ from flask import current_app
 from flask.cli import with_appcontext
 
 from sner.server.agreegate import fetch_agreegate_netlists
-from sner.server.planner.core import Planner, outofscope_check
+from sner.server.planner.core import Planner
 from sner.server.planner.pgraph import generate_graph
+from sner.server.planner.scope_checks import outofscope_check
 
 
 @click.group(name="planner", help="sner.server planner commands")

@@ -72,7 +72,6 @@ from ipaddress import ip_network
 from time import sleep
 
 from flask import current_app
-from sqlalchemy import delete, not_, or_, select
 
 from sner.lib import TerminateContextRunner
 from sner.server.extensions import db
@@ -99,7 +98,6 @@ from sner.server.planner.stages_auror import (
     AurorTestsslStorageCleanup,
     AurorTestsslStorageTargetlist,
 )
-from sner.server.storage.models import Host, Note, Vuln
 
 
 def configure_logging():
@@ -125,87 +123,6 @@ def configure_logging():
             "loggers": {"sner.server": {"level": "INFO", "handlers": ["console_planner"]}},
         }
     )
-
-
-# does not really need to setup stages, so intentionaly is not a class method
-def outofscope_check(prune=False):
-    """handles data in storage that is outside the planner"s scanning scope"""
-
-    def percent(value: int, total: int) -> str:
-        """Return a formatted percentage string or 'N/A' if total is zero."""
-        return f"{(value / total) * 100:.2f}%" if total else "N/A"
-
-    planner_config = PlannerConfig(**current_app.config["SNER_PLANNER"])
-    outscope_host_ids = set()
-    outscope_vuln_ids = set()
-    outscope_note_ids = set()
-
-    # find hosts which are not in any scan scope
-    scope = list(set(planner_config.basic_nets + planner_config.nuclei_nets + planner_config.sportmap_nets + planner_config.nessus_nets))
-
-    current_app.logger.debug("full scope: %s", scope)
-    scope_query = [Host.address.op("<<=")(net) for net in scope]
-    query = select(Host.id)
-    if scope_query:
-        query = query.filter(not_(or_(*scope_query)))
-    outscope_host_ids.update(db.session.execute(query).scalars().all())
-
-    # check nuclei/sportmap scope
-    scope = list(set(planner_config.nuclei_nets + planner_config.sportmap_nets))
-    current_app.logger.debug("nuclei/sportmap scope: %s", scope)
-    scope_query = [Host.address.op("<<=")(net) for net in scope]
-
-    query = select(Vuln.id).join(Host).filter(Vuln.xtype.ilike("nuclei.%"))
-    if scope_query:
-        query = query.filter(not_(or_(*scope_query)))
-    outscope_vuln_ids.update(db.session.execute(query).scalars().all())
-
-    query = select(Note.id).join(Host).filter(Note.xtype == "sportmap")
-    if scope_query:
-        query = query.filter(not_(or_(*scope_query)))
-    outscope_note_ids.update(db.session.execute(query).scalars().all())
-
-    # check nessus scope
-    scope = planner_config.nessus_nets
-    current_app.logger.debug("nessus scope: %s", scope)
-    scope_query = [Host.address.op("<<=")(net) for net in scope]
-
-    query = select(Vuln.id).join(Host).filter(Vuln.xtype.ilike("nessus.%"))
-    if scope_query:
-        query = query.filter(not_(or_(*scope_query)))
-    outscope_vuln_ids.update(db.session.execute(query).scalars().all())
-
-    if current_app.debug:  # pragma: nocover  ; won't test
-        for model, ids in [(Host, outscope_host_ids), (Vuln, outscope_vuln_ids), (Note, outscope_note_ids)]:
-            for item in db.session.execute(select(model).filter(model.id.in_(ids))).scalars():
-                current_app.logger.debug("out-of-scope object: %s", item)
-
-    outscope_counts = {
-        "hosts": len(outscope_host_ids),
-        "vulns": len(outscope_vuln_ids),
-        "notes": len(outscope_note_ids),
-    }
-    totals = {
-        "hosts": Host.query.count(),
-        "vulns": Vuln.query.count(),
-        "notes": Note.query.count(),
-    }
-    if any(outscope_counts.values()) or current_app.debug:
-        print(
-            "Out-of-scope objects\n"
-            f"  Hosts: {outscope_counts['hosts']:-6d} / {totals['hosts']} ({percent(outscope_counts['hosts'], totals['hosts'])})\n"
-            f"  Vulns: {outscope_counts['vulns']:-6d} / {totals['vulns']} ({percent(outscope_counts['vulns'], totals['vulns'])})\n"
-            f"  Notes: {outscope_counts['notes']:-6d} / {totals['notes']} ({percent(outscope_counts['notes'], totals['notes'])})\n"
-        )
-
-    if prune:
-        db.session.execute(delete(Note).filter(Note.id.in_(outscope_note_ids)), execution_options={"synchronize_session": False})
-        db.session.execute(delete(Vuln).filter(Vuln.id.in_(outscope_vuln_ids)), execution_options={"synchronize_session": False})
-        db.session.execute(delete(Host).filter(Host.id.in_(outscope_host_ids)), execution_options={"synchronize_session": False})
-        db.session.commit()
-        db.session.expire_all()
-
-    return 0
 
 
 def _split_ip_networks(networks):

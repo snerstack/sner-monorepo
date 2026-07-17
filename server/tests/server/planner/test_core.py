@@ -4,10 +4,8 @@ planner core tests
 """
 
 import yaml
-from flask import current_app
 
-from sner.server.planner.core import Planner, _split_ip_networks, outofscope_check
-from sner.server.storage.models import Host, Note, Vuln
+from sner.server.planner.core import Planner, _split_ip_networks
 
 
 def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
@@ -96,41 +94,6 @@ def test_planner_empty_config(app):  # pylint: disable=unused-argument
 
     planner = Planner({"pipelines": {"storage_cleanup": {"enabled": True}}})
     planner.run(oneshot=True)
-
-
-def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pylint: disable=unused-argument
-    """test hosts_outside_scope"""
-
-    current_app.config["SNER_PLANNER"] = yaml.safe_load(
-        """
-      basic_nets: ['127.0.0.11/32', '2001:db8::11/128']
-      nuclei_nets: ['127.3.3.0/24']
-      sportmap_nets: ['2001:db8:eeee::12/64']
-      nessus_nets: ['127.3.3.0/24']
-    """
-    )
-
-    host1 = host_factory.create(address="127.0.0.11")
-    host2 = host_factory.create(address="2001:db8::11")
-    host_factory.create(address="127.4.0.1")
-    host_factory.create(address="2001:db8:eeee::13")
-    host_factory.create(address="2001:db8:aaaa::6")
-
-    vuln_factory.create(host=host1, xtype="nuclei.test")
-    vuln_factory.create(host=host1, xtype="nessus.test")
-    note_factory.create(host=host2, xtype="sportmap")
-
-    outofscope_check(prune=True)
-    assert Host.query.count() == 3
-    assert Vuln.query.count() == 0
-    assert Note.query.count() == 0
-
-
-def test_outofscopecheck_emptyscope(app):  # pylint: disable=unused-argument
-    """test hosts_outside_scope with empty scope"""
-
-    current_app.config["SNER_PLANNER"] = {}
-    assert outofscope_check(prune=False) == 0
 
 
 def test_split_ip_networks():
