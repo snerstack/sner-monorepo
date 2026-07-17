@@ -30,11 +30,11 @@ def runner(app):  # pylint: disable=redefined-outer-name
     return app.test_cli_runner()
 
 
-def client_in_roles(ufactory, clnt, roles):
+def client_in_roles(ufactory, clnt, roles, **ufactory_kwargs):
     """create user role and login client to role(s)"""
 
     password = PWS.generate()
-    user = ufactory.create(username="pytest_user", password=PWS.hash(password), email=None, roles=roles)
+    user = ufactory.create(username="pytest_user", password=PWS.hash(password), email=None, roles=roles, **ufactory_kwargs)
 
     form_data = [("username", user.username), ("password", password)]
     clnt.post(url_for("auth.login_route"), params=form_data)
@@ -47,6 +47,13 @@ def cl_user(user_factory, client):  # pylint: disable=redefined-outer-name
     """yield client authenticated to role user"""
 
     yield client_in_roles(user_factory, client, ["user"])
+
+
+@pytest.fixture
+def cl_user_nonetworks(user_factory, client):  # pylint: disable=redefined-outer-name
+    """yield client authenticated to role user without networks"""
+
+    yield client_in_roles(user_factory, client, ["user"], api_networks=[])
 
 
 @pytest.fixture

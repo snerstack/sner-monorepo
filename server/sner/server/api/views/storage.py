@@ -3,30 +3,25 @@
 apiv2 controller
 """
 
-import binascii
 import json
-from base64 import b64decode
 from collections import defaultdict
 from dataclasses import dataclass
 from http import HTTPStatus
 
-from flask import Response, current_app, jsonify
+from flask import abort, current_app
 from flask_login import current_user
-from flask_smorest import Blueprint, Page
+from flask_smorest import Page
 from sqlalchemy import and_, or_, select
 
 import sner.server.api.schema as api_schema
-from sner.server.api.core import get_metrics
+from sner.server.api.core import current_user_api_network_filter
+from sner.server.api.views import blueprint
 from sner.server.auth.core import apikey_required
 from sner.server.extensions import db
-from sner.server.scheduler.core import SchedulerService, SchedulerServiceBusyException
-from sner.server.scheduler.models import Job
 from sner.server.storage.models import Host, Note, Service, Versioninfo, Vuln
 from sner.server.storage.version_parser import is_in_version_range
 from sner.server.storage.version_parser import parse as versionspec_parse
 from sner.server.utils import error_response, filter_query
-
-blueprint = Blueprint("api", __name__)  # pylint: disable=invalid-name
 
 
 class QueryPage(Page):
@@ -34,59 +29,13 @@ class QueryPage(Page):
 
     @property
     def item_count(self):
-        if not self.collection:
-            return 0
         return self.collection.count()
 
 
-@blueprint.route("/v2/scheduler/job/assign", methods=["POST"])
-@apikey_required("agent")
-@blueprint.arguments(api_schema.JobAssignArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schema.JobAssignmentSchema)
-def v2_scheduler_job_assign_route(args):
-    """assign job for agent"""
-
-    if current_app.config["SNER_MAINTENANCE"]:
-        return {}  # nowork
-
-    try:
-        resp = SchedulerService.job_assign(args.get("queue"), args.get("caps", []))
-    except SchedulerServiceBusyException:
-        resp = {}  # nowork
-    return resp
-
-
-@blueprint.route("/v2/scheduler/job/output", methods=["POST"])
-@apikey_required("agent")
-@blueprint.arguments(api_schema.JobOutputSchema)
-def v2_scheduler_job_output_route(args):
-    """receive output from assigned job"""
-
-    try:
-        output = b64decode(args["output"])
-    except binascii.Error:
-        return jsonify({"message": "invalid request"}), HTTPStatus.BAD_REQUEST
-
-    job = Job.query.filter(Job.id == args["id"], Job.retval == None).one_or_none()  # noqa: E711  pylint: disable=singleton-comparison
-    if not job:
-        # invalid/repeated requests are silently discarded, agent would delete working data
-        # on it's side as well
-        return jsonify({"message": "discard job"})
-
-    try:
-        SchedulerService.job_output(job, args["retval"], output)
-    except SchedulerServiceBusyException:
-        return jsonify({"message": "server busy"}), HTTPStatus.TOO_MANY_REQUESTS
-
-    return jsonify({"message": "success"})
-
-
-@blueprint.route("/v2/metrics")
-@blueprint.response(HTTPStatus.OK, {"type": "string"}, content_type="text/plain")
-def v2_stats_prometheus_route():
-    """internal stats"""
-
-    return Response(get_metrics(), mimetype="text/plain")
+def paged_error_response(*args, **kwargs):
+    """paged view must return result or raise exception/abort"""
+    resp = error_response(*args, **kwargs)
+    abort(resp[1], resp[0].json)
 
 
 @blueprint.route("/v2/public/storage/host", methods=["POST"])
@@ -99,8 +48,7 @@ def v2_public_storage_host_route(args):
     if not current_user.api_networks:
         return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
-    query = Host.query.filter(Host.address == str(args["address"])).filter(or_(*restrict))
+    query = Host.query.filter(Host.address == str(args["address"])).filter(current_user_api_network_filter())
 
     host = query.one_or_none()
     if not host:
@@ -124,10 +72,9 @@ def v2_public_storage_range_route(args):
     """list of hosts by cidr with simplified data"""
 
     if not current_user.api_networks:
-        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+        return paged_error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
-    query = Host.query.filter(Host.address.op("<<=")(str(args["cidr"]))).filter(or_(*restrict))
+    query = Host.query.filter(Host.address.op("<<=")(str(args["cidr"]))).filter(current_user_api_network_filter())
     current_app.logger.info(f"api.public storage range {args}")
     return query
 
@@ -141,15 +88,14 @@ def v2_public_storage_servicelist_route(args):
     """filtered servicelist (see sner.server.sqlafilter for syntax)"""
 
     if not current_user.api_networks:
-        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+        return paged_error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = (
         db.session.query()
         .select_from(Service)
         .outerjoin(Host)
         .add_columns(Host.address, Host.hostname, Service.proto, Service.port, Service.state, Service.info)
-        .filter(or_(*restrict))
+        .filter(current_user_api_network_filter())
     )
 
     query = filter_query(query, args.get("filter"))
@@ -166,9 +112,8 @@ def v2_public_storage_vulnlist_route(args):
     """filtered vulnlist (see sner.server.sqlafilter for syntax)"""
 
     if not current_user.api_networks:
-        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+        return paged_error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = (
         db.session.query()
         .select_from(Vuln)
@@ -193,7 +138,7 @@ def v2_public_storage_vulnlist_route(args):
             Vuln.rescan_time,
             Vuln.import_time,
         )
-        .filter(or_(*restrict))
+        .filter(current_user_api_network_filter())
     )
 
     query = filter_query(query, args.get("filter"))
@@ -210,9 +155,8 @@ def v2_public_storage_notelist_route(args):
     """filtered notelist (see sner.server.sqlafilter for syntax)"""
 
     if not current_user.api_networks:
-        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+        return paged_error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = (
         db.session.query()
         .select_from(Note)
@@ -232,7 +176,7 @@ def v2_public_storage_notelist_route(args):
             Note.modified,
             Note.import_time,
         )
-        .filter(or_(*restrict))
+        .filter(current_user_api_network_filter())
     )
 
     query = filter_query(query, args.get("filter"))
@@ -249,10 +193,10 @@ def v2_public_storage_versioninfo_route(args):
     """simple version search"""
 
     if not current_user.api_networks:
-        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+        return paged_error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
-    restrict = [Versioninfo.host_address.op("<<=")(net) for net in current_user.api_networks]
-    query = Versioninfo.query.filter(or_(*restrict))
+    restrict = or_(*[Versioninfo.host_address.op("<<=")(net) for net in current_user.api_networks])
+    query = Versioninfo.query.filter(restrict)
     query = filter_query(query, args.get("filter"))
 
     if "product" in args:

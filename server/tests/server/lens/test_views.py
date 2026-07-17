@@ -144,3 +144,22 @@ def test_overview_json_route(cl_user, host_permitted, host_denied, service_facto
     assert response.json["vuln_severities"].get("unknown") is None
 
     assert response.json["allowed_networks"] == ["127.0.0.0/8", "2001:db8::/32"]
+
+
+def test_routes_user_nonetworks(cl_user_nonetworks, vuln):
+    """test all lens routes with user with no api_networks allowed"""
+
+    response = cl_user_nonetworks.get(url_for("lens.overview_json_route"), status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = cl_user_nonetworks.get(url_for("lens.host_view_json_route", host_id=vuln.host.id), status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = cl_user_nonetworks.post(url_for("lens.host_list_json_route"), DTARGUMENTS, status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = cl_user_nonetworks.get(url_for("lens.service_list_json_route"), DTARGUMENTS, status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = cl_user_nonetworks.get(url_for("lens.vuln_list_json_route"), DTARGUMENTS, status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN

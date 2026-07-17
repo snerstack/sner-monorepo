@@ -6,8 +6,9 @@ api functions
 from datetime import datetime, timedelta
 
 from flask import current_app
+from flask_login import current_user
 from pytimeparse import parse as timeparse
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from sner.server.extensions import db
 from sner.server.scheduler.models import Heatmap, Job, Queue, Readynet, Target
@@ -43,3 +44,9 @@ def get_metrics():
 
     output = "\n".join(f"{key} {val}" for key, val in metrics.items())
     return output
+
+
+def current_user_api_network_filter():
+    """returns sqla expression for current_user.api_networks filtering based on Host.address"""
+
+    return or_(*[Host.address.op("<<=")(net) for net in current_user.api_networks])

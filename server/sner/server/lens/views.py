@@ -10,8 +10,9 @@ from http import HTTPStatus
 from datatables import ColumnDT, DataTables
 from flask import Blueprint, Response, current_app, jsonify, request
 from flask_login import current_user
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 
+from sner.server.api.core import current_user_api_network_filter
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.models import Host, Service, Vuln
@@ -36,8 +37,7 @@ def host_view_json_route(host_id):
     if not current_user.api_networks:
         return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
-    host = Host.query.filter(Host.id == host_id).filter(or_(*restrict)).one_or_none()
+    host = Host.query.filter(Host.id == host_id).filter(current_user_api_network_filter()).one_or_none()
     if host is None:
         return error_response(message="Host not found.", code=HTTPStatus.NOT_FOUND)
 
@@ -129,11 +129,10 @@ def host_list_json_route():
         ColumnDT(Host.tags, mData="tags"),
     ]
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = (
         db.session.query()
         .select_from(Host)
-        .filter(or_(*restrict))
+        .filter(current_user_api_network_filter())
         .outerjoin(count_services, Host.id == count_services.c.host_id)
         .outerjoin(count_vulns, Host.id == count_vulns.c.host_id)
     )
@@ -167,8 +166,7 @@ def service_list_json_route():
         ColumnDT(Service.tags, mData="tags"),
     ]
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
-    query = db.session.query().select_from(Service).outerjoin(Host).filter(or_(*restrict))
+    query = db.session.query().select_from(Service).outerjoin(Host).filter(current_user_api_network_filter())
 
     query = filter_query_jsonfilter(query, request.values.get("jsonfilter"))
     services = DataTables(request.values.to_dict(), query, columns).output_result()
@@ -202,13 +200,12 @@ def vuln_list_json_route():
         ColumnDT(Vuln.tags, mData="tags"),
     ]
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
     query = (
         db.session.query()
         .select_from(Vuln)
         .outerjoin(Host, Vuln.host_id == Host.id)
         .outerjoin(Service, Vuln.service_id == Service.id)
-        .filter(or_(*restrict))
+        .filter(current_user_api_network_filter())
     )
 
     query = filter_query_jsonfilter(query, request.values.get("jsonfilter"))
@@ -226,14 +223,14 @@ def overview_json_route():
     if not current_user.api_networks:
         return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
-    restrict = [Host.address.op("<<=")(net) for net in current_user.api_networks]
+    restrict = current_user_api_network_filter()
 
-    host_total_query = select(func.count()).select_from(Host).filter(or_(*restrict))
-    service_total_query = select(func.count()).select_from(Service).join(Host).filter(or_(*restrict))
-    vuln_total_query = select(func.count()).select_from(Vuln).join(Host).filter(or_(*restrict))
-    severity_query = select(Vuln.severity, func.count()).join(Host).group_by(Vuln.severity).filter(or_(*restrict))
+    host_total_query = select(func.count()).select_from(Host).filter(restrict)
+    service_total_query = select(func.count()).select_from(Service).join(Host).filter(restrict)
+    vuln_total_query = select(func.count()).select_from(Vuln).join(Host).filter(restrict)
+    severity_query = select(Vuln.severity, func.count()).join(Host).group_by(Vuln.severity).filter(restrict)
     oldest_scanned_service = (
-        select(Service).join(Host).filter(or_(*restrict)).filter(Service.import_time.isnot(None)).order_by(Service.import_time.asc()).limit(5)
+        select(Service).join(Host).filter(restrict).filter(Service.import_time.isnot(None)).order_by(Service.import_time.asc()).limit(5)
     )
     oldest_scanned = db.session.execute(oldest_scanned_service).scalars().all()
 
