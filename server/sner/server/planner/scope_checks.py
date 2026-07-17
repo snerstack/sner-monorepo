@@ -127,9 +127,9 @@ def outofscope_check(prune=False):
         notes = ScopeCounter(sum_by_model(outofscope_checks, Note), count_subquery(select(Note)))
         print(
             "Out-of-scope objects\n"
-            f"  Hosts: {hosts.value:-6d} / {hosts.total} ({hosts.percent:.2f})\n"
-            f"  Vulns: {vulns.value:-6d} / {vulns.total} ({vulns.percent:.2f})\n"
-            f"  Notes: {notes.value:-6d} / {notes.total} ({notes.percent:.2f})\n"
+            f"  Hosts: {hosts.value:-6d} / {hosts.total} ({hosts.percent:.2f}%)\n"
+            f"  Vulns: {vulns.value:-6d} / {vulns.total} ({vulns.percent:.2f}%)\n"
+            f"  Notes: {notes.value:-6d} / {notes.total} ({notes.percent:.2f}%)\n"
         )
 
     if prune:
