@@ -32,12 +32,14 @@ def app():
     _app = create_app(config_file="tests/sner.yaml", config_env="dummy")
 
     with _app.app_context():
+        os.makedirs(_app.config["SNER_VAR"], exist_ok=True)
         db_remove()
         db.create_all()
 
     yield _app
 
     with _app.app_context():
+        os.makedirs(_app.config["SNER_VAR"], exist_ok=True)
         db_remove()
 
 
