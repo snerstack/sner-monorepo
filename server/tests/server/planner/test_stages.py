@@ -310,7 +310,7 @@ def test_servicestoragetargetlist(app, queue, service):  # pylint: disable=unuse
     """test service storage targetlist generator"""
 
     dummy = DummyStage()
-    stage = ServiceStorageTargetlist("serviceselector", schedule="0s", filternets=["0.0.0.0/0"], next_stage=dummy)
+    stage = ServiceStorageTargetlist("serviceselector", schedule="0s", filternets=["0.0.0.0/0"], ports_ignore=[1], next_stage=dummy)
     stage.run()
 
     assert dummy.task_count == 1

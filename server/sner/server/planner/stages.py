@@ -310,7 +310,7 @@ class ServiceScanStorageTargetlist(Schedule):
         rescan_horizon = now - timedelta(seconds=timeparse(self.service_interval))
 
         targets, ids = [], []
-        for service in StorageManager.get_open_services(self.filternets, rescan_horizon):
+        for service in StorageManager.get_open_services(self.filternets, [], rescan_horizon):
             targets.append(ServiceTarget(service.host.address, service.proto, service.port))
             ids.append(service.id)
 
@@ -323,16 +323,17 @@ class ServiceScanStorageTargetlist(Schedule):
 class ServiceStorageTargetlist(Schedule):
     """list storage services for advanced(vulnerability) scanning"""
 
-    def __init__(self, name, schedule, filternets, next_stage):
+    def __init__(self, name, schedule, filternets, ports_ignore, next_stage):
         super().__init__(name, schedule)
         self.filternets = filternets
+        self.ports_ignore = ports_ignore
         self.next_stage = next_stage
 
     def _run(self):
         """run"""
 
         targets = []
-        for service in StorageManager.get_open_services(self.filternets, None):
+        for service in StorageManager.get_open_services(self.filternets, self.ports_ignore, None):
             targets.append(ServiceTarget(service.host.address, service.proto, service.port))
 
         self.next_stage.task(targets)

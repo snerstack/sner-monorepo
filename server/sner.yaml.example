@@ -67,6 +67,9 @@ planner:
     nuclei_scan:
       schedule: 7days
       queue: sner.nuclei.rolling
+      ports_ignore:
+        - 2000
+        - 5060
 
     sportmap_scan:
       schedule: 7days

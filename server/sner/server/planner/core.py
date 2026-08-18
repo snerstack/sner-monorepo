@@ -281,6 +281,7 @@ class Planner(TerminateContextRunner):
                 "nuclei_scan:storage_targetlist",
                 schedule=self._cp.nuclei_scan.schedule,
                 filternets=self.config.nuclei_nets,
+                ports_ignore=self._cp.nuclei_scan.ports_ignore,
                 next_stage=loader,
             )
         )

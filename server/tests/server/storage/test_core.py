@@ -113,4 +113,4 @@ def test_storagemanager_empty_filternets(app, host_factory, service_factory):  #
 
     assert len(StorageManager.get_six_addresses([])) == 0
     assert len(list(StorageManager.get_hosts([], None))) == 0
-    assert len(list(StorageManager.get_open_services([], None))) == 0
+    assert len(list(StorageManager.get_open_services([], [], None))) == 0

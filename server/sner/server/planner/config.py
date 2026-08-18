@@ -37,6 +37,7 @@ class HostRescan(ConfigBase):
 class NucleiScan(ConfigBase):
     schedule: str
     queue: str
+    ports_ignore: list[int] = []
 
 
 class NessusScan(ConfigBase):

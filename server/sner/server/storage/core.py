@@ -348,7 +348,7 @@ class StorageManager:
         db.session.expire_all()
 
     @staticmethod
-    def get_open_services(filternets, rescan_horizon):
+    def get_open_services(filternets, ports_ignore, rescan_horizon):
         """query all services in filternets and/or service.rescan_time rescan_horizon"""
 
         if not filternets:
@@ -357,6 +357,9 @@ class StorageManager:
         query = Service.query.filter(Service.state.ilike("open:%"))
         restrict = [Host.address.op("<<=")(net) for net in filternets]
         query = query.join(Host).filter(or_(*restrict))
+
+        if ports_ignore:
+            query = query.filter(Service.port.not_in(ports_ignore))
 
         if rescan_horizon:
             query = query.filter(or_(Service.rescan_time < rescan_horizon, Service.rescan_time.is_(None)))
