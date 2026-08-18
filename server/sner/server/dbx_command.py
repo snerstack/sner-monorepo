@@ -105,7 +105,10 @@ DEFAULT_PROD_QUEUES = [
     # nuclei scan
     QueueDef(
         "sner.nuclei.rolling",
-        {"module": "nuclei", "args": ["-rate-limit", "30", "-disable-unsigned-templates", "-disable-update-check"]},
+        {
+            "module": "nuclei",
+            "args": ["-rate-limit", "30", "-disable-unsigned-templates", "-disable-update-check", "-template-loading-concurrency", "1"],
+        },
         1,
         QueuePrio.HIGH,
         ["nuclei"],
