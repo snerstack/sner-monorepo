@@ -43,7 +43,7 @@ const PortinfosPage = () => {
     // generate graph layout
     httpClient
       .get<ResponseData[]>(
-        urlFor(`/backend/visuals/portinfos.json${searchParams.toString() ? `?${searchParams.toString()}` : ''}`),
+        urlFor('/backend/visuals/portinfos.json', searchParams),
       )
       .then((data) => {
         const counts = data.data.map((item) => item.count)

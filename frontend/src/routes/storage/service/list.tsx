@@ -7,7 +7,7 @@ import { useRecoilState } from 'recoil'
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getDTConfigValue } from '@/lib/sner/storage'
-import { toQueryString, urlFor } from '@/lib/urlHelper'
+import { urlFor } from '@/lib/urlHelper'
 
 import { Button, EditButton } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
@@ -243,7 +243,7 @@ const ServiceListPage = () => {
       <DataTable
         id="service_list_table"
         columns={columns}
-        ajax_url={urlFor(`/backend/storage/service/list.json${toQueryString(searchParams)}`)}
+        ajax_url={urlFor(`/backend/storage/service/list.json`, searchParams)}
         select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
         order={[[3, 'asc']]}
       />

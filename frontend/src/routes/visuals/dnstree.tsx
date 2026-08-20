@@ -88,7 +88,7 @@ const DnsTreePage = () => {
       })
 
     httpClient.get<ResponseData>(
-      urlFor(`/backend/visuals/dnstree.json` + (searchParams.toString() ? `?${searchParams.toString()}` : '')),
+      urlFor('/backend/visuals/dnstree.json', searchParams),
     )
     .then((response) => {
       const { nodes, links } = response.data;

@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Column, renderElements } from '@/lib/DataTables'
 import { getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
-import { toQueryString, urlFor } from '@/lib/urlHelper'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import DataTableLink from '@/components/DataTableLink'
@@ -143,7 +143,7 @@ const LensVulnListPage = () => {
       <DataTable
         id="vuln_list_table"
         columns={dtColumns}
-        ajax_url={urlFor(`/backend/lens/vuln/list.json${toQueryString(searchParams)}`)}
+        ajax_url={urlFor(`/backend/lens/vuln/list.json`, searchParams)}
         order={[[1, 'asc']]}
       />
 

@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Column, renderElements } from '@/lib/DataTables'
 import { getColorForSeverity, getVulnFilterName } from '@/lib/sner/storage'
-import { toQueryString, urlFor } from '@/lib/urlHelper'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
@@ -104,7 +104,7 @@ const VulnGroupedPage = () => {
       <DataTable
         id="vuln_grouped_table"
         columns={columns}
-        ajax_url={urlFor(`/backend/storage/vuln/grouped.json${toQueryString(searchParams)}`)}
+        ajax_url={urlFor(`/backend/storage/vuln/grouped.json`, searchParams)}
       />
     </div>
   )

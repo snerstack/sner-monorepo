@@ -35,7 +35,7 @@ const ServiceAutocompleteField = ({
   const autocompleteHandler = async (searchTerm: string) => {
     try {
       const resp = await httpClient.get<{ label: string; value: number }[]>(
-        urlFor(`/backend/storage/vuln_addedit_service_autocomplete?host_id=${hostId}&service_term=${searchTerm}`)
+        urlFor('/backend/storage/vuln_addedit_service_autocomplete', { host_id: String(hostId), service_term: searchTerm })
       )
 
       setSuggestions(resp.data)

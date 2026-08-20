@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Column, renderElements } from '@/lib/DataTables'
 import { getNoteFilterXtype } from '@/lib/sner/storage'
-import { toQueryString, urlFor } from '@/lib/urlHelper'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import { FilterForm, ToggleFilterFormButton } from '@/components/FilterForm'
@@ -52,7 +52,7 @@ const NoteGroupedPage = () => {
       <DataTable
         id="note_grouped_table"
         columns={columns}
-        ajax_url={urlFor(`/backend/storage/note/grouped.json${toQueryString(searchParams)}`)}
+        ajax_url={urlFor(`/backend/storage/note/grouped.json`, searchParams)}
       />
     </div>
   )

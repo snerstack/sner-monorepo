@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { handleHttpClientError, httpClient } from "@/lib/httpClient"
-import { toQueryString, urlFor } from "@/lib/urlHelper"
+import { urlFor } from '@/lib/urlHelper'
 
 /* vite devserver has issues with routing of '/uri/a.1', therefore get query args are used */
 const HostLookupPage = () => {
@@ -12,7 +12,7 @@ const HostLookupPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await httpClient.get<StorageHostLookupResponse>(urlFor(`/backend/storage/host/lookup${toQueryString(searchParams)}`))
+                const response = await httpClient.get<StorageHostLookupResponse>(urlFor(`/backend/storage/host/lookup`, searchParams))
                 navigate(response.data.url)
             /* c8 ignore next 3 */
             } catch (err) {

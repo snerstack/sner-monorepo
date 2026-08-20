@@ -91,7 +91,7 @@ const ServiceGroupedPage = () => {
       <DataTable
         id="service_grouped_table"
         columns={columns}
-        ajax_url={urlFor(`/backend/storage/service/grouped.json${toQueryString(searchParams)}`)}
+        ajax_url={urlFor(`/backend/storage/service/grouped.json`, searchParams)}
         order={[[1, 'desc']]}
       />
     </div>

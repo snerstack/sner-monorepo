@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { Column, ColumnButtons, renderElements } from '@/lib/DataTables'
-import { toQueryString, urlFor } from '@/lib/urlHelper'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import { FilterForm } from '@/components/FilterForm'
@@ -76,7 +76,7 @@ const JobListPage = () => {
       <DataTable
         id="job_list_table"
         columns={columns}
-        ajax_url={urlFor(`/backend/scheduler/job/list.json${toQueryString(searchParams)}`)}
+        ajax_url={urlFor(`/backend/scheduler/job/list.json`, searchParams)}
       />
     </div>
   )

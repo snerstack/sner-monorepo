@@ -4,7 +4,7 @@ import { Field } from 'react-querybuilder'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Column, renderElements } from '@/lib/DataTables'
-import { toQueryString, urlFor } from '@/lib/urlHelper'
+import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'
 import DataTableLink from '@/components/DataTableLink'
@@ -94,7 +94,7 @@ const LensServiceListPage = () => {
             <DataTable
                 id="service_list_table"
                 columns={dtColumns}
-                ajax_url={urlFor(`/backend/lens/service/list.json${toQueryString(searchParams)}`)}
+                ajax_url={urlFor(`/backend/lens/service/list.json`, searchParams)}
                 order={[[2, 'asc']]}
             />
         </div>

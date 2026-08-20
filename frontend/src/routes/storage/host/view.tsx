@@ -738,7 +738,7 @@ const HostViewPage = () => {
             <DataTable
               id="host_view_service_table"
               columns={serviceColumns}
-              ajax_url={urlFor(`/backend/storage/service/list.json?filter=Host.id=="${host.id}"`)}
+              ajax_url={urlFor('/backend/storage/service/list.json', { filter: `Host.id=="${host.id}"` })}
               order={[[5, 'asc']]}
               select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
             />
@@ -816,7 +816,7 @@ const HostViewPage = () => {
             <DataTable
               id="host_view_vuln_table"
               columns={vulnColumns}
-              ajax_url={urlFor(`/backend/storage/vuln/list.json?filter=Host.id=="${host.id}"`)}
+              ajax_url={urlFor('/backend/storage/vuln/list.json', { filter: `Host.id=="${host.id}"` })}
               order={[[1, 'asc']]}
               select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
             />
@@ -894,7 +894,7 @@ const HostViewPage = () => {
             <DataTable
               id="host_view_note_table"
               columns={noteColumns}
-              ajax_url={urlFor(`/backend/storage/note/list.json?filter=Host.id=="${host.id}"`)}
+              ajax_url={urlFor('/backend/storage/note/list.json', { filter: `Host.id=="${host.id}"` })}
               order={[[1, 'asc']]}
               select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
             />
@@ -969,7 +969,7 @@ const HostViewPage = () => {
             <DataTable
               id="host_view_versioninfo_table"
               columns={versioninfoColumns}
-              ajax_url={urlFor(`/backend/storage/versioninfo/list.json?filter=Versioninfo.host_id=="${host.id}"`)}
+              ajax_url={urlFor('/backend/storage/versioninfo/list.json', { filter: `Versioninfo.host_id=="${host.id}"` })}
               order={[[6, 'asc']]}
               select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
               drawCallback={(settings) => {

@@ -8,7 +8,7 @@ import { describe, expect, it, vi } from "vitest"
 import DataTable from "@/components/DataTable"
 import RBQFilter from "@/components/RBQFilter"
 import { Column } from "@/lib/DataTables"
-import { toQueryString, urlFor } from "@/lib/urlHelper"
+import { urlFor } from "@/lib/urlHelper"
 
 interface DataTableInstanceParams {
     draw: number
@@ -69,7 +69,7 @@ describe("RBQFilterForm", () => {
                     <DataTable
                         id="dummy_data_table"
                         columns={dtColumns}
-                        ajax_url={urlFor(`/backend/lens/host/list.json${toQueryString(searchParams)}`)}
+                        ajax_url={urlFor('/backend/lens/host/list.json', searchParams)}
                     />
                 </div>
             )

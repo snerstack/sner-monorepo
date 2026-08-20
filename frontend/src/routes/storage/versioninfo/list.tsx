@@ -7,7 +7,7 @@ import { useRecoilState } from 'recoil'
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
 import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, getDTConfigValue } from '@/lib/sner/storage'
-import { toQueryString, urlFor } from '@/lib/urlHelper'
+import { urlFor } from '@/lib/urlHelper'
 
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DropdownButton from '@/components/buttons/DropdownButton'
@@ -252,7 +252,7 @@ const VersionInfosListPage = () => {
       <DataTable
         id="versioninfo_list_table"
         columns={columns}
-        ajax_url={urlFor(`/backend/storage/versioninfo/list.json${toQueryString(searchParams)}`)}
+        ajax_url={urlFor(`/backend/storage/versioninfo/list.json`, searchParams)}
         order={[[2, 'asc']]}
         select={getDTConfigValue("dt_toolboxes_visible") ? { style: 'multi', selector: 'td:first-child' } : false}
       />
