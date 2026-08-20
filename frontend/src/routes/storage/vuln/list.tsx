@@ -32,16 +32,13 @@ const VulnListPage = () => {
   const [annotate, setAnnotate] = useState<Annotate>(DEFAULT_ANNOTATE_STATE)
   const [multipleTag, setMultipleTag] = useState<MultipleTag>(DEFAULT_MULTIPLE_TAG_STATE)
 
-  const getActionUrl = (basePath: string, additionalParams?: Record<string, string>) => {
-    const filter = searchParams.get('filter')
-
-    const params = new URLSearchParams({
-      ...additionalParams,
-      ...(filter && { filter })
-    }).toString()
-
-    return urlFor(`${basePath}${params ? `?${params}` : ''}`)
-  }
+  // propagate the current page state (filter etc.) into the backend report/export links
+  const reportUrl = urlFor('/backend/storage/vuln/report', searchParams)
+  const reportHostUrl = urlFor('/backend/storage/vuln/report', {
+    ...Object.fromEntries(searchParams),
+    group_by_host: 'True',
+  })
+  const exportUrl = urlFor('/backend/storage/vuln/export', searchParams)
 
   const columns = [
     ColumnSelect({ visible: true }),
@@ -202,7 +199,7 @@ const VulnListPage = () => {
         <div className="breadcrumb-buttons pl-2">
           <a
             className="btn btn-outline-primary"
-            href={getActionUrl('/backend/storage/vuln/report')}
+            href={reportUrl}
             title="Generate standard report with vulnerabilities groupped by name and tags."
           >
             Report
@@ -210,7 +207,7 @@ const VulnListPage = () => {
           {' '}
           <a
             className="btn btn-outline-primary"
-            href={getActionUrl('/backend/storage/vuln/report', { group_by_host: 'True' })}
+            href={reportHostUrl}
             title={
               "Generate standard report AND also aggregate vulnerabilities by host identifier " +
               "to eliminate duplicates caused by scans from multiple perspectives or DNS views."
@@ -221,7 +218,7 @@ const VulnListPage = () => {
           {' '}
           <a
             className="btn btn-outline-primary"
-            href={getActionUrl('/backend/storage/vuln/export')}
+            href={exportUrl}
             title="Export all vulnerabilities without any aggregation."
           >
             Export

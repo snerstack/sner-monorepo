@@ -1,21 +1,16 @@
 import { encodeRFC3986URIComponent } from '@/lib/sner/storage'
 
 /**
- * Extracted routing helper.
- * 
- * Would allow to place relocation code window.location for HashRouter to the single place if necessary.
- * 
- *  * @param {string} route_path
+ * Build a backend URL from a route path and optional query params.
+ *
+ * `params` is encoded with the sner-strict RFC3986 encoder (see toQueryString).
+ * Empty params (`{}` / empty URLSearchParams / undefined) produce no trailing '?'.
  */
-export const urlFor = (route_path: string): string => {
-    // with HashRouter
-    //return (
-    //  window.location.href.includes("#") ?
-    //  window.location.href.split("#")[0].replace(/\/$/, "") :
-    //  ""
-    //)
+export const urlFor = (route_path: string, params?: URLSearchParams | Record<string, string>): string => {
+    if (!params) return route_path;
+    if (params instanceof URLSearchParams) return route_path + toQueryString(params);
 
-    return route_path;
+    return route_path + toQueryString(new URLSearchParams(params));
 }
 
 /**
