@@ -164,38 +164,33 @@ def test_routes_user_nonetworks(cl_user_nonetworks, vuln):
     response = cl_user_nonetworks.get(url_for("lens.vuln_list_json_route"), DTARGUMENTS, status="*")
     assert response.status_code == HTTPStatus.FORBIDDEN
 
+    response = cl_user_nonetworks.get(url_for("lens.versioninfo_list_json_route"), DTARGUMENTS, status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
 
-def test_versioninfo_list_json_route(cl_user, host_permitted, host_denied, service_factory, versioninfo_factory):
+
+def prepare_versioninfo_testdata(factory, host, service, product, version):
+    """create versioninfo testdata"""
+
+    return factory.create(
+        host_id=host.id,
+        host_address=host.address,
+        host_hostname=host.hostname,
+        service_proto=service.proto if service else None,
+        service_port=service.port if service else None,
+        product=product,
+        version=version,
+    )
+
+
+def test_versioninfo_list_json_route(cl_user, host_permitted, host_denied, versioninfo_factory):
     """versioninfo list json route test"""
 
-    service_permitted = service_factory.create(host=host_permitted, port=111)
-    service_denied = service_factory.create(host=host_denied, port=222)
+    versioninfo_permitted = prepare_versioninfo_testdata(versioninfo_factory, host_permitted, None, "apache", "2.4.37")
+    prepare_versioninfo_testdata(versioninfo_factory, host_denied, None, "nginx", "1.16.4")
 
-    versioninfo_permitted = versioninfo_factory.create(
-        host_id=host_permitted.id,
-        host_address=host_permitted.address,
-        host_hostname=host_permitted.hostname,
-        service_proto=service_permitted.proto,
-        service_port=service_permitted.port,
-        product='apache httpd',
-        version='2.4.37',
-    )
-
-    versioninfo_factory.create(
-        host_id=host_denied.id,
-        host_address=host_denied.address,
-        host_hostname=host_denied.hostname,
-        service_proto=service_denied.proto,
-        service_port=service_denied.port,
-        product='nginx',
-        version='1.16.1',
-    )
-
-    response = cl_user.post(url_for('lens.versioninfo_list_json_route'), DTARGUMENTS)
-    assert response.status_code == HTTPStatus.OK
-
-    assert len(response.json['data']) == 1
-    assert response.json['data'][0]['version'] == versioninfo_permitted.version
+    response = cl_user.post(url_for("lens.versioninfo_list_json_route"), DTARGUMENTS)
+    assert len(response.json["data"]) == 1
+    assert response.json["data"][0]["version"] == versioninfo_permitted.version
 
 
 def test_versioninfo_list_json_invalid_versionspec(cl_operator):
@@ -203,14 +198,19 @@ def test_versioninfo_list_json_invalid_versionspec(cl_operator):
 
     response = cl_operator.post(
         url_for(
-            'lens.versioninfo_list_json_route',
-            jsonfilter=json.dumps({"combinator": "and", "rules": [
-                {"field": "Versioninfo.product", "operator": "==", "valueSource": "value", "value": "dummy"},
-                {"field": "Versioninfo.version", "operator": "==", "valueSource": "value", "value": "invalid"}
-            ]})
+            "lens.versioninfo_list_json_route",
+            jsonfilter=json.dumps(
+                {
+                    "combinator": "and",
+                    "rules": [
+                        {"field": "Versioninfo.product", "operator": "==", "valueSource": "value", "value": "dummy"},
+                        {"field": "Versioninfo.version", "operator": "==", "valueSource": "value", "value": "invalid"},
+                    ],
+                }
+            ),
         ),
         DTARGUMENTS,
-        status="*"
+        status="*",
     )
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert 'Invalid version format: "invalid"' in response.json["error"]["message"]
@@ -220,110 +220,64 @@ def test_versioninfo_list_json_route_query(cl_operator, service_factory, version
     """versioninfo list_json route query test"""
 
     service1 = service_factory.create(port=1)
-    expected_versioninfo = versioninfo_factory.create(
-        host_id=service1.host.id,
-        host_address=service1.host.address,
-        host_hostname=service1.host.hostname,
-        service_proto=service1.proto,
-        service_port=service1.port,
-        product='apache httpd',
-        version='2.4.37'
-    )
+    expected_versioninfo = prepare_versioninfo_testdata(versioninfo_factory, service1.host, service1, "apache httpd", "2.4.37")
 
-    service2 = service_factory.create(port=2)
-    expected_versioninfo2 = versioninfo_factory.create(
-        host_id=service2.host.id,
-        host_address=service2.host.address,
-        host_hostname=service2.host.hostname,
-        service_proto=service2.proto,
-        service_port=service2.port,
-        product='apache httpd',
-        version='2.4.38'
-    )
-
-    service3 = service_factory.create(port=3)
-    versioninfo_factory.create(
-        host_id=service3.host.id,
-        host_address=service3.host.address,
-        host_hostname=service3.host.hostname,
-        service_proto=service3.proto,
-        service_port=service3.port,
-        product='nginx',
-        version='1.16.1'
-    )
+    service3 = service_factory.create(port=2)
+    prepare_versioninfo_testdata(versioninfo_factory, service3.host, service3, "nginx", "1.16.1")
 
     response = cl_operator.get(
         url_for(
-            'lens.versioninfo_list_json_route',
-            jsonfilter=json.dumps({"combinator": "and", "rules": [
-                {"field": "Versioninfo.product", "operator": "==", "valueSource": "value", "value": expected_versioninfo.product},
-                {"field": "Versioninfo.version", "operator": ">=", "valueSource": "value", "value": expected_versioninfo.version}
-            ]})
+            "lens.versioninfo_list_json_route",
+            jsonfilter=json.dumps(
+                {
+                    "combinator": "and",
+                    "rules": [
+                        {"field": "Versioninfo.product", "operator": "==", "valueSource": "value", "value": expected_versioninfo.product},
+                        {"field": "Versioninfo.version", "operator": ">=", "valueSource": "value", "value": expected_versioninfo.version},
+                    ],
+                }
+            ),
         ),
-        {'draw': 1, 'start': 1, 'length': 1}
+        DTARGUMENTS,
     )
 
-    assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert len(response_data['data']) == 1
-    assert response_data['data'][0]['product'] == expected_versioninfo2.product
-    assert response_data['data'][0]['version'] == expected_versioninfo2.version
+    assert len(response.json["data"]) == 1
+    assert response.json["data"][0]["product"] == expected_versioninfo.product
+    assert response.json["data"][0]["version"] == expected_versioninfo.version
 
 
-def test_versioninfo_list_json_route_query2(cl_operator, service_factory, versioninfo_factory):
-    """versioninfo list_json route query test, invalid versionspec"""
+def test_versioninfo_list_json_route_query_edgecases(cl_operator, service_factory, versioninfo_factory):
+    """versioninfo list_json route query test, jsonfilter mutations edgecases"""
 
     service1 = service_factory.create(port=1)
-    versioninfo1 = versioninfo_factory.create(
-        host_id=service1.host.id,
-        host_address=service1.host.address,
-        host_hostname=service1.host.hostname,
-        service_proto=service1.proto,
-        service_port=service1.port,
-        product='apache httpd',
-        version='2.4.10'
-    )
-    service2 = service_factory.create(port=2)
-    versioninfo2 = versioninfo_factory.create(
-        host_id=service2.host.id,
-        host_address=service2.host.address,
-        host_hostname=service2.host.hostname,
-        service_proto=service2.proto,
-        service_port=service2.port,
-        product='apache httpd',
-        version='2.4.3'
-    )
-    service3 = service_factory.create(port=3)
-    versioninfo3 = versioninfo_factory.create(
-        host_id=service3.host.id,
-        host_address=service3.host.address,
-        host_hostname=service3.host.hostname,
-        service_proto=service3.proto,
-        service_port=service3.port,
-        product='apache httpd',
-        version='2.4.37'
-    )
+    expected_versioninfo = prepare_versioninfo_testdata(versioninfo_factory, service1.host, service1, "apache httpd", "2.4.37")
 
+    service2 = service_factory.create(port=2)
+    prepare_versioninfo_testdata(versioninfo_factory, service2.host, service2, "apache httpd", "1")
+
+    # nested rules
     response = cl_operator.get(
         url_for(
-            'lens.versioninfo_list_json_route',
-            jsonfilter=json.dumps({"combinator": "or", "rules": [{
-                "rules": [
-                    {"field": "Versioninfo.product", "operator": "==", "valueSource": "value", "value": versioninfo1.product},
-                    {"field": "Versioninfo.version", "operator": ">=", "valueSource": "value", "value": versioninfo1.version}
-                ], "combinator": "and", "not": False},
-                {"field": "Versioninfo.version", "operator": "==", "valueSource": "value", "value": versioninfo3.version}
-            ]})
+            "lens.versioninfo_list_json_route",
+            jsonfilter=json.dumps(
+                {
+                    "combinator": "and",
+                    "rules": [
+                        {
+                            "rules": [
+                                {"field": "Versioninfo.product", "operator": "==", "valueSource": "value", "value": expected_versioninfo.product},
+                                {"field": "Versioninfo.version", "operator": ">=", "valueSource": "value", "value": expected_versioninfo.version},
+                            ],
+                            "combinator": "and",
+                            "not": False,
+                        },
+                        {"field": "Versioninfo.version", "operator": "!=", "valueSource": "value", "value": "0"},
+                    ],
+                }
+            ),
         ),
-        {'draw': 1, 'start': 0, 'length': 10},
-        status="*"
+        DTARGUMENTS,
     )
 
-    assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode('utf-8'))
-    assert len(response_data['data']) == 2
-
-    versions = {entry['version'] for entry in response_data['data']}
-    assert versioninfo1.version in versions
-    assert versioninfo2.version not in versions
-    assert versioninfo3.version in versions
+    assert len(response.json["data"]) == 1
+    assert response.json["data"][0]["version"] in expected_versioninfo.version

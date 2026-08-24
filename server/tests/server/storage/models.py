@@ -9,7 +9,7 @@ from datetime import datetime
 from factory import LazyAttribute, SubFactory
 
 from sner.server.storage.models import Host, Note, Service, SeverityEnum, Versioninfo, Vuln
-from sner.server.storage.versioninfo import versioninfo_docid
+from sner.server.storage.versioninfo import VersioninfoManager, versioninfo_docid
 from tests import BaseModelFactory
 
 
@@ -100,6 +100,7 @@ class VersioninfoFactory(BaseModelFactory):
 
     product = "dummy product"
     version = "1.2.3"
+    version_array = LazyAttribute(lambda o: VersioninfoManager.parse_to_int_array(o.version))
     extra = {"flags": "dummy_flag"}
 
     tags = ["dummy"]

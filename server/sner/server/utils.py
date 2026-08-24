@@ -64,6 +64,13 @@ def windowed_query(query, column, windowsize=5000):
 class FilterQueryError(Exception):
     """filter query exception"""
 
+    @classmethod
+    def with_message(cls, user_message, exc):
+        """factory, log exception and return exception for raise"""
+        mesg = str(exc).split("\n", maxsplit=1)[0]
+        current_app.logger.error("%s: %s, %s", user_message, type(exc).__name__, mesg)
+        return cls(mesg)
+
 
 def filter_query(query, qfilter):
     """filter sqlalchemy query with string filter expression"""
@@ -74,9 +81,7 @@ def filter_query(query, qfilter):
     try:
         query = apply_filters(query, FILTER_PARSER.parse(qfilter), do_auto_join=False)
     except LarkError as exc:
-        mesg = str(exc).split("\n", maxsplit=1)[0]
-        current_app.logger.error("failed to parse filter: %s", mesg)
-        raise FilterQueryError(mesg) from None
+        raise FilterQueryError.with_message("failed to parse filter", exc) from None
 
     return query
 
@@ -119,9 +124,7 @@ def filter_query_jsonfilter(query, jsonfilter):
         query = apply_filters(query, transformed, do_auto_join=False)
 
     except (json.JSONDecodeError, ValueError, BadFilterFormat) as exc:
-        mesg = str(exc).split("\n", maxsplit=1)[0]
-        current_app.logger.error("failed to apply jsonfilter: %s, %s", type(exc).__name__, mesg)
-        raise FilterQueryError(mesg) from None
+        raise FilterQueryError.with_message("failed to apply jsonfilter", exc) from None
 
     return query
 

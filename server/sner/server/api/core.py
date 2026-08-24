@@ -46,7 +46,7 @@ def get_metrics():
     return output
 
 
-def current_user_api_network_filter():
+def current_user_api_network_filter(filter_field=Host.address):
     """returns sqla expression for current_user.api_networks filtering based on Host.address"""
 
-    return or_(*[Host.address.op("<<=")(net) for net in current_user.api_networks])
+    return or_(*[filter_field.op("<<=")(net) for net in current_user.api_networks])

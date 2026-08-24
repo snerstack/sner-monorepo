@@ -10,13 +10,14 @@ from http import HTTPStatus
 from datatables import ColumnDT, DataTables
 from flask import Blueprint, Response, current_app, jsonify, request
 from flask_login import current_user
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 
 from sner.server.api.core import current_user_api_network_filter
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.models import Host, Service, Versioninfo, Vuln
 from sner.server.storage.version_parser import InvalidFormatException
+from sner.server.storage.versioninfo import VersioninfoManager
 from sner.server.utils import FilterQueryError, SnerJSONEncoder, error_response, filter_query_jsonfilter
 
 blueprint = Blueprint("lens", __name__)  # pylint: disable=invalid-name
@@ -260,12 +261,47 @@ def overview_json_route():
     }
 
 
-@blueprint.route('/versioninfo/list.json', methods=['GET', 'POST'])
-@session_required('user')
+def mutate_versioninfo_rules(jsonfilter):
+    """Remap JSON filter queries from the text 'version' field to 'version_array', in place."""
+
+    rules = jsonfilter.get("rules")
+    if not rules:  # pragma: nocover  ; won't test
+        return
+
+    for rule in rules:
+        if "rules" in rule:
+            mutate_versioninfo_rules(rule)
+        elif rule.get("field") == "Versioninfo.version":
+            rule["field"] = "Versioninfo.version_array"
+            if rule.get("operator") in ["==", "!=", ">", "<", ">=", "<="]:
+                rule["value"] = VersioninfoManager.parse_to_int_array(rule.get("value", ""), strict=True)
+
+
+def mutate_versioninfo_jsonfilter(jsonfilter):
+    """mutate jsonfilter so the versioninfo.version conditions are translated to versioninfo.versioninfo_array which is processable by DB engine"""
+
+    if not jsonfilter:
+        return jsonfilter
+
+    try:
+        jsonfilter = json.loads(jsonfilter)
+        mutate_versioninfo_rules(jsonfilter)
+        jsonfilter = json.dumps(jsonfilter)
+    except (json.JSONDecodeError, InvalidFormatException) as exc:
+        raise FilterQueryError.with_message("failed to mutate versioninfo version filter", exc) from None
+
+    return jsonfilter
+
+
+@blueprint.route("/versioninfo/list.json", methods=["GET", "POST"])
+@session_required("user")
 def versioninfo_list_json_route():
     """lens list versioninfo, data endpoint"""
 
-    service_column = func.concat_ws('/', Versioninfo.service_port, Versioninfo.service_proto)
+    if not current_user.api_networks:
+        return error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+
+    service_column = func.concat_ws("/", Versioninfo.service_port, Versioninfo.service_proto)
     columns = [
         ColumnDT(Versioninfo.id, mData='id'),
         ColumnDT(Versioninfo.host_id, mData='host_id'),
@@ -282,22 +318,11 @@ def versioninfo_list_json_route():
         ColumnDT(Versioninfo.tags, mData='tags'),
     ]
 
-    restrict = [Versioninfo.host_address.op('<<=')(net) for net in current_user.api_networks]
-    query = db.session.query().select_from(Versioninfo).filter(or_(*restrict))
-
-    jsonfilter = request.values.get('jsonfilter')
-
-    if jsonfilter:
-        try:
-            filter_dict = json.loads(jsonfilter)
-            Versioninfo.remap_jsonfilter_rules(filter_dict)
-            jsonfilter = json.dumps(filter_dict)
-        except InvalidFormatException as exc:
-            return error_response(message=str(exc), code=HTTPStatus.BAD_REQUEST)
+    query = db.session.query().select_from(Versioninfo).filter(current_user_api_network_filter(Versioninfo.host_address))
+    jsonfilter = mutate_versioninfo_jsonfilter(request.values.get("jsonfilter"))
 
     query = filter_query_jsonfilter(query, jsonfilter)
+    vulns = DataTables(request.values.to_dict(), query, columns).output_result()
+    check_dt_errors(vulns)
 
-    versioninfos = DataTables(request.values.to_dict(), query, columns).output_result()
-    check_dt_errors(versioninfos)
-
-    return Response(json.dumps(versioninfos, cls=SnerJSONEncoder), mimetype='application/json')
+    return Response(json.dumps(vulns, cls=SnerJSONEncoder), mimetype="application/json")

@@ -16,6 +16,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sner.lib import get_nested_key
 from sner.server.extensions import db
 from sner.server.storage.models import Host, Note, Service, Versioninfo
+from sner.server.storage.version_parser import InvalidFormatException
 
 
 def versioninfo_docid(host_id, host_address, host_hostname, service_proto, service_port, via_target, product):
@@ -47,10 +48,8 @@ class ExtractedVersion:
 
 
 @dataclass
-class VMapItem:
+class VMapItem:  # pylint: disable=too-many-instance-attributes
     """raw map item"""
-
-    # pylint: disable=too-many-instance-attributes
 
     host_id: int
     host_address: str
@@ -62,9 +61,11 @@ class VMapItem:
     version: str
     timestamp: datetime
     extra: dict = field(default_factory=dict)
+    version_array: list[int] = field(default_factory=list)
 
     def __post_init__(self):
         self.product = self.product.lower()
+        self.version_array = VersioninfoManager.parse_to_int_array(self.version)
 
     def aggkey(self):
         """compute vmap aggregation key"""
@@ -88,12 +89,13 @@ class VMap:
 
         if aggkey in self.data:
             self.data[aggkey].version = entry.version
+            self.data[aggkey].version_array = entry.version_array
             self.data[aggkey].extra.update(entry.extra)
         else:
             self.data[aggkey] = entry
 
     def flush(self):
-        """upsert database, prune gone"""
+        """upsert database"""
 
         current_app.logger.debug("upsert versioninfo %d items", len(self.data))
         for key, val in self.data.items():
@@ -118,6 +120,8 @@ class VMap:
 
 class VersioninfoManager:
     """version info map manager"""
+
+    VERSION_ARRAY_SIZE = 4
 
     @staticmethod
     def _base_note_query():
@@ -162,6 +166,23 @@ class VersioninfoManager:
             return ExtractedVersion(match.group("product"), match.group("version"))
 
         return None
+
+    @classmethod
+    def parse_to_int_array(cls, version, strict=False):
+        """Parse version string into an array of integers."""
+
+        # handle debian style with hope, see sner.server.version_parser is_in_version_range()
+        clean = re.sub("(?<=[0-9])p(?=[0-9])", ".", version)
+        clean = clean.split(" ")[0]
+        nums = re.findall(r"\d+", clean)
+
+        if strict and not nums:
+            raise InvalidFormatException(f'Invalid version format: "{version}"')
+
+        parts = [int(item) for item in nums[: cls.VERSION_ARRAY_SIZE]]
+        if len(parts) < cls.VERSION_ARRAY_SIZE:
+            parts.extend([0] * (cls.VERSION_ARRAY_SIZE - len(parts)))
+        return parts
 
     @classmethod
     def rebuild(cls):
