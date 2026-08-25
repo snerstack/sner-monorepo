@@ -191,13 +191,15 @@ def v2_public_storage_notelist_route(args):
 @blueprint.response(HTTPStatus.OK, api_schema.PublicVersioninfoSchema(many=True))
 @blueprint.paginate(Page, page_size=1000, max_page_size=10000)
 def v2_public_storage_versioninfo_route(args):
-    """simple version search"""
+    """
+    simple versioninfo search. versionspec field has python packaging syntax, see
+    https://packaging.python.org/en/latest/specifications/version-specifiers/ for details
+    """
 
     if not current_user.api_networks:
         return paged_error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
 
-    restrict = or_(*[Versioninfo.host_address.op("<<=")(net) for net in current_user.api_networks])
-    query = Versioninfo.query.filter(restrict)
+    query = Versioninfo.query.filter(current_user_api_network_filter(Versioninfo.host_address))
     query = filter_query(query, args.get("filter"))
 
     if "product" in args:

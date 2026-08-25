@@ -12,10 +12,28 @@ from flask import url_for
 import sner.server.api.schema as api_schema
 
 
-def test_v2_public_storage_host_route_nonetworks(api_user_nonetworks, host):
+def test_v2_public_storage_nonetworks(api_user_nonetworks):
     """test queries with user without any configured networks"""
 
-    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_host_route"), {"address": host.address}, status="*")
+    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_host_route"), {"address": "127.0.0.1"}, status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_range_route"), {"cidr": "127.0.0.1/32"}, status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_servicelist_route"), status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_vulnlist_route"), status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_notelist_route"), status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_versioninfo_route"), status="*")
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_versioninfo_sqlfilter_route"), status="*")
     assert response.status_code == HTTPStatus.FORBIDDEN
 
 
@@ -53,13 +71,6 @@ def test_v2_public_storage_host_route_morenotes(api_user, service, note_factory)
     assert len(response.json["services"][0]["notes"]) == 1
 
 
-def test_v2_public_storage_range_route_nonetworks(api_user_nonetworks, host):
-    """test queries with user without any configured networks"""
-
-    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_range_route"), {"cidr": f"{host.address}/32"}, status="*")
-    assert response.status_code == HTTPStatus.FORBIDDEN
-
-
 def test_v2_public_storage_range_route(api_user, host_factory):
     """test public range api"""
 
@@ -70,15 +81,6 @@ def test_v2_public_storage_range_route(api_user, host_factory):
     assert api_schema.PublicRangeSchema(many=True).load(response.json)
     assert len(response.json) == 2
     assert response.json[0]["rescan_time"] == "1900-01-01T00:00:00"
-
-
-def test_v2_public_storage_servicelist_route_nonetworks(api_user_nonetworks, service):
-    """test queries with user without any configured networks"""
-
-    response = api_user_nonetworks.post_json(
-        url_for("api.v2_public_storage_servicelist_route"), {"filter": f'Service.port=="{service.port}"'}, status="*"
-    )
-    assert response.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_v2_public_storage_servicelist_route(api_user, service_factory):
@@ -99,13 +101,6 @@ def test_v2_public_storage_servicelist_route_filterqueryerror(api_user):
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_v2_public_storage_vulnlist_route_nonetworks(api_user_nonetworks, vuln):
-    """test queries with user without any configured networks"""
-
-    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_vulnlist_route"), {"filter": f'Vuln.name=="{vuln.name}"'}, status="*")
-    assert response.status_code == HTTPStatus.FORBIDDEN
-
-
 def test_v2_public_storage_vulnlist_route(api_user, vuln_factory):
     """test public vulnlist api"""
 
@@ -117,13 +112,6 @@ def test_v2_public_storage_vulnlist_route(api_user, vuln_factory):
     assert len(response.json) == 1
 
 
-def test_v2_public_storage_notelist_route_nonetworks(api_user_nonetworks, note):
-    """test queries with user without any configured networks"""
-
-    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_notelist_route"), {"filter": f'Note.xtype=="{note.xtype}"'}, status="*")
-    assert response.status_code == HTTPStatus.FORBIDDEN
-
-
 def test_v2_public_storage_notelist_route(api_user, note_factory):
     """test public notelist api"""
 
@@ -133,13 +121,6 @@ def test_v2_public_storage_notelist_route(api_user, note_factory):
     response = api_user.post_json(url_for("api.v2_public_storage_notelist_route"), {"filter": 'Note.data=="dummy1"'})
     assert api_schema.PublicNotelistSchema(many=True).load(response.json)
     assert len(response.json) == 1
-
-
-def test_v2_public_storage_versioninfo_route_nonetworks(api_user_nonetworks, versioninfo):  # pylint: disable=unused-argument
-    """test queries with user without any configured networks"""
-
-    response = api_user_nonetworks.post_json(url_for("api.v2_public_storage_versioninfo_route"), status="*")
-    assert response.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_v2_public_storage_versioninfo_route(api_user, versioninfo):  # pylint: disable=unused-argument
