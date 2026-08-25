@@ -11,6 +11,7 @@ from flask import url_for
 
 from sner.server.lens.views import check_dt_errors
 from sner.server.utils import FilterQueryError
+from tests.server.storage.models import prepare_versioninfo_testdata
 
 DTARGUMENTS = {"draw": 1, "start": 0, "length": 100}
 
@@ -166,20 +167,6 @@ def test_routes_user_nonetworks(cl_user_nonetworks, vuln):
 
     response = cl_user_nonetworks.get(url_for("lens.versioninfo_list_json_route"), DTARGUMENTS, status="*")
     assert response.status_code == HTTPStatus.FORBIDDEN
-
-
-def prepare_versioninfo_testdata(factory, host, service, product, version):
-    """create versioninfo testdata"""
-
-    return factory.create(
-        host_id=host.id,
-        host_address=host.address,
-        host_hostname=host.hostname,
-        service_proto=service.proto if service else None,
-        service_port=service.port if service else None,
-        product=product,
-        version=version,
-    )
 
 
 def test_versioninfo_list_json_route(cl_user, host_permitted, host_denied, versioninfo_factory):

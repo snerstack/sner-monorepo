@@ -8,7 +8,10 @@ from http import HTTPStatus
 
 from flask import url_for
 
+from tests.server.storage.models import prepare_versioninfo_testdata
 from tests.server.storage.views import check_annotate, check_tag_multiid
+
+DTARGUMENTS = {"draw": 1, "start": 0, "length": 100}
 
 
 def test_versioninfo_list_json_route(cl_operator, versioninfo):
@@ -27,62 +30,33 @@ def test_versioninfo_list_json_route(cl_operator, versioninfo):
         url_for(
             "storage.versioninfo_list_json_route", filter=f'Versioninfo.product=="{expected_product}"', product=expected_product, versionspec=">0"
         ),
-        {"draw": 1, "start": 0, "length": 1},
+        DTARGUMENTS,
     )
     assert response.status_code == HTTPStatus.OK
     response_data = json.loads(response.body.decode("utf-8"))
     assert response_data["data"][0]["product"] == expected_product
 
 
-def test_versioninfo_list_json_route_query_form(cl_operator, service_factory, versioninfo_factory):
+def test_versioninfo_list_json_route_query_form_paging(cl_operator, service_factory, versioninfo_factory):
     """versioninfo list_json route test"""
 
     service1 = service_factory.create(port=1)
-    versioninfo_factory.create(
-        host_id=service1.host.id,
-        host_address=service1.host.address,
-        host_hostname=service1.host.hostname,
-        service_proto=service1.proto,
-        service_port=service1.port,
-        product="apache httpd",
-        version="1.0",
-    )
+    prepare_versioninfo_testdata(versioninfo_factory, service1.host, service1, "apache httpd", "1.0")
     service2 = service_factory.create(port=2)
-    versioninfo_factory.create(
-        host_id=service2.host.id,
-        host_address=service2.host.address,
-        host_hostname=service2.host.hostname,
-        service_proto=service2.proto,
-        service_port=service2.port,
-        product="apache httpd",
-        version="1.1",
-    )
+    prepare_versioninfo_testdata(versioninfo_factory, service2.host, service1, "apache httpd", "1.2")
     service3 = service_factory.create(port=3)
-    versioninfo_factory.create(
-        host_id=service3.host.id,
-        host_address=service3.host.address,
-        host_hostname=service3.host.hostname,
-        service_proto=service3.proto,
-        service_port=service3.port,
-        product="apache httpd",
-        version="1.2",
-    )
+    prepare_versioninfo_testdata(versioninfo_factory, service3.host, service1, "apache httpd", "1.2")
 
-    response = cl_operator.post(
-        url_for("storage.versioninfo_list_json_route", product="ApAcHe", versionspec=">=1.1"), {"draw": 1, "start": 1, "length": 100}
-    )
+    response = cl_operator.post(url_for("storage.versioninfo_list_json_route", product="ApAcHe", versionspec=">=1.1"), {**DTARGUMENTS, "start": 1})
     assert response.status_code == HTTPStatus.OK
-    response_data = json.loads(response.body.decode("utf-8"))
-    assert len(response_data["data"]) == 1
-    assert response_data["data"][0]["version"] == "1.2"
+    assert len(response.json["data"]) == 1
+    assert response.json["data"][0]["version"] == "1.2"
 
 
 def test_versioninfo_list_json_route_errorhandling(cl_operator):
     """versioninfo list_json error handling route test"""
 
-    response = cl_operator.post(
-        url_for("storage.versioninfo_list_json_route", product="dummy", versionspec="invalid"), {"draw": 1, "start": 1, "length": 100}, status="*"
-    )
+    response = cl_operator.post(url_for("storage.versioninfo_list_json_route", product="dummy", versionspec="invalid"), DTARGUMENTS, status="*")
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 

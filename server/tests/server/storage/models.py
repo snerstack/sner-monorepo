@@ -106,3 +106,17 @@ class VersioninfoFactory(BaseModelFactory):
     tags = ["dummy"]
     comment = ["dummy comment"]
     timestamp = datetime(1900, 1, 1, 0, 0)
+
+
+def prepare_versioninfo_testdata(factory, host, service, product, version):
+    """create versioninfo testdata"""
+
+    return factory.create(
+        host_id=host.id,
+        host_address=host.address,
+        host_hostname=host.hostname,
+        service_proto=service.proto if service else None,
+        service_port=service.port if service else None,
+        product=product,
+        version=version,
+    )
