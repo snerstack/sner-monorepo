@@ -16,8 +16,7 @@ from sner.server.api.core import current_user_api_network_filter
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.models import Host, Service, Versioninfo, Vuln
-from sner.server.storage.version_parser import InvalidFormatException
-from sner.server.storage.versioninfo import VersioninfoManager
+from sner.server.storage.versioninfo import mutate_versioninfo_jsonfilter
 from sner.server.utils import FilterQueryError, SnerJSONEncoder, error_response, filter_query_jsonfilter
 
 blueprint = Blueprint("lens", __name__)  # pylint: disable=invalid-name
@@ -261,38 +260,6 @@ def overview_json_route():
     }
 
 
-def mutate_versioninfo_rules(jsonfilter):
-    """Remap JSON filter queries from the text 'version' field to 'version_array', in place."""
-
-    rules = jsonfilter.get("rules")
-    if not rules:  # pragma: nocover  ; won't test
-        return
-
-    for rule in rules:
-        if "rules" in rule:
-            mutate_versioninfo_rules(rule)
-        elif rule.get("field") == "Versioninfo.version":
-            rule["field"] = "Versioninfo.version_array"
-            if rule.get("operator") in ["==", "!=", ">", "<", ">=", "<="]:
-                rule["value"] = VersioninfoManager.parse_to_int_array(rule.get("value", ""), strict=True)
-
-
-def mutate_versioninfo_jsonfilter(jsonfilter):
-    """mutate jsonfilter so the versioninfo.version conditions are translated to versioninfo.versioninfo_array which is processable by DB engine"""
-
-    if not jsonfilter:
-        return jsonfilter
-
-    try:
-        jsonfilter = json.loads(jsonfilter)
-        mutate_versioninfo_rules(jsonfilter)
-        jsonfilter = json.dumps(jsonfilter)
-    except (json.JSONDecodeError, InvalidFormatException) as exc:
-        raise FilterQueryError.with_message("failed to mutate versioninfo version filter", exc) from None
-
-    return jsonfilter
-
-
 @blueprint.route("/versioninfo/list.json", methods=["GET", "POST"])
 @session_required("user")
 def versioninfo_list_json_route():
@@ -303,24 +270,24 @@ def versioninfo_list_json_route():
 
     service_column = func.concat_ws("/", Versioninfo.service_port, Versioninfo.service_proto)
     columns = [
-        ColumnDT(Versioninfo.id, mData='id'),
-        ColumnDT(Versioninfo.host_id, mData='host_id'),
-        ColumnDT(Versioninfo.host_address, mData='host_address'),
-        ColumnDT(Versioninfo.host_hostname, mData='host_hostname'),
-        ColumnDT(Versioninfo.service_proto, mData='service_proto'),
-        ColumnDT(Versioninfo.service_port, mData='service_port'),
+        ColumnDT(Versioninfo.id, mData="id"),
+        ColumnDT(Versioninfo.host_id, mData="host_id"),
+        ColumnDT(Versioninfo.host_address, mData="host_address"),
+        ColumnDT(Versioninfo.host_hostname, mData="host_hostname"),
+        ColumnDT(Versioninfo.service_proto, mData="service_proto"),
+        ColumnDT(Versioninfo.service_port, mData="service_port"),
         # break pylint duplicate-code detection
-        ColumnDT(service_column, mData='service'),
-        ColumnDT(Versioninfo.via_target, mData='via_target'),
-        ColumnDT(Versioninfo.product, mData='product'),
-        ColumnDT(Versioninfo.version, mData='version'),
-        ColumnDT(func.text(Versioninfo.extra), mData='extra'),
-        ColumnDT(Versioninfo.tags, mData='tags'),
+        ColumnDT(service_column, mData="service"),
+        ColumnDT(Versioninfo.via_target, mData="via_target"),
+        ColumnDT(Versioninfo.product, mData="product"),
+        ColumnDT(Versioninfo.version, mData="version"),
+        ColumnDT(func.text(Versioninfo.extra), mData="extra"),
+        ColumnDT(Versioninfo.tags, mData="tags"),
     ]
 
     query = db.session.query().select_from(Versioninfo).filter(current_user_api_network_filter(Versioninfo.host_address))
-    jsonfilter = mutate_versioninfo_jsonfilter(request.values.get("jsonfilter"))
 
+    jsonfilter = mutate_versioninfo_jsonfilter(request.values.get("jsonfilter"))
     query = filter_query_jsonfilter(query, jsonfilter)
     vulns = DataTables(request.values.to_dict(), query, columns).output_result()
     check_dt_errors(vulns)

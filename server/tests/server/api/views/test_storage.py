@@ -159,6 +159,17 @@ def test_v2_public_storage_versioninfo_route(api_user, versioninfo):  # pylint: 
     assert len(response.json) == 0
 
 
+def test_v2_public_storage_versioninfo_sqlfilter_route(api_user, versioninfo):
+    """test public versioninfo sqlfilter query api"""
+
+    response = api_user.post_json(
+        url_for("api.v2_public_storage_versioninfo_sqlfilter_route"),
+        {"filter": f'Versioninfo.version >= "{versioninfo.version}"'},
+    )
+    assert api_schema.PublicVersioninfoSchema(many=True).load(response.json)
+    assert len(response.json) == 1
+
+
 def test_v2_public_storage_auror_route(api_user_auror, host_factory, service_factory, note_factory):
     """test public auror api"""
 

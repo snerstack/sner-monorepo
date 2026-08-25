@@ -11,12 +11,80 @@ from hashlib import md5
 
 from cpe import CPE
 from flask import current_app
+from lark.exceptions import LarkError
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from sner.lib import get_nested_key
 from sner.server.extensions import db
+from sner.server.sqlafilter import FILTER_PARSER
 from sner.server.storage.models import Host, Note, Service, Versioninfo
 from sner.server.storage.version_parser import InvalidFormatException
+from sner.server.utils import FilterQueryError
+
+
+def mutate_versioninfo_sqlfilter_rules(sqlafilter):
+    """Remap Sqlalchemy filter queries from the text 'version' field to 'version_array', in place."""
+
+    if not sqlafilter:  # pragma: nocover  ; won't test
+        return
+
+    if isinstance(sqlafilter, list):
+        for item in sqlafilter:
+            mutate_versioninfo_sqlfilter_rules(item)
+
+    if isinstance(sqlafilter, dict):
+        if "field" not in sqlafilter:
+            mutate_versioninfo_sqlfilter_rules(sqlafilter[next(iter(sqlafilter))])
+        elif sqlafilter.get("field") == "Versioninfo.version":
+            sqlafilter["field"] = "Versioninfo.version_array"
+            if sqlafilter.get("op") in ["==", "!=", ">", "<", ">=", "<="]:
+                sqlafilter["value"] = VersioninfoManager.parse_to_int_array(sqlafilter.get("value", ""), strict=True)
+
+
+def mutate_versioninfo_sqlfilter(sqlfilter):
+    """mutate sqlfilter so the versioninfo.version conditions are translated to versioninfo.versioninfo_array which is processable by DB engine"""
+
+    if not sqlfilter:  # pragma: nocover  ; won't test
+        return sqlfilter
+
+    try:
+        sqlfilter = FILTER_PARSER.parse(sqlfilter)
+        mutate_versioninfo_sqlfilter_rules(sqlfilter)
+    except (LarkError, InvalidFormatException) as exc:
+        raise FilterQueryError.with_message("failed to mutate versioninfo version sqlfilter", exc) from None
+
+    return sqlfilter
+
+
+def mutate_versioninfo_jsonfilter_rules(jsonfilter):
+    """Remap JSON filter queries from the text 'version' field to 'version_array', in place."""
+
+    rules = jsonfilter.get("rules")
+    if not rules:  # pragma: nocover  ; won't test
+        return
+
+    for rule in rules:
+        if "rules" in rule:
+            mutate_versioninfo_jsonfilter_rules(rule)
+        elif rule.get("field") == "Versioninfo.version":
+            rule["field"] = "Versioninfo.version_array"
+            if rule.get("operator") in ["==", "!=", ">", "<", ">=", "<="]:
+                rule["value"] = VersioninfoManager.parse_to_int_array(rule.get("value", ""), strict=True)
+
+
+def mutate_versioninfo_jsonfilter(jsonfilter):
+    """mutate jsonfilter so the versioninfo.version conditions are translated to versioninfo.versioninfo_array which is processable by DB engine"""
+
+    if not jsonfilter:
+        return jsonfilter
+
+    try:
+        jsonfilter = json.loads(jsonfilter)
+        mutate_versioninfo_jsonfilter_rules(jsonfilter)
+    except (json.JSONDecodeError, InvalidFormatException) as exc:
+        raise FilterQueryError.with_message("failed to mutate versioninfo version jsonfilter", exc) from None
+
+    return jsonfilter
 
 
 def versioninfo_docid(host_id, host_address, host_hostname, service_proto, service_port, via_target, product):

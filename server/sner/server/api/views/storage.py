@@ -11,7 +11,7 @@ from http import HTTPStatus
 from flask import abort, current_app
 from flask_login import current_user
 from flask_smorest import Page
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, select
 
 import sner.server.api.schema as api_schema
 from sner.server.api.core import current_user_api_network_filter
@@ -21,6 +21,7 @@ from sner.server.extensions import db
 from sner.server.storage.models import Host, Note, Service, Versioninfo, Vuln
 from sner.server.storage.version_parser import is_in_version_range
 from sner.server.storage.version_parser import parse as versionspec_parse
+from sner.server.storage.versioninfo import mutate_versioninfo_sqlfilter
 from sner.server.utils import error_response, filter_query
 
 
@@ -210,6 +211,25 @@ def v2_public_storage_versioninfo_route(args):
 
     current_app.logger.info(f"api.public storage versioninfo {args}")
     return data
+
+
+@blueprint.route("/v2/public/storage/versioninfo_sqlfilter", methods=["POST"])
+@apikey_required("user")
+@blueprint.arguments(api_schema.PublicListArgsSchema)
+@blueprint.response(HTTPStatus.OK, api_schema.PublicVersioninfoSchema(many=True))
+@blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
+def v2_public_storage_versioninfo_sqlfilter_route(args):
+    """versioninfo search with sql filtering"""
+
+    if not current_user.api_networks:
+        return paged_error_response(message="No allowed networks", code=HTTPStatus.FORBIDDEN)
+
+    query = Versioninfo.query.filter(current_user_api_network_filter(Versioninfo.host_address))
+
+    sqlfilter = mutate_versioninfo_sqlfilter(args.get("filter"))
+    query = filter_query(query, sqlfilter)
+    current_app.logger.info(f"api.public storage versioninfo_sqlfilter {args}")
+    return query
 
 
 @dataclass

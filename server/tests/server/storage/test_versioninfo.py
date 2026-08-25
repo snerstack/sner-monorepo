@@ -5,8 +5,18 @@ storage.versioninfo_map functions tests
 
 from datetime import datetime
 
+import pytest
+
 from sner.server.storage.models import Versioninfo
-from sner.server.storage.versioninfo import ExtractedVersion, VersioninfoManager, VMap
+from sner.server.storage.versioninfo import (
+    ExtractedVersion,
+    VersioninfoManager,
+    VMap,
+    mutate_versioninfo_jsonfilter_rules,
+    mutate_versioninfo_sqlfilter,
+    mutate_versioninfo_sqlfilter_rules,
+)
+from sner.server.utils import FilterQueryError
 
 
 def test_vmap_aggregation():
@@ -152,3 +162,52 @@ def test_versioninfomanager_collect_cpes(app, host, service_factory, note_factor
 
     vmap = VersioninfoManager.collect_cpes(VMap())
     assert len(vmap) == 1
+
+
+def test_mutate_versioninfo_jsonfilter_rules():
+    """jsonfilter mutations edgecases"""
+
+    jsonfilter = {
+        "combinator": "and",
+        "rules": [
+            {
+                "rules": [
+                    {"field": "Versioninfo.product", "operator": "==", "valueSource": "value", "value": "dummy"},
+                    {"field": "Versioninfo.version", "operator": ">=", "valueSource": "value", "value": "1.2"},
+                ],
+                "combinator": "and",
+                "not": False,
+            },
+            {"field": "Versioninfo.version", "operator": "!=", "valueSource": "value", "value": "0"},
+        ],
+    }
+
+    mutate_versioninfo_jsonfilter_rules(jsonfilter)
+
+    assert jsonfilter["rules"][0]["rules"][1]["value"] == [1, 2, 0, 0]
+    assert jsonfilter["rules"][1]["field"] == "Versioninfo.version_array"
+
+
+def test_mutate_versioninfo_sqlfilter_rules():
+    """sql filter mutations tests"""
+
+    sqlafilter = [
+        {
+            "and": [
+                {"field": "Versioninfo.version", "op": ">=", "value": "1.2"},
+                {"field": "Versioninfo.version", "op": "<", "value": "2.0"},
+            ]
+        },
+    ]
+
+    mutate_versioninfo_sqlfilter_rules(sqlafilter)
+
+    assert sqlafilter[0]["and"][0]["field"] == "Versioninfo.version_array"
+    assert sqlafilter[0]["and"][1]["value"] == [2, 0, 0, 0]
+
+
+def test_mutate_versioninfo_sqlfilter_errorhandling(app):  # pylint: disable=unused-argument
+    """test mutate_versioninfo_sqlfilter error handling"""
+
+    with pytest.raises(FilterQueryError):
+        mutate_versioninfo_sqlfilter("invalid")

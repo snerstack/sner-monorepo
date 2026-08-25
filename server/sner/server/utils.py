@@ -72,14 +72,17 @@ class FilterQueryError(Exception):
         return cls(mesg)
 
 
-def filter_query(query, qfilter):
+def filter_query(query, sqlfilter):
     """filter sqlalchemy query with string filter expression"""
 
-    if not qfilter:
+    if not sqlfilter:
         return query
 
     try:
-        query = apply_filters(query, FILTER_PARSER.parse(qfilter), do_auto_join=False)
+        if isinstance(sqlfilter, str):
+            sqlfilter = FILTER_PARSER.parse(sqlfilter)
+
+        query = apply_filters(query, sqlfilter, do_auto_join=False)
     except LarkError as exc:
         raise FilterQueryError.with_message("failed to parse filter", exc) from None
 
@@ -115,7 +118,10 @@ def filter_query_jsonfilter(query, jsonfilter):
         return query
 
     try:
-        transformed = transform_to_sqlalchemy_filter(json.loads(jsonfilter))
+        if isinstance(jsonfilter, str):
+            jsonfilter = json.loads(jsonfilter)
+
+        transformed = transform_to_sqlalchemy_filter(jsonfilter)
         current_app.logger.debug("jsonfilter transformed: %s", transformed)
 
         if not transformed:  # pragma: nocover  ; won't test
