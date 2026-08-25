@@ -34,7 +34,7 @@ def test_profile_changepassword_route(cl_user):
     data = {"current_password": cur_password, "password1": "weak", "password2": "weak"}
     response = cl_user.post_json(url_for("auth.profile_changepassword_route"), data, expect_errors=True)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-    assert "Shorter than minimum length 10." in response.json["errors"]["json"]["password1"]
+    assert any("Password too short." in item for item in response.json["errors"]["json"]["password1"])
 
     data = {"current_password": "1", "password1": new_password, "password2": new_password}
     response = cl_user.post_json(url_for("auth.profile_changepassword_route"), data, expect_errors=True)

@@ -5,8 +5,7 @@ storage schema
 
 import ipaddress
 
-from marshmallow import Schema, ValidationError, validate, validates_schema
-from marshmallow.fields import Int, List, Nested, String
+from marshmallow import Schema, ValidationError, fields, validate, validates_schema
 
 from sner.server.schemas import StringNoneField
 from sner.server.storage.models import Host, Service, SeverityEnum
@@ -44,38 +43,38 @@ def validate_service_belongs_to_host(data):
 
 class HostRequest(Schema):
     """host schema"""
-    address = StringNoneField(required=True, validate=validate_ip_address)
-    hostname = StringNoneField(validate=validate.Length(max=256), allow_none=True)
-    os = StringNoneField(allow_none=True)
-    tags = List(String(), allow_none=True)
-    comment = StringNoneField(allow_none=True)
+    address = StringNoneField(required=True, allow_none=False, validate=validate_ip_address)
+    hostname = StringNoneField(validate=validate.Length(max=256))
+    os = StringNoneField()
+    tags = fields.List(fields.String(), allow_none=True)
+    comment = StringNoneField()
 
 
 class ServiceRequest(Schema):
     """service schema"""
-    host_id = Int(required=True, validate=host_id_exists)
-    proto = String(required=True, validate=validate.Length(min=1, max=250))
-    port = Int(required=True, validate=validate.Range(min=0, max=65535))
-    state = StringNoneField(validate=validate.Length(max=250), allow_none=True)
-    name = StringNoneField(validate=validate.Length(max=250), allow_none=True)
-    info = StringNoneField(allow_none=True)
-    tags = List(String(), allow_none=True)
-    comment = StringNoneField(allow_none=True)
+    host_id = fields.Int(required=True, validate=host_id_exists)
+    proto = fields.String(required=True, validate=validate.Length(min=1, max=250))
+    port = fields.Int(required=True, validate=validate.Range(min=0, max=65535))
+    state = StringNoneField(validate=validate.Length(max=250))
+    name = StringNoneField(validate=validate.Length(max=250))
+    info = StringNoneField()
+    tags = fields.List(fields.String(), allow_none=True)
+    comment = StringNoneField()
 
 
 class VulnRequest(Schema):
     """vulnerability schema"""
-    host_id = Int(required=True, validate=host_id_exists)
-    service_id = Int(allow_none=True)
-    via_target = StringNoneField(validate=validate.Length(max=250), allow_none=True)
-    name = String(required=True, validate=validate.Length(min=1, max=1000))
-    xtype = StringNoneField(validate=validate.Length(max=250), allow_none=True)
-    severity = String(required=True, validate=validate.OneOf([e.value for e in SeverityEnum]))
-    descr = StringNoneField(allow_none=True)
-    data = StringNoneField(allow_none=True)
-    refs = List(String(), allow_none=True)
-    tags = List(String(), allow_none=True)
-    comment = StringNoneField(allow_none=True)
+    host_id = fields.Int(required=True, validate=host_id_exists)
+    service_id = fields.Int(allow_none=True)
+    via_target = StringNoneField(validate=validate.Length(max=250))
+    name = fields.String(required=True, validate=validate.Length(min=1, max=1000))
+    xtype = StringNoneField(validate=validate.Length(max=250))
+    severity = fields.String(required=True, validate=validate.OneOf([e.value for e in SeverityEnum]))
+    descr = StringNoneField()
+    data = StringNoneField()
+    refs = fields.List(fields.String(), allow_none=True)
+    tags = fields.List(fields.String(), allow_none=True)
+    comment = StringNoneField()
 
     @validates_schema
     def validate_service(self, data, **kwargs):  # pylint: disable=unused-argument
@@ -85,13 +84,13 @@ class VulnRequest(Schema):
 
 class NoteRequest(Schema):
     """note schema"""
-    host_id = Int(required=True, validate=host_id_exists)
-    service_id = Int(allow_none=True, load_default=None)
-    via_target = StringNoneField(validate=validate.Length(max=250), allow_none=True)
-    xtype = StringNoneField(validate=validate.Length(max=250), allow_none=True)
-    data = StringNoneField(allow_none=True)
-    tags = List(String(), allow_none=True)
-    comment = StringNoneField(allow_none=True)
+    host_id = fields.Int(required=True, validate=host_id_exists)
+    service_id = fields.Int(allow_none=True, load_default=None)
+    via_target = StringNoneField(validate=validate.Length(max=250))
+    xtype = StringNoneField(validate=validate.Length(max=250))
+    data = StringNoneField()
+    tags = fields.List(fields.String(), allow_none=True)
+    comment = StringNoneField()
 
     @validates_schema
     def validate_service(self, data, **kwargs):  # pylint: disable=unused-argument
@@ -101,42 +100,42 @@ class NoteRequest(Schema):
 
 class MultiidRequest(Schema):
     """multi ID schema"""
-    ids = List(Int(required=True), required=True, validate=validate.Length(min=1))
+    ids = fields.List(fields.Int(required=True), required=True, validate=validate.Length(min=1))
 
 
 class TagMultiidRequest(Schema):
     """tag multi ID schema"""
-    ids = List(Int(required=True), required=True, validate=validate.Length(min=1))
-    tags = List(String(required=True), required=True, validate=validate.Length(min=1))
-    action = String(required=True, validate=validate.OneOf(["set", "unset"]))
+    ids = fields.List(fields.Int(required=True), required=True, validate=validate.Length(min=1))
+    tags = fields.List(fields.String(required=True), required=True, validate=validate.Length(min=1))
+    action = fields.String(required=True, validate=validate.OneOf(["set", "unset"]))
 
 
 class TagMultiStringIdRequest(TagMultiidRequest):
     """tag multi string ID schema"""
-    ids = List(String(required=True), validate=validate.Length(min=1))
+    ids = fields.List(fields.String(required=True), validate=validate.Length(min=1))
 
 
 class AnnotateRequest(Schema):
     """annotate schema"""
-    tags = List(String(), allow_none=True)
-    comment = StringNoneField(allow_none=True)
+    tags = fields.List(fields.String(), allow_none=True)
+    comment = StringNoneField()
 
 
 class EndpointSchema(Schema):
     """endpoint schema"""
-    host_id = Int(required=True)
-    service_id = Int(allow_none=True, load_default=None)
+    host_id = fields.Int(required=True)
+    service_id = fields.Int(allow_none=True, load_default=None)
 
 
 class VulnMulticopyRequest(Schema):
     """vulnerability multicopy schema"""
-    endpoints = List(Nested(EndpointSchema), required=True)
-    name = StringNoneField(required=True, validate=validate.Length(min=1, max=1000))
-    xtype = StringNoneField(validate=validate.Length(max=250), allow_none=True)
-    severity = String(required=True, validate=validate.OneOf([e.value for e in SeverityEnum]))
-    descr = StringNoneField(allow_none=True)
-    data = StringNoneField(allow_none=True)
-    refs = List(String(), allow_none=True)
-    tags = List(String(), allow_none=True)
-    comment = StringNoneField(allow_none=True)
+    endpoints = fields.List(fields.Nested(EndpointSchema), required=True)
+    name = StringNoneField(required=True, allow_none=False, validate=validate.Length(min=1, max=1000))
+    xtype = StringNoneField(validate=validate.Length(max=250))
+    severity = fields.String(required=True, validate=validate.OneOf([e.value for e in SeverityEnum]))
+    descr = StringNoneField()
+    data = StringNoneField()
+    refs = fields.List(fields.String(), allow_none=True)
+    tags = fields.List(fields.String(), allow_none=True)
+    comment = StringNoneField()
     return_url = StringNoneField(load_only=True)

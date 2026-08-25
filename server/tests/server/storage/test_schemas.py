@@ -52,3 +52,24 @@ def test_schemas_models_relations(app, service, host_factory):  # pylint: disabl
             schema.load(wrong_relation_data)
 
         assert "Service does not belong to the host" in excinfo.value.messages["service_id"]
+
+def test_empty_to_none_field():
+    """test EmptyToNoneMixin behavior in StringNoneField"""
+    schema = HostRequest()
+
+    # empty string is converted to None (and allowed)
+    data = schema.load({"address": "127.0.0.1", "os": ""})
+    assert data["os"] is None
+
+    # explicit JSON null is also accepted
+    data = schema.load({"address": "127.0.0.1", "os": None})
+    assert data["os"] is None
+
+    # required field with allow_none=False rejects both empty string and None
+    with pytest.raises(ValidationError) as excinfo:
+        schema.load({"address": ""})
+    assert "address" in excinfo.value.messages
+
+    with pytest.raises(ValidationError) as excinfo2:
+        schema.load({"address": None})
+    assert "address" in excinfo2.value.messages

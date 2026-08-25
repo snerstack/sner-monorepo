@@ -4,9 +4,8 @@ scheduler schema
 """
 
 import yaml
-from marshmallow import Schema, validate
+from marshmallow import Schema, fields, validate
 from marshmallow import ValidationError as MarshmallowValidationError
-from marshmallow.fields import Bool, Int, List, String
 from pydantic import ValidationError as PydanticValidationError
 
 from sner.agent.modules import REGISTERED_MODULES
@@ -32,15 +31,15 @@ def validate_agent_config(value):
 class QueueRequest(Schema):
     """queue schema"""
 
-    name = String(required=True, validate=validate.Length(min=1, max=250))
-    config = String(required=True, validate=validate_agent_config)
-    group_size = Int(required=True, validate=validate.Range(min=1))
-    priority = Int(required=True)
-    active = Bool(load_default=False)
-    reqs = List(String(), allow_none=True)
+    name = fields.String(required=True, validate=validate.Length(min=1, max=250))
+    config = fields.String(required=True, validate=validate_agent_config)
+    group_size = fields.Int(required=True, validate=validate.Range(min=1))
+    priority = fields.Int(required=True)
+    active = fields.Bool(load_default=False)
+    reqs = fields.List(fields.String(), allow_none=True)
 
 
 class QueueEnqueueRequest(Schema):
     """queue enqueue schema"""
 
-    targets = List(String(), required=True, validate=validate.Length(min=1))
+    targets = fields.List(fields.String(), required=True, validate=validate.Length(min=1))
