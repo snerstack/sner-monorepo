@@ -13,7 +13,7 @@ from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.scheduler.core import QueueManager
 from sner.server.scheduler.models import Job, Queue, Target
-from sner.server.scheduler.schema import QueueEnqueueSchema, QueueSchema
+from sner.server.scheduler.schemas import QueueEnqueueSchema, QueueSchema
 from sner.server.scheduler.views import blueprint
 from sner.server.utils import error_response, filter_query
 from sner.targets import TargetManager

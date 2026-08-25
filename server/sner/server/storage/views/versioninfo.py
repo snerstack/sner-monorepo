@@ -14,7 +14,7 @@ from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_tag_multiid
 from sner.server.storage.models import Versioninfo
-from sner.server.storage.schema import AnnotateSchema, TagMultiStringIdSchema
+from sner.server.storage.schemas import AnnotateSchema, TagMultiStringIdSchema
 from sner.server.storage.version_parser import InvalidFormatException, is_in_version_range
 from sner.server.storage.version_parser import parse as versionspec_parse
 from sner.server.storage.views import blueprint

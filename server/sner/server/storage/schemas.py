@@ -8,7 +8,7 @@ import ipaddress
 from marshmallow import Schema, ValidationError, validate, validates_schema
 from marshmallow.fields import Int, List, Nested, String
 
-from sner.server.schema import StringNoneField
+from sner.server.schemas import StringNoneField
 from sner.server.storage.models import Host, Service, SeverityEnum
 
 

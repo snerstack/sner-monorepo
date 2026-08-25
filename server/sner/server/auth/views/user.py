@@ -12,11 +12,11 @@ from sqlalchemy import literal_column
 
 from sner.server.auth.core import UserManager, session_required
 from sner.server.auth.models import User
-from sner.server.auth.schema import UserMeSchema, UserSchema
+from sner.server.auth.schemas import UserMeSchema, UserSchema
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.schema import MessageSchema
+from sner.server.schemas import MessageSchema
 from sner.server.utils import error_response, filter_query
 
 

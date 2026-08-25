@@ -16,7 +16,7 @@ from sqlalchemy import func, or_
 
 from sner.server.auth.core import TOTPImpl, regenerate_session, webauthn_credentials
 from sner.server.auth.models import User
-from sner.server.auth.schema import LoginSchema, TotpCodeSchema, UserAuthSchema, WebauthnLoginSchema
+from sner.server.auth.schemas import LoginSchema, TotpCodeSchema, UserAuthSchema, WebauthnLoginSchema
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db, oauth, webauthn
 from sner.server.password_supervisor import PasswordSupervisor as PWS

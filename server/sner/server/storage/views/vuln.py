@@ -24,7 +24,7 @@ from sner.server.storage.core import (
     vuln_report,
 )
 from sner.server.storage.models import Host, Note, Service, Vuln
-from sner.server.storage.schema import AnnotateSchema, MultiidSchema, TagMultiidSchema, VulnMulticopySchema, VulnSchema
+from sner.server.storage.schemas import AnnotateSchema, MultiidSchema, TagMultiidSchema, VulnMulticopySchema, VulnSchema
 from sner.server.storage.views import blueprint
 from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 

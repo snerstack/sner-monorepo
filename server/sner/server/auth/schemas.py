@@ -9,7 +9,7 @@ from marshmallow import Schema, ValidationError, validate, validates_schema
 from marshmallow.fields import Boolean, DateTime, Email, Int, List, Str, String
 
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.schema import EmailNoneField, StringNoneField
+from sner.server.schemas import EmailNoneField, StringNoneField
 
 
 def validate_strong_password(value):

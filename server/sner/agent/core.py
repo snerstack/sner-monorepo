@@ -25,7 +25,7 @@ import yaml
 
 from sner.agent.modules import REGISTERED_MODULES, load_agent_plugins
 from sner.lib import TerminateContextRunner, load_yaml
-from sner.server.api.schema import JobAssignmentSchema
+from sner.server.api.schemas import JobAssignmentSchema
 from sner.version import __version__
 
 LOGGER_NAME = "sner.agent"

@@ -1,11 +1,11 @@
 # This file is part of sner4 project governed by MIT license, see the LICENSE.txt file.
 """
-storage.schema tests
+storage.schemas tests
 """
 import pytest
 from marshmallow import ValidationError
 
-from sner.server.storage.schema import HostSchema, NoteSchema, VulnSchema
+from sner.server.storage.schemas import HostSchema, NoteSchema, VulnSchema
 
 
 def test_host_schema_ip_validation():

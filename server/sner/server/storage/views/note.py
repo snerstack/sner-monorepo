@@ -14,7 +14,7 @@ from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import get_related_models, model_annotate, model_delete_multiid, model_tag_multiid
 from sner.server.storage.models import Host, Note, Service
-from sner.server.storage.schema import AnnotateSchema, MultiidSchema, NoteSchema, TagMultiidSchema
+from sner.server.storage.schemas import AnnotateSchema, MultiidSchema, NoteSchema, TagMultiidSchema
 from sner.server.storage.views import blueprint
 from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 

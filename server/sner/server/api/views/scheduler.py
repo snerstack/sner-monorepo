@@ -9,7 +9,7 @@ from http import HTTPStatus
 
 from flask import current_app, jsonify
 
-import sner.server.api.schema as api_schema
+import sner.server.api.schemas as api_schemas
 from sner.server.api.views import blueprint
 from sner.server.auth.core import apikey_required
 from sner.server.scheduler.core import SchedulerService, SchedulerServiceBusyException
@@ -20,8 +20,8 @@ NOWORK_RESPONSE = {}
 
 @blueprint.route("/v2/scheduler/job/assign", methods=["POST"])
 @apikey_required("agent")
-@blueprint.arguments(api_schema.JobAssignArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schema.JobAssignmentSchema)
+@blueprint.arguments(api_schemas.JobAssignArgsSchema)
+@blueprint.response(HTTPStatus.OK, api_schemas.JobAssignmentSchema)
 def v2_scheduler_job_assign_route(args):
     """assign job for agent"""
 
@@ -37,7 +37,7 @@ def v2_scheduler_job_assign_route(args):
 
 @blueprint.route("/v2/scheduler/job/output", methods=["POST"])
 @apikey_required("agent")
-@blueprint.arguments(api_schema.JobOutputSchema)
+@blueprint.arguments(api_schemas.JobOutputSchema)
 def v2_scheduler_job_output_route(args):
     """receive output from assigned job"""
 

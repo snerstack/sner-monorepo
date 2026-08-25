@@ -19,7 +19,7 @@ from sqlalchemy import literal_column
 
 from sner.server.auth.core import TOTPImpl, UserManager, session_required, webauthn_credentials
 from sner.server.auth.models import User, WebauthnCredential
-from sner.server.auth.schema import (
+from sner.server.auth.schemas import (
     ProfileSchema,
     TotpCodeSchema,
     TotpProvisioningSchema,
@@ -31,7 +31,7 @@ from sner.server.auth.schema import (
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db, webauthn
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.schema import MessageSchema
+from sner.server.schemas import MessageSchema
 from sner.server.utils import SnerJSONEncoder, error_response
 
 
