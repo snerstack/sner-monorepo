@@ -20,8 +20,8 @@ NOWORK_RESPONSE = {}
 
 @blueprint.route("/v2/scheduler/job/assign", methods=["POST"])
 @apikey_required("agent")
-@blueprint.arguments(api_schemas.JobAssignArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schemas.JobAssignmentSchema)
+@blueprint.arguments(api_schemas.JobAssignRequest)
+@blueprint.response(HTTPStatus.OK, api_schemas.JobAssignmentResponse)
 def v2_scheduler_job_assign_route(args):
     """assign job for agent"""
 
@@ -37,7 +37,7 @@ def v2_scheduler_job_assign_route(args):
 
 @blueprint.route("/v2/scheduler/job/output", methods=["POST"])
 @apikey_required("agent")
-@blueprint.arguments(api_schemas.JobOutputSchema)
+@blueprint.arguments(api_schemas.JobOutputRequest)
 def v2_scheduler_job_output_route(args):
     """receive output from assigned job"""
 

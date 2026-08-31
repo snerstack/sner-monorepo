@@ -5,12 +5,12 @@ storage.schemas tests
 import pytest
 from marshmallow import ValidationError
 
-from sner.server.storage.schemas import HostSchema, NoteSchema, VulnSchema
+from sner.server.storage.schemas import HostRequest, NoteRequest, VulnRequest
 
 
 def test_host_schema_ip_validation():
-    """test HostSchema IP address validation"""
-    schema = HostSchema()
+    """test HostRequest IP address validation"""
+    schema = HostRequest()
 
     with pytest.raises(ValidationError) as excinfo:
         schema.load({"address": "invalid-ip"})
@@ -24,11 +24,11 @@ def test_schemas_models_relations(app, service, host_factory):  # pylint: disabl
     """test schemas models relations"""
     other_host = host_factory.create(address="127.0.0.2")
 
-    for schema_cls in [VulnSchema, NoteSchema]:
+    for schema_cls in [VulnRequest, NoteRequest]:
         schema = schema_cls()
 
         base_data = {}
-        if schema_cls == VulnSchema:
+        if schema_cls == VulnRequest:
             base_data.update({"name": "test", "severity": "info"})
 
         # test non-existent host

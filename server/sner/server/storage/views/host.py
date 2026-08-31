@@ -15,7 +15,7 @@ from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_delete_multiid, model_tag_multiid
 from sner.server.storage.models import Host, Note, Service, Vuln
-from sner.server.storage.schemas import AnnotateSchema, HostSchema, MultiidSchema, TagMultiidSchema
+from sner.server.storage.schemas import AnnotateRequest, HostRequest, MultiidRequest, TagMultiidRequest
 from sner.server.storage.views import blueprint
 from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 
@@ -58,7 +58,7 @@ def host_list_json_route():
 
 
 @blueprint.route("/host/add", methods=["POST"])
-@blueprint.arguments(HostSchema)
+@blueprint.arguments(HostRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def host_add_route(args):
@@ -73,7 +73,7 @@ def host_add_route(args):
 
 
 @blueprint.route("/host/edit/<host_id>", methods=["POST"])
-@blueprint.arguments(HostSchema)
+@blueprint.arguments(HostRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def host_edit_route(args, host_id):
@@ -109,7 +109,7 @@ def host_delete_route(host_id):
 
 
 @blueprint.route("/host/annotate/<model_id>", methods=["GET", "POST"])
-@blueprint.arguments(AnnotateSchema)
+@blueprint.arguments(AnnotateRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def host_annotate_route(args, model_id):
@@ -146,7 +146,7 @@ def host_view_json_route(host_id):
 
 
 @blueprint.route("/host/delete_multiid", methods=["POST"])
-@blueprint.arguments(MultiidSchema)
+@blueprint.arguments(MultiidRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def host_delete_multiid_route(args):
@@ -158,7 +158,7 @@ def host_delete_multiid_route(args):
 
 
 @blueprint.route("/host/tag_multiid", methods=["POST"])
-@blueprint.arguments(TagMultiidSchema)
+@blueprint.arguments(TagMultiidRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def host_tag_multiid_route(args):

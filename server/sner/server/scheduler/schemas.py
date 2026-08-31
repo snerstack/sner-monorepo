@@ -29,7 +29,7 @@ def validate_agent_config(value):
         raise MarshmallowValidationError(f"Invalid config: {str(exc)}") from None
 
 
-class QueueSchema(Schema):
+class QueueRequest(Schema):
     """queue schema"""
 
     name = String(required=True, validate=validate.Length(min=1, max=250))
@@ -40,7 +40,7 @@ class QueueSchema(Schema):
     reqs = List(String(), allow_none=True)
 
 
-class QueueEnqueueSchema(Schema):
+class QueueEnqueueRequest(Schema):
     """queue enqueue schema"""
 
     targets = List(String(), required=True, validate=validate.Length(min=1))

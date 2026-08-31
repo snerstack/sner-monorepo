@@ -41,8 +41,8 @@ def paged_error_response(*args, **kwargs):
 
 @blueprint.route("/v2/public/storage/host", methods=["POST"])
 @apikey_required("user")
-@blueprint.arguments(api_schemas.PublicHostArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schemas.PublicHostSchema)
+@blueprint.arguments(api_schemas.PublicHostRequest)
+@blueprint.response(HTTPStatus.OK, api_schemas.PublicHostResponse)
 def v2_public_storage_host_route(args):
     """host data by address"""
 
@@ -66,8 +66,8 @@ def v2_public_storage_host_route(args):
 
 @blueprint.route("/v2/public/storage/range", methods=["POST"])
 @apikey_required("user")
-@blueprint.arguments(api_schemas.PublicRangeArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schemas.PublicRangeSchema(many=True))
+@blueprint.arguments(api_schemas.PublicRangeRequest)
+@blueprint.response(HTTPStatus.OK, api_schemas.PublicRangeResponse(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
 def v2_public_storage_range_route(args):
     """list of hosts by cidr with simplified data"""
@@ -82,8 +82,8 @@ def v2_public_storage_range_route(args):
 
 @blueprint.route("/v2/public/storage/servicelist", methods=["POST"])
 @apikey_required("user")
-@blueprint.arguments(api_schemas.PublicListArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schemas.PublicServicelistSchema(many=True))
+@blueprint.arguments(api_schemas.PublicListRequest)
+@blueprint.response(HTTPStatus.OK, api_schemas.PublicServicelistResponse(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
 def v2_public_storage_servicelist_route(args):
     """filtered servicelist (see sner.server.sqlafilter for syntax)"""
@@ -106,8 +106,8 @@ def v2_public_storage_servicelist_route(args):
 
 @blueprint.route("/v2/public/storage/vulnlist", methods=["POST"])
 @apikey_required("user")
-@blueprint.arguments(api_schemas.PublicListArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schemas.PublicVulnlistSchema(many=True))
+@blueprint.arguments(api_schemas.PublicListRequest)
+@blueprint.response(HTTPStatus.OK, api_schemas.PublicVulnlistResponse(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
 def v2_public_storage_vulnlist_route(args):
     """filtered vulnlist (see sner.server.sqlafilter for syntax)"""
@@ -149,8 +149,8 @@ def v2_public_storage_vulnlist_route(args):
 
 @blueprint.route("/v2/public/storage/notelist", methods=["POST"])
 @apikey_required("user")
-@blueprint.arguments(api_schemas.PublicListArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schemas.PublicNotelistSchema(many=True))
+@blueprint.arguments(api_schemas.PublicListRequest)
+@blueprint.response(HTTPStatus.OK, api_schemas.PublicNotelistResponse(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
 def v2_public_storage_notelist_route(args):
     """filtered notelist (see sner.server.sqlafilter for syntax)"""
@@ -187,8 +187,8 @@ def v2_public_storage_notelist_route(args):
 
 @blueprint.route("/v2/public/storage/versioninfo", methods=["POST"])
 @apikey_required("user")
-@blueprint.arguments(api_schemas.PublicVersioninfoArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schemas.PublicVersioninfoSchema(many=True))
+@blueprint.arguments(api_schemas.PublicVersioninfoRequest)
+@blueprint.response(HTTPStatus.OK, api_schemas.PublicVersioninfoResponse(many=True))
 @blueprint.paginate(Page, page_size=1000, max_page_size=10000)
 def v2_public_storage_versioninfo_route(args):
     """
@@ -217,8 +217,8 @@ def v2_public_storage_versioninfo_route(args):
 
 @blueprint.route("/v2/public/storage/versioninfo_sqlfilter", methods=["POST"])
 @apikey_required("user")
-@blueprint.arguments(api_schemas.PublicListArgsSchema)
-@blueprint.response(HTTPStatus.OK, api_schemas.PublicVersioninfoSchema(many=True))
+@blueprint.arguments(api_schemas.PublicListRequest)
+@blueprint.response(HTTPStatus.OK, api_schemas.PublicVersioninfoResponse(many=True))
 @blueprint.paginate(QueryPage, page_size=1000, max_page_size=10000)
 def v2_public_storage_versioninfo_sqlfilter_route(args):
     """versioninfo search with sql filtering"""
@@ -285,7 +285,7 @@ def _prefetch_notesmap():
 
 @blueprint.route("/v2/public/storage/auror", methods=["POST"])
 @apikey_required("auror")
-@blueprint.response(HTTPStatus.OK, api_schemas.PublicAurorSchema(many=True))
+@blueprint.response(HTTPStatus.OK, api_schemas.PublicAurorResponse(many=True))
 def v2_public_storage_auror_route():
     """internal endpoint; get hostnames and port for auror"""
 

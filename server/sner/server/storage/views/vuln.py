@@ -24,7 +24,7 @@ from sner.server.storage.core import (
     vuln_report,
 )
 from sner.server.storage.models import Host, Note, Service, Vuln
-from sner.server.storage.schemas import AnnotateSchema, MultiidSchema, TagMultiidSchema, VulnMulticopySchema, VulnSchema
+from sner.server.storage.schemas import AnnotateRequest, MultiidRequest, TagMultiidRequest, VulnMulticopyRequest, VulnRequest
 from sner.server.storage.views import blueprint
 from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 
@@ -100,7 +100,7 @@ def vuln_view_json_route(vuln_id):
 
 
 @blueprint.route("/vuln/add/<model_name>/<model_id>", methods=["POST"])
-@blueprint.arguments(VulnSchema)
+@blueprint.arguments(VulnRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def vuln_add_route(args, model_name, model_id):
@@ -120,7 +120,7 @@ def vuln_add_route(args, model_name, model_id):
 
 
 @blueprint.route("/vuln/edit/<vuln_id>", methods=["POST"])
-@blueprint.arguments(VulnSchema)
+@blueprint.arguments(VulnRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def vuln_edit_route(args, vuln_id):
@@ -155,7 +155,7 @@ def vuln_delete_route(vuln_id):
 
 
 @blueprint.route("/vuln/annotate/<model_id>", methods=["POST"])
-@blueprint.arguments(AnnotateSchema)
+@blueprint.arguments(AnnotateRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def vuln_annotate_route(args, model_id):
@@ -164,7 +164,7 @@ def vuln_annotate_route(args, model_id):
 
 
 @blueprint.route("/vuln/delete_multiid", methods=["POST"])
-@blueprint.arguments(MultiidSchema)
+@blueprint.arguments(MultiidRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def vuln_delete_multiid_route(args):
@@ -176,7 +176,7 @@ def vuln_delete_multiid_route(args):
 
 
 @blueprint.route("/vuln/tag_multiid", methods=["POST"])
-@blueprint.arguments(TagMultiidSchema)
+@blueprint.arguments(TagMultiidRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def vuln_tag_multiid_route(args):
@@ -243,7 +243,7 @@ def vuln_export_route():
 
 
 @blueprint.route("/vuln/multicopy/<int:vuln_id>.json", methods=["POST"])
-@blueprint.arguments(VulnMulticopySchema)
+@blueprint.arguments(VulnMulticopyRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def vuln_multicopy_json_route(args, vuln_id):

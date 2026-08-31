@@ -16,7 +16,7 @@ class BaseSchema(Schema):
         return {key: value for key, value in data.items() if (value is not None) and (value != [])}
 
 
-class JobAssignArgsSchema(BaseSchema):
+class JobAssignRequest(BaseSchema):
     """/api/v2/scheduler/job/assign request"""
 
     queue = fields.String()
@@ -48,7 +48,7 @@ class JobAssignmentConfigSchema(BaseSchema):
         return output
 
 
-class JobAssignmentSchema(BaseSchema):
+class JobAssignmentResponse(BaseSchema):
     """assignment schema"""
 
     id = fields.String(required=True, validate=validate.Regexp(r"^[a-f0-9\-]{36}$"))
@@ -56,7 +56,7 @@ class JobAssignmentSchema(BaseSchema):
     targets = fields.List(fields.String, required=True)
 
 
-class JobOutputSchema(BaseSchema):
+class JobOutputRequest(BaseSchema):
     """job output schema"""
 
     id = fields.String(required=True, validate=validate.Regexp(r"^[a-f0-9\-]{36}$"))
@@ -64,7 +64,7 @@ class JobOutputSchema(BaseSchema):
     output = fields.String()
 
 
-class PublicNoteSchema(BaseSchema):
+class PublicNoteResponse(BaseSchema):
     """public note schema"""
 
     via_target = fields.String()
@@ -77,7 +77,7 @@ class PublicNoteSchema(BaseSchema):
     import_time = fields.DateTime()
 
 
-class PublicServiceSchema(BaseSchema):
+class PublicServiceResponse(BaseSchema):
     """service schema"""
 
     proto = fields.String(required=True)
@@ -90,16 +90,16 @@ class PublicServiceSchema(BaseSchema):
     modified = fields.DateTime()
     rescan_time = fields.DateTime()
     import_time = fields.DateTime()
-    notes = fields.List(fields.Nested(PublicNoteSchema))
+    notes = fields.List(fields.Nested(PublicNoteResponse))
 
 
-class PublicHostArgsSchema(BaseSchema):
+class PublicHostRequest(BaseSchema):
     """public host args schema"""
 
     address = fields.IP(required=True)
 
 
-class PublicHostSchema(BaseSchema):
+class PublicHostResponse(BaseSchema):
     """public host schema"""
 
     address = fields.String(required=True)
@@ -110,17 +110,17 @@ class PublicHostSchema(BaseSchema):
     created = fields.DateTime()
     modified = fields.DateTime()
     rescan_time = fields.DateTime()
-    services = fields.List(fields.Nested(PublicServiceSchema))
-    notes = fields.List(fields.Nested(PublicNoteSchema))
+    services = fields.List(fields.Nested(PublicServiceResponse))
+    notes = fields.List(fields.Nested(PublicNoteResponse))
 
 
-class PublicRangeArgsSchema(BaseSchema):
+class PublicRangeRequest(BaseSchema):
     """public cidr schema"""
 
     cidr = fields.IPInterface(required=True)
 
 
-class PublicRangeServiceSchema(BaseSchema):
+class PublicRangeServiceResponse(BaseSchema):
     """public range service schema"""
 
     proto = fields.String(required=True)
@@ -132,7 +132,7 @@ class PublicRangeServiceSchema(BaseSchema):
     import_time = fields.DateTime()
 
 
-class PublicRangeSchema(BaseSchema):
+class PublicRangeResponse(BaseSchema):
     """public range schema"""
 
     address = fields.String(required=True)
@@ -141,16 +141,16 @@ class PublicRangeSchema(BaseSchema):
     created = fields.DateTime()
     modified = fields.DateTime()
     rescan_time = fields.DateTime()
-    services = fields.List(fields.Nested(PublicRangeServiceSchema))
+    services = fields.List(fields.Nested(PublicRangeServiceResponse))
 
 
-class PublicListArgsSchema(BaseSchema):
+class PublicListRequest(BaseSchema):
     """public *list args schema"""
 
     filter = fields.String()
 
 
-class PublicServicelistSchema(BaseSchema):
+class PublicServicelistResponse(BaseSchema):
     """public service list schema"""
 
     address = fields.String()
@@ -165,7 +165,7 @@ class PublicServicelistSchema(BaseSchema):
     import_time = fields.DateTime()
 
 
-class PublicVulnlistSchema(BaseSchema):
+class PublicVulnlistResponse(BaseSchema):
     """public vuln list schema"""
 
     address = fields.String()
@@ -187,7 +187,7 @@ class PublicVulnlistSchema(BaseSchema):
     import_time = fields.DateTime()
 
 
-class PublicNotelistSchema(BaseSchema):
+class PublicNotelistResponse(BaseSchema):
     """public note list schema"""
 
     address = fields.String()
@@ -204,7 +204,7 @@ class PublicNotelistSchema(BaseSchema):
     import_time = fields.DateTime()
 
 
-class PublicVersioninfoArgsSchema(BaseSchema):
+class PublicVersioninfoRequest(BaseSchema):
     """public versioninfo args schema"""
 
     filter = fields.String()
@@ -212,7 +212,7 @@ class PublicVersioninfoArgsSchema(BaseSchema):
     versionspec = fields.String()
 
 
-class PublicVersioninfoSchema(BaseSchema):
+class PublicVersioninfoResponse(BaseSchema):
     """public versioninfo schema"""
 
     # endpoint data
@@ -241,7 +241,7 @@ class PublicAurorInputSchema(BaseSchema):
     proto = fields.String(required=True)
 
 
-class PublicAurorPortScanSchema(BaseSchema):
+class PublicAurorPortScanResponse(BaseSchema):
     """public auror port scan schema"""
 
     proto = fields.String(required=True)
@@ -250,9 +250,9 @@ class PublicAurorPortScanSchema(BaseSchema):
     os = fields.String(required=True)
 
 
-class PublicAurorSchema(BaseSchema):
+class PublicAurorResponse(BaseSchema):
     """public auror schema"""
 
     input = fields.Nested(PublicAurorInputSchema, required=True)
-    port_scan = fields.Nested(PublicAurorPortScanSchema, required=True)
+    port_scan = fields.Nested(PublicAurorPortScanResponse, required=True)
     tls_scan = fields.Dict(required=True, allow_none=True)

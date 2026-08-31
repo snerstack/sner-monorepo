@@ -25,6 +25,6 @@ class EmailNoneField(EmptyToNoneMixin, Email):
     """email field that casts empty string to none"""
 
 
-class MessageSchema(Schema):
+class MessageResponse(Schema):
     """message schema"""
     message = String(dump_only=True)

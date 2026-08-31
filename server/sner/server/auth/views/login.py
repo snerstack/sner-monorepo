@@ -16,7 +16,7 @@ from sqlalchemy import func, or_
 
 from sner.server.auth.core import TOTPImpl, regenerate_session, webauthn_credentials
 from sner.server.auth.models import User
-from sner.server.auth.schemas import LoginSchema, TotpCodeSchema, UserAuthSchema, WebauthnLoginSchema
+from sner.server.auth.schemas import LoginRequest, TotpCodeRequest, UserAuthResponse, WebauthnLoginRequest
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db, oauth, webauthn
 from sner.server.password_supervisor import PasswordSupervisor as PWS
@@ -35,8 +35,8 @@ def user_auth_dict(user):
 
 
 @blueprint.route('/login', methods=['POST'])
-@blueprint.arguments(LoginSchema)
-@blueprint.response(HTTPStatus.OK, UserAuthSchema)
+@blueprint.arguments(LoginRequest)
+@blueprint.response(HTTPStatus.OK, UserAuthResponse)
 def login_route(args):
     """login route"""
 
@@ -75,8 +75,8 @@ def logout_route():
 
 
 @blueprint.route("/login_totp", methods=["POST"])
-@blueprint.arguments(TotpCodeSchema)
-@blueprint.response(HTTPStatus.OK, UserAuthSchema)
+@blueprint.arguments(TotpCodeRequest)
+@blueprint.response(HTTPStatus.OK, UserAuthResponse)
 def login_totp_route(args):
     """login totp route"""
 
@@ -110,8 +110,8 @@ def login_webauthn_pkcro_route():
 
 
 @blueprint.route("/login_webauthn", methods=["GET", "POST"])
-@blueprint.arguments(WebauthnLoginSchema)
-@blueprint.response(HTTPStatus.OK, UserAuthSchema)
+@blueprint.arguments(WebauthnLoginRequest)
+@blueprint.response(HTTPStatus.OK, UserAuthResponse)
 def login_webauthn_route(args):
     """login webauthn route"""
 

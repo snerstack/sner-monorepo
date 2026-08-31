@@ -14,7 +14,7 @@ from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import get_related_models, model_annotate, model_delete_multiid, model_tag_multiid
 from sner.server.storage.models import Host, Note, Service
-from sner.server.storage.schemas import AnnotateSchema, MultiidSchema, NoteSchema, TagMultiidSchema
+from sner.server.storage.schemas import AnnotateRequest, MultiidRequest, NoteRequest, TagMultiidRequest
 from sner.server.storage.views import blueprint
 from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 
@@ -83,7 +83,7 @@ def note_view_json_route(note_id):
 
 
 @blueprint.route("/note/add/<model_name>/<model_id>", methods=["POST"])
-@blueprint.arguments(NoteSchema)
+@blueprint.arguments(NoteRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def note_add_route(args, model_name, model_id):
@@ -103,7 +103,7 @@ def note_add_route(args, model_name, model_id):
 
 
 @blueprint.route("/note/edit/<note_id>", methods=["GET", "POST"])
-@blueprint.arguments(NoteSchema)
+@blueprint.arguments(NoteRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def note_edit_route(args, note_id):
@@ -139,7 +139,7 @@ def note_delete_route(note_id):
 
 
 @blueprint.route("/note/annotate/<model_id>", methods=["POST"])
-@blueprint.arguments(AnnotateSchema)
+@blueprint.arguments(AnnotateRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def note_annotate_route(args, model_id):
@@ -148,7 +148,7 @@ def note_annotate_route(args, model_id):
 
 
 @blueprint.route("/note/delete_multiid", methods=["POST"])
-@blueprint.arguments(MultiidSchema)
+@blueprint.arguments(MultiidRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def note_delete_multiid_route(args):
@@ -160,7 +160,7 @@ def note_delete_multiid_route(args):
 
 
 @blueprint.route("/note/tag_multiid", methods=["POST"])
-@blueprint.arguments(TagMultiidSchema)
+@blueprint.arguments(TagMultiidRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def note_tag_multiid_route(args):

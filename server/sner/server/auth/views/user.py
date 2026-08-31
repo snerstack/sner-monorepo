@@ -12,16 +12,16 @@ from sqlalchemy import literal_column
 
 from sner.server.auth.core import UserManager, session_required
 from sner.server.auth.models import User
-from sner.server.auth.schemas import UserMeSchema, UserSchema
+from sner.server.auth.schemas import UserMeResponse, UserRequest
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.schemas import MessageSchema
+from sner.server.schemas import MessageResponse
 from sner.server.utils import error_response, filter_query
 
 
 @blueprint.route("/user/me")
-@blueprint.response(HTTPStatus.OK, UserMeSchema)
+@blueprint.response(HTTPStatus.OK, UserMeResponse)
 def user_me_route():
     """get current user"""
 
@@ -54,7 +54,7 @@ def user_list_json_route():
 
 
 @blueprint.route("/user/<user_id>.json", methods=["GET", "POST"])
-@blueprint.response(HTTPStatus.OK, UserSchema)
+@blueprint.response(HTTPStatus.OK, UserRequest)
 @session_required("admin")
 def user_json_route(user_id):
     """get user"""
@@ -78,8 +78,8 @@ def user_json_route(user_id):
 
 
 @blueprint.route("/user/add", methods=["POST"])
-@blueprint.arguments(UserSchema)
-@blueprint.response(HTTPStatus.OK, MessageSchema)
+@blueprint.arguments(UserRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("admin")
 def user_add_route(args):
     """add user"""
@@ -96,8 +96,8 @@ def user_add_route(args):
 
 
 @blueprint.route("/user/edit/<user_id>", methods=["POST"])
-@blueprint.arguments(UserSchema)
-@blueprint.response(HTTPStatus.OK, MessageSchema)
+@blueprint.arguments(UserRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("admin")
 def user_edit_route(args, user_id):
     """edit task"""
@@ -120,7 +120,7 @@ def user_edit_route(args, user_id):
 
 
 @blueprint.route("/user/delete/<user_id>", methods=["POST"])
-@blueprint.response(HTTPStatus.OK, MessageSchema)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("admin")
 def user_delete_route(user_id):
     """delete user"""

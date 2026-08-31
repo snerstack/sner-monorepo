@@ -45,13 +45,13 @@ def test_v2_public_storage_host_route(api_user, host_factory, service_factory, s
 
     # ipv4
     response = api_user.post_json(url_for("api.v2_public_storage_host_route"), {"address": service.host.address})
-    assert api_schemas.PublicHostSchema().load(response.json)
+    assert api_schemas.PublicHostResponse().load(response.json)
     assert response.json["address"] == service.host.address
     assert len(response.json["services"]) == 1
 
     # ipv6
     response = api_user.post_json(url_for("api.v2_public_storage_host_route"), {"address": "2001:db8:0000::11"})
-    assert api_schemas.PublicHostSchema().load(response.json)
+    assert api_schemas.PublicHostResponse().load(response.json)
     assert response.json["address"] == "2001:db8::11"
     assert len(response.json["services"]) == 1
 
@@ -78,7 +78,7 @@ def test_v2_public_storage_range_route(api_user, host_factory):
     host_factory.create(address="127.0.2.1", rescan_time=datetime(1900, 1, 1, 0, 0))
 
     response = api_user.post_json(url_for("api.v2_public_storage_range_route"), {"cidr": "127.0.0.0/8"})
-    assert api_schemas.PublicRangeSchema(many=True).load(response.json)
+    assert api_schemas.PublicRangeResponse(many=True).load(response.json)
     assert len(response.json) == 2
     assert response.json[0]["rescan_time"] == "1900-01-01T00:00:00"
 
@@ -90,7 +90,7 @@ def test_v2_public_storage_servicelist_route(api_user, service_factory):
     service_factory.create(port=2)
 
     response = api_user.post_json(url_for("api.v2_public_storage_servicelist_route"), {"filter": 'Service.port=="1"'})
-    assert api_schemas.PublicServicelistSchema(many=True).load(response.json)
+    assert api_schemas.PublicServicelistResponse(many=True).load(response.json)
     assert len(response.json) == 1
 
 
@@ -108,7 +108,7 @@ def test_v2_public_storage_vulnlist_route(api_user, vuln_factory):
     vuln_factory.create(name="dummy2")
 
     response = api_user.post_json(url_for("api.v2_public_storage_vulnlist_route"), {"filter": 'Vuln.name=="dummy2"'})
-    assert api_schemas.PublicVulnlistSchema(many=True).load(response.json)
+    assert api_schemas.PublicVulnlistResponse(many=True).load(response.json)
     assert len(response.json) == 1
 
 
@@ -119,7 +119,7 @@ def test_v2_public_storage_notelist_route(api_user, note_factory):
     note_factory.create(data="dummy2")
 
     response = api_user.post_json(url_for("api.v2_public_storage_notelist_route"), {"filter": 'Note.data=="dummy1"'})
-    assert api_schemas.PublicNotelistSchema(many=True).load(response.json)
+    assert api_schemas.PublicNotelistResponse(many=True).load(response.json)
     assert len(response.json) == 1
 
 
@@ -127,11 +127,11 @@ def test_v2_public_storage_versioninfo_route(api_user, versioninfo):  # pylint: 
     """test public versioninfo query api"""
 
     response = api_user.post_json(url_for("api.v2_public_storage_versioninfo_route"))
-    assert api_schemas.PublicVersioninfoSchema(many=True).load(response.json)
+    assert api_schemas.PublicVersioninfoResponse(many=True).load(response.json)
     assert len(response.json) == 1
 
     response = api_user.post_json(url_for("api.v2_public_storage_versioninfo_route"), {"product": "DuMmY", "versionspec": ">1.0"})
-    assert api_schemas.PublicVersioninfoSchema(many=True).load(response.json)
+    assert api_schemas.PublicVersioninfoResponse(many=True).load(response.json)
     assert len(response.json) == 1
     assert response.json[0]["product"] == "dummy product"
     assert response.json[0]["timestamp"]
@@ -147,7 +147,7 @@ def test_v2_public_storage_versioninfo_sqlfilter_route(api_user, versioninfo):
         url_for("api.v2_public_storage_versioninfo_sqlfilter_route"),
         {"filter": f'Versioninfo.version >= "{versioninfo.version}"'},
     )
-    assert api_schemas.PublicVersioninfoSchema(many=True).load(response.json)
+    assert api_schemas.PublicVersioninfoResponse(many=True).load(response.json)
     assert len(response.json) == 1
 
 

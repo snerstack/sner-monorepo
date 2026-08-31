@@ -30,14 +30,14 @@ def validate_api_networks(value):
         raise ValidationError(f"Invalid network value: {str(exc)}") from exc
 
 
-class LoginSchema(Schema):
+class LoginRequest(Schema):
     """login schema"""
 
     username = Str(required=True)
     password = String(load_only=True)
 
 
-class UserAuthSchema(Schema):
+class UserAuthResponse(Schema):
     """user auth schema"""
 
     id = Int()
@@ -47,7 +47,7 @@ class UserAuthSchema(Schema):
     roles = List(Str())
 
 
-class UserSchema(Schema):
+class UserRequest(Schema):
     """user schema"""
 
     username = String(required=True, validate=validate.Length(min=1, max=250))
@@ -66,7 +66,7 @@ class UserSchema(Schema):
     )
 
 
-class UserChangePasswordSchema(Schema):
+class UserChangePasswordRequest(Schema):
     """user change password schema"""
     current_password = String(required=True, load_only=True)
     password1 = String(
@@ -83,7 +83,7 @@ class UserChangePasswordSchema(Schema):
             raise ValidationError("Passwords do not match.", field_name="password2")
 
 
-class UserMeSchema(Schema):
+class UserMeResponse(Schema):
     """user me schema"""
     id = Int(dump_only=True)
     username = String(dump_only=True)
@@ -91,30 +91,30 @@ class UserMeSchema(Schema):
     roles = List(String(), dump_only=True)
 
 
-class WebauthnLoginSchema(Schema):
+class WebauthnLoginRequest(Schema):
     """webauthn login schema"""
     assertion = String(required=True)
 
 
-class WebauthnRegisterSchema(Schema):
+class WebauthnRegisterRequest(Schema):
     """webauthn register schema"""
     attestation = String(required=True)
     name = String(validate=validate.Length(max=250))
 
 
-class WebauthnEditSchema(Schema):
+class WebauthnEditRequest(Schema):
     """webauthn edit schema"""
     name = String(required=True, validate=validate.Length(max=250))
 
 
-class WebauthnCredentialSchema(Schema):
+class WebauthnCredentialResponse(Schema):
     """webauthn credential schema"""
     id = Int(dump_only=True)
     name = String(dump_only=True)
     registered = DateTime(dump_only=True)
 
 
-class ProfileSchema(Schema):
+class ProfileResponse(Schema):
     """profile schema"""
     username = String(dump_only=True)
     email = Email(dump_only=True)
@@ -124,12 +124,12 @@ class ProfileSchema(Schema):
     has_totp = Boolean(dump_only=True)
 
 
-class TotpCodeSchema(Schema):
+class TotpCodeRequest(Schema):
     """totp code schema"""
     code = String(required=True, load_only=True)
 
 
-class TotpProvisioningSchema(Schema):
+class TotpProvisioningResponse(Schema):
     """totp provisioning schema"""
     provisioning_url = String(dump_only=True)
     secret = String(dump_only=True)

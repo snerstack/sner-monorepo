@@ -20,18 +20,18 @@ from sqlalchemy import literal_column
 from sner.server.auth.core import TOTPImpl, UserManager, session_required, webauthn_credentials
 from sner.server.auth.models import User, WebauthnCredential
 from sner.server.auth.schemas import (
-    ProfileSchema,
-    TotpCodeSchema,
-    TotpProvisioningSchema,
-    UserChangePasswordSchema,
-    WebauthnCredentialSchema,
-    WebauthnEditSchema,
-    WebauthnRegisterSchema,
+    ProfileResponse,
+    TotpCodeRequest,
+    TotpProvisioningResponse,
+    UserChangePasswordRequest,
+    WebauthnCredentialResponse,
+    WebauthnEditRequest,
+    WebauthnRegisterRequest,
 )
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db, webauthn
 from sner.server.password_supervisor import PasswordSupervisor as PWS
-from sner.server.schemas import MessageSchema
+from sner.server.schemas import MessageResponse
 from sner.server.utils import SnerJSONEncoder, error_response
 
 
@@ -41,7 +41,7 @@ def random_string(length=32):
 
 
 @blueprint.route("/profile.json")
-@blueprint.response(HTTPStatus.OK, ProfileSchema)
+@blueprint.response(HTTPStatus.OK, ProfileResponse)
 @session_required("user")
 def profile_json_route():
     """general user profile route"""
@@ -59,8 +59,8 @@ def profile_json_route():
 
 
 @blueprint.route("/profile/changepassword", methods=["GET", "POST"])
-@blueprint.arguments(UserChangePasswordSchema)
-@blueprint.response(HTTPStatus.OK, MessageSchema)
+@blueprint.arguments(UserChangePasswordRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("user")
 def profile_changepassword_route(args):
     """user profile change password"""
@@ -77,7 +77,7 @@ def profile_changepassword_route(args):
 
 
 @blueprint.route("/profile/totp", methods=["GET"])
-@blueprint.response(HTTPStatus.OK, TotpProvisioningSchema)
+@blueprint.response(HTTPStatus.OK, TotpProvisioningResponse)
 @session_required("user")
 def profile_totp_route():
     """user profile totp management route"""
@@ -96,8 +96,8 @@ def profile_totp_route():
 
 @blueprint.route("/profile/totp", methods=["POST"])
 @session_required("user")
-@blueprint.arguments(TotpCodeSchema)
-@blueprint.response(HTTPStatus.OK, MessageSchema)
+@blueprint.arguments(TotpCodeRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 def profile_totp_post_route(args):
     """enable/disable totp based on current state"""
     user = db.session.get(User, current_user.id)
@@ -185,8 +185,8 @@ def profile_webauthn_pkcco_route():
 
 
 @blueprint.route("/profile/webauthn/register", methods=["POST"])
-@blueprint.arguments(WebauthnRegisterSchema)
-@blueprint.response(HTTPStatus.OK, MessageSchema)
+@blueprint.arguments(WebauthnRegisterRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("user")
 def profile_webauthn_register_route(args):
     """register credential for current user"""
@@ -219,7 +219,7 @@ def profile_webauthn_register_route(args):
 
 
 @blueprint.route("/profile/webauthn/<webauthn_id>.json")
-@blueprint.response(HTTPStatus.OK, WebauthnCredentialSchema)
+@blueprint.response(HTTPStatus.OK, WebauthnCredentialResponse)
 @session_required("user")
 def profile_webauthn_route(webauthn_id):
     """get registered credential"""
@@ -233,8 +233,8 @@ def profile_webauthn_route(webauthn_id):
 
 
 @blueprint.route("/profile/webauthn/edit/<webauthn_id>", methods=["POST"])
-@blueprint.arguments(WebauthnEditSchema)
-@blueprint.response(HTTPStatus.OK, MessageSchema)
+@blueprint.arguments(WebauthnEditRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("user")
 def profile_webauthn_edit_route(args, webauthn_id):
     """edit registered credential"""
@@ -251,7 +251,7 @@ def profile_webauthn_edit_route(args, webauthn_id):
 
 
 @blueprint.route("/profile/webauthn/delete/<webauthn_id>", methods=["POST"])
-@blueprint.response(HTTPStatus.OK, MessageSchema)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("user")
 def profile_webauthn_delete_route(webauthn_id):
     """delete registered credential"""

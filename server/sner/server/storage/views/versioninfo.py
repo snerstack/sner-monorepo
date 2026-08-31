@@ -14,7 +14,7 @@ from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_tag_multiid
 from sner.server.storage.models import Versioninfo
-from sner.server.storage.schemas import AnnotateSchema, TagMultiStringIdSchema
+from sner.server.storage.schemas import AnnotateRequest, TagMultiStringIdRequest
 from sner.server.storage.version_parser import InvalidFormatException, is_in_version_range
 from sner.server.storage.version_parser import parse as versionspec_parse
 from sner.server.storage.views import blueprint
@@ -79,7 +79,7 @@ def versioninfo_list_json_route():
 
 
 @blueprint.route("/versioninfo/tag_multiid", methods=["POST"])
-@blueprint.arguments(TagMultiStringIdSchema)
+@blueprint.arguments(TagMultiStringIdRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def versioninfo_tag_multiid_route(args):
@@ -96,7 +96,7 @@ def versioninfo_tag_multiid_route(args):
 
 
 @blueprint.route("/versioninfo/annotate/<model_id>", methods=["GET", "POST"])
-@blueprint.arguments(AnnotateSchema)
+@blueprint.arguments(AnnotateRequest)
 @blueprint.response(HTTPStatus.OK)
 @session_required("operator")
 def versioninfo_annotate_route(args, model_id):

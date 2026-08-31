@@ -42,7 +42,7 @@ def validate_service_belongs_to_host(data):
             raise ValidationError("Service does not belong to the host", field_name="service_id")
 
 
-class HostSchema(Schema):
+class HostRequest(Schema):
     """host schema"""
     address = StringNoneField(required=True, validate=validate_ip_address)
     hostname = StringNoneField(validate=validate.Length(max=256), allow_none=True)
@@ -51,7 +51,7 @@ class HostSchema(Schema):
     comment = StringNoneField(allow_none=True)
 
 
-class ServiceSchema(Schema):
+class ServiceRequest(Schema):
     """service schema"""
     host_id = Int(required=True, validate=host_id_exists)
     proto = String(required=True, validate=validate.Length(min=1, max=250))
@@ -63,7 +63,7 @@ class ServiceSchema(Schema):
     comment = StringNoneField(allow_none=True)
 
 
-class VulnSchema(Schema):
+class VulnRequest(Schema):
     """vulnerability schema"""
     host_id = Int(required=True, validate=host_id_exists)
     service_id = Int(allow_none=True)
@@ -83,7 +83,7 @@ class VulnSchema(Schema):
         validate_service_belongs_to_host(data)
 
 
-class NoteSchema(Schema):
+class NoteRequest(Schema):
     """note schema"""
     host_id = Int(required=True, validate=host_id_exists)
     service_id = Int(allow_none=True, load_default=None)
@@ -99,24 +99,24 @@ class NoteSchema(Schema):
         validate_service_belongs_to_host(data)
 
 
-class MultiidSchema(Schema):
+class MultiidRequest(Schema):
     """multi ID schema"""
     ids = List(Int(required=True), required=True, validate=validate.Length(min=1))
 
 
-class TagMultiidSchema(Schema):
+class TagMultiidRequest(Schema):
     """tag multi ID schema"""
     ids = List(Int(required=True), required=True, validate=validate.Length(min=1))
     tags = List(String(required=True), required=True, validate=validate.Length(min=1))
     action = String(required=True, validate=validate.OneOf(["set", "unset"]))
 
 
-class TagMultiStringIdSchema(TagMultiidSchema):
+class TagMultiStringIdRequest(TagMultiidRequest):
     """tag multi string ID schema"""
     ids = List(String(required=True), validate=validate.Length(min=1))
 
 
-class AnnotateSchema(Schema):
+class AnnotateRequest(Schema):
     """annotate schema"""
     tags = List(String(), allow_none=True)
     comment = StringNoneField(allow_none=True)
@@ -128,7 +128,7 @@ class EndpointSchema(Schema):
     service_id = Int(allow_none=True, load_default=None)
 
 
-class VulnMulticopySchema(Schema):
+class VulnMulticopyRequest(Schema):
     """vulnerability multicopy schema"""
     endpoints = List(Nested(EndpointSchema), required=True)
     name = StringNoneField(required=True, validate=validate.Length(min=1, max=1000))
