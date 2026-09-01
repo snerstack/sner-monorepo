@@ -3,7 +3,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { httpClient } from '@/lib/httpClient'
-import { LSKEY_TAG_COLORS } from '@/lib/sner/tags'
+import { LSKEY_TAG_COLORS } from '@/lib/tags'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 

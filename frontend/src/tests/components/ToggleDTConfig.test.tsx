@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { renderWithProviders } from "../utils/renderWithProviders"
 
 import ToggleDTConfig from "@/components/ToggleDTConfig"
-import { getDTConfigValue } from "@/lib/sner/storage"
+import { getDTConfigValue } from "@/lib/storage"
 
 describe("ToggleDTConfig component", () => {
     it("renders", async () => {

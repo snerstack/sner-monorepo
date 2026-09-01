@@ -4,7 +4,7 @@ import { act, cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll, beforeEach, expect, vi } from 'vitest'
 
 import { cleanupElements as datatablesCleanup } from '@/lib/DataTables'
-import { LSKEY_TAG_COLORS } from '@/lib/sner/tags'
+import { LSKEY_TAG_COLORS } from '@/lib/tags'
 
 import { server } from '@/tests/mocks/server'
 

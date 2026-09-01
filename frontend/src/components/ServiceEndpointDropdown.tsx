@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify'
 
-import { getLinksForService, linkForService } from '@/lib/sner/storage'
+import { getLinksForService, linkForService } from '@/lib/storage'
 
 const clipboardCopyLink = (link: linkForService) => {
   const firstToken = link.value.split(" ")[0]

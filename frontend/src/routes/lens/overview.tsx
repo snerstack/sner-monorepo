@@ -7,7 +7,7 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap'
 
 import Heading from '@/components/Heading'
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
-import { getColorForSeverity } from '@/lib/sner/storage'
+import { getColorForSeverity } from '@/lib/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 const SEVERITY_ORDER = ['critical', 'high', 'medium', 'low', 'info', 'unknown']

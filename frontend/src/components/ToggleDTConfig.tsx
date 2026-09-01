@@ -1,4 +1,4 @@
-import { getDTConfigValue } from '@/lib/sner/storage'
+import { getDTConfigValue } from '@/lib/storage'
 import { MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 

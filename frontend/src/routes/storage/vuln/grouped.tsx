@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Column, renderElements } from '@/lib/DataTables'
-import { getColorForSeverity, getVulnFilterName } from '@/lib/sner/storage'
+import { getColorForSeverity, getVulnFilterName } from '@/lib/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'

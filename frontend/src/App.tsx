@@ -9,7 +9,7 @@ import { AppConfig } from '@/appConfig'
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { userState } from '@/atoms/userAtom'
 import { httpClient } from '@/lib/httpClient'
-import { tagsConfigInitialize } from '@/lib/sner/tags'
+import { tagsConfigInitialize } from '@/lib/tags'
 import { urlFor } from '@/lib/urlHelper'
 import { routes } from '@/routes'
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { defaultAppConfig } from '@/appConfig'
-import { LSKEY_TAG_COLORS, tagsConfigInitialize } from '@/lib/sner/tags'
+import { LSKEY_TAG_COLORS, tagsConfigInitialize } from '@/lib/tags'
 
 describe('localstorage lib helpers', () => {
     it('initializes local storage config tag colors', () => {

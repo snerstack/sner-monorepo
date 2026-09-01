@@ -3,7 +3,7 @@ import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
 
 import { getTableApi } from '@/lib/DataTables'
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
-import { DEFAULT_MULTIPLE_TAG_STATE, getSelectedIds } from '@/lib/sner/storage'
+import { DEFAULT_MULTIPLE_TAG_STATE, getSelectedIds } from '@/lib/storage'
 
 import SubmitField from '../fields/SubmitField'
 import TagsField from '../fields/TagsField'

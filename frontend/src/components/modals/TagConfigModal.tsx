@@ -4,7 +4,7 @@ import Modal from 'react-bootstrap/Modal'
 import { HexColorInput, HexColorPicker } from 'react-colorful'
 
 import { AppConfig } from '@/appConfig'
-import { LSKEY_TAG_COLORS, invertColor } from '@/lib/sner/tags'
+import { LSKEY_TAG_COLORS, invertColor } from '@/lib/tags'
 
 import SubmitField from '../fields/SubmitField'
 

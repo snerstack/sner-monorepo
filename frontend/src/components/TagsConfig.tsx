@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { AppConfig } from '@/appConfig'
 import Tag from '@/components/Tag'
 import TagConfigModal, { TagConfigModalData } from '@/components/modals/TagConfigModal'
-import { getColorForTag, LSKEY_TAG_COLORS } from '@/lib/sner/tags'
+import { getColorForTag, LSKEY_TAG_COLORS } from '@/lib/tags'
 
 const TagsConfig = () => {
     const [tags, setTags] = useState<AppConfig['tags']['colors']>({})

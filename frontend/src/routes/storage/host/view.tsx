@@ -7,7 +7,7 @@ import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, renderElements } from '@/lib/DataTables'
-import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getDTConfigValue, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, deleteRow, getColorForSeverity, getDTConfigValue, getTextForRef, getUrlForRef } from '@/lib/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import { Button, EditButton, LensButton, MultiCopyButton, ViewButton } from '@/components/buttons/BasicButtons'

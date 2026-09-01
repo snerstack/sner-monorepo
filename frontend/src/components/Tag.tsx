@@ -1,4 +1,4 @@
-import { getColorForTag, invertColor } from '@/lib/sner/tags'
+import { getColorForTag, invertColor } from '@/lib/tags'
 
 const Tag = ({ tag }: { tag: string }) => {
   return (

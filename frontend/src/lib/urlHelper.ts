@@ -1,4 +1,4 @@
-import { encodeRFC3986URIComponent } from '@/lib/sner/storage'
+import { encodeRFC3986URIComponent } from '@/lib/storage'
 
 /**
  * Build a backend URL from a route path and optional query params.

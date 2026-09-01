@@ -5,7 +5,7 @@ import { Link, useLoaderData } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-import { DEFAULT_ANNOTATE_STATE, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, getColorForSeverity, getTextForRef, getUrlForRef } from '@/lib/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import CodeBlock from '@/components/CodeBlock'

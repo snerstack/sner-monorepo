@@ -1,5 +1,5 @@
 import { getTableApi } from '@/lib/DataTables'
-import { getSelectedIds, tagAction } from '@/lib/sner/storage'
+import { getSelectedIds, tagAction } from '@/lib/storage'
 import { capitalize } from '@/lib/utils'
 
 const TagButton = ({

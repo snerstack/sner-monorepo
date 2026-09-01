@@ -4,7 +4,7 @@ import { Link, useLoaderData } from 'react-router-dom';
 
 import AnchorLinkJumpFix from '@/components/AnchorLinkJumpFix';
 import Heading from '@/components/Heading';
-import { getColorForSeverity } from '@/lib/sner/storage';
+import { getColorForSeverity } from '@/lib/storage';
 
 import "@/styles/lens.css";
 

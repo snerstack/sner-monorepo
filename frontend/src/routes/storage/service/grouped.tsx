@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Column, renderElements } from '@/lib/DataTables'
-import { getServiceFilterInfo } from '@/lib/sner/storage'
+import { getServiceFilterInfo } from '@/lib/storage'
 import { toQueryString, urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'

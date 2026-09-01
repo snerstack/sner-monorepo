@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Column, renderElements } from '@/lib/DataTables'
-import { getNoteFilterXtype } from '@/lib/sner/storage'
+import { getNoteFilterXtype } from '@/lib/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import DataTable from '@/components/DataTable'

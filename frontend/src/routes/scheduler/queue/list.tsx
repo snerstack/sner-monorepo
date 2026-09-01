@@ -12,7 +12,7 @@ import Heading from '@/components/Heading'
 import { Button, EditButton } from '@/components/buttons/BasicButtons'
 import ButtonGroup from '@/components/buttons/ButtonGroup'
 import DeleteButton from '@/components/buttons/DeleteButton'
-import { getDTConfigValue } from '@/lib/sner/storage'
+import { getDTConfigValue } from '@/lib/storage'
 import ToggleDTConfig from '@/components/ToggleDTConfig'
 
 const QueueListPage = () => {

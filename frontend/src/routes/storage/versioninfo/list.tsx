@@ -6,7 +6,7 @@ import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnButtons, ColumnSelect, getTableApi, renderElements } from '@/lib/DataTables'
-import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, getDTConfigValue } from '@/lib/sner/storage'
+import { DEFAULT_ANNOTATE_STATE, DEFAULT_MULTIPLE_TAG_STATE, getDTConfigValue } from '@/lib/storage'
 import { urlFor } from '@/lib/urlHelper'
 
 import ButtonGroup from '@/components/buttons/ButtonGroup'

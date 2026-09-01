@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getUrlForRef } from '@/lib/sner/storage'
+import { getUrlForRef } from '@/lib/storage'
 
 describe('storage lib helpers', () => {
     it('parses vuln.ref string', () => {
