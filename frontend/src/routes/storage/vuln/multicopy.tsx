@@ -5,7 +5,6 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
-
 import { Column, ColumnSelect, getTableApi } from '@/lib/DataTables'
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
