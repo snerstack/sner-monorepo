@@ -37,7 +37,7 @@ const VulnMulticopyPage = () => {
 
   const multicopyHandler = async () => {
     const payload = {
-      endpoints: endpoints ? (JSON.parse(endpoints) as Endpoint[]) : [],
+      endpoints: endpoints ? (JSON.parse(endpoints) as EndpointIdent[]) : [],
       name,
       xtype,
       severity: severity.selected,
@@ -96,7 +96,7 @@ const VulnMulticopyPage = () => {
                   .rows({ selected: true })
                   .data()
                   .toArray()
-                  .map((r: VulnMulticopyRow) => r['endpoint_id'])
+                  .map((r: VulnMulticopyRow) => r['endpoint_ident'])
 
                 // coverage for next line is sometimes flanky on branch coverage, likely due timeout
                 // which is there because DT internal processing on handling events
