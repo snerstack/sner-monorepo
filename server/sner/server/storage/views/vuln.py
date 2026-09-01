@@ -140,6 +140,7 @@ def vuln_edit_route(args, vuln_id):
 
 
 @blueprint.route("/vuln/delete/<vuln_id>", methods=["POST"])
+@session_required("operator")
 def vuln_delete_route(vuln_id):
     """delete vuln"""
 
