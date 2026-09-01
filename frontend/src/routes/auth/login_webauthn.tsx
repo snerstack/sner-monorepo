@@ -6,10 +6,9 @@ import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
 import { userState } from '@/atoms/userAtom'
-
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
-import { arrayBufferToBase64, base64ToArrayBuffer } from '@/utils'
+import { arrayBufferToBase64, base64ToArrayBuffer } from '@/lib/utils'
 
 import Heading from '@/components/Heading'
 

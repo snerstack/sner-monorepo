@@ -1,4 +1,3 @@
-import { arrayBufferToBase64, base64ToArrayBuffer } from '@/utils'
 import { decode as cborDecode, encode as cborEncode } from 'cbor-x'
 import clsx from 'clsx'
 import { useEffect, useState } from 'react'
@@ -8,6 +7,7 @@ import { toast } from 'react-toastify'
 
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
+import { arrayBufferToBase64, base64ToArrayBuffer } from '@/lib/utils'
 
 import Heading from '@/components/Heading'
 import SubmitField from '@/components/fields/SubmitField'

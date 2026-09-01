@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { httpClient } from '@/lib/httpClient'
 import ProfilePage from '@/routes/auth/profile'
 import WebAuthnRegisterPage from '@/routes/auth/profile/webauthn/register'
-import { arrayBufferToBase64 } from '@/utils'
+import { arrayBufferToBase64 } from '@/lib/utils'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 

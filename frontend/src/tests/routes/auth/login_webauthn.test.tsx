@@ -1,12 +1,12 @@
-import LoginPage from '@/routes/auth/login'
-import WebAuthnLoginPage from '@/routes/auth/login_webauthn'
-import RootPage from '@/routes/root'
-import { arrayBufferToBase64 } from '@/utils'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { encode as cborEncode } from 'cbor-x'
 import { describe, expect, it, vi } from 'vitest'
 
 import { httpClient } from '@/lib/httpClient'
+import { arrayBufferToBase64 } from '@/lib/utils'
+import LoginPage from '@/routes/auth/login'
+import WebAuthnLoginPage from '@/routes/auth/login_webauthn'
+import RootPage from '@/routes/root'
 
 import { renderWithProviders } from '@/tests/utils/renderWithProviders'
 

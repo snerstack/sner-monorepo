@@ -5,7 +5,7 @@ import { toast } from 'react-toastify'
 
 import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
-import { linesToArray } from '@/utils'
+import { linesToArray } from '@/lib/utils'
 
 import Heading from '@/components/Heading'
 import SubmitField from '@/components/fields/SubmitField'

@@ -1,7 +1,6 @@
-import { capitalize } from '@/utils'
-
-import { getTableApi } from '@/lib/DataTables'
-import { getSelectedIds, tagAction } from '@/lib/sner/storage'
+import { getTableApi } from '@/lib/DataTables';
+import { getSelectedIds, tagAction } from '@/lib/sner/storage';
+import { capitalize } from '@/lib/utils';
 
 const TagsDropdownButton = ({ tags, url, tableId }: { tags: string[]; url: string; tableId: string }) => {
   return (

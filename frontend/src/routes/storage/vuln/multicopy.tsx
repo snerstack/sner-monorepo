@@ -1,4 +1,3 @@
-import { linesToArray, unique } from '@/utils'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
@@ -8,6 +7,7 @@ import { appConfigState } from '@/atoms/appConfigAtom'
 import { Column, ColumnSelect, getTableApi } from '@/lib/DataTables'
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
+import { linesToArray, unique } from '@/lib/utils'
 
 import DataTable from '@/components/DataTable'
 import Heading from '@/components/Heading'

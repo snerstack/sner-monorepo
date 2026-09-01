@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { linesToArray } from '@/utils'
+import { linesToArray } from '@/lib/utils'
 
 describe('linesToArray', () => {
   it('splits a newline separated list into an array', () => {

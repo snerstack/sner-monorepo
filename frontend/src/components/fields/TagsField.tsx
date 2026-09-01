@@ -1,7 +1,8 @@
-import { capitalize } from '@/utils'
 import clsx from 'clsx'
 import { Dispatch, Fragment, SetStateAction } from 'react'
 import { TagsInput } from 'react-tag-input-component'
+
+import { capitalize } from '@/lib/utils'
 
 const TagsField = ({
   name = '',

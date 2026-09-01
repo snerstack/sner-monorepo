@@ -1,6 +1,7 @@
-import { capitalize } from '@/utils'
 import { fireEvent, render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+
+import { capitalize } from '@/lib/utils'
 
 import TagsField from '@/components/fields/TagsField'
 
