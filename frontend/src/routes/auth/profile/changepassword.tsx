@@ -22,16 +22,14 @@ const ChangePasswordPage = () => {
   const newPasswordHandler = async () => {
     setNewPasswordErrors([])
 
-    const formData = new FormData()
-    formData.append('current_password', currentPassword)
-    formData.append('password1', newPassword)
-    formData.append('password2', newPasswordAgain)
+    const payload = {
+      current_password: currentPassword,
+      password1: newPassword,
+      password2: newPasswordAgain,
+    }
 
     try {
-      const resp = await httpClient.post<{ message: string }>(
-        urlFor('/backend/auth/profile/changepassword'),
-        formData,
-      )
+      const resp = await httpClient.post<{ message: string }>(urlFor('/backend/auth/profile/changepassword'), payload)
 
       toast.success(resp.data.message)
       navigate('/auth/profile')

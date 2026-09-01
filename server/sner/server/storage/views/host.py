@@ -14,8 +14,8 @@ from sner.lib import is_address
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_delete_multiid, model_tag_multiid
-from sner.server.storage.forms import HostForm, MultiidForm, TagMultiidForm
 from sner.server.storage.models import Host, Note, Service, Vuln
+from sner.server.storage.schema import AnnotateSchema, HostSchema, MultiidSchema, TagMultiidSchema
 from sner.server.storage.views import blueprint
 from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 
@@ -58,36 +58,38 @@ def host_list_json_route():
 
 
 @blueprint.route("/host/add", methods=["POST"])
+@blueprint.arguments(HostSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def host_add_route():
+def host_add_route(args):
     """add host"""
 
-    form = HostForm()
+    host = Host(**args)
 
-    if form.validate_on_submit():
-        host = Host()
-        form.populate_obj(host)
-        db.session.add(host)
-        db.session.commit()
-        return jsonify({"host_id": host.id})
+    db.session.add(host)
+    db.session.commit()
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return jsonify({"host_id": host.id})
 
 
 @blueprint.route("/host/edit/<host_id>", methods=["POST"])
+@blueprint.arguments(HostSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def host_edit_route(host_id):
+def host_edit_route(args, host_id):
     """edit host"""
 
     host = db.session.get(Host, host_id)
-    form = HostForm(obj=host)
 
-    if form.validate_on_submit():
-        form.populate_obj(host)
-        db.session.commit()
-        return jsonify({"message": "Host has been successfully edited."})
+    if not host:
+        return error_response(message="Host not found.", code=HTTPStatus.NOT_FOUND)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    for key, value in args.items():
+        setattr(host, key, value)
+
+    db.session.commit()
+
+    return jsonify({"message": "Host has been successfully edited."})
 
 
 @blueprint.route("/host/delete/<host_id>", methods=["POST"])
@@ -95,16 +97,24 @@ def host_edit_route(host_id):
 def host_delete_route(host_id):
     """delete host"""
 
-    db.session.delete(db.session.get(Host, host_id))
+    host = db.session.get(Host, host_id)
+
+    if not host:
+        return error_response(message="Host not found.", code=HTTPStatus.NOT_FOUND)
+
+    db.session.delete(host)
     db.session.commit()
+
     return jsonify({"message": "Host has been successfully deleted."})
 
 
 @blueprint.route("/host/annotate/<model_id>", methods=["GET", "POST"])
+@blueprint.arguments(AnnotateSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def host_annotate_route(model_id):
+def host_annotate_route(args, model_id):
     """annotate vuln"""
-    return model_annotate(Host, model_id)
+    return model_annotate(Host, model_id, args)
 
 
 @blueprint.route("/host/view/<host_id>.json")
@@ -136,30 +146,32 @@ def host_view_json_route(host_id):
 
 
 @blueprint.route("/host/delete_multiid", methods=["POST"])
+@blueprint.arguments(MultiidSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def host_delete_multiid_route():
+def host_delete_multiid_route(args):
     """delete multiple host route"""
 
-    form = MultiidForm()
-    if form.validate_on_submit():
-        model_delete_multiid(Host, [tmp.data for tmp in form.ids.entries])
-        return "", HTTPStatus.OK
+    model_delete_multiid(Host, args["ids"])
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return {}
 
 
 @blueprint.route("/host/tag_multiid", methods=["POST"])
+@blueprint.arguments(TagMultiidSchema)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def host_tag_multiid_route():
+def host_tag_multiid_route(args):
     """tag multiple route"""
 
-    form = TagMultiidForm()
+    model_tag_multiid(
+        model_class=Host,
+        action=args["action"],
+        tags=args["tags"],
+        ids=args["ids"]
+    )
 
-    if form.validate_on_submit():
-        model_tag_multiid(Host, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
-        return "", HTTPStatus.OK
-
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return {}
 
 
 @blueprint.route("/host/lookup", methods=["GET"])

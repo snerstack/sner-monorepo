@@ -11,15 +11,17 @@ from flask_login import current_user
 from sqlalchemy import literal_column
 
 from sner.server.auth.core import UserManager, session_required
-from sner.server.auth.forms import UserForm
 from sner.server.auth.models import User
+from sner.server.auth.schema import UserMeSchema, UserSchema
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db
 from sner.server.password_supervisor import PasswordSupervisor as PWS
+from sner.server.schema import MessageSchema
 from sner.server.utils import error_response, filter_query
 
 
 @blueprint.route("/user/me")
+@blueprint.response(HTTPStatus.OK, UserMeSchema)
 def user_me_route():
     """get current user"""
 
@@ -52,11 +54,15 @@ def user_list_json_route():
 
 
 @blueprint.route("/user/<user_id>.json", methods=["GET", "POST"])
+@blueprint.response(HTTPStatus.OK, UserSchema)
 @session_required("admin")
 def user_json_route(user_id):
     """get user"""
 
     user = db.session.get(User, user_id)
+
+    if not user:
+        return error_response(message="User not found.", code=HTTPStatus.NOT_FOUND)
 
     return jsonify(
         {
@@ -72,48 +78,58 @@ def user_json_route(user_id):
 
 
 @blueprint.route("/user/add", methods=["POST"])
+@blueprint.arguments(UserSchema)
+@blueprint.response(HTTPStatus.OK, MessageSchema)
 @session_required("admin")
-def user_add_route():
+def user_add_route(args):
     """add user"""
+    new_password = args.pop("new_password", None)
 
-    form = UserForm()
+    user = User(**args)
 
-    if form.validate_on_submit():
-        user = User()
-        form.populate_obj(user)
-        if form.new_password.data:
-            user.password = PWS.hash(form.new_password.data)
-        db.session.add(user)
-        db.session.commit()
-        return jsonify({"message": "Successfully added a new user."})
+    if new_password:
+        user.password = PWS.hash(new_password)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"message": "Successfully added a new user."})
 
 
 @blueprint.route("/user/edit/<user_id>", methods=["POST"])
+@blueprint.arguments(UserSchema)
+@blueprint.response(HTTPStatus.OK, MessageSchema)
 @session_required("admin")
-def user_edit_route(user_id):
+def user_edit_route(args, user_id):
     """edit task"""
 
     user = db.session.get(User, user_id)
-    form = UserForm(obj=user)
 
-    if form.validate_on_submit():
-        form.populate_obj(user)
-        if form.new_password.data:
-            user.password = PWS.hash(form.new_password.data)
-        db.session.commit()
-        return jsonify({"message": "Successfully edited a user."})
+    if not user:
+        return error_response(message="User not found.", code=HTTPStatus.NOT_FOUND)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    new_password = args.pop("new_password", None)
+
+    for key, value in args.items():
+        setattr(user, key, value)
+
+    if new_password:
+        user.password = PWS.hash(new_password)
+
+    db.session.commit()
+    return jsonify({"message": "Successfully edited a user."})
 
 
 @blueprint.route("/user/delete/<user_id>", methods=["POST"])
+@blueprint.response(HTTPStatus.OK, MessageSchema)
 @session_required("admin")
 def user_delete_route(user_id):
     """delete user"""
+    user = db.session.get(User, user_id)
 
-    db.session.delete(db.session.get(User, user_id))
+    if not user:
+        return error_response(message="User not found.", code=HTTPStatus.NOT_FOUND)
+
+    db.session.delete(user)
     db.session.commit()
 
     return jsonify({"message": "User has been successfully deleted."})

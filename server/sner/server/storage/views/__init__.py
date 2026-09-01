@@ -3,7 +3,7 @@
 storage views
 """
 
-from flask import Blueprint
+from flask_smorest import Blueprint
 
 blueprint = Blueprint("storage", __name__)  # pylint: disable=invalid-name
 

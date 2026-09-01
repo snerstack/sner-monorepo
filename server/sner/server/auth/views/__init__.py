@@ -3,7 +3,7 @@
 auth views
 """
 
-from flask import Blueprint
+from flask_smorest import Blueprint
 
 blueprint = Blueprint("auth", __name__)  # pylint: disable=invalid-name
 

@@ -5,9 +5,10 @@ import { useLoaderData, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useRecoilState } from 'recoil'
 
+import { appConfigState } from '@/atoms/appConfigAtom'
+
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
-import { appConfigState } from '@/atoms/appConfigAtom'
 
 import Heading from '@/components/Heading'
 import NumberField from '@/components/fields/NumberField'
@@ -17,7 +18,7 @@ import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
 const ServiceAddPage = () => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig] = useRecoilState(appConfigState)
   const host = useLoaderData() as Host
 
   const [hostId, setHostId] = useState<number>(host.id)
@@ -32,20 +33,21 @@ const ServiceAddPage = () => {
   const navigate = useNavigate()
 
   const addServiceHandler = async () => {
-    const formData = new FormData()
-    formData.append('host_id', hostId.toString())
-    formData.append('proto', proto)
-    formData.append('port', port.toString())
-    formData.append('state', state)
-    formData.append('name', name)
-    formData.append('info', info)
-    formData.append('tags', tags.join('\n'))
-    formData.append('comment', comment)
+    const payload = {
+      host_id: hostId,
+      proto,
+      port,
+      state,
+      name,
+      info,
+      tags,
+      comment,
+    }
 
     try {
       const resp = await httpClient.post<{ host_id: number }>(
         urlFor(`/backend/storage/service/add/${host.id}`),
-        formData,
+        payload,
       )
 
       navigate(`/storage/host/view/${resp.data.host_id}`)

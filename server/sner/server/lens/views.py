@@ -8,8 +8,9 @@ from datetime import datetime
 from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
-from flask import Blueprint, Response, current_app, jsonify, request
+from flask import Response, current_app, jsonify, request
 from flask_login import current_user
+from flask_smorest import Blueprint
 from sqlalchemy import func, select
 
 from sner.server.api.core import current_user_api_network_filter

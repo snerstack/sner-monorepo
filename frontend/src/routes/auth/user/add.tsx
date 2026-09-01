@@ -32,23 +32,20 @@ const UserAddPage = () => {
   const addUserHandler = async () => {
     if (username === '') return
 
-    const formData = new FormData()
-    formData.append('username', username)
-    formData.append('email', email)
-    formData.append('new_password', password)
-    roles.forEach((role) => {
-      if (role.checked) {
-        formData.append('roles', role.name)
-      }
-    })
-    formData.append('active', active.toString())
-    formData.append('api_networks', apiNetworks)
+    const payload = {
+      username,
+      email,
+      new_password: password,
+      roles: roles.filter((role) => role.checked).map((role) => role.name),
+      active,
+      api_networks: apiNetworks
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line !== ''),
+    }
 
     try {
-      const resp = await httpClient.post<{ message: string }>(
-        urlFor('/backend/auth/user/add'),
-        formData,
-      )
+      const resp = await httpClient.post<{ message: string }>(urlFor('/backend/auth/user/add'), payload)
 
       toast.success(resp.data.message)
       navigate('/auth/user/list')
