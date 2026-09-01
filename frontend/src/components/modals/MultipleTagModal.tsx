@@ -3,7 +3,7 @@ import { Modal, ModalBody, ModalTitle } from 'react-bootstrap'
 
 import { getTableApi } from '@/lib/DataTables'
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
-import { DEFAULT_MULTIPLE_TAG_STATE, getSelectedIdsFormData } from '@/lib/sner/storage'
+import { DEFAULT_MULTIPLE_TAG_STATE, getSelectedIds } from '@/lib/sner/storage'
 
 import SubmitField from '../fields/SubmitField'
 import TagsField from '../fields/TagsField'
@@ -18,20 +18,19 @@ const MultipleTagModal = ({
   const [tags, setTags] = useState<string[]>([])
 
   const multipleTagHandler = async () => {
-    const ids = getSelectedIdsFormData(getTableApi(multipleTag.tableId))
-    const formData = new FormData()
+    const ids = getSelectedIds(getTableApi(multipleTag.tableId))
 
-    formData.append('tag', tags.join('\n'))
-    formData.append('action', multipleTag.action)
-    for (const key in ids) {
-      formData.append(key, ids[key].toString())
+    const payload = {
+      ids,
+      tags,
+      action: multipleTag.action,
     }
 
     try {
-      await httpClient.post(multipleTag.url, formData)
+      await httpClient.post(multipleTag.url, payload)
       setMultipleTag(DEFAULT_MULTIPLE_TAG_STATE)
       getTableApi(multipleTag.tableId).draw()
-    /* c8 ignore next 3 */
+      /* c8 ignore next 3 */
     } catch (err) {
       handleHttpClientError(err)
     }

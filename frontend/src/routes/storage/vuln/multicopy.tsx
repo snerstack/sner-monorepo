@@ -18,7 +18,7 @@ import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
 const VulnMulticopyPage = () => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig] = useRecoilState(appConfigState)
   const vuln = useLoaderData() as Vuln
   const navigate = useNavigate()
 
@@ -36,21 +36,25 @@ const VulnMulticopyPage = () => {
   const [comment, setComment] = useState<string>(vuln.comment || '')
 
   const multicopyHandler = async () => {
-    const formData = new FormData()
-    formData.append('endpoints', endpoints)
-    formData.append('name', name)
-    formData.append('xtype', xtype)
-    formData.append('severity', severity.selected)
-    formData.append('descr', descr)
-    formData.append('data', data)
-    formData.append('refs', refs)
-    formData.append('tags', tags.join('\n'))
-    formData.append('comment', comment)
+    const payload = {
+      endpoints: endpoints ? (JSON.parse(endpoints) as Endpoint[]) : [],
+      name,
+      xtype,
+      severity: severity.selected,
+      descr,
+      data,
+      refs: refs
+        .split('\n')
+        .map((r) => r.trim())
+        .filter((r) => r !== ''),
+      tags,
+      comment,
+    }
 
     try {
       const resp = await httpClient.post<{ new_vulns: string }>(
         urlFor(`/backend/storage/vuln/multicopy/${vuln.id}.json`),
-        formData,
+        payload,
       )
 
       navigate(`/storage/vuln/list?filter=Vuln.id in ${resp.data.new_vulns}`)

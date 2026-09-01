@@ -25,7 +25,7 @@ import yaml
 
 from sner.agent.modules import REGISTERED_MODULES, load_agent_plugins
 from sner.lib import TerminateContextRunner, load_yaml
-from sner.server.api.schema import JobAssignmentSchema
+from sner.server.api.schemas import JobAssignmentResponse
 from sner.version import __version__
 
 LOGGER_NAME = "sner.agent"
@@ -200,7 +200,7 @@ class ServerableAgent(AgentBase):  # pylint: disable=too-many-instance-attribute
                     else:  # pragma: no cover ; running over multiprocessing
                         sleep(self.backoff_time)
                         continue
-                JobAssignmentSchema().load(assignment)
+                JobAssignmentResponse().load(assignment)
             except (requests.exceptions.RequestException, json.decoder.JSONDecodeError, marshmallow.ValidationError) as exc:
                 assignment = None
                 self.log.error("get_assignment error, %s", exc)
@@ -259,7 +259,7 @@ class AssignableAgent(AgentBase):
         """process user supplied assignment"""
 
         assignment = {"id": str(uuid4()), **json.loads(kwargs["assignment"])}
-        JobAssignmentSchema().load(assignment)
+        JobAssignmentResponse().load(assignment)
 
         with self.terminate_context():
             retval = self.process_assignment(assignment)

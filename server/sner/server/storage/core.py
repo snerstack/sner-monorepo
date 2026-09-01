@@ -6,7 +6,6 @@ scheduler module functions
 import json
 from collections import namedtuple
 from csv import QUOTE_ALL, DictWriter
-from http import HTTPStatus
 from io import StringIO
 
 from flask import current_app
@@ -15,9 +14,8 @@ from sqlalchemy.dialects.postgresql import ARRAY as pg_ARRAY
 from sqlalchemy.sql.functions import coalesce
 
 from sner.server.extensions import db
-from sner.server.storage.forms import AnnotateForm
 from sner.server.storage.models import Host, Note, Service, SeverityEnum, Vuln
-from sner.server.utils import error_response, filter_query, windowed_query
+from sner.server.utils import filter_query, windowed_query
 
 
 def get_related_models(model_name, model_id):
@@ -32,18 +30,17 @@ def get_related_models(model_name, model_id):
     return host, service
 
 
-def model_annotate(model, model_id):
+def model_annotate(model, model_id, args):
     """annotate model route"""
 
     model = db.session.get(model, model_id)
-    form = AnnotateForm(obj=model)
 
-    if form.validate_on_submit():
-        form.populate_obj(model)
-        db.session.commit()
-        return "", HTTPStatus.OK
+    for key, value in args.items():
+        setattr(model, key, value)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)  # pragma: no cover
+    db.session.commit()
+
+    return {}
 
 
 def tag_add(model, tag: str | list):
@@ -60,15 +57,15 @@ def tag_remove(model, tag: str | list):
     model.tags = list(set(model.tags or []) - set(val))
 
 
-def model_tag_multiid(model_class, action, tag, ids):
+def model_tag_multiid(model_class, action, tags, ids):
     """tag model by id"""
 
     for item in model_class.query.filter(model_class.id.in_(ids)).all():
         # full assignment must be used for sqla to realize the change
         if action == "set":
-            tag_add(item, tag)
+            tag_add(item, tags)
         if action == "unset":
-            tag_remove(item, tag)
+            tag_remove(item, tags)
         db.session.commit()
 
 

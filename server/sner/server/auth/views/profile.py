@@ -18,11 +18,20 @@ from flask_login import current_user
 from sqlalchemy import literal_column
 
 from sner.server.auth.core import TOTPImpl, UserManager, session_required, webauthn_credentials
-from sner.server.auth.forms import TotpCodeForm, UserChangePasswordForm, WebauthnEditForm, WebauthnRegisterForm
 from sner.server.auth.models import User, WebauthnCredential
+from sner.server.auth.schemas import (
+    ProfileResponse,
+    TotpCodeRequest,
+    TotpProvisioningResponse,
+    UserChangePasswordRequest,
+    WebauthnCredentialResponse,
+    WebauthnEditRequest,
+    WebauthnRegisterRequest,
+)
 from sner.server.auth.views import blueprint
 from sner.server.extensions import db, webauthn
 from sner.server.password_supervisor import PasswordSupervisor as PWS
+from sner.server.schemas import MessageResponse
 from sner.server.utils import SnerJSONEncoder, error_response
 
 
@@ -32,6 +41,7 @@ def random_string(length=32):
 
 
 @blueprint.route("/profile.json")
+@blueprint.response(HTTPStatus.OK, ProfileResponse)
 @session_required("user")
 def profile_json_route():
     """general user profile route"""
@@ -49,57 +59,30 @@ def profile_json_route():
 
 
 @blueprint.route("/profile/changepassword", methods=["GET", "POST"])
+@blueprint.arguments(UserChangePasswordRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("user")
-def profile_changepassword_route():
+def profile_changepassword_route(args):
     """user profile change password"""
 
-    form = UserChangePasswordForm()
+    user = User.query.filter(User.id == current_user.id).one()
 
-    if form.validate_on_submit():
-        user = User.query.filter(User.id == current_user.id).one()
+    if not PWS.compare(PWS.hash(args["current_password"], PWS.get_salt(user.password)), user.password):
+        return error_response(message="Invalid current password.", code=HTTPStatus.BAD_REQUEST)
 
-        if not PWS.compare(PWS.hash(form.current_password.data, PWS.get_salt(user.password)), user.password):
-            return error_response(message="Invalid current password.", code=HTTPStatus.BAD_REQUEST)
-
-        user.password = PWS.hash(form.password1.data)
-        db.session.commit()
-        current_app.logger.info("auth.profile password changed")
-        return jsonify({"message": "Password successfully changed."})
-
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    user.password = PWS.hash(args["password1"])
+    db.session.commit()
+    current_app.logger.info("auth.profile password changed")
+    return jsonify({"message": "Password successfully changed."})
 
 
-@blueprint.route("/profile/totp", methods=["GET", "POST"])
+@blueprint.route("/profile/totp", methods=["GET"])
+@blueprint.response(HTTPStatus.OK, TotpProvisioningResponse)
 @session_required("user")
 def profile_totp_route():
     """user profile totp management route"""
-
     user = db.session.get(User, current_user.id)
-    form = TotpCodeForm()
 
-    if form.validate_on_submit():
-        if not user.totp:
-            # enable totp
-            if TOTPImpl(session.get("totp_new_secret")).verify_code(form.code.data):
-                user.totp = session["totp_new_secret"]
-                db.session.commit()
-                session.pop("totp_new_secret", None)
-                current_app.logger.info("auth.profile totp enabled")
-                return jsonify({"message": "TOTP successfully enabled."})
-
-            return error_response(message="Invalid code.", code=HTTPStatus.BAD_REQUEST)
-
-        # disable totp
-        if TOTPImpl(user.totp).verify_code(form.code.data):
-            user.totp = None
-            db.session.commit()
-            session.pop("totp_new_secret", None)
-            current_app.logger.info("auth.profile totp disabled")
-            return jsonify({"message": "TOTP successfully disabled."})
-
-        return error_response(message="Invalid code.", code=HTTPStatus.BAD_REQUEST)
-
-    provisioning_url = None
     if not user.totp:
         if "totp_new_secret" not in session:
             session["totp_new_secret"] = TOTPImpl.random_base32()
@@ -110,6 +93,34 @@ def profile_totp_route():
 
     return jsonify({"provisioning_url": "", "secret": ""})
 
+
+@blueprint.route("/profile/totp", methods=["POST"])
+@session_required("user")
+@blueprint.arguments(TotpCodeRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
+def profile_totp_post_route(args):
+    """enable/disable totp based on current state"""
+    user = db.session.get(User, current_user.id)
+
+    if not user.totp:
+        # enable totp
+        if TOTPImpl(session.get("totp_new_secret")).verify_code(args["code"]):
+            user.totp = session["totp_new_secret"]
+            db.session.commit()
+            session.pop("totp_new_secret", None)
+            current_app.logger.info("auth.profile totp enabled")
+            return jsonify({"message": "TOTP successfully enabled."})
+        return error_response(message="Invalid code.", code=HTTPStatus.BAD_REQUEST)
+
+    # disable totp
+    if TOTPImpl(user.totp).verify_code(args["code"]):
+        user.totp = None
+        db.session.commit()
+        session.pop("totp_new_secret", None)
+        current_app.logger.info("auth.profile totp disabled")
+        return jsonify({"message": "TOTP successfully disabled."})
+
+    return error_response(message="Invalid code.", code=HTTPStatus.BAD_REQUEST)
 
 # webauthn.guide
 #
@@ -174,72 +185,83 @@ def profile_webauthn_pkcco_route():
 
 
 @blueprint.route("/profile/webauthn/register", methods=["POST"])
+@blueprint.arguments(WebauthnRegisterRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("user")
-def profile_webauthn_register_route():
+def profile_webauthn_register_route(args):
     """register credential for current user"""
 
     user = db.session.get(User, current_user.id)
-    form = WebauthnRegisterForm()
-    if form.validate_on_submit():
-        try:
-            attestation = cbor.decode(b64decode(form.attestation.data))
-            auth_data = webauthn.register_complete(
-                session.pop("webauthn_register_state"),
-                CollectedClientData(attestation["clientDataJSON"]),
-                AttestationObject(attestation["attestationObject"]),
+
+    try:
+        attestation = cbor.decode(b64decode(args["attestation"]))
+        auth_data = webauthn.register_complete(
+            session.pop("webauthn_register_state"),
+            CollectedClientData(attestation["clientDataJSON"]),
+            AttestationObject(attestation["attestationObject"]),
+        )
+
+        db.session.add(
+            WebauthnCredential(
+                user_id=user.id,
+                user_handle=session.pop("webauthn_register_user_handle"),
+                credential_data=cbor.encode(auth_data.credential_data.__dict__),
+                name=args["name"],
             )
+        )
+        db.session.commit()
 
-            db.session.add(
-                WebauthnCredential(
-                    user_id=user.id,
-                    user_handle=session.pop("webauthn_register_user_handle"),
-                    credential_data=cbor.encode(auth_data.credential_data.__dict__),
-                    name=form.name.data,
-                )
-            )
-            db.session.commit()
-
-            current_app.logger.info("auth.profile webauthn registered new credential")
-            return jsonify({"message": "Webauthn credential registered successfully."})
-        except (KeyError, ValueError) as exc:
-            current_app.logger.exception(exc)
-            return error_response(message="Error during registration.", code=HTTPStatus.INTERNAL_SERVER_ERROR)
-
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+        current_app.logger.info("auth.profile webauthn registered new credential")
+        return jsonify({"message": "Webauthn credential registered successfully."})
+    except (KeyError, ValueError) as exc:
+        current_app.logger.exception(exc)
+        return error_response(message="Error during registration.", code=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 @blueprint.route("/profile/webauthn/<webauthn_id>.json")
+@blueprint.response(HTTPStatus.OK, WebauthnCredentialResponse)
 @session_required("user")
 def profile_webauthn_route(webauthn_id):
     """get registered credential"""
 
-    cred = WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one()
+    cred = WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one_or_none()
+
+    if not cred:
+        return error_response(message="Credential not found.", code=HTTPStatus.NOT_FOUND)
 
     return jsonify({"id": cred.id, "name": cred.name})
 
 
 @blueprint.route("/profile/webauthn/edit/<webauthn_id>", methods=["POST"])
+@blueprint.arguments(WebauthnEditRequest)
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("user")
-def profile_webauthn_edit_route(webauthn_id):
+def profile_webauthn_edit_route(args, webauthn_id):
     """edit registered credential"""
 
-    cred = WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one()
-    form = WebauthnEditForm(obj=cred)
-    if form.validate_on_submit():
-        form.populate_obj(cred)
-        db.session.commit()
-        current_app.logger.info("auth.profile webauthn credential edited")
-        return jsonify({"message": "Webauthn credential has been successfully edited."})
+    cred = WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one_or_none()
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    if not cred:
+        return error_response(message="Credential not found.", code=HTTPStatus.NOT_FOUND)
+
+    cred.name = args["name"]
+    db.session.commit()
+    current_app.logger.info("auth.profile webauthn credential edited")
+    return jsonify({"message": "Webauthn credential has been successfully edited."})
 
 
 @blueprint.route("/profile/webauthn/delete/<webauthn_id>", methods=["POST"])
+@blueprint.response(HTTPStatus.OK, MessageResponse)
 @session_required("user")
 def profile_webauthn_delete_route(webauthn_id):
     """delete registered credential"""
 
-    db.session.delete(WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one())
+    cred = WebauthnCredential.query.filter(WebauthnCredential.user_id == current_user.id, WebauthnCredential.id == webauthn_id).one_or_none()
+
+    if not cred:
+        return error_response(message="Credential not found.", code=HTTPStatus.NOT_FOUND)
+
+    db.session.delete(cred)
     db.session.commit()
     current_app.logger.info("auth.profile webauthn credential deleted")
     return jsonify({"message": "Webauthn credential has been successfully deleted."})

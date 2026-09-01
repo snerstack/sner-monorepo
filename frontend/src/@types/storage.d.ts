@@ -143,8 +143,13 @@ interface VulnRow {
   import_time: string | null
 }
 
+interface Endpoint {
+  host_id: number
+  service_id?: number
+}
+
 interface VulnMulticopyRow {
-  endpoint_id: { host_id: number; service_id?: number }
+  endpoint_id: Endpoint
   host_address: string
   host_hostname: string
   service_info: string | null

@@ -30,12 +30,12 @@ monitoring.
 """
 
 from datetime import datetime
+from enum import Enum
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 
 from sner.server.extensions import db
-from sner.server.models import SelectableEnum
 
 
 class StorageModelBase(db.Model):
@@ -99,7 +99,7 @@ class Service(StorageModelBase):
         return f"<Service {self.id}: {host} {self.proto}.{self.port}>"
 
 
-class SeverityEnum(SelectableEnum):
+class SeverityEnum(Enum):
     """severity enum"""
 
     UNKNOWN = "unknown"
@@ -108,6 +108,9 @@ class SeverityEnum(SelectableEnum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
+
+    def __str__(self):
+        return self.value
 
 
 class Vuln(StorageModelBase):

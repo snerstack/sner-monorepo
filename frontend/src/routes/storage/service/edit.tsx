@@ -17,7 +17,7 @@ import TextAreaField from '@/components/fields/TextAreaField'
 import TextField from '@/components/fields/TextField'
 
 const ServiceEditPage = () => {
-  const [appConfig, ] = useRecoilState(appConfigState)
+  const [appConfig] = useRecoilState(appConfigState)
   const service = useLoaderData() as Service
 
   const [hostId, setHostId] = useState<number>(service.host_id)
@@ -32,20 +32,21 @@ const ServiceEditPage = () => {
   const navigate = useNavigate()
 
   const editServiceHandler = async () => {
-    const formData = new FormData()
-    formData.append('host_id', hostId.toString())
-    formData.append('proto', proto)
-    formData.append('port', port.toString())
-    formData.append('state', state)
-    formData.append('name', name)
-    formData.append('info', info)
-    formData.append('tags', tags.join('\n'))
-    formData.append('comment', comment)
+    const payload = {
+      host_id: hostId,
+      proto,
+      port,
+      state,
+      name,
+      info,
+      tags,
+      comment,
+    }
 
     try {
       const resp = await httpClient.post<{ message: string }>(
         urlFor(`/backend/storage/service/edit/${service.id}`),
-        formData,
+        payload,
       )
 
       navigate(-1)

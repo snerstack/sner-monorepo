@@ -26,23 +26,23 @@ def test_profile_changepassword_route(cl_user):
     user.password = PWS.hash(cur_password)
     db.session.commit()
 
-    form_data = [("current_password", cur_password), ("password1", "AlongPassword1"), ("password2", "AlongPassword2")]
-    response = cl_user.post(url_for("auth.profile_changepassword_route"), params=form_data, expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert "Passwords does not match." in response.json["error"]["errors"]["password1"]
+    data = {"current_password": cur_password, "password1": "AlongPassword1", "password2": "AlongPassword2"}
+    response = cl_user.post_json(url_for("auth.profile_changepassword_route"), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert "Passwords do not match." in response.json["errors"]["json"]["password2"]
 
-    form_data = [("current_password", cur_password), ("password1", "weak"), ("password2", "weak")]
-    response = cl_user.post(url_for("auth.profile_changepassword_route"), params=form_data, expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert "Password too short. At least 10 characters required." in response.json["error"]["errors"]["password1"]
+    data = {"current_password": cur_password, "password1": "weak", "password2": "weak"}
+    response = cl_user.post_json(url_for("auth.profile_changepassword_route"), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert any("Password too short." in item for item in response.json["errors"]["json"]["password1"])
 
-    form_data = [("current_password", "1"), ("password1", new_password), ("password2", new_password)]
-    response = cl_user.post(url_for("auth.profile_changepassword_route"), params=form_data, expect_errors=True)
+    data = {"current_password": "1", "password1": new_password, "password2": new_password}
+    response = cl_user.post_json(url_for("auth.profile_changepassword_route"), data, expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json["error"]["message"] == "Invalid current password."
 
-    form_data = [("current_password", cur_password), ("password1", new_password), ("password2", new_password)]
-    response = cl_user.post(url_for("auth.profile_changepassword_route"), params=form_data)
+    data = {"current_password": cur_password, "password1": new_password, "password2": new_password}
+    response = cl_user.post_json(url_for("auth.profile_changepassword_route"), data)
     assert response.status_code == HTTPStatus.OK
     user = User.query.filter(User.username == "pytest_user").one()
     assert PWS.compare(PWS.hash(new_password, PWS.get_salt(user.password)), user.password)
@@ -53,15 +53,15 @@ def test_profile_totp_route_enable(cl_user):
 
     response = cl_user.get(url_for("auth.profile_totp_route"))
 
-    form_data = [("code", "invalid")]
-    response = cl_user.post(url_for("auth.profile_totp_route"), params=form_data, expect_errors=True)
+    data = {"code": "invalid"}
+    response = cl_user.post_json(url_for("auth.profile_totp_route"), data, expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json["error"]["message"] == "Invalid code."
 
     response = cl_user.get(url_for("auth.profile_totp_route"))
     secret = response.json["secret"]
-    form_data = [("code", TOTPImpl(secret).current_code())]
-    response = cl_user.post(url_for("auth.profile_totp_route"), params=form_data)
+    data = {"code": TOTPImpl(secret).current_code().decode()}
+    response = cl_user.post_json(url_for("auth.profile_totp_route"), data)
     assert response.status_code == HTTPStatus.OK
     user = User.query.filter(User.username == "pytest_user").one()
     assert user.totp
@@ -78,13 +78,13 @@ def test_profile_totp_route_disable(cl_user):
     user.totp = tmp_secret
     db.session.commit()
 
-    form_data = [("code", "invalid")]
-    response = cl_user.post(url_for("auth.profile_totp_route"), params=form_data, expect_errors=True)
+    data = {"code": "invalid"}
+    response = cl_user.post_json(url_for("auth.profile_totp_route"), data, expect_errors=True)
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json["error"]["message"] == "Invalid code."
 
-    form_data = [("code", TOTPImpl(tmp_secret).current_code())]
-    response = cl_user.post(url_for("auth.profile_totp_route"), params=form_data)
+    data = {"code": TOTPImpl(tmp_secret).current_code().decode()}
+    response = cl_user.post_json(url_for("auth.profile_totp_route"), data)
     assert response.status_code == HTTPStatus.OK
     user = User.query.filter(User.username == "pytest_user").one()
     assert not user.totp
@@ -114,9 +114,12 @@ def test_profile_webauthn_register_route(cl_user):
         "attestationObject": attestation["response"]["attestationObject"],
     }
 
-    form_data = [("attestation", b64encode(cbor.encode(attestation_data))), ("name", "pytest token")]
+    data = {
+        "attestation": b64encode(cbor.encode(attestation_data)).decode(),
+        "name": "pytest token",
+    }
 
-    response = cl_user.post(url_for("auth.profile_webauthn_register_route"), params=form_data)
+    response = cl_user.post_json(url_for("auth.profile_webauthn_register_route"), data)
 
     assert response.status_code == HTTPStatus.OK
     user = User.query.filter(User.username == "pytest_user").one()
@@ -126,14 +129,14 @@ def test_profile_webauthn_register_route(cl_user):
 def test_profile_webauthn_register_route_invalid_attestation(cl_user):
     """register new credential for user; error handling"""
 
-    form_data = [("attestation", "invalid")]
-    response = cl_user.post(url_for("auth.profile_webauthn_register_route"), params=form_data, expect_errors=True)
+    data = {"attestation": "invalid"}
+    response = cl_user.post_json(url_for("auth.profile_webauthn_register_route"), data, expect_errors=True)
 
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     assert response.json["error"]["message"] == "Error during registration."
 
-    response = cl_user.post(url_for("auth.profile_webauthn_register_route"), expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_user.post_json(url_for("auth.profile_webauthn_register_route"), {}, expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_profile_webauthn_route(cl_user, webauthn_credential_factory):
@@ -146,18 +149,34 @@ def test_profile_webauthn_route(cl_user, webauthn_credential_factory):
     assert response.json["name"] == "testcredential"
 
 
+def test_profile_webauthn_route_not_found(cl_user):
+    """profile webauthn credentials route test; not found"""
+
+    response = cl_user.get(url_for("auth.profile_webauthn_route", webauthn_id=999), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
 def test_profile_webauthn_edit_route(cl_user, webauthn_credential_factory):
     """profile edit webauthn credentials route test"""
 
     wncred = webauthn_credential_factory.create(user=User.query.filter(User.username == "pytest_user").one())
 
     new_name = f"{wncred.name}_edited"
-    form_data = [("name", new_name)]
+    data = {"name": new_name}
 
-    response = cl_user.post(url_for("auth.profile_webauthn_edit_route", webauthn_id=wncred.id), params=form_data)
+    response = cl_user.post_json(url_for("auth.profile_webauthn_edit_route", webauthn_id=wncred.id), data)
     assert response.status_code == HTTPStatus.OK
 
     assert wncred.name == new_name
+
+
+def test_profile_webauthn_edit_route_not_found(cl_user):
+    """profile edit webauthn credentials route test; not found"""
+
+    data = {"name": "test"}
+
+    response = cl_user.post_json(url_for("auth.profile_webauthn_edit_route", webauthn_id=999), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_profile_webauthn_edit_route_invalid_request(cl_user, webauthn_credential_factory):
@@ -165,10 +184,10 @@ def test_profile_webauthn_edit_route_invalid_request(cl_user, webauthn_credentia
 
     wncred = webauthn_credential_factory.create(user=User.query.filter(User.username == "pytest_user").one())
 
-    form_data = [("name", "A" * 300)]
+    data = {"name": "A" * 300}
 
-    response = cl_user.post(url_for("auth.profile_webauthn_edit_route", webauthn_id=wncred.id), params=form_data, expect_errors=True)
-    assert response.status_code == HTTPStatus.BAD_REQUEST
+    response = cl_user.post_json(url_for("auth.profile_webauthn_edit_route", webauthn_id=wncred.id), data, expect_errors=True)
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 def test_profile_webauthn_delete_route(cl_user, webauthn_credential_factory):
@@ -180,6 +199,13 @@ def test_profile_webauthn_delete_route(cl_user, webauthn_credential_factory):
     assert response.status_code == HTTPStatus.OK
 
     assert not db.session.get(WebauthnCredential, wncred.id)
+
+
+def test_profile_webauthn_delete_route_not_found(cl_user):
+    """profile delete webauthn credentials route test; not found"""
+
+    response = cl_user.post(url_for("auth.profile_webauthn_delete_route", webauthn_id=999), expect_errors=True)
+    assert response.status_code == HTTPStatus.NOT_FOUND
 
 
 def test_profile_apikey_route(cl_user):

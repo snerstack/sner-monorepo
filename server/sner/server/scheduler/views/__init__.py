@@ -3,7 +3,7 @@
 scheduler views
 """
 
-from flask import Blueprint
+from flask_smorest import Blueprint
 
 blueprint = Blueprint("scheduler", __name__)  # pylint: disable=invalid-name
 

@@ -13,8 +13,8 @@ from sqlalchemy import func, literal_column
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import get_related_models, model_annotate, model_delete_multiid, model_tag_multiid
-from sner.server.storage.forms import MultiidForm, NoteForm, TagMultiidForm
 from sner.server.storage.models import Host, Note, Service
+from sner.server.storage.schemas import AnnotateRequest, MultiidRequest, NoteRequest, TagMultiidRequest
 from sner.server.storage.views import blueprint
 from sner.server.utils import SnerJSONEncoder, error_response, filter_query
 
@@ -83,37 +83,43 @@ def note_view_json_route(note_id):
 
 
 @blueprint.route("/note/add/<model_name>/<model_id>", methods=["POST"])
+@blueprint.arguments(NoteRequest)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def note_add_route(model_name, model_id):
+def note_add_route(args, model_name, model_id):
     """add note to host"""
 
     host, service = get_related_models(model_name, model_id)
-    form = NoteForm(host_id=host.id, service_id=(service.id if service else None))
 
-    if form.validate_on_submit():
-        note = Note()
-        form.populate_obj(note)
-        db.session.add(note)
-        db.session.commit()
-        return jsonify({"host_id": host.id})
+    args["host_id"] = host.id
+    args["service_id"] = service.id if service else None
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    note = Note(**args)
+
+    db.session.add(note)
+    db.session.commit()
+
+    return jsonify({"host_id": host.id})
 
 
 @blueprint.route("/note/edit/<note_id>", methods=["GET", "POST"])
+@blueprint.arguments(NoteRequest)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def note_edit_route(note_id):
+def note_edit_route(args, note_id):
     """edit note"""
 
     note = db.session.get(Note, note_id)
-    form = NoteForm(obj=note)
 
-    if form.validate_on_submit():
-        form.populate_obj(note)
-        db.session.commit()
-        return jsonify({"message": "Note has been successfully edited."})
+    if not note:
+        return error_response(message="Note not found.", code=HTTPStatus.NOT_FOUND)
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    for key, value in args.items():
+        setattr(note, key, value)
+
+    db.session.commit()
+
+    return jsonify({"message": "Note has been successfully edited."})
 
 
 @blueprint.route("/note/delete/<note_id>", methods=["POST"])
@@ -122,42 +128,52 @@ def note_delete_route(note_id):
     """delete note"""
 
     note = db.session.get(Note, note_id)
+
+    if not note:
+        return error_response(message="Note not found.", code=HTTPStatus.NOT_FOUND)
+
     db.session.delete(note)
     db.session.commit()
+
     return jsonify({"message": "Note has been successfully deleted."})
 
 
 @blueprint.route("/note/annotate/<model_id>", methods=["POST"])
+@blueprint.arguments(AnnotateRequest)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def note_annotate_route(model_id):
+def note_annotate_route(args, model_id):
     """annotate note"""
-    return model_annotate(Note, model_id)
+    return model_annotate(Note, model_id, args)
 
 
 @blueprint.route("/note/delete_multiid", methods=["POST"])
+@blueprint.arguments(MultiidRequest)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def note_delete_multiid_route():
+def note_delete_multiid_route(args):
     """delete multiple note route"""
 
-    form = MultiidForm()
-    if form.validate_on_submit():
-        model_delete_multiid(Note, [tmp.data for tmp in form.ids.entries])
-        return "", HTTPStatus.OK
+    model_delete_multiid(Note, args["ids"])
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return {}
 
 
 @blueprint.route("/note/tag_multiid", methods=["POST"])
+@blueprint.arguments(TagMultiidRequest)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def note_tag_multiid_route():
+def note_tag_multiid_route(args):
     """tag multiple route"""
 
-    form = TagMultiidForm()
-    if form.validate_on_submit():
-        model_tag_multiid(Note, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
-        return "", HTTPStatus.OK
+    model_tag_multiid(
+        model_class=Note,
+        action=args["action"],
+        tags=args["tags"],
+        ids=args["ids"]
+    )
 
-    return error_response(message="Form is invalid.", errors=form.errors, code=HTTPStatus.BAD_REQUEST)
+    return {}
 
 
 @blueprint.route("/note/grouped.json", methods=["GET", "POST"])

@@ -1,7 +1,7 @@
 import { capitalize } from '@/utils'
 
 import { getTableApi } from '@/lib/DataTables'
-import { getSelectedIdsFormData, tagAction } from '@/lib/sner/storage'
+import { getSelectedIds, tagAction } from '@/lib/sner/storage'
 
 const TagButton = ({
   tag,
@@ -28,11 +28,11 @@ const TagButton = ({
       onClick={async (e) => {
         e.preventDefault()
         if (id) {
-          await tagAction({ ids: { 'ids-0': id }, tag, url, action: 'set' })
+          await tagAction({ ids: [id], tag, url, action: 'set' })
         }
 
         if (tableId) {
-          const ids = getSelectedIdsFormData(getTableApi(tableId))
+          const ids = getSelectedIds(getTableApi(tableId))
 
           await tagAction({ ids, tag, url, action: 'set' })
           getTableApi(tableId).draw()

@@ -7,14 +7,14 @@ import json
 from http import HTTPStatus
 
 from datatables import ColumnDT, DataTables
-from flask import Response, jsonify, request
+from flask import Response, request
 from sqlalchemy import func, literal_column
 
 from sner.server.auth.core import session_required
 from sner.server.extensions import db
 from sner.server.storage.core import model_annotate, model_tag_multiid
-from sner.server.storage.forms import TagMultiidStringyForm
 from sner.server.storage.models import Versioninfo
+from sner.server.storage.schemas import AnnotateRequest, TagMultiStringIdRequest
 from sner.server.storage.version_parser import InvalidFormatException, is_in_version_range
 from sner.server.storage.version_parser import parse as versionspec_parse
 from sner.server.storage.views import blueprint
@@ -79,20 +79,27 @@ def versioninfo_list_json_route():
 
 
 @blueprint.route("/versioninfo/tag_multiid", methods=["POST"])
+@blueprint.arguments(TagMultiStringIdRequest)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def versioninfo_tag_multiid_route():
+def versioninfo_tag_multiid_route(args):
     """tag multiple route"""
 
-    form = TagMultiidStringyForm()
-    if form.validate_on_submit():
-        model_tag_multiid(Versioninfo, form.action.data, form.tag.data, [tmp.data for tmp in form.ids.entries])
-        return "", HTTPStatus.OK
-    return jsonify({"message": "Invalid form submitted."}), HTTPStatus.BAD_REQUEST
+    model_tag_multiid(
+        model_class=Versioninfo,
+        action=args["action"],
+        tags=args["tags"],
+        ids=args["ids"]
+    )
+
+    return {}
 
 
 @blueprint.route("/versioninfo/annotate/<model_id>", methods=["GET", "POST"])
+@blueprint.arguments(AnnotateRequest)
+@blueprint.response(HTTPStatus.OK)
 @session_required("operator")
-def versioninfo_annotate_route(model_id):
+def versioninfo_annotate_route(args, model_id):
     """annotate note"""
 
-    return model_annotate(Versioninfo, model_id)
+    return model_annotate(Versioninfo, model_id, args)
