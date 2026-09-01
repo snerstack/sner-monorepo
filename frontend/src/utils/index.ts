@@ -6,6 +6,13 @@ export const unique = (arr: string[]): string[] => {
   return [...new Set(arr)]
 }
 
+export const linesToArray = (str: string): string[] => {
+  return str
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '')
+}
+
 export const base64ToArrayBuffer = (base64String: string): Uint8Array => {
   return Uint8Array.from(atob(base64String), (c) => c.charCodeAt(0))
 }

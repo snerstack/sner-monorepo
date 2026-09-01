@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 
 import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
+import { linesToArray } from '@/utils'
 
 import Heading from '@/components/Heading'
 import BooleanField from '@/components/fields/BooleanField'
@@ -44,10 +45,7 @@ const UserEditPage = () => {
       new_password: password,
       roles: roles.filter((role) => role.checked).map((role) => role.name),
       active,
-      api_networks: apiNetworks
-        .split('\n')
-        .map((line) => line.trim())
-        .filter((line) => line !== ''),
+      api_networks: linesToArray(apiNetworks),
     }
 
     try {

@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 
 import { httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
+import { linesToArray } from '@/utils'
 
 import Heading from '@/components/Heading'
 import SubmitField from '@/components/fields/SubmitField'
@@ -17,10 +18,7 @@ const QueueEnqueuePage = () => {
 
   const enqueueHandler = () => {
     const payload = {
-      targets: targets
-        .split('\n')
-        .map((r) => r.trim())
-        .filter((r) => r !== ''),
+      targets: linesToArray(targets),
     }
 
     httpClient

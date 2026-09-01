@@ -1,4 +1,4 @@
-import { unique } from '@/utils'
+import { linesToArray, unique } from '@/utils'
 import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useLoaderData, useNavigate } from 'react-router-dom'
@@ -43,10 +43,7 @@ const VulnMulticopyPage = () => {
       severity: severity.selected,
       descr,
       data,
-      refs: refs
-        .split('\n')
-        .map((r) => r.trim())
-        .filter((r) => r !== ''),
+      refs: linesToArray(refs),
       tags,
       comment,
     }
