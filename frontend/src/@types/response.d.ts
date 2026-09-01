@@ -3,7 +3,6 @@ interface StorageHostLookupResponse {
 }
 
 interface ServerErrorResponse {
-  apiVersion: string
   error: {
     code: number
     message: string
