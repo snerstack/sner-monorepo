@@ -30,8 +30,8 @@ const LensPage = () => (
             <div className="d-flex flex-row p-5 m-5">
                 <Tile to={"/lens/overview"} icon="fas fa-chart-bar" caption="Overview" />
                 <Tile to={"/lens/host/list"} icon="fas fa-server" caption="Hosts" />
-                <Tile to={"/lens/service/list"} icon="fas fa-cogs" caption="Services" />
-                <Tile to={"/lens/vuln/list"} icon="fas fa-question-circle" caption="Vulnerabilities" />
+                <Tile to={"/lens/service/list"} icon="fas fa-layer-group" caption="Services" />
+                <Tile to={"/lens/vuln/list"} icon="fas fa-bug" caption="Vulnerabilities" />
                 <Tile to={'/lens/versioninfo/list'} icon="fas fa-info-circle" caption="Versioninfo" />
             </div>
         </div>
