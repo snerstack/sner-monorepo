@@ -16,7 +16,7 @@ describe('handleHttpClientError', () => {
     expect(toastErrorMock).toHaveBeenCalledWith('An unexpected error occurred.')
   })
 
-  it('should handle axios error with message', () => {
+  it('should handle ServerErrorResponse', () => {
     const mockError = {
       isAxiosError: true,
       response: {
@@ -33,17 +33,17 @@ describe('handleHttpClientError', () => {
     expect(toastErrorMock).toHaveBeenCalledWith('Test error message')
   })
 
-  it('should handle axios error with field errors', () => {
+  it('should handle SmorestErrorResponse', () => {
     const mockError = {
       isAxiosError: true,
       response: {
         data: {
           code: 422,
           errors: {
-            json: {
+            location1: {
               field1: ['Error message 1'],
-              field2: 'Error message 2',
             },
+            location2: ['Error message 2'],
           },
           status: 'Unprocessable Entity',
         },
@@ -53,10 +53,10 @@ describe('handleHttpClientError', () => {
     handleHttpClientError(mockError)
 
     expect(toastErrorMock).toHaveBeenCalledWith('"field1" field error: Error message 1')
-    expect(toastErrorMock).toHaveBeenCalledWith('"field2" field error: Error message 2')
+    expect(toastErrorMock).toHaveBeenCalledWith('Error message 2')
   })
 
-  it('should handle axios error with no error message and no fields', () => {
+  it('should handle axios error with no errors', () => {
     const mockError = {
       isAxiosError: true,
       response: {
