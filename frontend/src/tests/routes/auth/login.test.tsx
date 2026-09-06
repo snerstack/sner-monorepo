@@ -140,8 +140,8 @@ describe('Login page', () => {
   })
 
   it('handles OIDC error from query parameter', async () => {
-    const errorCode = 'USER_DISABLED'
-    const expectedMessage = 'Your account is disabled.'
+    const errorCode = 'account_disabled'
+    const expectedMessage = 'User account is disabled.'
     mockSearchParams = new URLSearchParams(`?oidc_error=${errorCode}`)
 
     renderWithProviders({
@@ -153,14 +153,11 @@ describe('Login page', () => {
       expect(toast.error).toHaveBeenCalledWith(expectedMessage)
     })
 
-    expect(mockedSetSearchParams).toHaveBeenCalled()
-
-    const lastCall = mockedSetSearchParams.mock.lastCall
-
-    if (lastCall) {
-      const params = lastCall[0]
-      expect(params.has('oidc_error')).toBe(false)
-    }
+    await waitFor(() => {
+      expect(mockedSetSearchParams).toHaveBeenCalled()
+    })
+    const [params] = mockedSetSearchParams.mock.lastCall!
+    expect(params.has('oidc_error')).toBe(false)
   })
 
   it('shows generic error for unknown OIDC error code', async () => {

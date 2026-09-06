@@ -3,6 +3,7 @@
 auth login/authentication views
 """
 
+import enum
 from base64 import b64decode, b64encode
 from http import HTTPStatus
 from urllib.parse import urlencode
@@ -24,6 +25,19 @@ from sner.server.password_supervisor import PasswordSupervisor as PWS
 from sner.server.utils import error_response
 
 
+class OIDCErrorMessage(enum.StrEnum):
+    """oidc login error messages enum"""
+    OIDC_NOT_ENABLED = enum.auto()
+    OIDC_AUTH_ERROR = enum.auto()
+    ACCOUNT_DISABLED = enum.auto()
+
+
+def oidc_error_response(error):
+    """helper function to generate OIDC error redirect with error code as query parameter"""
+    params = urlencode({'oidc_error': error})
+    return redirect(f"/auth/login?{params}")
+
+
 def user_auth_dict(user):
     """return user dict for FE"""
     return {
@@ -33,13 +47,6 @@ def user_auth_dict(user):
         "full_name": user.full_name,
         "roles": user.roles,
     }
-
-
-def oidc_error_redirect(error_code):
-    """helper function to generate OIDC error redirect with error code as query parameter"""
-    params = urlencode({'oidc_error': error_code})
-
-    return redirect(f"/auth/login?{params}")
 
 
 @blueprint.route('/login', methods=['POST'])
@@ -154,7 +161,7 @@ def login_oidc_route():
     """login oidc"""
 
     if not current_app.config['OIDC_NAME']:  # pragma: no cover  ; won't test
-        return oidc_error_redirect('OIDC_NOT_ENABLED')
+        return oidc_error_response(OIDCErrorMessage.OIDC_NOT_ENABLED)
 
     redirect_uri = current_app.config.get(
         f"{current_app.config['OIDC_NAME']}_REDIRECT_URI", url_for("auth.login_oidc_callback_route", _external=True)
@@ -164,7 +171,7 @@ def login_oidc_route():
     except (HTTPError, AuthlibBaseError) as exc:
         current_app.logger.exception(exc)
 
-    return oidc_error_redirect('OIDC_AUTH_ERROR')
+    return oidc_error_response(OIDCErrorMessage.OIDC_AUTH_ERROR)
 
 
 @blueprint.route("/login_oidc_callback")
@@ -172,13 +179,13 @@ def login_oidc_callback_route():
     """login oidc callback"""
 
     if not current_app.config['OIDC_NAME']:  # pragma: no cover  ; won't test
-        return oidc_error_redirect('OIDC_NOT_ENABLED')
+        return oidc_error_response(OIDCErrorMessage.OIDC_NOT_ENABLED)
 
     try:
         token = getattr(oauth, current_app.config["OIDC_NAME"]).authorize_access_token()
     except (HTTPError, AuthlibBaseError) as exc:
         current_app.logger.exception(exc)
-        return oidc_error_redirect('OIDC_AUTH_ERROR')
+        return oidc_error_response(OIDCErrorMessage.OIDC_AUTH_ERROR)
 
     userinfo = token.get("userinfo")
     if userinfo and userinfo.get("sub") and userinfo.get("email"):
@@ -198,7 +205,7 @@ def login_oidc_callback_route():
         if user:
             if not user.active:
                 current_app.logger.info('auth.login oidc failed, user is disabled, username=%s, email=%s', user.username, user.email)
-                return oidc_error_redirect('USER_DISABLED')
+                return oidc_error_response(OIDCErrorMessage.ACCOUNT_DISABLED)
 
             regenerate_session()
             login_user(user)
@@ -213,4 +220,4 @@ def login_oidc_callback_route():
         token['userinfo']['nonce'] = "redacted"
     current_app.logger.info('auth.login oidc failed, token=%s', token)
 
-    return oidc_error_redirect('OIDC_DATA_ERROR')
+    return oidc_error_response(OIDCErrorMessage.OIDC_AUTH_ERROR)

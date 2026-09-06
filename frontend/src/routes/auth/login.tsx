@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -6,14 +6,28 @@ import { useRecoilState } from 'recoil'
 
 import { appConfigState } from '@/atoms/appConfigAtom'
 import { userState } from '@/atoms/userAtom'
-
-import { OIDC_ERRORS, handleHttpClientError, httpClient } from '@/lib/httpClient'
+import { handleHttpClientError, httpClient } from '@/lib/httpClient'
 import { urlFor } from '@/lib/urlHelper'
 
 import Heading from '@/components/Heading'
 import PasswordField from '@/components/fields/PasswordField'
 import SubmitField from '@/components/fields/SubmitField'
 import TextField from '@/components/fields/TextField'
+
+interface TotpLoginRequiredResponse {
+  totp_login_required: boolean
+}
+
+interface WebauthnLoginRequiredResponse {
+  webauthn_login: boolean
+}
+
+const OIDC_ERROR_MESSAGE: Record<string, string> = {
+  generic_error: 'An unexpected error occurred during login.',
+  oidc_not_enabled: 'OIDC authentication is not enabled.',
+  oidc_auth_error: 'OIDC authentication error.',
+  account_disabled: 'User account is disabled.',
+}
 
 const LoginPage = () => {
   const [appConfig] = useRecoilState(appConfigState)
@@ -24,19 +38,19 @@ const LoginPage = () => {
   const [password, setPassword] = useState<string>('')
 
   const [searchParams, setSearchParams] = useSearchParams()
+  const hasHandledOidcErrorRef = useRef(false)
 
   useEffect(() => {
     const errorCode = searchParams.get('oidc_error')
+    if (!errorCode || hasHandledOidcErrorRef.current) return
+    hasHandledOidcErrorRef.current = true
 
-    if (errorCode) {
-      const message = OIDC_ERRORS[errorCode] || OIDC_ERRORS.GENERIC_ERROR
+    const message = OIDC_ERROR_MESSAGE[errorCode] ?? OIDC_ERROR_MESSAGE.generic_error
+    toast.error(message)
 
-      toast.error(message)
-
-      const newParams = new URLSearchParams(searchParams)
-      newParams.delete('oidc_error')
-      setSearchParams(newParams, { replace: true })
-    }
+    const newParams = new URLSearchParams(searchParams)
+    newParams.delete('oidc_error')
+    setSearchParams(newParams, { replace: true })
   }, [searchParams, setSearchParams])
 
   const loginHandler = async () => {
@@ -46,7 +60,7 @@ const LoginPage = () => {
     }
 
     try {
-      const resp = await httpClient.post<User | { totp_login_required: boolean } | { webauthn_login: boolean }>(
+      const resp = await httpClient.post<User | TotpLoginRequiredResponse | WebauthnLoginRequiredResponse>(
         urlFor('/backend/auth/login'),
         payload,
       )
@@ -62,7 +76,6 @@ const LoginPage = () => {
       }
 
       setUser({ ...resp.data, isAuthenticated: true })
-
       navigate('/')
     } catch (err) {
       handleHttpClientError(err)
