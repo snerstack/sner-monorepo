@@ -26,8 +26,8 @@ jobs:
 
       - run: |
           sudo apt-get update
-          sudo make install
-          sudo make install-dev
+          sudo bash -c "PATH=$(dirname $(which python3)):$PATH make install"
+          sudo bash -c "PATH=$(dirname $(which python3)):$PATH make install-dev"
         working-directory: server
       - run: |
           sudo apt-get -y install postgresql postgresql-contrib
