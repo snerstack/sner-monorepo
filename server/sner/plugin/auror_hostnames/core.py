@@ -6,45 +6,16 @@ import json
 import logging
 import os
 import shutil
-import subprocess
 from pathlib import Path
 from socket import getaddrinfo
 
 import dns.rdatatype
 import dns.zone
 
+from sner.plugin.auror_hostnames import axfr, git, http
+from sner.plugin.auror_hostnames.manager import AgreegateManager
+
 logger = logging.getLogger(__name__)
-
-
-def get_repos(git_server, git_key_path) -> list:
-    """
-    Get DNS repositories from git server
-    """
-    cmd = ["ssh", "-i", git_key_path, f"git@{git_server}", "info"]
-    output = subprocess.check_output(cmd, text=True).splitlines()[2:]  # Skip the first line
-    repos = [line.split("\t")[-1] for line in output]
-
-    return repos
-
-
-def clone_dns_repos(git_server, repos, git_key_path):
-    """Clone DNS zones from git repository"""
-    env = os.environ.copy()
-    env["GIT_SSH_COMMAND"] = f"ssh -i {git_key_path}"
-    for repo in repos:
-        subprocess.run(["git", "clone", f"git@{git_server}:{repo}", f"dns-zones/{repo}"], check=True, env=env)
-
-
-def get_zone_file_paths() -> set:
-    """
-    Get DNS zone names from git repos
-    """
-    repos_folder = Path("dns-zones")
-    zone_file_paths = set()
-    for zone_file in repos_folder.glob("**/*.zone"):
-        zone_file_paths.add(str(zone_file))
-
-    return zone_file_paths
 
 
 def process_cnames(cnames, a_aaaa, ip_hostnames) -> dict:
@@ -100,7 +71,7 @@ def process_cnames(cnames, a_aaaa, ip_hostnames) -> dict:
     return ip_hostnames
 
 
-def resolve_hostname(hostname):
+def resolve_hostname(hostname) -> list:
     """Resolve hostname to IP address
     Args:
         hostname (str): hostname
@@ -141,7 +112,7 @@ def process_ptrs(ptrs, ip_hostnames) -> dict:
     return ip_hostnames
 
 
-def check_if_hostname(hostname):
+def check_if_hostname(hostname) -> bool:
     """Check if hostname is valid
 
     Args:
@@ -155,7 +126,7 @@ def check_if_hostname(hostname):
     return True
 
 
-def create_fqdn(record_string, origin):
+def create_fqdn(record_string, origin) -> str:
     """Create FQDN from record
 
     Args:
@@ -171,26 +142,10 @@ def create_fqdn(record_string, origin):
     return fqdn
 
 
-def get_records(zone_file_path) -> list:  # pylint: disable=too-many-locals
+def parse_zone(zone, origin) -> list:
     """
-    Gets A and AAAA records and stores them in the format {IP1: [hostname1, hostname2], IP2: [hostname1, hostname3]}
+    Parse a dns.zone.Zone object and extract CNAME, A/AAAA, PTR, and IP-hostname mappings.
     """
-    with open(zone_file_path, encoding="utf-8") as zone_file:
-        try:
-            zone = dns.zone.from_file(zone_file)
-            origin = zone.origin.to_text()[:-1]
-        except dns.zone.UnknownOrigin:
-            zone_file_name = zone_file_path.split("/")[-1]
-            origin = os.path.splitext(zone_file_name)[0]
-            try:
-                zone = dns.zone.from_file(zone_file, origin)
-            except Exception as error:  # pylint: disable=broad-exception-caught
-                logger.error("Exception occurred during parsing zone file %s: %s}", zone_file_path, error)
-                return [{}, {}, {}, {}]
-        except Exception as error:  # pylint: disable=broad-exception-caught
-            logger.error("Exception occurred during parsing zone file %s: %s}", zone_file_path, error)
-            return [{}, {}, {}, {}]
-
     cnames = {}
     a_aaaa = {}
     ptrs = {}
@@ -212,42 +167,114 @@ def get_records(zone_file_path) -> list:  # pylint: disable=too-many-locals
                             a_aaaa.setdefault(fqdn, set()).add(rdata_string)
                         elif rdatatype == dns.rdatatype.PTR:
                             ptrs[fqdn] = rdata_string
-
     return [cnames, a_aaaa, ptrs, ip_hostnames]
 
 
-def check_git_key_path(git_key_path):
-    """Check if git key path exists"""
-    if not os.path.exists(git_key_path):
-        return False
-    return True
+def get_records_from_file(zone_file_path) -> list:
+    """
+    Loads a zone file and parses its records.
+    """
+    with open(zone_file_path, encoding="utf-8") as zone_file:
+        try:
+            zone = dns.zone.from_file(zone_file)
+            origin = zone.origin.to_text()[:-1]
+        except dns.zone.UnknownOrigin:
+            zone_file_name = zone_file_path.split("/")[-1]
+            origin = os.path.splitext(zone_file_name)[0]
+            try:
+                zone = dns.zone.from_file(zone_file, origin)
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                logger.error("Exception occurred during parsing zone file %s: %s}", zone_file_path, error)
+                return [{}, {}, {}, {}]
+        except Exception as error:  # pylint: disable=broad-exception-caught
+            logger.error("Exception occurred during parsing zone file %s: %s}", zone_file_path, error)
+            return [{}, {}, {}, {}]
+    return parse_zone(zone, origin)
 
 
-def run(assignment):  # pragma: no cover
-    """Run auror_hostnames module"""
+def get_records_from_zone(zone) -> list:
+    """
+    Parses a dns.zone.Zone object (e.g., from AXFR).
+    """
+    origin = zone.origin.to_text()[:-1]
+    return parse_zone(zone, origin)
 
-    git_key_path = assignment["config"]["git_key_path"]
-    git_server = assignment["config"]["git_server"]
 
-    if check_git_key_path(git_key_path) is False:
-        logger.error("Git key file does not exist")
-        return 1
+def collect_dns_sources(agreegate, groups) -> tuple:
+    """Collect DNS sources from groups
 
-    repos = get_repos(git_server, git_key_path)
-    clone_dns_repos(git_server, repos, git_key_path)
-    zone_file_paths = get_zone_file_paths()
+    Args:
+        agreegate: AgreegateManager instance
+        groups: List of groups with DNS sources
 
+    Returns:
+        tuple: (dns_sources, axfr_sources, http_sources)
+    """
+    dns_sources = []
+    for group in groups:
+        dns_sources.extend(agreegate.get_group_dns_sources(group.id))
+
+    axfr_sources = [source for source in dns_sources if source["type"] == "AXFR"]
+    http_sources = [source for source in dns_sources if source["type"] == "HTTPS"]
+
+    return dns_sources, axfr_sources, http_sources
+
+
+def gather_zone_data(assignment, http_sources, axfr_sources):
+    """Gather zone data from all sources
+
+    Args:
+        assignment: The assignment configuration
+        http_sources: List of HTTP sources
+        axfr_sources: List of AXFR sources
+
+    Returns:
+        tuple: (zone_file_paths, zones)
+    """
+    zone_file_paths = []
+    if assignment["config"].get("git_server"):
+        zone_file_paths = git.run(assignment)
+
+    for http_source in http_sources:
+        zone_file_paths += http.run(http_source)
+
+    zones = []
+    for axfr_source in axfr_sources:
+        zones += axfr.run(axfr_source)
+
+    return zone_file_paths, zones
+
+
+def write_output(ip_hostnames):
+    """Write the final output to JSON file"""
+    if Path("dns-zones").exists():
+        shutil.rmtree("dns-zones")
+    Path("output.json").write_text(json.dumps(ip_hostnames, indent=4), encoding="utf-8")
+
+
+def build_ip_hostnames(zone_file_paths, zones) -> dict:
+    """Process and merge zone files and zones into the final ip -> hostnames mapping.
+
+    Args:
+        zone_file_paths: List of zone file paths (from git/https sources)
+        zones: List of dns.zone.Zone objects (from AXFR sources)
+
+    Returns:
+        dict: { ip: [hostname, ...] }
+    """
     cnames = {}
     a_aaaa = {}
     ptrs = {}
     ip_hostnames = {}
 
-    for zone_file_path in zone_file_paths:
-        result = get_records(zone_file_path)
-        cnames.update(result[0])
-        a_aaaa.update(result[1])
-        ptrs.update(result[2])
-        ip_hostnames.update(result[3])
+    parsed_records = [get_records_from_file(path) for path in zone_file_paths]
+    parsed_records += [get_records_from_zone(zone) for zone in zones]
+    for records in parsed_records:
+        cnames.update(records[0])
+        a_aaaa.update(records[1])
+        ptrs.update(records[2])
+        for ip_addr, hostnames in records[3].items():
+            ip_hostnames.setdefault(ip_addr, set()).update(hostnames)
 
     logger.info("Found %s CNAME records", len(cnames))
     logger.info("Found %s A/AAAA records", len(a_aaaa))
@@ -255,10 +282,20 @@ def run(assignment):  # pragma: no cover
 
     ip_hostnames = process_ptrs(ptrs, ip_hostnames)
     ip_hostnames = process_cnames(cnames, a_aaaa, ip_hostnames)
-    ip_hostnames = {k: list(v) for k, v in ip_hostnames.items()}
+    return {k: list(v) for k, v in ip_hostnames.items()}
+
+
+def run(assignment):
+    """Run auror_hostnames module"""
+
+    agreegate = AgreegateManager.from_env()
+    groups = agreegate.get_all_groups(only_with_dns_source=True)
+    _, axfr_sources, http_sources = collect_dns_sources(agreegate, groups)
+
+    zone_file_paths, zones = gather_zone_data(assignment, http_sources, axfr_sources)
+    ip_hostnames = build_ip_hostnames(zone_file_paths, zones)
 
     logger.info("Found hostnames for %s IP addresses", len(ip_hostnames))
 
-    shutil.rmtree("dns-zones")
-    Path("output.json").write_text(json.dumps(ip_hostnames, indent=4), encoding="utf-8")
+    write_output(ip_hostnames)
     return 0
