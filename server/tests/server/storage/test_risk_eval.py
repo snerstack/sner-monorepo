@@ -17,6 +17,7 @@ from sner.server.storage.models import SeverityEnum
 from sner.server.storage.risk_eval import (
     HeuristicEvaluator,
     KevCatalog,
+    LLMEvaluator,
     RiskLevel,
     extract_cve_ids,
     extract_ref_cvss_score,
@@ -30,6 +31,20 @@ def mocked_kev_get(cve_list=None):
     mocked = MagicMock(status_code=HTTPStatus.OK)
     mocked.json.return_value = {"vulnerabilities": [{"cveID": cve} for cve in cve_list or []]}
     return patch("sner.server.storage.risk_eval.requests.get", return_value=mocked)
+
+
+def mocked_llm_post(content):
+    """requests.post mock for a working llm api"""
+
+    mocked = MagicMock(status_code=HTTPStatus.OK)
+    mocked.json.return_value = {"choices": [{"message": {"content": content}}]}
+    return patch("sner.server.storage.risk_eval.requests.post", return_value=mocked)
+
+
+def failing_llm_post():
+    """requests.post mock for an unreachable llm api"""
+
+    return patch("sner.server.storage.risk_eval.requests.post", side_effect=requests.ConnectionError("unreachable"))
 
 
 def test_evaluate_vuln_severity_mapping(app, host_factory, vuln_factory):  # pylint: disable=unused-argument
@@ -223,6 +238,34 @@ def test_evaluate_vuln_kev_enrichment(app, host_factory, vuln_factory):  # pylin
     assert HeuristicEvaluator(catalog).evaluate(vuln_kev) == RiskLevel.HIGH
 
 
+def test_llm_evaluator(app, vuln_factory):  # pylint: disable=unused-argument
+    """llm evaluator parses verdict; fails soft on errors"""
+
+    vuln = vuln_factory.create(name="llm testvuln", descr="testsym-vuln-descr", refs=["CVE-2021-44228"])
+    evaluator = LLMEvaluator(api_url="http://llm.test/v1/", api_key="testkey", model="testmodel")
+
+    with mocked_llm_post("High") as mocked_post:
+        assert evaluator.evaluate(vuln) == RiskLevel.HIGH
+        payload = mocked_post.call_args.kwargs["json"]
+        assert mocked_post.call_args.args[0] == "http://llm.test/v1/chat/completions"
+        assert mocked_post.call_args.kwargs["headers"]["Authorization"] == "Bearer testkey"
+        assert payload["model"] == "testmodel"
+        assert "testsym-vuln-descr" in payload["messages"][1]["content"]
+
+    # invalid llm answer
+    with mocked_llm_post("i am not sure"):
+        assert evaluator.evaluate(vuln) is None
+
+    # http error
+    mocked_error = MagicMock(status_code=HTTPStatus.TOO_MANY_REQUESTS)
+    with patch("sner.server.storage.risk_eval.requests.post", return_value=mocked_error):
+        assert evaluator.evaluate(vuln) is None
+
+    # network error
+    with failing_llm_post():
+        assert evaluator.evaluate(vuln) is None
+
+
 def test_risk_eval_handler(app, tmp_path, host_factory, service_factory, vuln_factory):  # pylint: disable=unused-argument
     """handler evaluates and tags vulns; idempotent re-run replaces old tags"""
 
@@ -251,7 +294,7 @@ def test_risk_eval_handler(app, tmp_path, host_factory, service_factory, vuln_fa
 
     with mocked_kev_get():
         results = risk_eval_handler()
-    assert set(results) == {(vuln_high.id, RiskLevel.HIGH), (vuln_low.id, RiskLevel.LOW)}
+    assert set(results) == {(vuln_high.id, None, RiskLevel.HIGH), (vuln_low.id, None, RiskLevel.LOW)}
 
     # tags set, unrelated tags kept, stale risk tags replaced
     assert sorted(vuln_high.tags) == sorted(["report", "erisk:-/high"])
@@ -266,8 +309,34 @@ def test_risk_eval_handler(app, tmp_path, host_factory, service_factory, vuln_fa
     vuln_low.tags = ["erisk:-/low"]
     with mocked_kev_get():
         results_dry = risk_eval_handler(dry=True)
-    assert (vuln_low.id, RiskLevel.LOW) in results_dry
+    assert (vuln_low.id, None, RiskLevel.LOW) in results_dry
     assert vuln_low.tags == ["erisk:-/low"]
+
+
+def test_risk_eval_handler_llm(app, tmp_path, vuln_factory):  # pylint: disable=unused-argument
+    app.config["SNER_VAR"] = str(tmp_path)
+    """handler tags both llm and heuristic values; llm failure degrades to '-'"""
+
+    vuln = vuln_factory.create(name="handler llm vuln", severity=SeverityEnum.CRITICAL, refs=[])
+    app.config["SNER_LLM_API_URL"] = "http://llm.test/v1"
+    app.config["SNER_LLM_API_KEY"] = "testkey"
+    app.config["SNER_LLM_MODEL"] = "testmodel"
+
+    with mocked_kev_get(), mocked_llm_post("medium"):
+        results = risk_eval_handler()
+    assert results == [(vuln.id, RiskLevel.MEDIUM, RiskLevel.HIGH)]
+    assert "erisk:medium/high" in vuln.tags
+
+    with mocked_kev_get(), failing_llm_post():
+        results = risk_eval_handler()
+    assert results == [(vuln.id, None, RiskLevel.HIGH)]
+    assert "erisk:-/high" in vuln.tags
+    assert "erisk:medium/high" not in vuln.tags
+
+    # llm and kev skipped
+    results = risk_eval_handler(use_llm=False, use_kev=False)
+    assert results == [(vuln.id, None, RiskLevel.HIGH)]
+    assert "erisk:-/high" in vuln.tags
 
 
 def test_vuln_risk_eval_command(app, tmp_path, runner, vuln_factory):
@@ -281,16 +350,17 @@ def test_vuln_risk_eval_command(app, tmp_path, runner, vuln_factory):
         # kev enabled by default
         result = runner.invoke(command, ["vuln-risk-eval", "--dry"])
         assert result.exit_code == 0
-        assert f"{vuln.id},high" in result.output
+        assert f"{vuln.id},-,high" in result.output
         assert not any(tag.startswith("erisk:") for tag in vuln.tags)
         assert mocked_kev_fetch.called
 
+        # llm enabled by default, degrades to '-' when SNER_LLM_* is not configured
         result = runner.invoke(command, ["vuln-risk-eval"])
         assert result.exit_code == 0
         assert "erisk:-/high" in vuln.tags
 
-        # --no-kev skips the enrichment
-        result = runner.invoke(command, ["vuln-risk-eval", "--no-kev"])
+        # --no-llm/--no-kev skip the enrichments
+        result = runner.invoke(command, ["vuln-risk-eval", "--no-llm", "--no-kev"])
         assert result.exit_code == 0
         assert mocked_kev_fetch.call_count == 1  # cached second run; --no-kev skips fetch
 

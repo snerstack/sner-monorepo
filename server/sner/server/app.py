@@ -60,8 +60,6 @@ DEFAULT_CONFIG = {
     "SESSION_COOKIE_SAMESITE": "Lax",
     # sner web server
     "SNER_VAR": "/var/lib/sner",
-    # interval for the CISA KEV catalog cache file under SNER_VAR
-    "SNER_KEV_CACHE_MAX_AGE": 24 * 60 * 60,
     "SNER_AUTH_ROLES": ["admin", "agent", "operator", "user", "auror"],
     "SNER_TRIM_REPORT_CELLS": 65000,
     "SNER_TRIM_NOTE_LIST_DATA": 4096,
@@ -83,6 +81,12 @@ DEFAULT_CONFIG = {
     "SNER_NESSUS_URL": None,
     "SNER_NESSUS_ACCESS_KEY": None,
     "SNER_NESSUS_SECRET_KEY": None,
+    # openai-compatible llm api used by storage vuln-risk-eval --llm
+    "SNER_LLM_API_URL": None,
+    "SNER_LLM_API_KEY": None,
+    "SNER_LLM_MODEL": None,
+    # interval for the CISA KEV catalog cache file under SNER_VAR
+    "SNER_KEV_CACHE_MAX_AGE": 24 * 60 * 60,
     # smorest api
     "API_TITLE": "SNER API",
     "API_VERSION": __version__,

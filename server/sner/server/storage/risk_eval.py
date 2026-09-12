@@ -9,10 +9,12 @@ Rates each vulnerability low/medium/high based on:
 * public service exposure (tcp/udp service bound to non-loopback host)
 * scanner assigned severity and CVSS base score in refs (``CVSS#...#<score>``)
 
-Optionally enriches evaluation with CISA Known Exploited Vulnerabilities (KEV) catalog
--- CVEs being actively exploited.
+Optionally enriches evaluation with:
 
-Each vuln is tagged ``erisk:-/<level>``.
+* CISA Known Exploited Vulnerabilities (KEV) catalog -- CVEs being actively exploited
+* LLM verdict via OpenAI-compatible chat completions API (SNER_LLM_* config)
+
+Each vuln is tagged ``erisk:<llm>/<heur>``; llm part is ``-`` when llm evaluation is not used or fails.
 """
 
 import json
@@ -78,6 +80,16 @@ LOCAL_ONLY_PATTERNS = [
 KEV_CATALOG_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
 KEV_LOOKUP_TIMEOUT = 10
 KEV_CACHE_FILE = "kev_catalog.json"
+LLM_LOOKUP_TIMEOUT = 60
+LLM_TEXT_MAXLEN = 4000
+
+LLM_SYSTEM_PROMPT = (
+    'You are a security analyst. Rate the severity of the described vulnerability from the point of view '
+    'of an external attacker (remote exploitation possible, known exploit, exposed service). '
+    'Answer with exactly one word: low, medium, or high.'
+)
+
+
 class KevCatalog:
     """cisa known exploited vulnerabilities catalog lookup; cached under SNER_VAR when fresh"""
 
@@ -115,6 +127,84 @@ class KevCatalog:
         """check whether cve is listed as actively exploited"""
 
         return cve_id in self.cve_ids
+
+
+class LLMEvaluator:
+    """evaluate vuln via openai-compatible chat completions api; fails soft returning None"""
+
+    def __init__(self, api_url, api_key, model):
+        if not api_url or not api_key or not model:
+            raise ValueError("llm api url, api key and model must be configured")
+        self.api_url = api_url.rstrip("/")
+        self.api_key = api_key
+        self.model = model
+
+    @classmethod
+    def from_app_config(cls):
+        """factory, initialize from app config"""
+
+        return cls(
+            current_app.config["SNER_LLM_API_URL"],
+            current_app.config["SNER_LLM_API_KEY"],
+            current_app.config["SNER_LLM_MODEL"],
+        )
+
+    def evaluate(self, vuln):
+        """obtain llm verdict; returns level name or None on any failure"""
+
+        prompt = f"vulnerability:\n{vuln_prompt_text(vuln)}"
+        payload = {
+            "model": self.model,
+            "temperature": 0,
+            "max_tokens": 5,
+            "messages": [{"role": "system", "content": LLM_SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+        }
+
+        try:
+            # requests sets content-type automatically for json= kwarg
+            response = requests.post(
+                f"{self.api_url}/chat/completions",
+                json=payload,
+                headers={"Authorization": f"Bearer {self.api_key}"},
+                timeout=LLM_LOOKUP_TIMEOUT,
+            )
+            return self._verdict(response)
+        except requests.RequestException as exc:
+            logger.warning("llm evaluation failed for vuln %s: %s", vuln.id, exc)
+            return None
+
+    def _verdict(self, response):
+        """parse verdict from response; returns level name or None"""
+
+        if response.status_code != HTTPStatus.OK:
+            logger.warning("llm evaluation failed, status %s", response.status_code)
+            return None
+        try:
+            content = response.json()["choices"][0]["message"]["content"] or ""
+        except (ValueError, TypeError, IndexError, KeyError) as exc:
+            logger.warning("llm evaluation returned unparsable answer: %s", exc)
+            return None
+        level = parse_level(content)
+        if level is None:
+            logger.warning("llm evaluation returned invalid level %r", content)
+        return level
+
+
+def parse_level(text):
+    """extract `RiskLevel` from free-form text; returns None when invalid"""
+
+    token = re.sub(r"[^a-z]", "", (text or "").lower())
+    try:
+        return RiskLevel(token)
+    except ValueError:
+        return None
+
+
+def vuln_prompt_text(vuln):
+    """llm prompt content built from vuln attributes"""
+
+    text = f"name: {vuln.name}\nrefs: {' '.join(vuln.refs or [])}\ndescr: {vuln.descr or ''}\ndata: {vuln.data or ''}"
+    return text[:LLM_TEXT_MAXLEN]
 
 
 class HeuristicEvaluator:
@@ -252,31 +342,51 @@ def is_public_service_vuln(vuln):
         return True
 
 
+def risk_tag(llm_level, heuristic_level):
+    """render tag from evaluation results; llm part is `-` when not evaluated"""
+
+    return f"{TAG_PREFIX}{llm_level or '-'}/{heuristic_level}"
+
+
 def erisk_tags(tags):
     """filter tag list removing all erisk:-prefixed entries"""
 
     return [tag for tag in tags if not tag.startswith(TAG_PREFIX)]
 
 
-def risk_eval_handler(qfilter=None, dry=False, use_kev=True):
-    """
-    evaluate all vulns in storage from external attacker pov and tag them with
-    `erisk:-/<level>` tags.
+def _build_evaluators(use_llm, use_kev):
+    """obtain optional enrichers according to command-line switches and app config"""
 
-    returns list of ``(vuln.id, level)`` evaluation results.
-    """
-
+    llm_evaluator = None
+    if use_llm:
+        try:
+            llm_evaluator = LLMEvaluator.from_app_config()
+        except ValueError:
+            logger.error("llm evaluation not enabled, SNER_LLM_* is not configured")
     kev_catalog = KevCatalog.from_cache() if use_kev else None
     heuristic_evaluator = HeuristicEvaluator(kev_catalog)
+    return llm_evaluator, heuristic_evaluator
+
+
+def risk_eval_handler(qfilter=None, dry=False, use_llm=True, use_kev=True):
+    """
+    evaluate all vulns in storage from external attacker pov and tag them with
+    `erisk:<llm>/<heur>` tags; llm part is `-` when llm evaluation is not used or fails.
+
+    returns list of ``(vuln.id, llm_level, heuristic_level)`` evaluation results.
+    """
+
+    llm_evaluator, heuristic_evaluator = _build_evaluators(use_llm, use_kev)
     query = filter_query(db.session.query(Vuln).outerjoin(Service, Vuln.service_id == Service.id), qfilter)
 
     results = []
     for vuln in windowed_query(query, Vuln.id):
-        level = heuristic_evaluator.evaluate(vuln)
-        results.append((vuln.id, level))
+        llm_level = llm_evaluator.evaluate(vuln) if llm_evaluator else None
+        heuristic_level = heuristic_evaluator.evaluate(vuln)
+        results.append((vuln.id, llm_level, heuristic_level))
 
         if not dry:
-            vuln.tags = erisk_tags(vuln.tags) + [f"{TAG_PREFIX}-/{level}"]
+            vuln.tags = erisk_tags(vuln.tags) + [risk_tag(llm_level, heuristic_level)]
             db.session.add(vuln)
 
     if not dry:

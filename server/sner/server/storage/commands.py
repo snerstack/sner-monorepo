@@ -129,20 +129,28 @@ def storage_rebuild_versioninfo():
 @command.command(
     name="vuln-risk-eval",
     help="evaluate vulnerabilities from external attacker pov (remote exploitation, known exploit, ...) "
-    "and tag them with erisk:-/<level>",
+    "and tag them with risk:<llm>/<heur>",
 )
 @with_appcontext
 @click.option("--filter", "qfilter", help="filter query")
 @click.option("--dry", is_flag=True, help="only print evaluation results, do not tag")
 @click.option("--no-kev", "use_kev", is_flag=True, default=True, help="skip CISA KEV catalog enrichment")
+@click.option("--no-llm", "use_llm", is_flag=True, default=True, help="skip llm api evaluation (SNER_LLM_* config)")
 def storage_vuln_risk_eval(**kwargs):
     """evaluate vulnerabilities from external attacker point of view"""
 
     try:
-        results = risk_eval_handler(kwargs.get("qfilter"), dry=kwargs["dry"], use_kev=kwargs["use_kev"])
+        results = risk_eval_handler(
+            kwargs.get("qfilter"), dry=kwargs["dry"], use_kev=kwargs["use_kev"], use_llm=kwargs["use_llm"]
+        )
     except FilterQueryError:
         sys.exit(1)
 
-    for vuln_id, level in results:
-        print(f"{vuln_id},{level}")
-    print(f"evaluated {len(results)} vulns: {dict(Counter(level for _, level in results))}", file=sys.stderr)
+    for vuln_id, llm_level, heuristic_level in results:
+        print(f"{vuln_id},{llm_level or '-'},{heuristic_level}")
+    print(
+        f"evaluated {len(results)} vulns: "
+        f"llm={dict(Counter(llm_level or '-' for _, llm_level, _ in results))} "
+        f"heur={dict(Counter(heuristic_level for _, _, heuristic_level in results))}",
+        file=sys.stderr,
+    )
