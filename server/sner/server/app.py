@@ -60,6 +60,8 @@ DEFAULT_CONFIG = {
     "SESSION_COOKIE_SAMESITE": "Lax",
     # sner web server
     "SNER_VAR": "/var/lib/sner",
+    # interval for the CISA KEV catalog cache file under SNER_VAR
+    "SNER_KEV_CACHE_MAX_AGE": 24 * 60 * 60,
     "SNER_AUTH_ROLES": ["admin", "agent", "operator", "user", "auror"],
     "SNER_TRIM_REPORT_CELLS": 65000,
     "SNER_TRIM_NOTE_LIST_DATA": 4096,

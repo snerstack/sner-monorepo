@@ -1,5 +1,13 @@
 # sner changelog
 
+## 1.3.1 - unreleased
+
+### Added
+
+* server: storage vuln-risk-eval command; evaluates vulnerabilities from external attacker point of view
+  (remote exploitability, known exploit references, public service exposure, cvss scores, CISA known exploited
+  vulnerabilities catalog lookup enabled by default, disable with `--no-kev`) and tags them with `erisk:-/<level>`
+
 ## 1.3.0 - plannerV2
 
 ### Changed

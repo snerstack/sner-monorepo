@@ -5,6 +5,7 @@ storage commands
 
 import logging
 import sys
+from collections import Counter
 from pathlib import Path
 
 import click
@@ -15,6 +16,7 @@ from sner.server.extensions import db
 from sner.server.parser import REGISTERED_PARSERS
 from sner.server.storage.core import StorageManager, vuln_export, vuln_report
 from sner.server.storage.models import Host, Versioninfo
+from sner.server.storage.risk_eval import risk_eval_handler
 from sner.server.storage.service_list import service_list
 from sner.server.storage.versioninfo import VersioninfoManager
 from sner.server.utils import FilterQueryError
@@ -122,3 +124,25 @@ def storage_rebuild_versioninfo():
     """rebuild versioninfo command"""
 
     VersioninfoManager.rebuild()
+
+
+@command.command(
+    name="vuln-risk-eval",
+    help="evaluate vulnerabilities from external attacker pov (remote exploitation, known exploit, ...) "
+    "and tag them with erisk:-/<level>",
+)
+@with_appcontext
+@click.option("--filter", "qfilter", help="filter query")
+@click.option("--dry", is_flag=True, help="only print evaluation results, do not tag")
+@click.option("--no-kev", "use_kev", is_flag=True, default=True, help="skip CISA KEV catalog enrichment")
+def storage_vuln_risk_eval(**kwargs):
+    """evaluate vulnerabilities from external attacker point of view"""
+
+    try:
+        results = risk_eval_handler(kwargs.get("qfilter"), dry=kwargs["dry"], use_kev=kwargs["use_kev"])
+    except FilterQueryError:
+        sys.exit(1)
+
+    for vuln_id, level in results:
+        print(f"{vuln_id},{level}")
+    print(f"evaluated {len(results)} vulns: {dict(Counter(level for _, level in results))}", file=sys.stderr)
