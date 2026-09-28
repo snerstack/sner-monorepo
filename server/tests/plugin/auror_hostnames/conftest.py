@@ -3,15 +3,11 @@
 auror_hostnames plugin shared fixtures
 """
 
-import os
 import socket
-import subprocess
 import threading
-from pathlib import Path
 
 import dns.message
 import dns.name
-import dns.rcode
 import dns.rdatatype
 import dns.rrset
 import dns.zone
