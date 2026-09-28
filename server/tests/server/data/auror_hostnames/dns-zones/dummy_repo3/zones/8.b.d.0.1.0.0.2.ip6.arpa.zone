@@ -1,6 +1,6 @@
 ; Reverse DNS zone file for 2001:db8::/32
 $TTL 86400
-@   IN  SOA ns1.example.com. admin.example.com. (
+@   IN  SOA ns1.example.test. admin.example.test. (
         2024032601
         3600
         1800
@@ -8,9 +8,9 @@ $TTL 86400
         86400
 )
 
-@   IN  NS  ns1.example.com.
-@   IN  NS  ns2.example.com.
+@   IN  NS  ns1.example.test.
+@   IN  NS  ns2.example.test.
 
-1   IN  PTR  ns1.example.com.
-2   IN  PTR  ns2.example.com.
-3   IN  PTR  www.example.com.
+1   IN  PTR  ns1.example.test.
+2   IN  PTR  ns2.example.test.
+3   IN  PTR  www.example.test.

@@ -204,7 +204,7 @@ def test_build_ip_hostnames():
 
     result = build_ip_hostnames([test_repo1_zonefile, test_repo2_zonefile], [axfr_zone])
 
-    # forward records from example.com.zone (file source)
+    # forward records from example.test.zone (file source)
     assert "www.example.test" in result["127.168.1.3"]
     # PTR records from 1.168.127.in-addr.arpa.zone (file source)
     assert "ns1.example.test" in result["127.168.1.1"]
