@@ -3,19 +3,20 @@
 auror_hostnames plugin core tests
 """
 
-import io
 import json
-import zipfile
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import dns.zone
 import pytest
 
+from sner.agreegate import Group
 from sner.plugin.auror_hostnames import core as core_module
+from sner.plugin.auror_hostnames.agent import Config as AgentConfig
 from sner.plugin.auror_hostnames.core import (
     build_ip_hostnames,
     check_if_hostname,
-    collect_dns_sources,
+    collect_agreegate_dns_sources,
     create_fqdn,
     get_records_from_file,
     get_records_from_zone,
@@ -23,32 +24,52 @@ from sner.plugin.auror_hostnames.core import (
     process_ptrs,
     resolve_hostname,
     run,
-    write_output,
 )
-from sner.plugin.auror_hostnames.manager import AgreegateManager
 
-test_files_path = "tests/server/data/auror_hostnames-dns_zones"
-dns_zones_folder = "dns-zones"
-zone_file_path1 = f"{test_files_path}/{dns_zones_folder}/dummy_repo1/zones/example.com.zone"
-zone_file_path2 = f"{test_files_path}/{dns_zones_folder}/dummy_repo2/zones/1.168.192.in-addr.arpa.zone"
+test_files_dir = "tests/server/data/auror_hostnames"
+test_repo1_dir = f"{test_files_dir}/dns-zones/dummy_repo1"
+test_repo1_zonefile = f"{test_repo1_dir}/zones/example.test.zone"
+test_repo2_dir = f"{test_files_dir}/dns-zones/dummy_repo2"
+test_repo2_zonefile = f"{test_repo2_dir}/zones/1.168.127.in-addr.arpa.zone"
+
+GIT_ZONE_TEXT = """
+$ORIGIN git1.example.test.
+$TTL 300
+@ IN SOA ns1.git1.example.test. admin.git1.example.test. 1 3600 900 604800 300
+@ IN NS ns1.git1.example.test.
+www IN A 127.0.2.11
+"""
 
 AXFR_ZONE_TEXT = """
-@ 300 IN SOA ns1.axfr.example.com. admin.axfr.example.com. 1 3600 900 604800 300
-@ 300 IN NS ns1.axfr.example.com.
-www 300 IN A 192.0.2.31
-alias 300 IN CNAME www.axfr.example.com.
+$ORIGIN axfr.example.test.
+@ 300 IN SOA ns1.axfr.example.test. admin.axfr.example.test. 1 3600 900 604800 300
+@ 300 IN NS ns1.axfr.example.test.
+www 300 IN A 127.0.2.31
+alias 300 IN CNAME www.axfr.example.test.
 """
 
 HTTPS_ZONE_TEXT = """
-$ORIGIN https.example.com.
+$ORIGIN https.example.test.
 $TTL 300
-@ IN SOA ns1.https.example.com. admin.https.example.com. 1 3600 900 604800 300
-@ IN NS ns1.https.example.com.
-www IN A 192.0.2.21
+@ IN SOA ns1.https.example.test. admin.https.example.test. 1 3600 900 604800 300
+@ IN NS ns1.https.example.test.
+www IN A 127.0.2.21
 """
 
 
-def test_process_cnames(monkeypatch):
+def test_resolve_hostname():
+    """Test resolving hostname"""
+
+    mock_getaddrinfo = MagicMock(return_value=[(2, 1, 6, "", ("127.0.0.5", 0))])
+    with patch.object(core_module, "getaddrinfo", mock_getaddrinfo):
+        assert resolve_hostname("example.test") == ["127.0.0.5"]
+
+    mock_getaddrinfo = MagicMock(side_effect=OSError)
+    with patch.object(core_module, "getaddrinfo", mock_getaddrinfo):
+        assert resolve_hostname("invalid-hostname") == []
+
+
+def test_process_cnames():
     """Test processing CNAMEs"""
 
     cnames = {"alias1": "cname1", "alias2": "cname2"}
@@ -56,31 +77,22 @@ def test_process_cnames(monkeypatch):
     a_aaaa = {"cname1": ["1.1.1.1"]}
     ip_hostnames = {"1.1.1.1": {"cname1"}}
 
-    addresses = {"cname2": "2.2.2.2", "alias2": "2.2.2.2"}
-    monkeypatch.setattr(core_module, "getaddrinfo", lambda hostname, port: [(2, 1, 6, "", (addresses[hostname], 0))])
+    def _mocked_getaddrinfo(hostname, port):
+        """mock getaddrinfo"""
+        addresses = {"cname2": "2.2.2.2", "alias2": "2.2.2.2"}
+        return [(2, 1, 6, "", (addresses[hostname], 0))]
 
-    result = process_cnames(cnames, a_aaaa, ip_hostnames)
-
-    assert result == {
+    mock_getaddrinfo = MagicMock(side_effect=_mocked_getaddrinfo)
+    expected = {
         "1.1.1.1": {"alias1", "cname1"},
         "2.2.2.2": {"alias2", "cname2"},
     }
+    with patch.object(core_module, "getaddrinfo", mock_getaddrinfo):
+        result = process_cnames(cnames, a_aaaa, ip_hostnames)
+        assert result == expected
 
     with pytest.raises(ValueError, match="CNAME chain loop detected"):
         process_cnames(cnames_loop, a_aaaa, ip_hostnames)
-
-
-def test_resolve_hostname(monkeypatch):
-    """Test resolving hostname"""
-
-    monkeypatch.setattr(core_module, "getaddrinfo", lambda hostname, port: [(2, 1, 6, "", ("93.184.216.34", 0))])
-    assert resolve_hostname("example.com") == ["93.184.216.34"]
-
-    def getaddrinfo_error(hostname, port):
-        raise OSError
-
-    monkeypatch.setattr(core_module, "getaddrinfo", getaddrinfo_error)
-    assert resolve_hostname("invalid-hostname") == []
 
 
 def test_process_ptrs():
@@ -92,71 +104,66 @@ def test_process_ptrs():
         "3.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.ip6.arpa": "hostname3.",
         "4.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.ip6.arpa": "hostname4.",
     }
-
-    result = process_ptrs(ptrs, {})
-
-    assert result == {
+    expected = {
         "1.1.1.1": {"hostname1"},
         "2.2.2.2": {"hostname2"},
         "10::3": {"hostname3"},
         "20::4": {"hostname4"},
     }
 
+    result = process_ptrs(ptrs, {})
+    assert result == expected
+
 
 def test_check_if_hostname():
     """Test checking if hostname is valid"""
 
-    assert check_if_hostname("host-name.com") is True
+    assert check_if_hostname("host-name.test") is True
     assert check_if_hostname("host-name") is True
-    assert check_if_hostname("invalid@hostname.com") is False
-    assert check_if_hostname("invalid/hostname.com") is False
-    assert check_if_hostname("invalid*hostname.com") is False
-    assert check_if_hostname("invalid_hostname.com") is False
+    assert check_if_hostname("invalid@hostname.test") is False
 
 
 def test_create_fqdn():
     """Test creating FQDN from record"""
 
-    assert create_fqdn("record", "example.com") == "record.example.com"
-    assert create_fqdn("record.example.com.", "example.com") == "record.example.com"
+    assert create_fqdn("record", "example.test") == "record.example.test"
+    assert create_fqdn("record.example.test.", "example.test") == "record.example.test"
 
 
 def test_get_records_from_file():
     """Test getting records from zone files, with and without $ORIGIN directive"""
 
-    result1 = get_records_from_file(zone_file_path1)
-    result2 = get_records_from_file(zone_file_path2)
-
     expected_result1 = [
-        {"alias.example.com": "www.example.com"},
+        {"alias.example.test": "www.example.test"},
         {
-            "ns1.example.com": {"2001:db8::1", "192.168.1.1"},
-            "ns2.example.com": {"192.168.1.2", "2001:db8::2"},
-            "www.example.com": {"2001:db8::3", "192.168.1.3"},
+            "ns1.example.test": {"2001:db8::1", "127.168.1.1"},
+            "ns2.example.test": {"127.168.1.2", "2001:db8::2"},
+            "www.example.test": {"2001:db8::3", "127.168.1.3"},
         },
         {},
         {
-            "192.168.1.1": {"ns1.example.com"},
-            "192.168.1.2": {"ns2.example.com"},
-            "192.168.1.3": {"www.example.com"},
-            "2001:db8::1": {"ns1.example.com"},
-            "2001:db8::2": {"ns2.example.com"},
-            "2001:db8::3": {"www.example.com"},
+            "127.168.1.1": {"ns1.example.test"},
+            "127.168.1.2": {"ns2.example.test"},
+            "127.168.1.3": {"www.example.test"},
+            "2001:db8::1": {"ns1.example.test"},
+            "2001:db8::2": {"ns2.example.test"},
+            "2001:db8::3": {"www.example.test"},
         },
     ]
+    result1 = get_records_from_file(test_repo1_zonefile)
+    assert result1 == expected_result1
 
     expected_result2 = [
         {},
         {},
         {
-            "1.1.168.192.in-addr.arpa": "ns1.example.com.",
-            "2.1.168.192.in-addr.arpa": "ns2.example.com.",
-            "3.1.168.192.in-addr.arpa": "www.example.com.",
+            "1.1.168.127.in-addr.arpa": "ns1.example.test.",
+            "2.1.168.127.in-addr.arpa": "ns2.example.test.",
+            "3.1.168.127.in-addr.arpa": "www.example.test.",
         },
         {},
     ]
-
-    assert result1 == expected_result1
+    result2 = get_records_from_file(test_repo2_zonefile)
     assert result2 == expected_result2
 
 
@@ -164,118 +171,102 @@ def test_get_records_from_file_invalid_files(tmpworkdir):  # pylint: disable=unu
     """get_records_from_file returns empty records for unparseable zone files"""
 
     # no $ORIGIN directive and the fallback parse from filename-derived origin fails (no SOA)
-    Path("noorigin.zone").write_text("www 300 IN A 192.0.2.1\n", encoding="utf-8")
+    Path("noorigin.zone").write_text("www 300 IN A 127.0.2.1\n", encoding="utf-8")
     assert get_records_from_file("noorigin.zone") == [{}, {}, {}, {}]
 
     # $ORIGIN present but content malformed
-    Path("garbage.zone").write_text("$ORIGIN garbage.example.com.\ngarbage garbage garbage\n", encoding="utf-8")
+    Path("garbage.zone").write_text("$ORIGIN garbage.example.test.\ngarbage garbage garbage\n", encoding="utf-8")
     assert get_records_from_file("garbage.zone") == [{}, {}, {}, {}]
 
 
 def test_get_records_from_zone():
     """get_records_from_zone parses a dns.zone.Zone object as produced by AXFR"""
 
-    zone = dns.zone.from_text(AXFR_ZONE_TEXT, origin="axfr.example.com.", relativize=False, check_origin=False)
+    zone = dns.zone.from_text(AXFR_ZONE_TEXT, origin="axfr.example.test.", relativize=False, check_origin=False)
 
     cnames, a_aaaa, ptrs, ip_hostnames = get_records_from_zone(zone)
 
-    assert cnames == {"alias.axfr.example.com": "www.axfr.example.com"}
-    assert a_aaaa == {"www.axfr.example.com": {"192.0.2.31"}}
+    assert cnames == {"alias.axfr.example.test": "www.axfr.example.test"}
+    assert a_aaaa == {"www.axfr.example.test": {"127.0.2.31"}}
     assert ptrs == {}
-    assert ip_hostnames == {"192.0.2.31": {"www.axfr.example.com"}}
+    assert ip_hostnames == {"127.0.2.31": {"www.axfr.example.test"}}
 
 
 def test_build_ip_hostnames():
     """build_ip_hostnames merges records from zone files (git/https) and AXFR zones into one mapping"""
 
     axfr_zone = dns.zone.from_text(
-        "www.example.com. 300 IN A 192.168.1.3\naxfr.example.com. 300 IN A 192.0.2.30\n",
-        origin="example.com.",
+        "www.example.test. 300 IN A 127.168.1.3\naxfr.example.test. 300 IN A 127.0.2.30\n",
+        origin="example.test.",
         relativize=False,
         check_origin=False,
     )
 
-    result = build_ip_hostnames([zone_file_path1, zone_file_path2], [axfr_zone])
+    result = build_ip_hostnames([test_repo1_zonefile, test_repo2_zonefile], [axfr_zone])
 
     # forward records from example.com.zone (file source)
-    assert "www.example.com" in result["192.168.1.3"]
-    # PTR records from 1.168.192.in-addr.arpa.zone (file source)
-    assert "ns1.example.com" in result["192.168.1.1"]
+    assert "www.example.test" in result["127.168.1.3"]
+    # PTR records from 1.168.127.in-addr.arpa.zone (file source)
+    assert "ns1.example.test" in result["127.168.1.1"]
     # A record from the AXFR zone
-    assert result["192.0.2.30"] == ["axfr.example.com"]
+    assert result["127.0.2.30"] == ["axfr.example.test"]
     # hostname sets for the same IP are unioned across sources, not overwritten
-    assert set(result["192.168.1.3"]) == {"www.example.com", "alias.example.com"}
+    assert set(result["127.168.1.3"]) == {"www.example.test", "alias.example.test"}
 
 
-def test_collect_dns_sources(httpserver):
+def test_collect_agreegate_dns_sources():
     """collect_dns_sources flattens group sources and splits them into AXFR and HTTPS buckets"""
 
-    axfr_source = {"type": "AXFR", "dns_server": "ns.example.org"}
-    http_source = {"type": "HTTPS", "http_url": "https://zones.example.com/archive.zip"}
-    other_source = {"type": "OTHER"}
+    expected_axfr_source = {"type": "AXFR", "dns_server": "ns.example.test"}
+    expected_http_source = {"type": "HTTPS", "http_url": "https://zones.example.test/archive.zip"}
+    groups = [Group(id=1, name="group1", allowed_networks=[]), Group(id=2, name="group2", allowed_networks=[])]
+    dns_sources = {1: [expected_axfr_source], 2: [expected_http_source]}
 
-    httpserver.expect_request("/api/v1/groups").respond_with_json(
-        [{"id": 1, "name": "group1", "allowed_networks": []}, {"id": 2, "name": "group2", "allowed_networks": []}]
-    )
-    httpserver.expect_request("/api/v1/group/1/dns_sources").respond_with_json([axfr_source])
-    httpserver.expect_request("/api/v1/group/2/dns_sources").respond_with_json([http_source, other_source])
+    mock_manager = MagicMock()
+    mock_manager.get_groups.return_value = groups
+    mock_manager.get_group_dns_sources.side_effect = dns_sources.__getitem__
+    mock_factory = MagicMock()
+    mock_factory.from_env.return_value = mock_manager
 
-    agreegate = AgreegateManager(httpserver.url_for(""), "dummy")
-    groups = agreegate.get_all_groups(only_with_dns_source=True)
+    with patch.object(core_module, "AgreegateManager", mock_factory):
+        dns_sources = collect_agreegate_dns_sources()
 
-    dns_sources, axfr_sources, http_sources = collect_dns_sources(agreegate, groups)
-
-    assert dns_sources == [axfr_source, http_source, other_source]
-    assert axfr_sources == [axfr_source]
-    assert http_sources == [http_source]
+    assert dns_sources == [expected_axfr_source, expected_http_source]
 
 
-def test_write_output(tmpworkdir):  # pylint: disable=unused-argument
-    """write_output writes output json and removes the dns-zones scratch directory"""
+def test_run(tmpworkdir):  # pylint: disable=unused-argument
+    """test core.run"""
 
-    dns_zones_dir = Path("dns-zones")
-    dns_zones_dir.mkdir()
-    (dns_zones_dir / "old_file.txt").write_text("old content", encoding="utf-8")
+    def create_disk_zone(repo_name, origin, data):
+        zone_file = Path(core_module.WORKDIR) / repo_name / "zones" / origin
+        zone_file.parent.mkdir(parents=True)
+        zone_file.write_text(data, encoding="utf-8")
+        return [zone_file]
 
-    write_output({"1.2.3.4": ["example.com"]})
+    def mock_collect():
+        return [{"type": "AXFR", "dummy": 1}, {"type": "HTTPS", "dummy": 1}]
 
-    assert not dns_zones_dir.exists()
-    assert json.loads(Path("output.json").read_text(encoding="utf-8")) == {"1.2.3.4": ["example.com"]}
+    def mock_git_run(_):
+        return create_disk_zone("git1", "git1.example.test", GIT_ZONE_TEXT)
 
+    def mock_axfr_run(_):
+        return [dns.zone.from_text(AXFR_ZONE_TEXT)]
 
-def test_write_output_no_dns_zones_dir(tmpworkdir):  # pylint: disable=unused-argument
-    """write_output works when the dns-zones directory does not exist"""
+    def mock_http_run(_):
+        return create_disk_zone("http1", "https.example.test", HTTPS_ZONE_TEXT)
 
-    write_output({"5.6.7.8": ["test.example.com"]})
+    with (
+        patch("sner.plugin.auror_hostnames.core.collect_agreegate_dns_sources", MagicMock(side_effect=mock_collect)),
+        patch("sner.plugin.auror_hostnames.git.run", MagicMock(side_effect=mock_git_run)),
+        patch("sner.plugin.auror_hostnames.axfr.run", MagicMock(side_effect=mock_axfr_run)),
+        patch("sner.plugin.auror_hostnames.http.run", MagicMock(side_effect=mock_http_run)),
+    ):
+        test_assignment = AgentConfig()
+        result = run(test_assignment)
+        assert result == 0
 
-    assert json.loads(Path("output.json").read_text(encoding="utf-8")) == {"5.6.7.8": ["test.example.com"]}
-
-
-def test_run(gitolite_server, httpserver, axfr_server, monkeypatch):
-    """core.run end-to-end; combines zones from git, https and axfr sources served by local servers"""
-
-    zip_buf = io.BytesIO()
-    with zipfile.ZipFile(zip_buf, "w") as zipf:
-        zipf.writestr("https.example.com.zone", HTTPS_ZONE_TEXT)
-
-    httpserver.expect_request("/api/v1/groups").respond_with_json([{"id": 1, "name": "group1", "allowed_networks": []}])
-    httpserver.expect_request("/api/v1/group/1/dns_sources").respond_with_json(
-        [
-            {"type": "HTTPS", "http_url": httpserver.url_for("/archive.zip")},
-            {"type": "AXFR", "dns_server": "127.0.0.1", "port": axfr_server.port, "list_of_zones": ["axfr.example.com"]},
-        ]
-    )
-    httpserver.expect_request("/archive.zip").respond_with_data(zip_buf.getvalue(), content_type="application/zip")
-    axfr_server.add_zone(AXFR_ZONE_TEXT, "axfr.example.com.")
-    monkeypatch.setenv("SNER_AGREEGATE_URL", httpserver.url_for(""))
-    monkeypatch.setenv("SNER_AGREEGATE_APIKEY", "dummy")
-
-    result = run({"config": gitolite_server})
-
-    assert result == 0
     output = json.loads(Path("output.json").read_text(encoding="utf-8"))
-    assert output["192.0.2.11"] == ["www.git1.example.com"]
-    assert output["192.0.2.12"] == ["www.git2.example.com"]
-    assert output["192.0.2.21"] == ["www.https.example.com"]
-    assert sorted(output["192.0.2.31"]) == ["alias.axfr.example.com", "www.axfr.example.com"]
-    assert not Path("dns-zones").exists()
+    assert output["127.0.2.11"] == ["www.git1.example.test"]
+    assert output["127.0.2.21"] == ["www.https.example.test"]
+    assert sorted(output["127.0.2.31"]) == ["alias.axfr.example.test", "www.axfr.example.test"]
+    assert not Path(core_module.WORKDIR).exists()

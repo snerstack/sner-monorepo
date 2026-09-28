@@ -16,7 +16,7 @@ def test_basic(tmpworkdir):  # pylint: disable=unused-argument
 
     test_a = {
         "id": str(uuid4()),
-        "config": {"module": "auror_hostnames", "git_key_path": "~/.ssh/key", "git_server": "git.example.com"},
+        "config": {"module": "auror_hostnames", "git_key_path": "~/.ssh/key", "git_server": "git.example.test"},
         "targets": ["target1"],
     }
 

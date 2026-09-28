@@ -29,8 +29,9 @@ class AgentModule(ModuleBase):
 
     def run(self, assignment):
         """simply write assignment and return"""
-        self.init_job(assignment)
-        return core.run(assignment)
+        asg_config = self.init_job(assignment)
+        return core.run(asg_config)
 
     def terminate(self):
         """nothing to be done for auror_hostnames terminate"""
+        # TODO: how  to stop the agent ?

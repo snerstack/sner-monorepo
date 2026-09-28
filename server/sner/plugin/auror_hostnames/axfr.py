@@ -91,15 +91,17 @@ def get_zones_from_catalog(catalog_zone) -> list[str]:
     return sorted(zones)
 
 
-def run(axfr_source) -> list[dns.zone.Zone]:
+def run(source) -> list[dns.zone.Zone]:
     """Run auror_hostnames module"""
-    dns_server = axfr_source["dns_server"]
-    port = axfr_source.get("port", 53)
-    catalog_zone_name = axfr_source.get("catalog_zone_name")
-    list_of_zones = axfr_source.get("list_of_zones", [])
-    tsig_key_name = axfr_source.get("tsig_key_name") or None
-    tsig_secret = axfr_source.get("tsig_secret") or None
-    tsig_algorithm = axfr_source.get("tsig_algorithm") or None
+
+    dns_server = source["dns_server"]
+    port = source.get("port", 53)
+    catalog_zone_name = source.get("catalog_zone_name")
+    list_of_zones = source.get("list_of_zones", [])
+    tsig_key_name = source.get("tsig_key_name") or None
+    tsig_secret = source.get("tsig_secret") or None
+    tsig_algorithm = source.get("tsig_algorithm") or None
+
     zones = []
 
     if catalog_zone_name:

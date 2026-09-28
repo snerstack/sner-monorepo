@@ -5,6 +5,7 @@ sner pytest config and fixtures
 
 import os
 import shutil
+from pathlib import Path
 from tempfile import mkdtemp
 
 import pytest
@@ -32,14 +33,13 @@ def app():
     _app = create_app(config_file="tests/sner.yaml", config_env="dummy")
 
     with _app.app_context():
-        os.makedirs(_app.config["SNER_VAR"], exist_ok=True)
+        Path(_app.config["SNER_VAR"]).mkdir(exist_ok=True)
         db_remove()
         db.create_all()
 
     yield _app
 
     with _app.app_context():
-        os.makedirs(_app.config["SNER_VAR"], exist_ok=True)
         db_remove()
 
 

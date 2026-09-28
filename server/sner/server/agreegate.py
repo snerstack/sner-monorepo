@@ -6,14 +6,12 @@ agreegate related functions
 import itertools
 import json
 import re
-from http import HTTPStatus
 from pathlib import Path
 
-import requests
 from flask import current_app
-from pydantic import BaseModel, Field, TypeAdapter
 from sqlalchemy import func
 
+from sner.agreegate import AgreegateApiError, AgreegateManager
 from sner.lib import is_network
 from sner.server.auth.models import User
 from sner.server.extensions import db
@@ -21,60 +19,12 @@ from sner.server.extensions import db
 NETLISTS_FILE = "agreegate_netlists.json"
 
 
-# keep name, reused from AG
-class Group(BaseModel):
-    """Group model for adding/editing groups"""
-
-    name: str
-    description: str | None = None
-    external_id: str | None = None
-    allowed_networks: list[str]
-
-
-# keep name, reused from AG
-class UserGroupsResponse(BaseModel):
-    """Model for syncing users/groups.allowed_networs with SNER instance"""
-
-    username: str
-    email: str
-    full_name: str
-    role: str | None = Field(None, description="User role")
-    groups: list[str] = Field([], description="User groups")
-    enabled: bool = Field(False, description="User enabled flag")
-
-
-AGAPI_GroupsResponseAdapter = TypeAdapter(list[Group])
-AGAPI_UserGroupsResponseAdapter = TypeAdapter(list[UserGroupsResponse])
-
-
-class AgreegateApiError(Exception):
-    """agreegate api call error"""
-
-
-def agreegate_apicall(method, url, **kwargs):
-    """make agreegate api call"""
-
-    resp = requests.request(
-        method,
-        f"{current_app.config['SNER_AGREEGATE_URL']}{url}",
-        headers={"X-API-KEY": current_app.config["SNER_AGREEGATE_APIKEY"]},
-        timeout=60,
-        **kwargs,
-    )
-    current_app.logger.debug("apicall, %s", resp)
-
-    if resp.status_code != HTTPStatus.OK:
-        current_app.logger.error("agreegate apicall failed, %s", resp.text)
-        raise AgreegateApiError("agreegate apicall failed")
-
-    return resp.json()
-
-
 def fetch_agreegate_netlists():
     """fetch networks to be scanned from agreegate API"""
 
+    manager = AgreegateManager.from_app_config()
     try:
-        netlists_json = agreegate_apicall("GET", "/api/v1/networks/aggregated?output=json")
+        netlists_json = manager.get_networks_aggregated()
     except AgreegateApiError:  # pragma: nocover  ; won't test
         current_app.logger.error("failed to fetch agreegate netlists")
         return 1
@@ -155,9 +105,10 @@ def sync_agreegate_allowed_networks():
     * set api_network as coresponding groups allowed_networks for ag user roles of user, viewer, editor
     """
 
+    manager = AgreegateManager.from_app_config()
     epui_regexp = re.compile(r"^[a-zA-Z0-9]+@einfra.cesnet.cz$")
-    ag_groups = AGAPI_GroupsResponseAdapter.validate_python(agreegate_apicall("GET", "/api/v1/groups"))
-    ag_users = AGAPI_UserGroupsResponseAdapter.validate_python(agreegate_apicall("GET", "/api/v1/usergroups"))
+    ag_groups = manager.get_groups()
+    ag_users = manager.get_usergroups()
 
     for ag_user in ag_users:
         if not epui_regexp.match(ag_user.username):

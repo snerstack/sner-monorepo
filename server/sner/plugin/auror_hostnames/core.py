@@ -12,10 +12,26 @@ from socket import getaddrinfo
 import dns.rdatatype
 import dns.zone
 
+from sner.agreegate import AgreegateManager
 from sner.plugin.auror_hostnames import axfr, git, http
-from sner.plugin.auror_hostnames.manager import AgreegateManager
+from sner.plugin.auror_hostnames.constants import WORKDIR
 
 logger = logging.getLogger(__name__)
+
+
+def resolve_hostname(hostname) -> list:
+    """Resolve hostname to IP address
+    Args:
+        hostname (str): hostname
+    Returns:
+        list: list of IP addresses
+    """
+    try:
+        result = getaddrinfo(hostname, None)
+        return [item[4][0] for item in result]
+    except OSError:
+        logger.info("Hostname %s cannot be resolved", hostname)
+        return []
 
 
 def process_cnames(cnames, a_aaaa, ip_hostnames) -> dict:
@@ -69,22 +85,6 @@ def process_cnames(cnames, a_aaaa, ip_hostnames) -> dict:
     logger.info("Resolved %s aliases to IPs", resolve_aliases)
 
     return ip_hostnames
-
-
-def resolve_hostname(hostname) -> list:
-    """Resolve hostname to IP address
-    Args:
-        hostname (str): hostname
-    Returns:
-        list: list of IP addresses
-    """
-    try:
-        result = getaddrinfo(hostname, None)
-        ips = [ip[4][0] for ip in result]
-    except OSError:
-        ips = []
-        logger.info("Hostname %s cannot be resolved", hostname)
-    return ips
 
 
 def process_ptrs(ptrs, ip_hostnames) -> dict:
@@ -200,59 +200,43 @@ def get_records_from_zone(zone) -> list:
     return parse_zone(zone, origin)
 
 
-def collect_dns_sources(agreegate, groups) -> tuple:
-    """Collect DNS sources from groups
-
-    Args:
-        agreegate: AgreegateManager instance
-        groups: List of groups with DNS sources
+def collect_agreegate_dns_sources() -> list:
+    """
+    Collect DNS sources from groups
 
     Returns:
         tuple: (dns_sources, axfr_sources, http_sources)
     """
+
+    manager = AgreegateManager.from_env()
+    groups = manager.get_groups(only_with_dns_source=True)
+
     dns_sources = []
     for group in groups:
-        dns_sources.extend(agreegate.get_group_dns_sources(group.id))
+        dns_sources.extend(manager.get_group_dns_sources(group.id))
 
-    axfr_sources = [source for source in dns_sources if source["type"] == "AXFR"]
-    http_sources = [source for source in dns_sources if source["type"] == "HTTPS"]
-
-    return dns_sources, axfr_sources, http_sources
+    return dns_sources
 
 
-def gather_zone_data(assignment, http_sources, axfr_sources):
-    """Gather zone data from all sources
+def gather_zones_data(dns_sources):
+    """Gather zones data from all sources either to WORKDIR or zone objects"""
 
-    Args:
-        assignment: The assignment configuration
-        http_sources: List of HTTP sources
-        axfr_sources: List of AXFR sources
+    zones_file_paths, zones_objects = [], []
 
-    Returns:
-        tuple: (zone_file_paths, zones)
-    """
-    zone_file_paths = []
-    if assignment["config"].get("git_server"):
-        zone_file_paths = git.run(assignment)
+    for source in dns_sources:
+        if source["type"] == "GIT":
+            zones_file_paths += git.run(source)
+        elif source["type"] == "AXFR":
+            zones_objects += axfr.run(source)
+        elif source["type"] == "HTTPS":
+            zones_file_paths += http.run(source)
+        else:
+            logger.error("Unknown DNS source type: %s, %s", source["type"], source)
 
-    for http_source in http_sources:
-        zone_file_paths += http.run(http_source)
-
-    zones = []
-    for axfr_source in axfr_sources:
-        zones += axfr.run(axfr_source)
-
-    return zone_file_paths, zones
+    return zones_file_paths, zones_objects
 
 
-def write_output(ip_hostnames):
-    """Write the final output to JSON file"""
-    if Path("dns-zones").exists():
-        shutil.rmtree("dns-zones")
-    Path("output.json").write_text(json.dumps(ip_hostnames, indent=4), encoding="utf-8")
-
-
-def build_ip_hostnames(zone_file_paths, zones) -> dict:
+def build_ip_hostnames(zones_file_paths, zones_objects) -> dict:
     """Process and merge zone files and zones into the final ip -> hostnames mapping.
 
     Args:
@@ -267,8 +251,9 @@ def build_ip_hostnames(zone_file_paths, zones) -> dict:
     ptrs = {}
     ip_hostnames = {}
 
-    parsed_records = [get_records_from_file(path) for path in zone_file_paths]
-    parsed_records += [get_records_from_zone(zone) for zone in zones]
+    parsed_records = [get_records_from_file(path) for path in zones_file_paths]
+    parsed_records += [get_records_from_zone(zone) for zone in zones_objects]
+
     for records in parsed_records:
         cnames.update(records[0])
         a_aaaa.update(records[1])
@@ -285,17 +270,32 @@ def build_ip_hostnames(zone_file_paths, zones) -> dict:
     return {k: list(v) for k, v in ip_hostnames.items()}
 
 
-def run(assignment):
+def create_workdir():
+    """create workdir for zones processed from disk"""
+    Path(WORKDIR).mkdir()
+
+
+def cleanup_workdir():
+    """cleanup workdir for zones processed from disk"""
+    shutil.rmtree(WORKDIR)
+
+
+def write_output(data):
+    """Write the final output to JSON file"""
+    Path("output.json").write_text(json.dumps(data, indent=4), encoding="utf-8")
+
+
+def run(asg_config):
     """Run auror_hostnames module"""
 
-    agreegate = AgreegateManager.from_env()
-    groups = agreegate.get_all_groups(only_with_dns_source=True)
-    _, axfr_sources, http_sources = collect_dns_sources(agreegate, groups)
+    default_source = {"type": "GIT", "git_server": asg_config.git_server, "git_key_path": asg_config.git_key_path}
+    dns_sources = [default_source] + collect_agreegate_dns_sources()
 
-    zone_file_paths, zones = gather_zone_data(assignment, http_sources, axfr_sources)
-    ip_hostnames = build_ip_hostnames(zone_file_paths, zones)
-
+    create_workdir()
+    zone_file_paths, zones_objects = gather_zones_data(dns_sources)
+    ip_hostnames = build_ip_hostnames(zone_file_paths, zones_objects)
     logger.info("Found hostnames for %s IP addresses", len(ip_hostnames))
+    cleanup_workdir()
 
     write_output(ip_hostnames)
     return 0

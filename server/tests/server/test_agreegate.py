@@ -4,19 +4,14 @@ agreegate integration tests
 """
 
 import json
-from http import HTTPStatus
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, patch
 
-import pytest
-import requests
 from flask import current_app
 
-import sner.server.agreegate
+from sner.agreegate import AGAPI_GroupsResponseAdapter, AGAPI_UserGroupsResponseAdapter
 from sner.server.agreegate import (
     NETLISTS_FILE,
-    AgreegateApiError,
-    agreegate_apicall,
     fetch_agreegate_netlists,
     init_agreegate_netlists,
     sync_agreegate_allowed_networks,
@@ -24,37 +19,25 @@ from sner.server.agreegate import (
 from sner.server.auth.models import User
 
 
-def test_aggregate_apicall_success(app):  # pylint: disable=unused-argument
-    """test agreegate_apicall successful request"""
+def _mock_agreegate_manager(**methods_returns):
+    """context manager patching AgreegateManager.from_app_config with a mock manager"""
 
-    mock_response = Mock()
-    mock_response.return_value = Mock()
-    mock_response.return_value.status_code = HTTPStatus.OK
-    mock_response.return_value.json = lambda: {"result": "ok"}
+    manager = MagicMock()
+    for fname, retval in methods_returns.items():
+        getattr(manager, fname).return_value = retval
 
-    with patch.object(requests, "request", mock_response):
-        response = agreegate_apicall("GET", "/dummy")
+    return patch.object(sner.server.agreegate.AgreegateManager, "from_app_config", return_value=manager)
 
-    assert response == {"result": "ok"}
-
-
-def test_aggregate_apicall_failure(app):  # pylint: disable=unused-argument
-    """test agreegate_apicall failed request"""
-
-    mock_response = Mock()
-    mock_response.return_value = Mock()
-    mock_response.return_value.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
-    mock_response.return_value.text = "error message text"
-
-    with pytest.raises(AgreegateApiError, match="agreegate apicall failed"), patch.object(requests, "request", mock_response):
-        agreegate_apicall("POST", "/fail")
 
 
 def test_fetch_agreegate_netlists(app):  # pylint: disable=unused-argument
     """test fetch agreegate netlists"""
 
-    mock_response = Mock(return_value={"sner/basic": ["127.6.6.0/24"]})
-    with patch.object(sner.server.agreegate, "agreegate_apicall", mock_response):
+    mock_agmanager = MagicMock()
+    mock_agmanager.from_app_config.return_value.get_networks_aggregated.return_value = {"sner/basic": ["127.6.6.0/24"]}
+    patch_manager = patch("sner.server.agreegate.AgreegateManager", mock_agmanager)
+
+    with patch_manager:
         assert fetch_agreegate_netlists() == 0
 
 
@@ -84,9 +67,12 @@ def test_init_agreegate_netlists(app):  # pylint: disable=unused-argument
 def test_sync_agreegate_allowed_networks(app, user_factory):  # pylint: disable=unused-argument
     """test sync_agreegate_allowed_networks"""
 
-    def agreegate_apicall_mock(_, url):
-        groups = [{"name": "group1", "allowed_networks": ["127.0.0.0/8"]}]
-        users = [
+    # test adding "user" role if user account gets autocreated directly in sner with oidc (eg. no roles)
+    user_factory.create(username="testuser@einfra.cesnet.cz", roles=[])
+
+    _groups = AGAPI_GroupsResponseAdapter.validate_python([{"id": 1, "name": "group1", "allowed_networks": ["127.0.0.0/8"]}])
+    _users = AGAPI_UserGroupsResponseAdapter.validate_python(
+        [
             {
                 "username": "nonepui",
                 "email": "nonepui@dummy",
@@ -109,17 +95,13 @@ def test_sync_agreegate_allowed_networks(app, user_factory):  # pylint: disable=
                 "groups": ["group1"],
             },
         ]
+    )
+    mock_agmanager = MagicMock()
+    mock_agmanager.from_app_config.return_value.get_groups.return_value = _groups
+    mock_agmanager.from_app_config.return_value.get_usergroups.return_value = _users
+    patch_manager = patch("sner.server.agreegate.AgreegateManager", mock_agmanager)
 
-        if url == "/api/v1/groups":
-            return groups
-        if url == "/api/v1/usergroups":
-            return users
-        return None
-
-    # test adding "user" role if user account gets autocreated directly in sner with oidc (eg. no roles)
-    user_factory.create(username="testuser@einfra.cesnet.cz", roles=[])
-
-    with patch.object(sner.server.agreegate, "agreegate_apicall", agreegate_apicall_mock):
+    with patch_manager:
         assert sync_agreegate_allowed_networks() == 0
 
     testuser = User.query.filter_by(username="testuser@einfra.cesnet.cz").one()
