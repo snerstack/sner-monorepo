@@ -11,7 +11,7 @@ import dns.rdatatype
 import dns.tsigkeyring
 import dns.zone
 
-from sner.plugin.auror_hostnames.axfr import get_zones_from_catalog, query_zone, run
+from sner.plugin.auror_hostnames.axfr import TsigConfig, get_zones_from_catalog, query_zone, run
 
 EXAMPLE_ZONE_TEXT = """
 @ 300 IN SOA ns1.example.test. admin.example.test. 1 3600 900 604800 300
@@ -52,10 +52,11 @@ def test_query_zone_with_tsig(axfr_server):
     axfr_server.add_zone(EXAMPLE_ZONE_TEXT, "example.test.")
     axfr_server.keyring = dns.tsigkeyring.from_text({TSIG_KEY_NAME: TSIG_SECRET})
 
-    zone = query_zone("127.0.0.1", "example.test", TSIG_KEY_NAME, TSIG_SECRET, port=axfr_server.port)
+    zone = query_zone("127.0.0.1", "example.test", TsigConfig(TSIG_KEY_NAME, TSIG_SECRET), port=axfr_server.port)
     assert zone.origin.to_text() == "example.test."
 
-    zone = query_zone("127.0.0.1", "example.test", TSIG_KEY_NAME, TSIG_SECRET, "hmac-sha256", port=axfr_server.port)
+    tsig = TsigConfig(TSIG_KEY_NAME, TSIG_SECRET, "hmac-sha256")
+    zone = query_zone("127.0.0.1", "example.test", tsig, port=axfr_server.port)
     assert zone.origin.to_text() == "example.test."
 
 
