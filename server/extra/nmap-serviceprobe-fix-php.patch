@@ -1,0 +1,22 @@
+From e4a4b2854f86113a99082fca3d486742780eb263 Mon Sep 17 00:00:00 2001
+From: dmiller <dmiller@e0a8ed71-7df4-0310-8962-fdc924857419>
+Date: Mon, 3 Jun 2024 20:23:05 +0000
+Subject: [PATCH] Fix incorrect capture used in CPE. Fixes #2848
+
+---
+ nmap-service-probes | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/nmap-service-probes b/nmap-service-probes
+index 368b14e561..f0086e7f9c 100644
+--- a/nmap-service-probes
++++ b/nmap-service-probes
+@@ -10686,7 +10686,7 @@ match http m|^.*<address>Apache/([\d.]+) \([^)]+\) ?(.*) Server at ([-\w_.]+) Po
+ match http m|^.*<address>Apache/([\d.]+) \([^)]+\) Server at ([-\w_.]+) Port \d+</address>\n</body></html>\n|si p/Apache httpd/ v/$1/ h/$2/ cpe:/a:apache:http_server:$1/
+ match http m|^.*<address>Apache/([\d.]+) Server at ([-\w_.]+) Port \d+</address>\n</body></html>\n|si p/Apache httpd/ v/$1/ h/$2/ cpe:/a:apache:http_server:$1/
+ # Finally, look at the Server header.
+-match http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]*\r\n(?!\r\n))*?Server: Apache[/ ](\d[-.\w]+)\r.*\nX-Powered-By: PHP/([\w._-]+)\r\n|s p/Apache httpd/ v/$1/ i/PHP $2/ cpe:/a:apache:http_server:$1/ cpe:/a:php:php:$1/
++match http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]*\r\n(?!\r\n))*?Server: Apache[/ ](\d[-.\w]+)\r.*\nX-Powered-By: PHP/([\w._-]+)\r\n|s p/Apache httpd/ v/$1/ i/PHP $2/ cpe:/a:apache:http_server:$1/ cpe:/a:php:php:$2/
+ match http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]*\r\n(?!\r\n))*?Server: Apache\r.*\nX-Powered-By: PHP/([\w._-]+)\r\n|s p/Apache httpd/ i/PHP $1/ cpe:/a:apache:http_server/ cpe:/a:php:php:$1/
+ match http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]*\r\n(?!\r\n))*?Server: Apache[/ ](\d[-.\w]+)\r.*\nX-Powered-By: ([^\r\n]+)\r\n|s p/Apache httpd/ v/$1/ i/$2/ cpe:/a:apache:http_server:$1/
+ match http m|^HTTP/1\.[01] \d\d\d (?:[^\r\n]*\r\n(?!\r\n))*?Server: Apache\r.*\nX-Powered-By: ([^\r\n]+)\r\n|s p/Apache httpd/ i/$1/ cpe:/a:apache:http_server/
