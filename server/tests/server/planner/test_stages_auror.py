@@ -6,10 +6,13 @@ planner auror stages tests
 import json
 from collections import namedtuple
 
+from sner.server.planner.config import AurorSslyzeScan
 from sner.server.planner.stages import DummyStage, PruningStorageLoader, PruningStrategyType
 from sner.server.planner.stages_auror import (
     AurorHostnamesStorageLoader,
     AurorHostnamesTrigger,
+    AurorSslyzeStorageCleanup,
+    AurorSslyzeStorageTargetlist,
     AurorTestsslStorageCleanup,
     AurorTestsslStorageTargetlist,
 )
@@ -69,6 +72,7 @@ def test_auror_testssl_storage_targetlist(app, host_factory, note_factory, servi
         test_models = [
             TestData("127.0.0.1", None, 443, "https", []),
             TestData("::1", "localhost.localdomain", 25, "smtp", []),
+            TestData("127.0.0.2", None, 5432, "postgresql", []),
             TestData("127.0.0.3", "localhost.localdomain", 80, "http", ["localhost.localdomain", "localhost.localdomain"]),
         ]
         for item in test_models:
@@ -85,7 +89,7 @@ def test_auror_testssl_storage_targetlist(app, host_factory, note_factory, servi
         "AurorTestsslStorageTargetlist",
         schedule="1d",
         filternets=["127.0.0.0/8", "::1"],
-        ports_starttls={25: "smtp"},
+        ports_starttls={25: "smtp", 5432: "postgres"},
         next_stage=dummy,
     ).run()
 
@@ -93,6 +97,8 @@ def test_auror_testssl_storage_targetlist(app, host_factory, note_factory, servi
         "auror,127.0.0.1,port=443,hostname=127.0.0.1,enc=I",
         "auror,::1,port=25,hostname=localhost.localdomain,enc=I",
         "auror,::1,port=25,hostname=localhost.localdomain,enc=E",
+        "auror,127.0.0.2,port=5432,hostname=127.0.0.2,enc=I",
+        "auror,127.0.0.2,port=5432,hostname=127.0.0.2,enc=E",
         "auror,127.0.0.3,port=80,hostname=localhost.localdomain,enc=I",
     ]
     assert list(map(str, dummy.task_args)) == expected
@@ -136,3 +142,59 @@ def test_aurortestssl_cleanup(app, host, note_factory):  # pylint: disable=unuse
     assert Note.query.count() == 2
     assert Note.query.filter_by(xtype="auror.hostnames").count() == 1
     assert Note.query.filter_by(xtype="auror.testssl.explicit").count() == 1
+
+
+def test_aurorsslyze_processing(app, queue_factory, job_completed_factory):  # pylint: disable=unused-argument
+    """test auror_sslyze job import"""
+
+    queue = queue_factory.create(name="qname", config=yaml_dump({"module": "auror_sslyze"}))
+    job_completed_factory.create(queue=queue, make_output="tests/server/data/parser-auror_sslyze-job.zip")
+
+    PruningStorageLoader("loader", queue.name, PruningStrategyType.SERVICE).run()
+
+    assert Note.query.filter_by(xtype="auror.sslyze.implicit").count() == 1
+
+
+def test_aurorsslyze_cleanup(app, host, note_factory):  # pylint: disable=unused-argument
+    """test"""
+
+    note_factory.create(host=host, xtype="auror.hostnames", data=json.dumps(["dummy1"]))
+    note_factory.create(host=host, xtype="auror.sslyze.implicit", via_target="dummy1", data="dummy")
+    note_factory.create(host=host, xtype="auror.sslyze.explicit", via_target="dummy2", data="dummy")
+    note_factory.create(host=host, xtype="auror.testssl.implicit", via_target="dummy2", data="dummy")
+
+    AurorSslyzeStorageCleanup("AurorSslyzeStorageCleanup", schedule="1d").run()
+
+    assert Note.query.count() == 3
+    assert Note.query.filter_by(xtype="auror.sslyze.implicit", via_target="dummy1").count() == 1
+    assert Note.query.filter_by(xtype="auror.testssl.implicit").count() == 1
+
+
+def test_auror_sslyze_storage_targetlist(app, host_factory, note_factory, service_factory):  # pylint: disable=unused-argument
+    """test stage, default starttls services must match nmap service names (aliased)"""
+
+    host = host_factory.create(address="::1", hostname="localhost.localdomain")
+    for port, name in [(25, "smtp"), (5222, "xmpp-client"), (5269, "xmpp-server"), (5432, "postgresql")]:
+        service = service_factory.create(host=host, proto="tcp", port=port, name=name, state="open:test")
+        note_factory.create(host=host, service=service, xtype="nmap.ssl-cert", data="dummy")
+    dummy = DummyStage()
+
+    AurorSslyzeStorageTargetlist(
+        "AurorSslyzeStorageTargetlist",
+        schedule="1d",
+        filternets=["::1"],
+        ports_starttls=AurorSslyzeScan(targetlist_schedule="1d", queue="dummy", cleanup_schedule="1d").ports_starttls,
+        next_stage=dummy,
+    ).run()
+
+    expected = [
+        "auror,::1,port=25,hostname=localhost.localdomain,enc=E",
+        "auror,::1,port=25,hostname=localhost.localdomain,enc=I",
+        "auror,::1,port=5222,hostname=localhost.localdomain,enc=E",
+        "auror,::1,port=5222,hostname=localhost.localdomain,enc=I",
+        "auror,::1,port=5269,hostname=localhost.localdomain,enc=E",
+        "auror,::1,port=5269,hostname=localhost.localdomain,enc=I",
+        "auror,::1,port=5432,hostname=localhost.localdomain,enc=E",
+        "auror,::1,port=5432,hostname=localhost.localdomain,enc=I",
+    ]
+    assert sorted(map(str, dummy.task_args)) == expected

@@ -33,6 +33,7 @@ def test_outofscopecheck(app, host_factory, note_factory, vuln_factory):  # pyli
     vuln_factory.create(host=host1, xtype="nessus.test")
     note_factory.create(host=host2, xtype="sportmap")
     note_factory.create(host=host2, xtype="auror.testssl.implicit")
+    note_factory.create(host=host2, xtype="auror.sslyze.implicit")
 
     outofscope_check(prune=True)
     assert Host.query.count() == 3

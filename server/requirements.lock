@@ -54,6 +54,7 @@ marshmallow==3.26.1
 mccabe==0.7.0
 msgspec==0.20.0
 multidict==6.1.0
+nassl==5.4.0
 outcome==1.3.0.post0
 packaging==24.2
 passlib==1.7.4
@@ -98,7 +99,9 @@ soupsieve==2.6
 SQLAlchemy==2.0.39
 sqlalchemy-datatables==2.0.1
 sqlalchemy-filters @ git+https://github.com/snerstack/sqlalchemy-filters@704a2d0885c5368480e31aae6870254c1aadf5c3
+sslyze==6.3.1
 tenacity==9.0.0
+tls-parser==2.0.2
 tomlkit==0.13.2
 trio==0.29.0
 trio-websocket==0.12.2

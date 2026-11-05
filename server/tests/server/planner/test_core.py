@@ -21,6 +21,7 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
     queue_factory.create(name="sner.nessus.rolling")
     queue_factory.create(name="auror.hostnames")
     queue_factory.create(name="auror.testssl")
+    queue_factory.create(name="auror.sslyze")
 
     config = yaml.safe_load(
         """
@@ -75,6 +76,11 @@ def test_planner_simple(app, queue_factory):  # pylint: disable=unused-argument
             queue: auror.testssl
             ports_starttls:
               21: ftp
+            cleanup_schedule: 1day
+
+          auror_sslyze:
+            targetlist_schedule: 1day
+            queue: auror.sslyze
             cleanup_schedule: 1day
 
           storage_cleanup:

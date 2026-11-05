@@ -14,6 +14,15 @@ from sner.version import __version__ as sner_version
 
 logger = logging.getLogger(__name__)
 
+# map /etc/services names (socket.getservbyport) to testssl.sh --starttls protocols
+STARTTLS_ALIASES = {
+    "imap2": "imap",
+    "submission": "smtp",
+    "xmpp-client": "xmpp",
+    "postgresql": "postgres",
+    "ircd": "irc",
+}
+
 
 class Config(ConfigBase):
     """auror_testssl agent plugin config"""
@@ -106,8 +115,11 @@ class AgentModule(ModuleBase):  # pragma: cover-ignore-if-not-pytestslow
             if target.is_ipv6_address():
                 params.append("-6")
             if target.enc == "E":
+                # known issue: protocol is derived from port via /etc/services, which fails for ports without entry
+                # (eg. 24/lmtp on debian, OSError fails whole job) and for starttls services on non-standard
+                # ports (eg. ldap on 8081); proper fix would be passing protocol from planner within the target
                 service = socket.getservbyport(target.port, "tcp")
-                params.extend(["--starttls", service])
+                params.extend(["--starttls", STARTTLS_ALIASES.get(service, service)])
             target_args = [
                 "--jsonfile-pretty",
                 f"output-{idx}.json",
