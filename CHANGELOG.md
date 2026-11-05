@@ -1,5 +1,15 @@
 # sner changelog
 
+## 1.3.1 - unreleased
+
+### Added
+
+* server: storage vuln-risk-eval command; evaluates vulnerabilities from external attacker point of view
+  (remote exploitability, known exploit references, public service exposure, cvss scores, CISA known exploited
+  vulnerabilities catalog lookup, openai-compatible llm api evaluation), tags them with `risk:<llm>/<heur>`;
+  enrichments can be disabled with `--no-llm` and `--no-kev`, llm part is `-` when llm evaluation is not
+  used or fails (SNER_LLM_API_URL/SNER_LLM_API_KEY/SNER_LLM_MODEL config)
+
 ## 1.3.0 - plannerV2
 
 ### Changed

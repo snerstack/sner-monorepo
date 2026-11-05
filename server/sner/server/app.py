@@ -81,6 +81,12 @@ DEFAULT_CONFIG = {
     "SNER_NESSUS_URL": None,
     "SNER_NESSUS_ACCESS_KEY": None,
     "SNER_NESSUS_SECRET_KEY": None,
+    # openai-compatible llm api used by storage vuln-risk-eval --llm
+    "SNER_LLM_API_URL": None,
+    "SNER_LLM_API_KEY": None,
+    "SNER_LLM_MODEL": None,
+    # interval for the CISA KEV catalog cache file under SNER_VAR
+    "SNER_KEV_CACHE_MAX_AGE": 24 * 60 * 60,
     # smorest api
     "API_TITLE": "SNER API",
     "API_VERSION": __version__,
