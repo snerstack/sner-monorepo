@@ -40,4 +40,5 @@ soft-webauthn
 sqlalchemy-datatables
 # editable keeps git ref for freeze
 -e git+https://github.com/snerstack/sqlalchemy-filters@snerstack#egg=sqlalchemy-filters
+sslyze
 webtest

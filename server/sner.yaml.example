@@ -84,6 +84,11 @@ planner:
       queue: auror.testssl
       cleanup_schedule: 1day
 
+    auror_sslyze:
+      targetlist_schedule: 1day
+      queue: auror.sslyze
+      cleanup_schedule: 1day
+
     storage_cleanup:
       enabled: true
 

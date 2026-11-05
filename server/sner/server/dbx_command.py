@@ -125,6 +125,7 @@ DEFAULT_PROD_QUEUES = [
         ["auror"],
     ),
     QueueDef("auror.testssl", {"module": "auror_testssl"}, 1, QueuePrio.NORMAL, ["auror"]),
+    QueueDef("auror.sslyze", {"module": "auror_sslyze"}, 1, QueuePrio.NORMAL, ["auror"]),
     # standalone
     QueueDef(
         "sner.nuclei",

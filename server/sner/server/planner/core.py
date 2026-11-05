@@ -95,6 +95,8 @@ from sner.server.planner.stages import (
 from sner.server.planner.stages_auror import (
     AurorHostnamesStorageLoader,
     AurorHostnamesTrigger,
+    AurorSslyzeStorageCleanup,
+    AurorSslyzeStorageTargetlist,
     AurorTestsslStorageCleanup,
     AurorTestsslStorageTargetlist,
 )
@@ -354,6 +356,27 @@ class Planner(TerminateContextRunner):
             )
         )
 
+    def _setup_auror_sslyze(self):
+        if not self._cp.auror_sslyze:
+            return
+
+        loader = self._add_stage(PruningStorageLoader(f"auror_sslyze:{self._cp.auror_sslyze.queue}", self._cp.auror_sslyze.queue))
+        self._add_stage(
+            AurorSslyzeStorageTargetlist(
+                "auror_sslyze:targetlist",
+                schedule=self._cp.auror_sslyze.targetlist_schedule,
+                filternets=self.config.auror_testssl_nets,
+                ports_starttls=self._cp.auror_sslyze.ports_starttls,
+                next_stage=loader,
+            )
+        )
+        self._add_stage(
+            AurorSslyzeStorageCleanup(
+                "auror_sslyze:cleanup",
+                schedule=self._cp.auror_sslyze.cleanup_schedule,
+            )
+        )
+
     def _setup_storage_cleanup(self):
         if self._cp.storage_cleanup and self._cp.storage_cleanup.enabled:
             self._add_stage(StorageCleanup())
@@ -381,6 +404,7 @@ class Planner(TerminateContextRunner):
         self._setup_nessus_scan()
         self._setup_auror_hostnames()
         self._setup_auror_testssl()
+        self._setup_auror_sslyze()
         self._setup_storage_cleanup()
         self._setup_rebuild_versioninfo()
 

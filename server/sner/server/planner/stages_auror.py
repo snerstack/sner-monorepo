@@ -16,6 +16,10 @@ sources and manages note(xtype=auror.hostnames) in storage.
 ## auror_testssl
 
 scans all known services for TLS parameters for all known hostnames on respective host.
+
+## auror_sslyze
+
+same as auror_testssl, but using sslyze scanner (notes xtype=auror.sslyze.{implicit,explicit} per service-hostname).
 """
 
 from collections import namedtuple
@@ -128,6 +132,13 @@ class AurorHostnamesStorageLoader(QueueHandler):
 class AurorTestsslStorageTargetlist(Schedule):
     """enumerates auror_testssl targets from storage data"""
 
+    # nmap service detection names to ports_starttls names
+    SERVICE_ALIASES = {
+        "postgresql": "postgres",
+        "xmpp-client": "xmpp",
+        "jabber": "xmpp",
+    }
+
     def __init__(self, name, schedule, filternets, ports_starttls, next_stage):
         super().__init__(name, schedule)
         self.filternets = filternets
@@ -147,7 +158,7 @@ class AurorTestsslStorageTargetlist(Schedule):
             hostnames = host_item.hostnames or [host_item.address]
             for hostname in hostnames:
                 targets.append(AurorTestsslTarget(host_item.address, service.port, hostname, "I"))
-                if service.name in self.ports_starttls.values():
+                if self.SERVICE_ALIASES.get(service.name, service.name) in self.ports_starttls.values():
                     targets.append(AurorTestsslTarget(host_item.address, service.port, hostname, "E"))
 
         current_app.logger.info(f"{self.name} projected {len(targets)} targets")
@@ -170,6 +181,69 @@ class AurorTestsslStorageCleanup(Schedule):
         """run"""
 
         notes_map = StorageManager.get_aurortestssl_notesmap()
+        hostnames_map = StorageManager.get_hostnames_map([key.host_id for key in notes_map])
+
+        notes_to_delete = []
+        for key, notes_ids in notes_map.items():
+            if key.host_id not in hostnames_map or key.via_target not in hostnames_map[key.host_id].hostnames:
+                notes_to_delete += notes_ids
+
+        affected_rows = 0
+        if notes_to_delete:
+            affected_rows = db.session.query(Note).filter(Note.id.in_(notes_to_delete)).delete(synchronize_session=False)
+            db.session.commit()
+            db.session.expire_all()
+
+        current_app.logger.info(f"{self.name} pruned {affected_rows} notes")
+
+
+class AurorSslyzeStorageTargetlist(Schedule):
+    """enumerates auror_sslyze targets from storage data"""
+
+    # nmap service detection names to ports_starttls names
+    SERVICE_ALIASES = {
+        "postgresql": "postgres",
+        "xmpp-client": "xmpp",
+        "jabber": "xmpp",
+    }
+
+    def __init__(self, name, schedule, filternets, ports_starttls, next_stage):
+        super().__init__(name, schedule)
+        self.filternets = filternets
+        self.ports_starttls = ports_starttls
+        self.next_stage = next_stage
+
+    def _run(self):
+        """run"""
+
+        targets = []
+
+        services = StorageManager.get_tls_services(self.filternets).all()
+        hostnames_map = StorageManager.get_hostnames_map([item.host_id for item in services])
+
+        for service in services:
+            host_item = hostnames_map[service.host_id]
+            hostnames = host_item.hostnames or [host_item.address]
+            for hostname in hostnames:
+                targets.append(AurorTestsslTarget(host_item.address, service.port, hostname, "I"))
+                if self.SERVICE_ALIASES.get(service.name, service.name) in self.ports_starttls.values():
+                    targets.append(AurorTestsslTarget(host_item.address, service.port, hostname, "E"))
+
+        current_app.logger.info(f"{self.name} projected {len(targets)} targets")
+        self.next_stage.task(targets)
+
+
+class AurorSslyzeStorageCleanup(Schedule):
+    """
+    storage cleanup from auror_sslyze notes for no-longer assigned hostnames.
+
+    Same as AurorTestsslStorageCleanup, but for auror.sslyze.% notes.
+    """
+
+    def _run(self):
+        """run"""
+
+        notes_map = StorageManager.get_aurorsslyze_notesmap()
         hostnames_map = StorageManager.get_hostnames_map([key.host_id for key in notes_map])
 
         notes_to_delete = []

@@ -5,6 +5,7 @@ auror_testssl plugin agent tests
 
 import json
 import ssl
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
@@ -71,3 +72,31 @@ def test_filter_exit_codes():
     assert agent._filter_exit_codes(245) == 0
     assert agent._filter_exit_codes(246) == 0
     assert agent._filter_exit_codes(250) == 250
+
+
+@pytest.mark.parametrize(
+    "port,expected_protocol",
+    [
+        (25, "smtp"),
+        (143, "imap"),
+        (587, "smtp"),
+        (5222, "xmpp"),
+        (5269, "xmpp-server"),
+        (5432, "postgres"),
+    ],
+)
+def test_starttls_protocol(tmpworkdir, port, expected_protocol):  # pylint: disable=unused-argument
+    """check starttls protocol names passed to testssl.sh"""
+
+    test_a = {
+        "id": str(uuid4()),
+        "config": {"module": "auror_testssl"},
+        "targets": [f"auror,127.0.0.1,port={port},hostname=localhost,enc=E"],
+    }
+    agent = AgentModule()
+    captured = []
+
+    with patch.object(agent, "_execute", side_effect=lambda cmd, output_file: captured.append(cmd) or 0):
+        assert agent.run(test_a) == 0
+
+    assert captured[0][captured[0].index("--starttls") + 1] == expected_protocol

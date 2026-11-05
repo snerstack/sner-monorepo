@@ -103,6 +103,10 @@ def checklist_auror(planner_config, all_checks):
     query = filter_query_for_scope(query, planner_config.auror_testssl_nets)
     all_checks.append(ScopeCheck("auror_testssl", Note, query, count_subquery(query)))
 
+    query = select(Note.id).join(Host).filter(Note.xtype.ilike("auror.sslyze.%"))
+    query = filter_query_for_scope(query, planner_config.auror_testssl_nets)
+    all_checks.append(ScopeCheck("auror_sslyze", Note, query, count_subquery(query)))
+
 
 def outofscope_check(prune=False):
     """handles data in storage that is outside the planner"s scanning scope"""

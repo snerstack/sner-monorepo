@@ -666,3 +666,22 @@ class StorageManager:
             notes_map[MapKey(host_id, via_target)] = note_ids
 
         return notes_map
+
+    @staticmethod
+    def get_aurorsslyze_notesmap():
+        """returns map for auror.sslyze.% notes per-host"""
+
+        MapKey = namedtuple("MapKey", ["host_id", "via_target"])
+        notes_map = {}
+
+        query = (
+            select(Note.host_id, Note.via_target, func.array_agg(Note.id))
+            .select_from(Note)
+            .filter(Note.xtype.ilike("auror.sslyze.%"))
+            .group_by(Note.host_id, Note.via_target)
+        )
+
+        for host_id, via_target, note_ids in db.session.execute(query):
+            notes_map[MapKey(host_id, via_target)] = note_ids
+
+        return notes_map

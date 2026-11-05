@@ -64,7 +64,7 @@ class AurorTestsslScan(ConfigBase):
     ports_starttls: dict = {
         21: "ftp",
         23: "telnet",
-        24: "lmtp",
+        24: "lmtp",  # known issue: not in debian /etc/services, auror_testssl agent fails, see agent starttls handling
         25: "smtp",
         110: "pop3",
         119: "nntp",
@@ -78,6 +78,25 @@ class AurorTestsslScan(ConfigBase):
         5269: "xmpp-server",
         5432: "postgres",
         6667: "irc",
+    }
+
+
+class AurorSslyzeScan(ConfigBase):
+    targetlist_schedule: str
+    queue: str
+    cleanup_schedule: str
+    # sslyze starttls capable services only, agent uses `--starttls auto` (protocol derived from port)
+    ports_starttls: dict = {
+        21: "ftp",
+        25: "smtp",
+        110: "pop3",
+        143: "imap",
+        389: "ldap",
+        587: "smtp",
+        3389: "ms-wbt-server",
+        5222: "xmpp",
+        5269: "xmpp-server",
+        5432: "postgres",
     }
 
 
@@ -100,6 +119,7 @@ class Pipelines(ConfigBase):
     sportmap_scan: SportmapScan | None = None
     auror_hostnames: AurorHostnames | None = None
     auror_testssl: AurorTestsslScan | None = None
+    auror_sslyze: AurorSslyzeScan | None = None
     storage_cleanup: StorageCleanup | None = None
     rebuild_versioninfo: RebuildVersioninfo | None = None
 
